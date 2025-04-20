@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "255413402478",
+    "project_id": "popp-71efb",
+    "storage_bucket": "popp-71efb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:255413402478:android:2d7f4278e963ba22b75f7f",
+        "android_client_info": {
+          "package_name": "com.popp.poppflutter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAoogLT6QUfVICvPJe0Rj1ttccLXz-Rm70"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

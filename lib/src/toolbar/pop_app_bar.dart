@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:poppflutter/src/home/search_screen.dart';
+import 'package:poppflutter/src/login/login_screen.dart';
 
 class PopAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -15,6 +16,7 @@ class PopAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     return AppBar(
       title: Text(title),
+      centerTitle: true,
       actions: <Widget>[
         IconButton(
           icon: const Icon(Icons.search),
@@ -22,6 +24,16 @@ class PopAppBar extends StatelessWidget implements PreferredSizeWidget {
             // Add your search functionality here
             showSearch(context: context,
                 delegate: SearchScreen());
+          },
+        ),
+        IconButton(
+          icon: const Icon(Icons.account_box),
+          onPressed: () {
+            // Add your search functionality here
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const LoginScreen()),
+            );
           },
         ),
       ],

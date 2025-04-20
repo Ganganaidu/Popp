@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 
 import 'package:poppflutter/src/homepagewidgets/carousel_widget.dart';
-import 'package:poppflutter/src/homepagewidgets/for_you_main_list_widget.dart';
+import 'package:poppflutter/src/homepagewidgets/dashboard_list_widget.dart';
 import 'package:poppflutter/src/disclaimers/app_disclaimers.dart';
 
-class ForYouScreen extends StatefulWidget {
-  const ForYouScreen({super.key});
+class DashboardScreen extends StatefulWidget {
+  const DashboardScreen({super.key});
 
   @override
-  State<ForYouScreen> createState() => _ForYouScreen();
+  State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _ForYouScreen extends State<ForYouScreen> {
+class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   void dispose() {
@@ -25,10 +25,8 @@ class _ForYouScreen extends State<ForYouScreen> {
         // Wrap the entire content with SingleChildScrollView
         child: Column(
           children: [
-            SizedBox(height: 10),
             CarouselWidget(),
-            SizedBox(height: 30),
-            ForYouListViewWidget(),
+            DashboardListViewWidget(),
             SizedBox(height: 50),
             Disclaimers(),
           ],

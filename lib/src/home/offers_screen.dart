@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:poppflutter/src/home/search_screen.dart';
-import 'package:poppflutter/src/home/foryou_screen.dart';
+import 'package:poppflutter/src/home/dashboard_screen.dart';
 
 // TODO example screen with top viewpage sliding.
 class OffersScreen extends StatefulWidget {
@@ -38,7 +38,7 @@ class _OffersScreenState extends State<OffersScreen> {
         ),
         body: const TabBarView(
           children: [
-            ForYouScreen(),
+            DashboardScreen(),
           ],
         ),
       ),

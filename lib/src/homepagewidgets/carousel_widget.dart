@@ -14,12 +14,13 @@ class _CarouselWidgetState extends State<CarouselWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return Stack(  // Wrap CarouselSlider and AnimatedSmoothIndicator in a Stack
+      alignment: Alignment.bottomCenter,  // Align the indicator to the bottom center
       children: [
         CarouselSlider(
           items: imageSliders,
           options: CarouselOptions(
-            height: 200,
+            height: 400,
             initialPage: 0,
             autoPlay: true,
             autoPlayInterval: const Duration(seconds: 3),
@@ -34,15 +35,17 @@ class _CarouselWidgetState extends State<CarouselWidget> {
             scrollDirection: Axis.horizontal,
           ),
         ),
-        const SizedBox(height:10),
-        AnimatedSmoothIndicator(
-          activeIndex: _current,
-          count: imgList.length,
-          effect: const WormEffect(
-            dotHeight: 10,
-            dotWidth: 10,
-            activeDotColor: Colors.orange,
-            dotColor: Colors.grey,
+        Padding(
+          padding: const EdgeInsets.only(bottom: 20.0),  // Add some padding from the bottom
+          child: AnimatedSmoothIndicator(
+            activeIndex: _current,
+            count: imgList.length,
+            effect: const WormEffect(
+              dotHeight: 10,
+              dotWidth: 10,
+              activeDotColor: Colors.orange,
+              dotColor: Colors.grey,
+            ),
           ),
         ),
       ],
@@ -61,40 +64,13 @@ final List<String> imgList = [
 
 final List<Widget> imageSliders = imgList
     .map((item) => Container(
-  margin: const EdgeInsets.all(5.0),
-  child: ClipRRect(
-      borderRadius: const BorderRadius.all(Radius.circular(5.0)),
-      child: Stack(
-        children: <Widget>[
-          Image.network(item, fit: BoxFit.cover, width: 1000.0),
-          Positioned(
-            bottom: 0.0,
-            left: 0.0,
-            right: 0.0,
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Color.fromARGB(200, 0, 0, 0),
-                    Color.fromARGB(0, 0, 0, 0)
-                  ],
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                ),
-              ),
-              padding: const EdgeInsets.symmetric(
-                  vertical: 10.0, horizontal: 20.0),
-              child: Text(
-                'No. ${imgList.indexOf(item)} image',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 20.0,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-        ],
-      )),
-))
+          margin: const EdgeInsets.all(0.0),
+          child: ClipRRect(
+              borderRadius: const BorderRadius.all(Radius.circular(0.0)),
+              child: Stack(
+                children: <Widget>[
+                  Image.network(item, fit: BoxFit.cover, height: 400, width: 1000.0),
+                ],
+              )),
+        ))
     .toList();

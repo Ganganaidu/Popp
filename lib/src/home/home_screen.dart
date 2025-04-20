@@ -4,7 +4,7 @@ import 'package:poppflutter/src/home/help_screen.dart';
 import 'package:poppflutter/src/home/our_services.dart';
 import 'package:poppflutter/src/toolbar/pop_app_bar.dart';
 import 'package:poppflutter/src/utils/app_constants.dart';
-import 'package:poppflutter/src/home/foryou_screen.dart';
+import 'package:poppflutter/src/home/dashboard_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -18,7 +18,7 @@ class _HomeScreenState extends State<HomeScreen> {
   static const TextStyle optionStyle =
       TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
   static const List<Widget> _widgetOptions = <Widget>[
-    ForYouScreen(),
+    DashboardScreen(),
     OurServices(),
     HelpScreen(),
   ];

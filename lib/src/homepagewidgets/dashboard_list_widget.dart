@@ -1,24 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:poppflutter/src/utils/build_extensions.dart';
-import 'package:poppflutter/src/foryou/model/product.dart';
+import 'package:poppflutter/src/models/product.dart';
+
+import 'model/home_category_model.dart';
 
 // https://medium.com/flutter-community/handling-network-calls-like-a-pro-in-flutter-31bd30c86be1
 
-class ForYouListViewWidget extends StatelessWidget {
-  const ForYouListViewWidget({super.key});
+class DashboardListViewWidget extends StatelessWidget {
+  const DashboardListViewWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: 2,
+      itemCount: catList.length - 1,
       itemBuilder: (context, index) {
-        return Card(
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white
+          ),
           child: Column(
             children: [
               ListTile(
-                title: Text('Item ${index + 1}'),
+                title: Text(catList[index].title,
+                    style: context.bodyMedium?.copyWith(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.black,
+                    )),
               ),
               SizedBox(
                 height: 300,
@@ -27,7 +37,7 @@ class ForYouListViewWidget extends StatelessWidget {
                   itemCount: productList.length,
                   itemBuilder: (context, innerIndex) {
                     return Padding(
-                      padding: const EdgeInsets.all(8.0),
+                      padding: const EdgeInsets.all(0.0),
                       child: Column(
                         // Use a Column for vertical arrangement
                         children: [

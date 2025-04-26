@@ -4,12 +4,14 @@ import 'package:poppflutter/src/login/login_screen.dart';
 
 class PopAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
+  final int selectedIndex;
   final List<Widget>? actions;
 
   const PopAppBar({
     super.key,
     required this.title,
     this.actions,
+    required this.selectedIndex,
   });
 
   @override
@@ -24,6 +26,12 @@ class PopAppBar extends StatelessWidget implements PreferredSizeWidget {
             // Add your search functionality here
             showSearch(context: context,
                 delegate: SearchScreen());
+          },
+        ),
+        IconButton(
+          icon: const Icon(Icons.shopping_cart),
+          onPressed: () {
+            // Add your search functionality here
           },
         ),
         IconButton(

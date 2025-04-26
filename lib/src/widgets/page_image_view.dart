@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 class PageImageView extends StatelessWidget {
   final Color color;
 
-  const PageImageView({required this.color});
+  const PageImageView({super.key, required this.color});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       height: 100,
       child: Center(
         child: Column(

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import '../bikes/vehicle_details_widget_page.dart';
+import '../bikes/product_details_screen.dart';
 import '../home/dashboard_screen.dart';
 import '../home/help_screen.dart';
 import '../home/our_services.dart';
+import '../models/product.dart';
+import '../toolbar/tab_navigator_observer.dart';
 
 class NavHelper {
   // Singleton instance
@@ -12,6 +14,9 @@ class NavHelper {
   factory NavHelper() {
     return _instance;
   }
+
+  VoidCallback? navigationChangeListener;
+  void Function(String)? updateAppBarTitle;
 
   // Private constructor
   NavHelper._internal() {
@@ -27,17 +32,11 @@ class NavHelper {
 
   // Define routes for each tab
   final Map<String, WidgetBuilder> routes = {
-    '/vehicleDetails': (context) => const VehicleDetailsWidgetPage(),
+    '/vehicleDetails': (context) {
+      final product = ModalRoute.of(context)!.settings.arguments as Product;
+      return ProductDetailScreen(product: product);
+    },
   };
-
-  // // Define routes for each tab
-  // final Map<String, WidgetBuilder> routes = {
-  //   '/vehicleDetails': (context) {
-  //     // final product = ModalRoute.of(context)!.settings.arguments as Product;
-  //     // return VehicleDetailsWidgetPage(product: product);
-  //     return const VehicleDetailsWidgetPage();
-  //   },
-  // };
 
   static const List<String> widgetTitles = <String>[
     'Dashboard',
@@ -61,6 +60,11 @@ class NavHelper {
   Widget buildNavigator(int index, Widget child) {
     return Navigator(
       key: navigatorKeys[index],
+      observers: [
+        TabNavigatorObserver(onNavigationChanged: () {
+          navigationChangeListener?.call();
+        }),
+      ],
       onGenerateRoute: (settings) {
         // Check if the route is defined in the routes map
         if (routes.containsKey(settings.name)) {
@@ -76,5 +80,16 @@ class NavHelper {
         );
       },
     );
+  }
+
+  Future<bool> onWillPop(int selectedIndex) async {
+    // Check if the current Navigator can pop
+    if (navigatorKeys[selectedIndex].currentState?.canPop() ?? false) {
+      // Pop the current Navigator
+      navigatorKeys[selectedIndex].currentState?.pop();
+      return false; // Don't pop the root Navigator
+    } else {
+      return false;
+    }
   }
 }

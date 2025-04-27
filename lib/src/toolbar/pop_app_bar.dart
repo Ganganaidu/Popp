@@ -6,45 +6,79 @@ class PopAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final int selectedIndex;
   final List<Widget>? actions;
+  final List<GlobalKey<NavigatorState>> navigatorKeys;
+  final bool canPopOverride;
 
   const PopAppBar({
     super.key,
     required this.title,
     this.actions,
+    required this.navigatorKeys,
     required this.selectedIndex,
+    this.canPopOverride = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    return AppBar(
-      title: Text(title),
-      centerTitle: true,
-      actions: <Widget>[
-        IconButton(
-          icon: const Icon(Icons.search),
-          onPressed: () {
-            // Add your search functionality here
-            showSearch(context: context,
-                delegate: SearchScreen());
-          },
-        ),
-        IconButton(
-          icon: const Icon(Icons.shopping_cart),
-          onPressed: () {
-            // Add your search functionality here
-          },
-        ),
-        IconButton(
-          icon: const Icon(Icons.account_box),
-          onPressed: () {
-            // Add your search functionality here
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const LoginScreen()),
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      color: Colors.white,
+      child: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          transitionBuilder: (child, animation) {
+            return SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(-1.0, 0.0),
+                end: Offset.zero,
+              ).animate(animation),
+              child: FadeTransition(
+                opacity: animation,
+                child: child,
+              ),
             );
           },
+          child: canPopOverride
+              ? Hero(
+            tag: 'backButtonHero',
+            child: IconButton(
+              key: const ValueKey('backButton'),
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () {
+                navigatorKeys[selectedIndex].currentState?.pop();
+              },
+            ),
+          )
+              : const SizedBox(key: ValueKey('emptySpace')),
         ),
-      ],
+        title: Text(title),
+        centerTitle: true,
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              showSearch(context: context, delegate: SearchScreen());
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.shopping_cart),
+            onPressed: () {
+              // Cart logic here
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.account_box),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginScreen()),
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 

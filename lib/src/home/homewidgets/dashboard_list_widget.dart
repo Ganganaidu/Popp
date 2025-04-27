@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:poppflutter/src/utils/build_extensions.dart';
 import 'package:poppflutter/src/models/product.dart';
-import '../../bikes/vehicle_details_widget_page.dart';
-import '../../models/home_category_model.dart';
+import 'package:poppflutter/src/utils/build_extensions.dart';
+
+import '../../models/category.dart';
 
 // https://medium.com/flutter-community/handling-network-calls-like-a-pro-in-flutter-31bd30c86be1
 
@@ -32,7 +32,7 @@ class _DashboardListViewWidget extends State<DashboardListViewWidget> {
           child: Column(
             children: [
               ListTile(
-                title: Text(catList[index].title,
+                title: Text(catList[index].name,
                     style: context.bodyMedium?.copyWith(
                       fontSize: 22,
                       fontWeight: FontWeight.w900,
@@ -48,8 +48,9 @@ class _DashboardListViewWidget extends State<DashboardListViewWidget> {
                     return GestureDetector(
                       onTap: () {
                         // Navigate to vehicle details page here
-                        Navigator.of(widget.context).pushNamed('/vehicleDetails');
-                        //builder: (context) => VehicleDetailsWidgetPage(product: productList[innerIndex]),
+                        Navigator.of(widget.context).pushNamed(
+                            '/vehicleDetails',
+                            arguments: productList[innerIndex]);
                       },
                       child: Padding(
                         padding: const EdgeInsets.all(0.0),
@@ -63,7 +64,7 @@ class _DashboardListViewWidget extends State<DashboardListViewWidget> {
                                   padding: const EdgeInsets.only(bottom: 8.0),
                                   // Adjust padding values as needed
                                   child: Image.network(
-                                    productList[innerIndex].imageUrl,
+                                    productList[innerIndex].imageUrls.first,
                                     // Replace with your image URL
                                     width: 100,
                                     height: 130,
@@ -80,7 +81,7 @@ class _DashboardListViewWidget extends State<DashboardListViewWidget> {
                                       width: 150,
                                       child: Text(
                                           style: context.bodyMedium,
-                                          productList[innerIndex].title,
+                                          productList[innerIndex].brandName,
                                           maxLines: 2,
                                           overflow: TextOverflow.ellipsis,
                                           textAlign: TextAlign.center),
@@ -92,7 +93,7 @@ class _DashboardListViewWidget extends State<DashboardListViewWidget> {
                                   padding: const EdgeInsets.only(bottom: 8.0),
                                   // Adjust padding values as needed
                                   child: Text(
-                                    productList[innerIndex].priceRange,
+                                    productList[innerIndex].price,
                                     style: context.titleSmall,
                                   ),
                                 )),

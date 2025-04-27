@@ -4,6 +4,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:poppflutter/src/utils/app_loger.dart';
 import 'package:uuid/uuid.dart';
 
 class VehicleListingFormWidget extends StatefulWidget {
@@ -76,7 +77,7 @@ class _VehicleListingFormWidgetState extends State<VehicleListingFormWidget> {
         _images = [];
       });
     } catch (e) {
-      print("Error: $e");
+      AppLogger.d("Error: $e");
       if(mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(

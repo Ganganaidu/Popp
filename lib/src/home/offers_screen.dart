@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:poppflutter/src/home/search_screen.dart';
 import 'package:poppflutter/src/home/dashboard_screen.dart';
 
 // TODO example screen with top viewpage sliding.

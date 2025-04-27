@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:poppflutter/src/disclaimers/app_disclaimers.dart';
+import '../utils/app_loger.dart';
 import 'homewidgets/carousel_widget.dart';
 import 'homewidgets/dashboard_list_widget.dart';
 
@@ -19,7 +20,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print("Dashboard build context: $context");
+    AppLogger.d("Dashboard build context: $context");
     return SingleChildScrollView(
       // Wrap the entire content with SingleChildScrollView
       child: Column(

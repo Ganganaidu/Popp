@@ -5,7 +5,7 @@ import 'package:poppflutter/src/login/login_screen.dart';
 import 'package:poppflutter/src/login/signup_screen.dart';
 import 'package:poppflutter/src/home/home_screen.dart';
 import 'src/theme/theme.dart';
-import 'firebase_options.dart';
+import 'src/firebase/firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

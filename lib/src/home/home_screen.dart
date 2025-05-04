@@ -46,6 +46,13 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _onItemTapped(int index) {
+    if (index == 0) {
+      // Home tab clicked
+      final navigator = _navHelper.navigatorKeys[_selectedIndex].currentState;
+      if (navigator != null && navigator.canPop()) {
+        navigator.popUntil((route) => route.isFirst); // pop to root first
+      }
+    }
     setState(() {
       _selectedIndex = index;
       _onNavigationChanged();

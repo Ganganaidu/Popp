@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:poppflutter/src/models/product.dart';
 import '../../models/category.dart';
-import '../../utils/nav_router.dart';
+import '../../navigation/nav_router.dart';
 
 class DashboardListViewWidget extends StatelessWidget {
   const DashboardListViewWidget({super.key});

@@ -1,10 +1,13 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:poppflutter/src/toolbar/pop_app_bar.dart';
 import 'package:poppflutter/src/utils/app_constants.dart';
 import 'package:poppflutter/src/utils/app_loger.dart';
+import '../../main.dart';
 import '../navigation/custom_bottom_nav_bar.dart';
-import '../utils/nav_helper.dart';
+import '../navigation/nav_helper.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -124,5 +127,36 @@ class ValueListenableBuilder2<A, B> extends StatelessWidget {
         );
       },
     );
+  }
+
+  void setupNotifications() async {
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+    await messaging.requestPermission(); // ask permission on iOS
+    String? token = await messaging.getToken();
+    AppLogger.d('FCM Token: $token');
+    // Store token inside Firestore user profile if needed
+  }
+
+  // This will show a popup notification when a new message arrives while app is open.
+  // call this on initState() when started implementing the messaging system.
+  void onMessage() {
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      RemoteNotification? notification = message.notification;
+      if (notification != null) {
+        flutterLocalNotificationsPlugin.show(
+          notification.hashCode,
+          notification.title,
+          notification.body,
+          const NotificationDetails(
+            android: AndroidNotificationDetails(
+              'chat_channel', // channel id
+              'Chat Messages', // channel name
+              importance: Importance.max,
+              priority: Priority.high,
+            ),
+          ),
+        );
+      }
+    });
   }
 }

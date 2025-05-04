@@ -3,7 +3,7 @@ import 'package:poppflutter/src/models/product.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../utils/nav_helper.dart';
+import '../navigation/nav_helper.dart';
 import '../widgets/expandable_product_details_widget.dart';
 import '../widgets/expandable_text_widget.dart';
 

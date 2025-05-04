@@ -8,6 +8,12 @@
       "languageVersion": "3.2"
     },
     {
+      "name": "args",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/args-2.7.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.3"
+    },
+    {
       "name": "async",
       "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/async-2.12.0",
       "packageUri": "lib/",
@@ -78,6 +84,12 @@
       "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/cupertino_icons-1.0.8",
       "packageUri": "lib/",
       "languageVersion": "3.1"
+    },
+    {
+      "name": "dbus",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/dbus-0.7.11",
+      "packageUri": "lib/",
+      "languageVersion": "2.17"
     },
     {
       "name": "fake_async",
@@ -158,6 +170,24 @@
       "languageVersion": "3.4"
     },
     {
+      "name": "firebase_messaging",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/firebase_messaging-15.2.5",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
+    },
+    {
+      "name": "firebase_messaging_platform_interface",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/firebase_messaging_platform_interface-4.6.5",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
+    },
+    {
+      "name": "firebase_messaging_web",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/firebase_messaging_web-3.10.5",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
       "name": "firebase_storage",
       "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/firebase_storage-12.4.5",
       "packageUri": "lib/",
@@ -192,6 +222,30 @@
       "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/flutter_lints-4.0.0",
       "packageUri": "lib/",
       "languageVersion": "3.1"
+    },
+    {
+      "name": "flutter_local_notifications",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/flutter_local_notifications-19.1.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
+      "name": "flutter_local_notifications_linux",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/flutter_local_notifications_linux-6.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
+      "name": "flutter_local_notifications_platform_interface",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/flutter_local_notifications_platform_interface-9.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
+      "name": "flutter_local_notifications_windows",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/flutter_local_notifications_windows-1.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
     },
     {
       "name": "flutter_plugin_android_lifecycle",
@@ -332,6 +386,12 @@
       "languageVersion": "3.4"
     },
     {
+      "name": "petitparser",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/petitparser-6.1.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.5"
+    },
+    {
       "name": "plugin_platform_interface",
       "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/plugin_platform_interface-2.1.8",
       "packageUri": "lib/",
@@ -396,6 +456,12 @@
       "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/test_api-0.7.4",
       "packageUri": "lib/",
       "languageVersion": "3.5"
+    },
+    {
+      "name": "timezone",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/timezone-0.10.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.19"
     },
     {
       "name": "typed_data",
@@ -482,13 +548,25 @@
       "languageVersion": "3.7"
     },
     {
+      "name": "xdg_directories",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/xdg_directories-1.1.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.3"
+    },
+    {
+      "name": "xml",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/xml-6.5.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
+    },
+    {
       "name": "poppflutter",
       "rootUri": "../",
       "packageUri": "lib/",
       "languageVersion": "3.4"
     }
   ],
-  "generated": "2025-05-03T18:32:47.669120Z",
+  "generated": "2025-05-04T17:41:18.057184Z",
   "generator": "pub",
   "generatorVersion": "3.7.2",
   "flutterRoot": "file:///Users/gangadharkondati/development/flutter",

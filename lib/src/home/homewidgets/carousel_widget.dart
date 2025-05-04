@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class CarouselWidget extends StatefulWidget {
   const CarouselWidget({super.key});
@@ -15,9 +14,7 @@ class _CarouselWidgetState extends State<CarouselWidget> {
   @override
   Widget build(BuildContext context) {
     return Stack(
-      // Wrap CarouselSlider and AnimatedSmoothIndicator in a Stack
       alignment: Alignment.bottomCenter,
-      // Align the indicator to the bottom center
       children: [
         CarouselSlider(
           items: imageSliders,
@@ -25,7 +22,6 @@ class _CarouselWidgetState extends State<CarouselWidget> {
             height: 400,
             initialPage: 0,
             viewportFraction: 1.0,
-            // Full width
             autoPlay: true,
             autoPlayInterval: const Duration(seconds: 3),
             autoPlayAnimationDuration: const Duration(milliseconds: 800),
@@ -39,18 +35,32 @@ class _CarouselWidgetState extends State<CarouselWidget> {
             scrollDirection: Axis.horizontal,
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.only(bottom: 20.0),
-          // Add some padding from the bottom
-          child: AnimatedSmoothIndicator(
-            activeIndex: _current,
-            count: imgList.length,
-            effect: const WormEffect(
-              dotHeight: 10,
-              dotWidth: 10,
-              activeDotColor: Colors.orange,
-              dotColor: Colors.grey,
-            ),
+        Positioned(
+          bottom: 20.0,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: List.generate(imgList.length, (index) {
+              bool isActive = index == _current;
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                width: isActive ? 16 : 12,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: isActive ? Colors.orange : Colors.white70,
+                  borderRadius: BorderRadius.circular(2),
+                  boxShadow: isActive
+                      ? [
+                          BoxShadow(
+                            color: Colors.orange.withOpacity(0.8),
+                            blurRadius: 6,
+                            spreadRadius: 1,
+                          ),
+                        ]
+                      : [],
+                ),
+              );
+            }),
           ),
         ),
       ],

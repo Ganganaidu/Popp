@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:poppflutter/src/toolbar/pop_app_bar.dart';
 import 'package:poppflutter/src/utils/app_constants.dart';
 import 'package:poppflutter/src/utils/app_loger.dart';
+import '../navigation/custom_bottom_nav_bar.dart';
 import '../utils/nav_helper.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -21,16 +22,23 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _navHelper.navigationChangeListener = _updateCanPop;
+    _navHelper.navigationChangeListener = _onNavigationChanged;
     _navHelper.updateAppBarTitle = _updateAppBarTitle;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _updateCanPop();
+      _onNavigationChanged();
     });
   }
 
-  void _updateCanPop() {
-    final canPop = _navHelper.navigatorKeys[_selectedIndex].currentState?.canPop() ?? false;
+  /// Called whenever the inner Navigator stack changes
+  void _onNavigationChanged() {
+    final canPop =
+        _navHelper.navigatorKeys[_selectedIndex].currentState?.canPop() ??
+            false;
     _canPop.value = canPop;
+    // Reset title when returning to root
+    if (!canPop) {
+      _appBarTitle.value = Constants.appName;
+    }
   }
 
   void _updateAppBarTitle(String newTitle) {
@@ -40,7 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
-      _updateCanPop();
+      _onNavigationChanged();
       _appBarTitle.value = Constants.appName;
     });
   }
@@ -75,24 +83,9 @@ class _HomeScreenState extends State<HomeScreen> {
           index: _selectedIndex,
           children: _navHelper.widgetOptions,
         ),
-        bottomNavigationBar: BottomNavigationBar(
-          items: const <BottomNavigationBarItem>[
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: Constants.home,
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.account_tree),
-              label: Constants.service,
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.help_center),
-              label: Constants.help,
-            )
-          ],
-          currentIndex: _selectedIndex,
-          selectedItemColor: Colors.blue[800],
-          onTap: _onItemTapped,
+        bottomNavigationBar: CustomBottomNavBar(
+          selectedIndex: _selectedIndex,
+          onItemTapped: _onItemTapped,
         ),
       ),
     );

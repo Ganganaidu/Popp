@@ -34,7 +34,7 @@ class _VehicleListingFormWidgetState extends State<VehicleListingFormWidget> {
     for (var image in images) {
       final ref = FirebaseStorage.instance
           .ref()
-          .child('bikes/$uuid/${DateTime.now().millisecondsSinceEpoch}.jpg');
+          .child('products/$uuid/${DateTime.now().millisecondsSinceEpoch}.jpg');
       final uploadTask = await ref.putFile(File(image.path));
       final url = await uploadTask.ref.getDownloadURL();
       downloadUrls.add(url);
@@ -63,7 +63,7 @@ class _VehicleListingFormWidgetState extends State<VehicleListingFormWidget> {
         'createdAt': FieldValue.serverTimestamp(),
       };
 
-      await FirebaseFirestore.instance.collection('bikes').add(listing);
+      await FirebaseFirestore.instance.collection('products').add(listing);
 
       if(mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

@@ -16,15 +16,21 @@ class ProductDetailScreen extends StatefulWidget {
   State<ProductDetailScreen> createState() => _ProductDetailScreenState();
 }
 
-class _ProductDetailScreenState extends State<ProductDetailScreen>
-    with SingleTickerProviderStateMixin {
+class _ProductDetailScreenState extends State<ProductDetailScreen> {
   int selectedImageIndex = 0;
   bool isFavorite = false;
+  late final PageController _pageController;
 
   @override
   void initState() {
     super.initState();
-    NavHelper().updateAppBarTitle?.call("New Product Title");
+    _pageController = PageController(initialPage: selectedImageIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   void _callSeller() async {
@@ -37,13 +43,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
     }
   }
 
-  void _addToCart() {
-    // TODO: Implement your cart logic here
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Added to cart!')),
-    );
-  }
-
   void _toggleFavorite() {
     setState(() {
       isFavorite = !isFavorite;
@@ -51,12 +50,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
     });
   }
 
-  Widget _buildImage(String url) {
-    return Image.network(
+  Widget _buildImage(String url, {bool useHero = false}) {
+    final imageWidget = Image.network(
       url,
       fit: BoxFit.cover,
-      key: ValueKey<String>(url),
-      // Important: to detect change
       width: double.infinity,
       height: 400,
       loadingBuilder: (context, child, loadingProgress) {
@@ -72,23 +69,44 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
         );
       },
     );
+
+    return useHero
+        ? Hero(
+            tag: widget.product.imageUrls.first,
+            child: imageWidget,
+          )
+        : imageWidget;
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context).textTheme;
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 🔹 Main Image Section
+          // 🔹 Main Image Carousel
           Stack(
             children: [
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 400),
-                switchInCurve: Curves.easeIn,
-                switchOutCurve: Curves.easeOut,
-                child:
-                    _buildImage(widget.product.imageUrls[selectedImageIndex]),
+              SizedBox(
+                height: 400,
+                width: double.infinity,
+                child: PageView.builder(
+                  controller: _pageController,
+                  itemCount: widget.product.imageUrls.length,
+                  onPageChanged: (index) {
+                    setState(() {
+                      selectedImageIndex = index;
+                    });
+                  },
+                  itemBuilder: (context, index) {
+                    final url = widget.product.imageUrls[index];
+                    return _buildImage(
+                      url,
+                      useHero: index == 0,
+                    );
+                  },
+                ),
               ),
 
               // 🔹 Fav Icon
@@ -106,7 +124,34 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                   ),
                 ),
               ),
-              // 🔹 Thumbnail Indicator (NEW)
+
+              // 🔹 Bottom Dashes Indicator (overlay on image)
+              Positioned(
+                bottom: 20,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children:
+                    List.generate(widget.product.imageUrls.length, (index) {
+                      bool isActive = index == selectedImageIndex;
+                      return AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        width: isActive ? 20 : 12,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: isActive ? Colors.white54 : Colors.black26,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      );
+                    }),
+                  ),
+                ),
+              ),
+
+              // 🔹 Thumbnail Indicator
               Positioned(
                 bottom: 12,
                 right: 12,
@@ -132,7 +177,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
 
           const SizedBox(height: 12),
 
-          // 🔹 Thumbnails (Horizontal Scrollable)
+          // 🔹 Thumbnails
           SizedBox(
             height: 100,
             child: ListView.builder(
@@ -145,6 +190,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                   onTap: () {
                     setState(() {
                       selectedImageIndex = index;
+                      _pageController.animateToPage(
+                        index,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                      );
                     });
                   },
                   child: Container(
@@ -173,7 +223,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
           ),
 
           const SizedBox(height: 12),
-          // title and price
+
+          // 🔹 Title and Price
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Column(
@@ -181,57 +232,32 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
               children: [
                 Text(
                   widget.product.getTitle(),
-                  style: const TextStyle(
-                      fontSize: 25,
-                      color: Colors.blue,
-                      fontWeight: FontWeight.w600),
+                  style: theme.titleLarge?.copyWith(
+                      color: Colors.blue[700], fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 10),
                 Text(
                   widget.product.price,
-                  style: const TextStyle(
-                      fontSize: 25, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 24),
-
-                // 🔹 Add to Cart Button
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: _addToCart,
-                    icon: const Icon(Icons.shopping_cart),
-                    label: const Text("Add to Cart"),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      textStyle: const TextStyle(fontSize: 18),
-                    ),
-                  ),
+                  style: theme.titleLarge?.copyWith(
+                      color: Colors.orange[700], fontWeight: FontWeight.bold),
                 ),
 
-                // Product Description Section
-                const SizedBox(height: 24),
-                const Text(
+                const SizedBox(height: 10),
+                Text(
                   "Product Description",
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: theme.titleMedium
+                      ?.copyWith(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
                 const SizedBox(height: 8),
                 ExpandableText(
                   description: widget.product.description,
                 ),
 
-                // product details
                 const SizedBox(height: 24),
-                const Text(
+                Text(
                   "Product Details",
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: theme.titleMedium
+                      ?.copyWith(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
                 const SizedBox(height: 8),
                 ExpandableProductDetails(

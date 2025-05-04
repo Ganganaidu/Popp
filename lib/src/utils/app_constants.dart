@@ -5,7 +5,7 @@ class Constants {
   static const String appName = 'POPP';
 
   static const String home = 'Home';
-  static const String search = 'Search';
-  static const String help = 'Help';
-  static const String service = 'Service';
+  static const String rides = 'Rides';
+  static const String routes = 'Routes';
+  static const String chat = 'Chat';
 }

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import '../bikes/product_details_screen.dart';
+
 import '../home/dashboard_screen.dart';
 import '../home/help_screen.dart';
 import '../home/our_services.dart';
-import '../models/product.dart';
+import '../products/explore_products_screen.dart';
 import '../toolbar/tab_navigator_observer.dart';
+import 'nav_router.dart';
 
 class NavHelper {
   // Singleton instance
@@ -15,8 +16,11 @@ class NavHelper {
     return _instance;
   }
 
-  VoidCallback? navigationChangeListener;
+  // Listener to update AppBar title
   void Function(String)? updateAppBarTitle;
+
+  // Listener to notify HomeScreen on navigation changes
+  void Function()? navigationChangeListener;
 
   // Private constructor
   NavHelper._internal() {
@@ -28,15 +32,9 @@ class NavHelper {
     GlobalKey<NavigatorState>(),
     GlobalKey<NavigatorState>(),
     GlobalKey<NavigatorState>(),
+    GlobalKey<NavigatorState>(),
+    GlobalKey<NavigatorState>(),
   ];
-
-  // Define routes for each tab
-  final Map<String, WidgetBuilder> routes = {
-    '/vehicleDetails': (context) {
-      final product = ModalRoute.of(context)!.settings.arguments as Product;
-      return ProductDetailScreen(product: product);
-    },
-  };
 
   static const List<String> widgetTitles = <String>[
     'Dashboard',
@@ -52,7 +50,9 @@ class NavHelper {
     widgetOptions = <Widget>[
       buildNavigator(0, const DashboardScreen()),
       buildNavigator(1, const OurServices()),
-      buildNavigator(2, const HelpScreen()),
+      buildNavigator(2, const ExploreProductsScreen()),
+      buildNavigator(3, const HelpScreen()),
+      buildNavigator(4, const OurServices()),
     ];
   }
 
@@ -62,6 +62,7 @@ class NavHelper {
       key: navigatorKeys[index],
       observers: [
         TabNavigatorObserver(onNavigationChanged: () {
+          // Notify HomeScreen
           navigationChangeListener?.call();
         }),
       ],

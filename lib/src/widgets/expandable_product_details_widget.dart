@@ -7,25 +7,30 @@ class ExpandableProductDetails extends StatefulWidget {
   const ExpandableProductDetails({super.key, required this.product});
 
   @override
-  State<ExpandableProductDetails> createState() => _ExpandableProductDetailsState();
+  State<ExpandableProductDetails> createState() =>
+      _ExpandableProductDetailsState();
 }
 
-class _ExpandableProductDetailsState extends State<ExpandableProductDetails> with SingleTickerProviderStateMixin {
+class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
+    with SingleTickerProviderStateMixin {
   bool isExpanded = false;
 
   @override
   Widget build(BuildContext context) {
     final product = widget.product;
+    final theme = Theme.of(context).textTheme;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Always Visible Important Fields
-        detailRow("Features", product.features),
-        detailRow("Manufacturing Date", _formatDate(product.mfgDate)),
-        detailRow("Expected Price", "₹${product.expectedPrice.toStringAsFixed(2)}"),
-        detailRow("Price Negotiable", product.isPriceNegotiable ? "Yes" : "No"),
-        detailRow("Registration Place", product.registrationPlace),
+        detailRow("Features", product.features, theme),
+        detailRow("Manufacturing Date", _formatDate(product.mfgDate), theme),
+        detailRow("Expected Price",
+            "₹${product.expectedPrice.toStringAsFixed(2)}", theme),
+        detailRow("Price Negotiable", product.isPriceNegotiable ? "Yes" : "No",
+            theme),
+        detailRow("Registration Place", product.registrationPlace, theme),
 
         const SizedBox(height: 8),
 
@@ -39,21 +44,29 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails> wit
                 : const BoxConstraints(maxHeight: 0),
             child: Column(
               children: [
-                detailRow("City", product.city),
-                detailRow("State", product.state),
-                detailRow("Invoice Available", product.invoiceAvailable ? "Yes" : "No"),
-                detailRow("Registration Date", _formatDate(product.registrationDate)),
-                detailRow("NOC Available", product.nocAvailable ? "Yes" : "No"),
-                detailRow("Insurance Available", product.insuranceAvailable ? "Yes" : "No"),
-                detailRow("Insurance Type", product.insuranceType),
-                detailRow("Insurance Validity", product.insuranceValidity),
-                detailRow("PUC Available", product.pucAvailable ? "Yes" : "No"),
-                detailRow("Battery Condition", product.batteryCondition),
-                detailRow("Tyre Condition", product.tyreCondition),
-                detailRow("Current Ownership No", product.currentOwnershipNo.toString()),
-                detailRow("Purchase Date", _formatDate(product.purchaseDate)),
-                detailRow("Seller Name", product.sellerName),
-                detailRow("Seller Contact", product.sellerContactNumber),
+                detailRow("City", product.city, theme),
+                detailRow("State", product.state, theme),
+                detailRow("Invoice Available",
+                    product.invoiceAvailable ? "Yes" : "No", theme),
+                detailRow("Registration Date",
+                    _formatDate(product.registrationDate), theme),
+                detailRow("NOC Available", product.nocAvailable ? "Yes" : "No",
+                    theme),
+                detailRow("Insurance Available",
+                    product.insuranceAvailable ? "Yes" : "No", theme),
+                detailRow("Insurance Type", product.insuranceType, theme),
+                detailRow(
+                    "Insurance Validity", product.insuranceValidity, theme),
+                detailRow("PUC Available", product.pucAvailable ? "Yes" : "No",
+                    theme),
+                detailRow("Battery Condition", product.batteryCondition, theme),
+                detailRow("Tyre Condition", product.tyreCondition, theme),
+                detailRow("Current Ownership No",
+                    product.currentOwnershipNo.toString(), theme),
+                detailRow(
+                    "Purchase Date", _formatDate(product.purchaseDate), theme),
+                detailRow("Seller Name", product.sellerName, theme),
+                detailRow("Seller Contact", product.sellerContactNumber, theme),
               ],
             ),
           ),
@@ -83,13 +96,17 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails> wit
     );
   }
 
-  Widget detailRow(String title, String value) {
+  Widget detailRow(String title, String value, TextTheme theme) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(flex: 3, child: Text("$title:", style: const TextStyle(fontWeight: FontWeight.w600))),
+          Expanded(
+              flex: 3,
+              child: Text("$title:",
+                  style:
+                      theme.titleSmall?.copyWith(fontWeight: FontWeight.w600))),
           Expanded(flex: 5, child: Text(value)),
         ],
       ),
@@ -102,3 +119,4 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails> wit
   }
 }
 
+//  const TextStyle(fontWeight: FontWeight.w600)

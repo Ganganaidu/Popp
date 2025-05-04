@@ -4,6 +4,7 @@ import 'package:poppflutter/src/disclaimers/app_disclaimers.dart';
 import '../utils/app_loger.dart';
 import 'homewidgets/carousel_widget.dart';
 import 'homewidgets/dashboard_list_widget.dart';
+import 'homewidgets/pop_services_widgets.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -21,13 +22,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     AppLogger.d("Dashboard build context: $context");
-    return SingleChildScrollView(
+    return const SingleChildScrollView(
       // Wrap the entire content with SingleChildScrollView
       child: Column(
         children: [
-          const CarouselWidget(),
-          DashboardListViewWidget(context: context),
-          const Disclaimers(),
+          CarouselWidget(),
+          PopServicesWidgets(),
+          SizedBox(height: 20.0),
+          DashboardListViewWidget(),
+          Disclaimers(),
         ],
       ),
     );

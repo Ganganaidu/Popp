@@ -1,113 +1,113 @@
 import 'package:flutter/material.dart';
 import 'package:poppflutter/src/models/product.dart';
-import 'package:poppflutter/src/utils/build_extensions.dart';
-
 import '../../models/category.dart';
+import '../../utils/nav_router.dart';
 
-// https://medium.com/flutter-community/handling-network-calls-like-a-pro-in-flutter-31bd30c86be1
-
-class DashboardListViewWidget extends StatefulWidget {
-  final BuildContext context; // Receive the context here
-  const DashboardListViewWidget({super.key, required this.context});
-
-  @override
-  State<DashboardListViewWidget> createState() => _DashboardListViewWidget();
-}
-
-class _DashboardListViewWidget extends State<DashboardListViewWidget> {
-  @override
-  void dispose() {
-    super.dispose();
-  }
+class DashboardListViewWidget extends StatelessWidget {
+  const DashboardListViewWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: catList.length - 1,
-      itemBuilder: (context, index) {
-        return Container(
-          decoration: const BoxDecoration(color: Colors.white),
-          child: Column(
-            children: [
-              ListTile(
-                title: Text(catList[index].name,
-                    style: context.bodyMedium?.copyWith(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.black,
-                    )),
-              ),
-              SizedBox(
-                height: 230,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: productList.length,
-                  itemBuilder: (context, innerIndex) {
-                    return GestureDetector(
-                      onTap: () {
-                        // Navigate to vehicle details page here
-                        Navigator.of(widget.context).pushNamed(
-                            '/vehicleDetails',
-                            arguments: productList[innerIndex]);
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.all(0.0),
-                        child: Column(
-                          // Use a Column for vertical arrangement
-                          children: [
-                            Flexible(
-                                flex: 3, // flex is weight of the view
-                                child: Padding(
-                                  // Add padding to the second TextView
-                                  padding: const EdgeInsets.only(bottom: 8.0),
-                                  // Adjust padding values as needed
-                                  child: Image.network(
-                                    productList[innerIndex].imageUrls.first,
-                                    // Replace with your image URL
-                                    width: 100,
-                                    height: 130,
-                                    fit: BoxFit.cover,
-                                  ),
-                                )),
-                            Flexible(
-                                flex: 2,
-                                child: Padding(
-                                    // Add padding to the second TextView
-                                    padding: const EdgeInsets.only(bottom: 8.0),
-                                    // Adjust padding values as needed
-                                    child: SizedBox(
-                                      width: 150,
-                                      child: Text(
-                                          style: context.bodyMedium,
-                                          productList[innerIndex].brandName,
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                          textAlign: TextAlign.center),
-                                    ))),
-                            Flexible(
-                                flex: 1,
-                                child: Padding(
-                                  // Add padding to the second TextView
-                                  padding: const EdgeInsets.only(bottom: 8.0),
-                                  // Adjust padding values as needed
-                                  child: Text(
-                                    productList[innerIndex].price,
-                                    style: context.titleSmall,
-                                  ),
-                                )),
-                          ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: catList.take(catList.length - 1).map((category) {
+        return _CategorySection(
+          category: category,
+          products: productList,
+        );
+      }).toList(),
+    );
+  }
+}
+
+class _CategorySection extends StatelessWidget {
+  final Category category;
+  final List<Product> products;
+
+  const _CategorySection({
+    required this.category,
+    required this.products,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context).textTheme;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final itemWidth = screenWidth * 0.4;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            category.name,
+            style: theme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            height: itemWidth + 100,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: products.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 12),
+              itemBuilder: (context, index) {
+                final product = products[index];
+                return SizedBox(
+                  width: itemWidth,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Image card with ripple and hero
+                      Card(
+                        elevation: 2,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: InkWell(
+                          onTap: () => onProductTap(context, product),
+                          child: Hero(
+                            tag: product.productId, // Unique tag for Hero
+                            child: SizedBox(
+                              height: itemWidth,
+                              width: itemWidth,
+                              child: Image.network(
+                                product.imageUrls.first,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                    );
-                  },
-                ),
-              ),
-            ],
+                      const SizedBox(height: 8),
+                      // Brand name (center aligned)
+                      Text(
+                        product.getTitle(),
+                        textAlign: TextAlign.center,
+                        style: theme.titleMedium,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      // Price (center aligned)
+                      Text(
+                        product.price,
+                        textAlign: TextAlign.center,
+                        style: theme.titleMedium?.copyWith(
+                          color: Colors.orange[700],
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 }

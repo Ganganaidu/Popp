@@ -39,6 +39,7 @@ class _ExpandableTextState extends State<ExpandableText> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context).textTheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -47,7 +48,8 @@ class _ExpandableTextState extends State<ExpandableText> {
           key: _textKey,
           maxLines: isExpanded ? null : maxLines,
           overflow: TextOverflow.fade,
-          style: const TextStyle(fontSize: 16),
+          style: theme.titleMedium
+              ?.copyWith(fontWeight: FontWeight.normal),
         ),
         if (isLongText)
           TextButton(

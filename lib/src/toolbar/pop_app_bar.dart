@@ -63,12 +63,6 @@ class PopAppBar extends StatelessWidget implements PreferredSizeWidget {
             },
           ),
           IconButton(
-            icon: const Icon(Icons.shopping_cart),
-            onPressed: () {
-              // Cart logic here
-            },
-          ),
-          IconButton(
             icon: const Icon(Icons.account_box),
             onPressed: () {
               Navigator.push(

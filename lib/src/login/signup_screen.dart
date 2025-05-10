@@ -92,14 +92,14 @@ class SignupScreen extends StatelessWidget {
                     padding: const EdgeInsets.only(top: 3, left: 3),
                     child: ElevatedButton(
                       onPressed: () {},
-                      child: const Text(
-                        "Sign up",
-                        style: TextStyle(fontSize: 20, color: Colors.white),
-                      ),
                       style: ElevatedButton.styleFrom(
                         shape: const StadiumBorder(),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         backgroundColor: context.primary,
+                      ),
+                      child: const Text(
+                        "Sign up",
+                        style: TextStyle(fontSize: 20, color: Colors.white),
                       ),
                     )),
                 const Center(child: Text("Or")),

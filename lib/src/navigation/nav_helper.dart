@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../chat/customer_chat_screen.dart';
 import '../home/dashboard_screen.dart';
 import '../home/help_screen.dart';
 import '../home/our_services.dart';
@@ -52,7 +53,7 @@ class NavHelper {
       buildNavigator(1, const OurServices()),
       buildNavigator(2, const ExploreProductsScreen()),
       buildNavigator(3, const HelpScreen()),
-      buildNavigator(4, const OurServices()),
+      buildNavigator(4, const CustomerChatScreen()),
     ];
   }
 

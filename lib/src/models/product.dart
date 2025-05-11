@@ -1,11 +1,14 @@
+import 'package:poppflutter/src/models/pop_user.dart';
+
 class Product {
-  final String profileId;
+  final PopUser user;
   final String productId;
   final String categoryId;
   final String brandName;
   final String modelName;
   final String price;
-  final List<String> imageUrls;
+  final String imageUrl;
+  final List<String> thumbImageUrls;
   final String description;
   final String features;
   final DateTime? mfgDate;
@@ -30,7 +33,7 @@ class Product {
   bool isFavorite;
 
   Product(
-      {required this.profileId,
+      {required this.user,
       required this.productId,
       required this.categoryId,
       required this.brandName,
@@ -56,13 +59,14 @@ class Product {
       required this.currentOwnershipNo,
       this.purchaseDate,
       required this.sellerName,
-      required this.imageUrls,
+      required this.imageUrl,
+      required this.thumbImageUrls,
       required this.sellerContactNumber,
       required this.isFavorite});
 
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
-      profileId: json['profileId'],
+      user: json['userId'],
       productId: json['productId'],
       categoryId: json['categoryId'],
       brandName: json['brandName'],
@@ -92,7 +96,8 @@ class Product {
           ? DateTime.parse(json['purchaseDate'])
           : null,
       sellerName: json['sellerName'],
-      imageUrls: json['imageUrl'],
+      imageUrl: json['imageUrl'],
+      thumbImageUrls: json['thumbImageUrls'],
       sellerContactNumber: json['sellerContactNumber'],
       isFavorite: json['isFavorite'],
     );
@@ -124,7 +129,8 @@ class Product {
       'purchaseDate': purchaseDate?.toIso8601String(),
       'sellerName': sellerName,
       'sellerContactNumber': sellerContactNumber,
-      'imageUrl': imageUrls,
+      'imageUrl': imageUrl,
+      'thumbImageUrls': thumbImageUrls,
       'isFavorite': isFavorite,
     };
   }
@@ -136,14 +142,15 @@ class Product {
 
 List<Product> productList = [
   Product(
-      profileId: '010101',
+      user: PopUser(displayName: "displayName", uid: "uid"),
       productId: 'P001',
       categoryId: 'C001',
       price: "123,000",
       brandName: 'Honda',
       modelName: 'Activa 6G',
-      imageUrls: [
-        'https://images.unsplash.com/photo-1622185135505-2d795003994a?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+      imageUrl:
+          "https://images.unsplash.com/photo-1622185135505-2d795003994a?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      thumbImageUrls: [
         'https://images.unsplash.com/photo-1611429532458-f8bf8f6121fe?q=80&w=3079&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
         'https://images.unsplash.com/photo-1622185135825-d34b40aa03ef?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
         'https://images.unsplash.com/photo-1643111441058-24775743af1c?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
@@ -174,13 +181,15 @@ List<Product> productList = [
       sellerContactNumber: '9876543210',
       isFavorite: true),
   Product(
-      profileId: '010101',
+      user: PopUser(displayName: "displayName", uid: "uid"),
       productId: 'P002',
       categoryId: 'C001',
       price: "123,000",
       brandName: 'Hero',
       modelName: 'Splendor Plus',
-      imageUrls: [
+      imageUrl:
+          "https://images.unsplash.com/photo-1622185135505-2d795003994a?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      thumbImageUrls: [
         'https://images.unsplash.com/photo-1622185135825-d34b40aa03ef?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
         'https://images.unsplash.com/photo-1622185135505-2d795003994a?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
         'https://images.unsplash.com/photo-1611429532458-f8bf8f6121fe?q=80&w=3079&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
@@ -210,13 +219,15 @@ List<Product> productList = [
       sellerContactNumber: '8765432109',
       isFavorite: false),
   Product(
-      profileId: '010101',
+      user: PopUser(displayName: "displayName", uid: "uid"),
       productId: 'P003',
       price: "123,000",
       categoryId: 'C002',
       brandName: 'Maruti Suzuki',
       modelName: 'Swift Dzire',
-      imageUrls: [
+      imageUrl:
+          "https://images.unsplash.com/photo-1622185135505-2d795003994a?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      thumbImageUrls: [
         'https://images.unsplash.com/photo-1643111441058-24775743af1c?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
         'https://images.unsplash.com/photo-1622185135505-2d795003994a?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
         'https://images.unsplash.com/photo-1611429532458-f8bf8f6121fe?q=80&w=3079&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',

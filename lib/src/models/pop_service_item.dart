@@ -27,29 +27,29 @@ final List<PopServiceItem> items = [
   PopServiceItem(
       imageUrl: null,
       title: 'Sell your bike',
-      assetImageUrl: "assets/prem_bikes.png"),
+      assetImageUrl: "assets/sell_your_bike.png"),
   PopServiceItem(
       imageUrl: null,
       title: 'Sell your accessory',
-      assetImageUrl: "assets/prem_bikes.png"),
+      assetImageUrl: "assets/sell_your_accessories.png"),
   PopServiceItem(
       imageUrl: null,
       title: 'Book your service',
-      assetImageUrl: "assets/prem_bikes.png"),
+      assetImageUrl: "assets/book_your_services.png"),
   PopServiceItem(
       imageUrl: null,
       title: 'Book track day & Training ',
-      assetImageUrl: "assets/prem_bikes.png"),
+      assetImageUrl: "assets/book_track_trainings.png"),
   PopServiceItem(
       imageUrl: null,
       title: 'Find bike rentals',
-      assetImageUrl: "assets/prem_bikes.png"),
+      assetImageUrl: "assets/find_bike_rentals.png"),
   PopServiceItem(
       imageUrl: null,
       title: 'List your services',
-      assetImageUrl: "assets/prem_bikes.png"),
+      assetImageUrl: "assets/list_your_services.png"),
   PopServiceItem(
       imageUrl: null,
       title: 'Premium Bike Inspection',
-      assetImageUrl: "assets/prem_bikes.png"),
+      assetImageUrl: "assets/premium_bike_inspections.png"),
 ];

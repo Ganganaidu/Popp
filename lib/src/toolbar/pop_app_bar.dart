@@ -57,18 +57,18 @@ class PopAppBar extends StatelessWidget implements PreferredSizeWidget {
         centerTitle: true,
         actions: <Widget>[
           IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              showSearch(context: context, delegate: SearchScreen());
-            },
-          ),
-          IconButton(
             icon: const Icon(Icons.account_box),
             onPressed: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const LoginScreen()),
               );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              showSearch(context: context, delegate: SearchScreen());
             },
           ),
         ],

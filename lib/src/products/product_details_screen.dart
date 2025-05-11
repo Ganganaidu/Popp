@@ -3,7 +3,6 @@ import 'package:poppflutter/src/models/product.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../navigation/nav_helper.dart';
 import '../widgets/expandable_product_details_widget.dart';
 import '../widgets/expandable_text_widget.dart';
 
@@ -72,7 +71,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
     return useHero
         ? Hero(
-            tag: widget.product.imageUrls.first,
+            tag: widget.product.imageUrl,
             child: imageWidget,
           )
         : imageWidget;
@@ -93,14 +92,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 width: double.infinity,
                 child: PageView.builder(
                   controller: _pageController,
-                  itemCount: widget.product.imageUrls.length,
+                  itemCount: widget.product.thumbImageUrls.length,
                   onPageChanged: (index) {
                     setState(() {
                       selectedImageIndex = index;
                     });
                   },
                   itemBuilder: (context, index) {
-                    final url = widget.product.imageUrls[index];
+                    final url = widget.product.thumbImageUrls[index];
                     return _buildImage(
                       url,
                       useHero: index == 0,
@@ -134,7 +133,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children:
-                    List.generate(widget.product.imageUrls.length, (index) {
+                    List.generate(widget.product.thumbImageUrls.length, (index) {
                       bool isActive = index == selectedImageIndex;
                       return AnimatedContainer(
                         duration: const Duration(milliseconds: 300),
@@ -163,7 +162,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    '${selectedImageIndex + 1} / ${widget.product.imageUrls.length}',
+                    '${selectedImageIndex + 1} / ${widget.product.thumbImageUrls.length}',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 14,
@@ -182,10 +181,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             height: 100,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              itemCount: widget.product.imageUrls.length,
+              itemCount: widget.product.thumbImageUrls.length,
               padding: const EdgeInsets.symmetric(horizontal: 12),
               itemBuilder: (context, index) {
-                final url = widget.product.imageUrls[index];
+                final url = widget.product.thumbImageUrls[index];
                 return GestureDetector(
                   onTap: () {
                     setState(() {

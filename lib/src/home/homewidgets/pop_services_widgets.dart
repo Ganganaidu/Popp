@@ -49,37 +49,19 @@ class PopServicesWidgets extends StatelessWidget {
                     children: [
                       Hero(
                         tag: 'service-image-${popServices.title}', // Unique tag
-                        child: ClipOval(
-                          child: SizedBox(
-                            width: 100,
-                            height: 100,
-                            child: hasValidUrl
-                                ? Image.network(
-                              imageUrl,
-                              fit: BoxFit.cover,
-                              loadingBuilder: (context, child, loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return Shimmer.fromColors(
-                                  baseColor: Colors.grey.shade300,
-                                  highlightColor: Colors.grey.shade100,
-                                  child: Container(
-                                    width: 100,
-                                    height: 100,
-                                    color: Colors.white,
-                                  ),
-                                );
-                              },
-                              errorBuilder: (context, error, stackTrace) {
-                                return Image.asset(
-                                  popServices.assetImageUrl,
-                                  fit: BoxFit.cover,
-                                );
-                              },
-                            )
-                                : Image.asset(
-                              popServices.assetImageUrl,
-                              fit: BoxFit.cover,
-                            ),
+                        child: Container(
+                          width: 100,
+                          height: 100,
+                          decoration: const BoxDecoration(
+                            color: Colors.white70,
+                            shape: BoxShape.circle,
+                          ),
+                          padding: const EdgeInsets.all(12),
+                          // adjust padding as needed
+                          child: Image.asset(
+                            popServices.assetImageUrl,
+                            fit: BoxFit
+                                .contain, // contain keeps it centered and scaled
                           ),
                         ),
                       ),

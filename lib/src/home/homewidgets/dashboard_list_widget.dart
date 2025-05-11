@@ -73,7 +73,7 @@ class _CategorySection extends StatelessWidget {
                               height: itemWidth,
                               width: itemWidth,
                               child: Image.network(
-                                product.imageUrls.first,
+                                product.imageUrl,
                                 fit: BoxFit.cover,
                               ),
                             ),

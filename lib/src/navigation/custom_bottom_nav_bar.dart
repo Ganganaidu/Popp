@@ -92,7 +92,7 @@ class CustomBottomNavBar extends StatelessWidget {
               ),
               child: const Center(
                 child: Icon(
-                  Icons.store,
+                  Icons.search_sharp,
                   color: Colors.white,
                   size: 32,
                 ),

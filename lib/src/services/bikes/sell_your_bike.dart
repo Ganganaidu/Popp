@@ -17,7 +17,6 @@ class _SellYourBikeState extends State<SellYourBike> {
   final TextEditingController sellerContactController = TextEditingController();
   final TextEditingController modelNameController = TextEditingController();
   final TextEditingController cityController = TextEditingController();
-  final List<XFile> _images = [];
 
   String selectedCountryCode = "+91";
   String? selectedBrand;
@@ -51,16 +50,6 @@ class _SellYourBikeState extends State<SellYourBike> {
                     setState(() => selectedCountryCode = val),
                 onBrandChanged: (val) => setState(() => selectedBrand = val),
                 onStateChanged: (val) => setState(() => selectedState = val),
-              ),
-              const SizedBox(height: 16.0),
-              ImagePickerSection(
-                images: _images,
-                onImagesChanged: (imgs) {
-                  setState(() {
-                    _images.clear();
-                    _images.addAll(imgs);
-                  });
-                },
               ),
             ],
           ),

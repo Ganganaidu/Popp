@@ -1,4 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:poppflutter/src/utils/app_loger.dart';
+
+import '../models/category.dart';
 
 /// Saves a list of products associated with a specific category to Firestore.
 ///
@@ -22,15 +26,24 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 ///   "Premium Bikes",
 ///   premiumBikesProducts,
 /// );
-Future<void> saveCategoryProducts(String categoryId, String categoryName,
-    List<Map<String, dynamic>> products) async {
-  await FirebaseFirestore.instance
-      .collection('category_products')
-      .doc(categoryId)
-      .set({
-    'categoryId': categoryId,
-    'categoryName': categoryName,
-    'products': products,
-    'updatedAt': FieldValue.serverTimestamp(),
-  });
+
+Future<bool> saveCategoryProducts({
+  required String categoryId,
+  required String categoryName,
+  required Map<String, dynamic> products,
+}) async {
+  try {
+    await FirebaseFirestore.instance.collection('category_products').add({
+      ...products,
+      'userId': '',
+      'categoryId': categoryId,
+      'categoryName': categoryName,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+    return true;
+  } catch (e) {
+    AppLogger.d("Error submitting form: $e");
+    return false;
+  }
 }
+

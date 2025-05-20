@@ -8,4 +8,5 @@ class Constants {
   static const String rides = 'Rides';
   static const String routes = 'Routes';
   static const String chat = 'Chat';
+  static const String explore = 'Explore';
 }

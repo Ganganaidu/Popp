@@ -1,9 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../models/pop_service_item.dart';
+import '../../services/bikes/sell_your_bike.dart';
 
 class PopServicesWidgets extends StatelessWidget {
   const PopServicesWidgets({super.key});
+
+  void _handleAction(BuildContext context, PopServiceAction action) {
+    switch (action) {
+      case PopServiceAction.sellBike:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const SellYourBike()),
+        );
+        break;
+      case PopServiceAction.buyBike:
+        // Add more actions if needed
+        break;
+      case PopServiceAction.rentBike:
+        // TODO: Handle this case.
+        throw UnimplementedError();
+      case PopServiceAction.viewRoutes:
+        // TODO: Handle this case.
+        throw UnimplementedError();
+      case PopServiceAction.viewRides:
+        // TODO: Handle this case.
+        throw UnimplementedError();
+      case PopServiceAction.contactSupport:
+        // TODO: Handle this case.
+        throw UnimplementedError();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,8 +55,6 @@ class PopServicesWidgets extends StatelessWidget {
             itemCount: items.length,
             itemBuilder: (context, index) {
               final popServices = items[index];
-              final imageUrl = popServices.imageUrl;
-              final hasValidUrl = imageUrl != null && imageUrl.isNotEmpty;
 
               return Padding(
                 padding: EdgeInsets.only(
@@ -37,18 +62,14 @@ class PopServicesWidgets extends StatelessWidget {
                   right: 16.0,
                 ),
                 child: InkWell(
-                  onTap: () {
-                    // TODO Navigate or perform an action
-                  },
+                  onTap: () => _handleAction(context, popServices.action),
                   splashColor: Colors.grey.shade300,
-                  // Ripple color
                   borderRadius: BorderRadius.circular(12),
-                  // Optional, to match your design
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Hero(
-                        tag: 'service-image-${popServices.title}', // Unique tag
+                        tag: 'service-image-${popServices.title}',
                         child: Container(
                           width: 100,
                           height: 100,
@@ -57,11 +78,9 @@ class PopServicesWidgets extends StatelessWidget {
                             shape: BoxShape.circle,
                           ),
                           padding: const EdgeInsets.all(12),
-                          // adjust padding as needed
                           child: Image.asset(
                             popServices.assetImageUrl,
-                            fit: BoxFit
-                                .contain, // contain keeps it centered and scaled
+                            fit: BoxFit.contain,
                           ),
                         ),
                       ),
@@ -73,8 +92,7 @@ class PopServicesWidgets extends StatelessWidget {
                           textAlign: TextAlign.center,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: theme.titleSmall
-                              ?.copyWith(fontWeight: FontWeight.bold),
+                          style: theme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],

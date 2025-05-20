@@ -42,6 +42,7 @@ extension BuildContextEntension<T> on BuildContext {
   TextStyle? get labelLarge => Theme.of(this).textTheme.labelLarge;
 
   TextStyle? get bodySmall => Theme.of(this).textTheme.bodySmall;
+
   TextStyle? get bodyMedium => Theme.of(this).textTheme.bodyMedium;
 
   TextStyle? get titleTextStyle => Theme.of(this).appBarTheme.titleTextStyle;
@@ -121,4 +122,23 @@ extension BuildContextEntension<T> on BuildContext {
       ),
     );
   }
+
+  InputDecoration inputDecoration(String label, String hint) => InputDecoration(
+        labelStyle: const TextStyle(fontSize: 18),
+        labelText: label,
+        hintText: hint,
+        hintStyle: const TextStyle(color: Colors.grey),
+        floatingLabelBehavior: FloatingLabelBehavior.always,
+        filled: true,
+        fillColor: Colors.white,
+        enabledBorder: const OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.grey),
+        ),
+        focusedBorder: const OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.grey, width: 1.5),
+        ),
+        border: const OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.grey),
+        ),
+      );
 }

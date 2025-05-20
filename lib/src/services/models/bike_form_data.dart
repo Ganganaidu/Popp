@@ -26,7 +26,7 @@ const List<String> bikeBrands = [
 
 const List<String> countryCodes = ["+91", "+1"];
 
-const List<String> yesNoNA = ["YES", "NO", "N/A"];
+const List<String> yesNoNA = ["Yes", "No"];
 
 const List<String> stateNames = [
   'Andhra Pradesh',

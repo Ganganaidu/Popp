@@ -1,8 +1,10 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:poppflutter/src/utils/build_extensions.dart';
 
+import '../../models/category.dart';
+import '../../widgets/custom_dropdown_field.dart';
 import '../../widgets/month_year_picker.dart';
-import '../../widgets/yes_no_radio_field.dart';
 import '../models/bike_form_data.dart';
 
 class SellerBikeDetailsForm extends StatefulWidget {
@@ -19,8 +21,6 @@ class SellerBikeDetailsForm extends StatefulWidget {
   final TextEditingController? kmDrivenController;
   final TextEditingController? priceController;
   final TextEditingController? additionalDetailsController;
-  final String? nocAvailable;
-  final String? insuranceAvailable;
   final String? insuranceType;
   final Function(String?)? onInvoiceChanged;
   final Function(String?)? onNocChanged;
@@ -41,8 +41,6 @@ class SellerBikeDetailsForm extends StatefulWidget {
       this.kmDrivenController,
       this.priceController,
       this.additionalDetailsController,
-      this.nocAvailable,
-      this.insuranceAvailable,
       this.insuranceType,
       this.onInvoiceChanged,
       this.onNocChanged,
@@ -57,25 +55,32 @@ class SellerBikeDetailsForm extends StatefulWidget {
 class _SellerBikeDetailsFormState extends State<SellerBikeDetailsForm> {
   final _formKey = GlobalKey<FormState>();
   DateTime? _selectedManufactureDate;
-  String? _isFirstOwner;
-  String? _isInvoiceAvailable;
+  String? _areYouFirstOwner;
+  String? _invoiceAvailable;
+  String? _nocAvailable;
+  String? _insuranceAvailable;
 
   void _submitForm() async {
     if (_formKey.currentState!.validate()) {
       final formData = {
+        'user_id': '',
+        'category_id': catList[0].categoryId,
+        'category_name': catList[0].name,
         'sellerName': widget.sellerNameController.text,
         'contactNumber':
             '${widget.selectedCountryCode} ${widget.sellerContactController.text}',
         'brand': widget.selectedBrand,
         'modelName': widget.modelNameController.text,
+        'state': widget.selectedState,
         'city': widget.cityController.text,
         'kmDriven': widget.kmDrivenController?.text,
         'price': widget.priceController?.text,
+        'expectedPrice': widget.priceController?.text,
         'additionalDetails': widget.additionalDetailsController?.text,
-        'firstOwner': _isFirstOwner,
-        'invoiceAvailable': _isInvoiceAvailable,
-        'nocAvailable': widget.nocAvailable,
-        'insuranceAvailable': widget.insuranceAvailable,
+        'firstOwner': _areYouFirstOwner,
+        'invoiceAvailable': _invoiceAvailable,
+        'nocAvailable': _nocAvailable,
+        'insuranceAvailable': _insuranceAvailable,
         'insuranceType': widget.insuranceType,
         'createdAt': FieldValue.serverTimestamp(),
       };
@@ -101,29 +106,6 @@ class _SellerBikeDetailsFormState extends State<SellerBikeDetailsForm> {
 
   @override
   Widget build(BuildContext context) {
-    final List<String> countryCodes = ["+91", "+1", "+44"];
-    final List<String> yesNoNA = ["YES", "NO", "N/A"];
-
-    InputDecoration inputDecoration(String label, String hint) =>
-        InputDecoration(
-          labelStyle: const TextStyle(fontSize: 18),
-          labelText: label,
-          hintText: hint,
-          hintStyle: const TextStyle(color: Colors.grey),
-          floatingLabelBehavior: FloatingLabelBehavior.always,
-          filled: true,
-          fillColor: Colors.white,
-          enabledBorder: const OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.grey),
-          ),
-          focusedBorder: const OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.grey, width: 1.5),
-          ),
-          border: const OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.grey),
-          ),
-        );
-
     return SingleChildScrollView(
       child: Form(
         key: _formKey,
@@ -134,8 +116,8 @@ class _SellerBikeDetailsFormState extends State<SellerBikeDetailsForm> {
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: TextFormField(
                 controller: widget.sellerNameController,
-                decoration:
-                    inputDecoration("Seller Name", "Enter your full name"),
+                decoration: context.inputDecoration(
+                    "Seller Name", "Enter your full name"),
                 validator: (val) => val!.isEmpty ? "Required" : null,
               ),
             ),
@@ -155,7 +137,7 @@ class _SellerBikeDetailsFormState extends State<SellerBikeDetailsForm> {
                   Expanded(
                     child: TextFormField(
                       controller: widget.sellerContactController,
-                      decoration: inputDecoration(
+                      decoration: context.inputDecoration(
                           "Contact Number", "Enter phone number"),
                       validator: (val) => val!.isEmpty ? "Required" : null,
                     ),
@@ -167,7 +149,8 @@ class _SellerBikeDetailsFormState extends State<SellerBikeDetailsForm> {
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: DropdownButtonFormField<String>(
                 value: widget.selectedBrand,
-                decoration: inputDecoration("Brand Name", "Choose brand"),
+                decoration:
+                    context.inputDecoration("Brand Name", "Choose brand"),
                 items: bikeBrands
                     .map((b) => DropdownMenuItem(value: b, child: Text(b)))
                     .toList(),
@@ -179,8 +162,8 @@ class _SellerBikeDetailsFormState extends State<SellerBikeDetailsForm> {
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: TextFormField(
                 controller: widget.modelNameController,
-                decoration:
-                    inputDecoration("Model Name", "e.g. TRIUMPH Tiger 1200"),
+                decoration: context.inputDecoration(
+                    "Model Name", "e.g. TRIUMPH Tiger 1200"),
                 validator: (val) => val!.isEmpty ? "Required" : null,
               ),
             ),
@@ -214,7 +197,8 @@ class _SellerBikeDetailsFormState extends State<SellerBikeDetailsForm> {
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: DropdownButtonFormField<String>(
                 value: widget.selectedState,
-                decoration: inputDecoration("State", "Select your state"),
+                decoration:
+                    context.inputDecoration("State", "Select your state"),
                 items: stateNames
                     .map((state) =>
                         DropdownMenuItem(value: state, child: Text(state)))
@@ -227,53 +211,52 @@ class _SellerBikeDetailsFormState extends State<SellerBikeDetailsForm> {
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: TextFormField(
                 controller: widget.cityController,
-                decoration: inputDecoration("City", "Enter city name"),
+                decoration: context.inputDecoration("City", "Enter city name"),
                 validator: (val) => val!.isEmpty ? "Required" : null,
               ),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: YesNoRadioField(
+              child: CustomDropdownField(
                 label: 'Are you the first owner?',
-                value: _isFirstOwner,
-                onChanged: (val) {
-                  setState(() {
-                    _isFirstOwner = val;
-                  });
-                },
+                labelDesc: "Tap to select",
+                value: _areYouFirstOwner,
+                options: yesNoNA,
+                onChanged: (val) => setState(() => _areYouFirstOwner = val),
+                validator: (val) =>
+                    val == null ? 'Please select ownership status' : null,
               ),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: YesNoRadioField(
-                label: 'Invoice available ?',
-                value: _isInvoiceAvailable,
-                onChanged: (val) {
-                  setState(() {
-                    _isInvoiceAvailable = val;
-                  });
-                },
+              child: CustomDropdownField(
+                label: 'Invoice available?',
+                labelDesc: "Tap to select",
+                value: _invoiceAvailable,
+                options: yesNoNA,
+                onChanged: (val) => setState(() => _invoiceAvailable = val),
+                validator: (val) =>
+                    val == null ? 'Please select Invoice availability' : null,
               ),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: YesNoRadioField(
-                label: 'NOC available ?',
-                options: const ['YES', 'NO', 'N/A'],
-                value: _isInvoiceAvailable,
-                onChanged: (val) {
-                  setState(() {
-                    _isInvoiceAvailable = val;
-                  });
-                },
+              child: CustomDropdownField(
+                label: 'NOC available?',
+                labelDesc: "Tap to select",
+                value: _nocAvailable,
+                options: yesNoNA,
+                onChanged: (val) => setState(() => _nocAvailable = val),
+                validator: (val) =>
+                    val == null ? 'Please select NOC status' : null,
               ),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: TextFormField(
                 controller: widget.kmDrivenController,
-                decoration:
-                    inputDecoration("KM Driven", "Enter kilometers driven"),
+                decoration: context.inputDecoration(
+                    "KM Driven", "Enter kilometers driven"),
                 validator: (val) => val!.isEmpty ? "Required" : null,
               ),
             ),
@@ -281,8 +264,8 @@ class _SellerBikeDetailsFormState extends State<SellerBikeDetailsForm> {
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: TextFormField(
                 controller: widget.priceController,
-                decoration:
-                    inputDecoration("Expected Price", "Enter expected price"),
+                decoration: context.inputDecoration(
+                    "Expected Price", "Enter expected price"),
                 validator: (val) => val!.isEmpty ? "Required" : null,
               ),
             ),
@@ -290,8 +273,8 @@ class _SellerBikeDetailsFormState extends State<SellerBikeDetailsForm> {
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: TextFormField(
                 controller: widget.additionalDetailsController,
-                decoration:
-                    inputDecoration("Additional Details", "Any extra info..."),
+                decoration: context.inputDecoration(
+                    "Additional Details", "Any extra info..."),
                 maxLines: 3,
               ),
             ),

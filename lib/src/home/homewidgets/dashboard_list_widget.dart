@@ -92,7 +92,7 @@ class _CategorySection extends StatelessWidget {
                       const SizedBox(height: 4),
                       // Price (center aligned)
                       Text(
-                        product.price,
+                        product.expectedPrice,
                         textAlign: TextAlign.center,
                         style: theme.titleMedium?.copyWith(
                           color: Colors.orange[700],

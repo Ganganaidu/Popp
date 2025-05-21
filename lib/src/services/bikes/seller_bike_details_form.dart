@@ -10,6 +10,7 @@ import 'package:uuid/uuid.dart';
 import '../../firebase/firebase_save_prodcuts_api.dart';
 import '../../gallery/pic_image_gallery.dart';
 import '../../models/category.dart';
+import '../../models/product.dart';
 import '../../widgets/custom_dropdown_field.dart';
 import '../../widgets/image_picker_selection.dart';
 import '../../widgets/month_year_picker.dart';
@@ -57,63 +58,82 @@ class SellerBikeDetailsForm extends StatefulWidget {
       this.selectedState});
 
   @override
-  State<SellerBikeDetailsForm> createState() => _SellerBikeDetailsFormState();
+  State<SellerBikeDetailsForm> createState() => SellerBikeDetailsFormState();
 }
 
-class _SellerBikeDetailsFormState extends State<SellerBikeDetailsForm> {
+class SellerBikeDetailsFormState extends State<SellerBikeDetailsForm> {
   final _formKey = GlobalKey<FormState>();
+
   DateTime? _selectedManufactureDate;
+  DateTime? _selectedRegistrationDate;
   String? _areYouFirstOwner;
   String? _invoiceAvailable;
   String? _nocAvailable;
   String? _insuranceAvailable;
+
   final List<File> _images = [];
   var productId = const Uuid().v4();
   bool _isLoading = false;
 
-  void _submitForm() async {
-    var userId = FirebaseAuth.instance.currentUser?.uid;
-    if (userId == null || userId.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please login before and try again')),
-      );
-      return;
-    }
+  void submitForm() async {
     if (_formKey.currentState!.validate()) {
+      var userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId == null || userId.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please login before and try again')),
+        );
+        return;
+      }
+
       setState(() {
         _isLoading = true; // Show progress indicator
       });
 
-      final uploadedImageUrls = uploadMultipleImages(_images, productId);
-      final formData = {
-        'userId': userId,
-        'productId': productId,
-        'categoryId': catList[0].categoryId,
-        'categoryName': catList[0].name,
-        'sellerName': widget.sellerNameController.text,
-        'contactNumber':
+      final uploadedImageUrls = await uploadMultipleImages(_images, productId);
+      if (!mounted) return;
+
+      if (uploadedImageUrls.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text(
+                  'Please at submit at least 3 images to proceed further')),
+        );
+        return;
+      }
+
+      Product newProduct = Product(
+        userId: userId,
+        productId: productId,
+        categoryId: catList[0].categoryId,
+        categoryName: catList[0].name,
+        sellerName: widget.sellerNameController.text,
+        sellerContactNumber:
             '${widget.selectedCountryCode} ${widget.sellerContactController.text}',
-        'brand': widget.selectedBrand,
-        'modelName': widget.modelNameController.text,
-        'state': widget.selectedState,
-        'city': widget.cityController.text,
-        'kmDriven': widget.kmDrivenController?.text,
-        'price': widget.priceController?.text,
-        'expectedPrice': widget.priceController?.text,
-        'additionalDetails': widget.additionalDetailsController?.text,
-        'firstOwner': _areYouFirstOwner,
-        'invoiceAvailable': _invoiceAvailable,
-        'nocAvailable': _nocAvailable,
-        'insuranceAvailable': _insuranceAvailable,
-        'insuranceType': widget.insuranceType,
-        'imageUrls': uploadedImageUrls,
-        'createdAt': FieldValue.serverTimestamp(),
-      };
+        brandName: widget.selectedBrand ?? "",
+        modelName: widget.modelNameController.text,
+        state: widget.selectedState ?? "",
+        city: widget.cityController.text,
+        kmDriven: widget.kmDrivenController?.text ?? "",
+        expectedPrice: widget.priceController?.text ?? "",
+        additionalDetails: widget.additionalDetailsController?.text ?? "",
+        firstOwner: _areYouFirstOwner,
+        invoiceAvailable: _invoiceAvailable,
+        nocAvailable: _nocAvailable,
+        insuranceAvailable: _insuranceAvailable,
+        insuranceType: widget.insuranceType ?? "",
+        imageUrl: uploadedImageUrls.first,
+        thumbImageUrls: uploadedImageUrls,
+        registrationDate: _selectedRegistrationDate,
+        registrationPlace: "",
+        mfgDate: _selectedManufactureDate,
+        createdAt: FieldValue
+            .serverTimestamp(), // Default for a new product, or based on user input
+      );
 
       final success = await saveCategoryProducts(
           categoryId: catList[0].categoryId,
           categoryName: catList[0].name,
-          products: formData);
+          products: newProduct.toJson());
 
       // Crucial check: Ensure the widget is still mounted before using context
       if (!mounted) return;
@@ -220,10 +240,10 @@ class _SellerBikeDetailsFormState extends State<SellerBikeDetailsForm> {
                 child: MonthYearPicker(
                   label: "Registration Date",
                   hint: "Select month and year",
-                  selectedDate: _selectedManufactureDate,
+                  selectedDate: _selectedRegistrationDate,
                   onDateSelected: (date) {
                     setState(() {
-                      _selectedManufactureDate = date;
+                      _selectedRegistrationDate = date;
                     });
                   },
                 ),
@@ -325,16 +345,7 @@ class _SellerBikeDetailsFormState extends State<SellerBikeDetailsForm> {
                     });
                   },
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16.0),
-                child: Center(
-                  child: ElevatedButton(
-                    onPressed: _submitForm,
-                    child: const Text("Submit Listing"),
-                  ),
-                ),
-              ),
+              )
             ],
           ),
         ),

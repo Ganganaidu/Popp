@@ -237,7 +237,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      widget.product.price,
+                      widget.product.expectedPrice,
                       style: theme.titleLarge?.copyWith(
                           color: Colors.orange[700],
                           fontWeight: FontWeight.bold),
@@ -251,7 +251,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     ),
                     const SizedBox(height: 8),
                     ExpandableText(
-                      description: widget.product.description,
+                      description: widget.product.additionalDetails,
                     ),
 
                     const SizedBox(height: 24),

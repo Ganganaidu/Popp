@@ -37,25 +37,32 @@ class NavHelper {
     GlobalKey<NavigatorState>(),
   ];
 
-  static const List<String> widgetTitles = <String>[
-    'Dashboard',
-    'Our Services',
-    'Help',
-  ];
-
   // List to hold the widget options
   late List<Widget> widgetOptions;
 
   // Method to initialize widgetOptions
+  // Method to initialize widgetOptions
   void initializeWidgetOptions() {
     widgetOptions = <Widget>[
-      buildNavigator(0, const DashboardScreen()),
-      buildNavigator(1, const OurServices()),
-      buildNavigator(2, const ExploreProductsScreen()),
-      buildNavigator(3, const HelpScreen()),
-      buildNavigator(4, const CustomerChatScreen()),
+      const DashboardScreen(),
+      const OurServices(),
+      const ExploreProductsScreen(),
+      const HelpScreen(),
+      const CustomerChatScreen(),
     ];
   }
+  
+  //
+  // // Method to initialize widgetOptions
+  // void initializeWidgetOptions() {
+  //   widgetOptions = <Widget>[
+  //     buildNavigator(0, const DashboardScreen()),
+  //     buildNavigator(1, const OurServices()),
+  //     buildNavigator(2, const ExploreProductsScreen()),
+  //     buildNavigator(3, const HelpScreen()),
+  //     buildNavigator(4, const CustomerChatScreen()),
+  //   ];
+  // }
 
   // Helper function to build a Navigator for each tab
   Widget buildNavigator(int index, Widget child) {

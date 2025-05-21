@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:poppflutter/src/services/bikes/seller_bike_details_form.dart';
 
+
 class SellYourBike extends StatefulWidget {
   const SellYourBike({super.key});
 
@@ -65,6 +66,7 @@ class _SellYourBikeState extends State<SellYourBike> with SingleTickerProviderSt
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(title: const Text('Sell Your Bike')),
       body: Column(
         children: [
           _buildAnimatedBanner(),

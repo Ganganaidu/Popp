@@ -1,7 +1,6 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
 import '../models/product.dart';
-import '../navigation/nav_helper.dart';
 import '../products/product_details_screen.dart';
 
 
@@ -15,9 +14,11 @@ final Map<String, WidgetBuilder> routes = {
 
 // call this from Dashboard_list_widget
 void onProductTap(BuildContext context, Product product) {
-  NavHelper().updateAppBarTitle?.call(product.getTitle());
-  Navigator.of(context).pushNamed(
-    '/productDetails',
-    arguments: product,
+  // NavHelper().updateAppBarTitle?.call(product.getTitle());
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => ProductDetailScreen(product: product),
+    ),
   );
 }

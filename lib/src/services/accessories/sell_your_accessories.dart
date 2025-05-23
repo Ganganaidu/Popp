@@ -41,7 +41,6 @@ class _SellYourAccessoriesState extends State<SellYourAccessories>
                   sellerContactController: sellerContactController,
                   modelNameController: modelNameController,
                   cityController: cityController,
-                  selectedBrand: selectedBrand,
                   selectedState: selectedState,
                   selectedCountryCode: selectedCountryCode,
                   onCountryCodeChanged: (val) =>

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:poppflutter/src/utils/build_extensions.dart';
-import 'dart:io' show Platform;
 import 'social_login_buttons.dart';
 
 class LoginScreen extends StatefulWidget {

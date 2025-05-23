@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:poppflutter/src/services/accessories/sell_your_accessories.dart';
-import 'package:shimmer/shimmer.dart';
 import '../../models/pop_service_item.dart';
 import '../../services/bikes/sell_your_bike.dart';
 
@@ -83,7 +82,7 @@ class PopServicesWidgets extends StatelessWidget {
                       SizedBox(
                         width: 100,
                         child: Text(
-                          popServices.title ?? '',
+                          popServices.title,
                           textAlign: TextAlign.center,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,

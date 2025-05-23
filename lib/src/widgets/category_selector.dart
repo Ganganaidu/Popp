@@ -1,6 +1,4 @@
-import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
-import 'package:poppflutter/src/utils/build_extensions.dart';
 
 import '../models/category.dart';
 import 'custom_dropdown_form_field.dart'; // <--- Your Category model

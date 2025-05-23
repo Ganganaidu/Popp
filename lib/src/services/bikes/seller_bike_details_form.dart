@@ -226,6 +226,7 @@ class SellerBikeDetailsFormState extends State<SellerBikeDetailsForm> {
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: MonthYearPicker(
+                  enable: true,
                   label: "Manufacture Date",
                   hint: "Select month and year",
                   selectedDate: _selectedManufactureDate,
@@ -239,6 +240,7 @@ class SellerBikeDetailsFormState extends State<SellerBikeDetailsForm> {
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: MonthYearPicker(
+                  enable: true,
                   label: "Registration Date",
                   hint: "Select month and year",
                   selectedDate: _selectedRegistrationDate,

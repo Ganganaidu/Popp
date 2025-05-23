@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 class MonthYearPicker extends StatelessWidget {
   final String label;
   final String hint;
+  final bool enable;
   final DateTime? selectedDate;
   final void Function(DateTime) onDateSelected;
 
@@ -10,6 +11,7 @@ class MonthYearPicker extends StatelessWidget {
     super.key,
     required this.label,
     required this.hint,
+    required this.enable,
     required this.selectedDate,
     required this.onDateSelected,
   });
@@ -114,6 +116,7 @@ class MonthYearPicker extends StatelessWidget {
       onTap: () => _selectMonthYear(context),
       child: InputDecorator(
         decoration: InputDecoration(
+          enabled: enable,
           labelText: label,
           hintText: hint,
           floatingLabelBehavior: FloatingLabelBehavior.always,

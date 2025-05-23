@@ -7,7 +7,7 @@ class AgentChatScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ChatService _chatService = ChatService();
+    final ChatService chatService = ChatService();
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -15,7 +15,7 @@ class AgentChatScreen extends StatelessWidget {
         title: const Text('Agent Chat Dashboard'),
       ),
       body: StreamBuilder<QuerySnapshot>(
-        stream: _chatService.getChatRooms(),
+        stream: chatService.getChatRooms(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
           final chatRooms = snapshot.data!.docs;

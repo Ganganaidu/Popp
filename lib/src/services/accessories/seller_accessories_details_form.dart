@@ -22,7 +22,6 @@ class SellerAccessoriesDetailsForm extends StatefulWidget {
   final TextEditingController sellerContactController;
   final TextEditingController modelNameController;
   final TextEditingController cityController;
-  final String? selectedBrand;
   final String selectedCountryCode;
   final String? selectedState;
   final Function(String) onCountryCodeChanged;
@@ -44,7 +43,6 @@ class SellerAccessoriesDetailsForm extends StatefulWidget {
       required this.modelNameController,
       required this.cityController,
       required this.onStateChanged,
-      required this.selectedBrand,
       required this.selectedCountryCode,
       required this.onCountryCodeChanged,
       required this.onBrandChanged,
@@ -75,6 +73,9 @@ class SellerAccessoriesDetailsFormState
   String? _insuranceAvailable;
   Category? selectedCategory;
   String? selectedSubcategory;
+  String? selectedBrand;
+
+  bool isBikeSpecific = false;
 
   final List<File> _images = [];
   var productId = const Uuid().v4();
@@ -115,7 +116,7 @@ class SellerAccessoriesDetailsFormState
         sellerName: widget.sellerNameController.text,
         sellerContactNumber:
             '${widget.selectedCountryCode} ${widget.sellerContactController.text}',
-        brandName: widget.selectedBrand ?? "",
+        brandName: selectedBrand ?? "",
         modelName: widget.modelNameController.text,
         state: widget.selectedState ?? "",
         city: widget.cityController.text,
@@ -215,17 +216,49 @@ class SellerAccessoriesDetailsFormState
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: SwitchListTile(
+                  title: const Text("Is your product bike specific?"),
+                  value: isBikeSpecific,
+                  onChanged: (val) {
+                    setState(() {
+                      isBikeSpecific = val;
+                      if (!val) {
+                        selectedBrand = null;
+                        widget.modelNameController.clear();
+                        _selectedManufactureDate = null;
+                      }
+                    });
+                  },
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: DropdownButtonFormField<String>(
+                  value: selectedBrand,
+                  decoration:
+                  context.inputDecoration("Bike Brand Name", "Choose brand"),
+                  items: bikeBrands
+                      .map((b) => DropdownMenuItem(value: b, child: Text(b)))
+                      .toList(),
+                  onChanged: widget.onBrandChanged,
+                  validator: (val) => val == null ? "Required" : null,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: TextFormField(
+                  enabled: isBikeSpecific,
                   controller: widget.modelNameController,
                   decoration: context.inputDecoration(
-                      "Model Name", "e.g. TRIUMPH Tiger 1200"),
+                      "Bike Model Name", "e.g. TRIUMPH Tiger 1200"),
                   validator: (val) => val!.isEmpty ? "Required" : null,
                 ),
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: MonthYearPicker(
-                  label: "Manufacture Date",
+                  enable: isBikeSpecific,
+                  label: "Bike Manufacture Date",
                   hint: "Select month and year",
                   selectedDate: _selectedManufactureDate,
                   onDateSelected: (date) {
@@ -238,6 +271,7 @@ class SellerAccessoriesDetailsFormState
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: MonthYearPicker(
+                  enable: isBikeSpecific,
                   label: "Registration Date",
                   hint: "Select month and year",
                   selectedDate: _selectedRegistrationDate,

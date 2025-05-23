@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:poppflutter/src/services/accessories/sell_your_accessories.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../models/pop_service_item.dart';
 import '../../services/bikes/sell_your_bike.dart';
@@ -14,19 +15,13 @@ class PopServicesWidgets extends StatelessWidget {
           MaterialPageRoute(builder: (context) => const SellYourBike()),
         );
         break;
-      case PopServiceAction.buyBike:
-        // Add more actions if needed
+      case PopServiceAction.sellAccessory:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const SellYourAccessories()),
+        );
         break;
-      case PopServiceAction.rentBike:
-        // TODO: Handle this case.
-        throw UnimplementedError();
-      case PopServiceAction.viewRoutes:
-        // TODO: Handle this case.
-        throw UnimplementedError();
-      case PopServiceAction.viewRides:
-        // TODO: Handle this case.
-        throw UnimplementedError();
-      case PopServiceAction.contactSupport:
+      case PopServiceAction.comingSoon:
         // TODO: Handle this case.
         throw UnimplementedError();
     }
@@ -92,7 +87,8 @@ class PopServicesWidgets extends StatelessWidget {
                           textAlign: TextAlign.center,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: theme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+                          style: theme.titleSmall
+                              ?.copyWith(fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],

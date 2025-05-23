@@ -5,6 +5,7 @@ class Product {
   final String productId;
   final String categoryId;
   final String categoryName;
+  final String? subCategoryName;
   final String brandName;
   final String modelName;
   final String expectedPrice;
@@ -32,6 +33,7 @@ class Product {
       required this.productId,
       required this.categoryId,
       required this.categoryName,
+      required this.subCategoryName,
       required this.brandName,
       required this.expectedPrice,
       required this.modelName,
@@ -60,6 +62,7 @@ class Product {
       productId: json['productId'],
       categoryId: json['categoryId'],
       categoryName: json['categoryName'],
+      subCategoryName: json['subCategoryName'],
       additionalDetails: json['additionalDetails'],
       firstOwner: json['firstOwner'],
       kmDriven: json['kmDriven'],
@@ -90,6 +93,8 @@ class Product {
       userId: userId,
       'productId': productId,
       'categoryId': categoryId,
+      'categoryName': categoryName,
+      'subCategoryName': subCategoryName,
       'brandName': brandName,
       'modelName': modelName,
       'mfgDate': mfgDate?.toIso8601String(),
@@ -118,6 +123,7 @@ List<Product> productList = [
       userId: "uid",
       productId: 'P001',
       categoryId: 'C001',
+      subCategoryName: '',
       categoryName: '',
       expectedPrice: "123,000",
       brandName: 'Honda',
@@ -150,6 +156,7 @@ List<Product> productList = [
       userId: "userId",
       productId: 'P002',
       categoryName: '',
+      subCategoryName: '',
       categoryId: 'C001',
       brandName: 'Hero',
       expectedPrice: "120000",
@@ -181,6 +188,7 @@ List<Product> productList = [
       userId: "id",
       productId: 'P003',
       categoryName: '',
+      subCategoryName: '',
       categoryId: 'C002',
       brandName: 'Maruti Suzuki',
       modelName: 'Swift Dzire',

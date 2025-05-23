@@ -92,6 +92,12 @@
       "languageVersion": "2.17"
     },
     {
+      "name": "dropdown_button2",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/dropdown_button2-2.3.9",
+      "packageUri": "lib/",
+      "languageVersion": "2.17"
+    },
+    {
       "name": "facebook_auth_desktop",
       "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/facebook_auth_desktop-2.1.1",
       "packageUri": "lib/",
@@ -728,7 +734,7 @@
       "languageVersion": "3.4"
     }
   ],
-  "generated": "2025-05-17T18:06:11.757349Z",
+  "generated": "2025-05-23T16:50:08.106599Z",
   "generator": "pub",
   "generatorVersion": "3.7.2",
   "flutterRoot": "file:///Users/gangadharkondati/development/flutter",

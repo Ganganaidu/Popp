@@ -1,10 +1,7 @@
 enum PopServiceAction {
   sellBike,
-  buyBike,
-  rentBike,
-  viewRoutes,
-  viewRides,
-  contactSupport,
+  sellAccessory,
+  comingSoon,
 }
 
 class PopServiceItem {
@@ -25,7 +22,7 @@ class PopServiceItem {
         imageUrl: json['image'],
         title: json['title'],
         assetImageUrl: json['assetImageUrl'],
-        action: PopServiceAction.buyBike);
+        action: PopServiceAction.sellBike);
   }
 
   Map<String, dynamic> toJson() {
@@ -47,30 +44,30 @@ final List<PopServiceItem> items = [
       imageUrl: null,
       title: 'Sell your accessory',
       assetImageUrl: "assets/sell_your_accessories.png",
-      action: PopServiceAction.buyBike),
+      action: PopServiceAction.sellAccessory),
   PopServiceItem(
       imageUrl: null,
       title: 'Book your service',
       assetImageUrl: "assets/book_your_services.png",
-      action: PopServiceAction.buyBike),
+      action: PopServiceAction.comingSoon),
   PopServiceItem(
       imageUrl: null,
       title: 'Book track day & Training ',
       assetImageUrl: "assets/book_track_trainings.png",
-      action: PopServiceAction.buyBike),
+      action: PopServiceAction.comingSoon),
   PopServiceItem(
       imageUrl: null,
       title: 'Find bike rentals',
       assetImageUrl: "assets/find_bike_rentals.png",
-      action: PopServiceAction.buyBike),
+      action: PopServiceAction.comingSoon),
   PopServiceItem(
       imageUrl: null,
       title: 'List your services',
       assetImageUrl: "assets/list_your_services.png",
-      action: PopServiceAction.buyBike),
+      action: PopServiceAction.comingSoon),
   PopServiceItem(
       imageUrl: null,
       title: 'Premium Bike Inspection',
       assetImageUrl: "assets/premium_bike_inspections.png",
-      action: PopServiceAction.buyBike),
+      action: PopServiceAction.comingSoon),
 ];

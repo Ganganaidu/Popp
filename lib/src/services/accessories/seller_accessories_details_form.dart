@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:poppflutter/src/utils/build_extensions.dart';
+import 'package:poppflutter/src/widgets/category_selector.dart';
 import 'package:poppflutter/src/widgets/loading_overlay.dart';
 import 'package:uuid/uuid.dart';
 
@@ -16,7 +17,7 @@ import '../../widgets/image_picker_selection.dart';
 import '../../widgets/month_year_picker.dart';
 import '../models/bike_form_data.dart';
 
-class SellerBikeDetailsForm extends StatefulWidget {
+class SellerAccessoriesDetailsForm extends StatefulWidget {
   final TextEditingController sellerNameController;
   final TextEditingController sellerContactController;
   final TextEditingController modelNameController;
@@ -36,7 +37,7 @@ class SellerBikeDetailsForm extends StatefulWidget {
   final Function(String?)? onInsuranceChanged;
   final Function(String?)? onInsuranceTypeChanged;
 
-  const SellerBikeDetailsForm(
+  const SellerAccessoriesDetailsForm(
       {super.key,
       required this.sellerNameController,
       required this.sellerContactController,
@@ -58,10 +59,12 @@ class SellerBikeDetailsForm extends StatefulWidget {
       this.selectedState});
 
   @override
-  State<SellerBikeDetailsForm> createState() => SellerBikeDetailsFormState();
+  State<SellerAccessoriesDetailsForm> createState() =>
+      SellerAccessoriesDetailsFormState();
 }
 
-class SellerBikeDetailsFormState extends State<SellerBikeDetailsForm> {
+class SellerAccessoriesDetailsFormState
+    extends State<SellerAccessoriesDetailsForm> {
   final _formKey = GlobalKey<FormState>();
 
   DateTime? _selectedManufactureDate;
@@ -70,6 +73,8 @@ class SellerBikeDetailsFormState extends State<SellerBikeDetailsForm> {
   String? _invoiceAvailable;
   String? _nocAvailable;
   String? _insuranceAvailable;
+  Category? selectedCategory;
+  String? selectedSubcategory;
 
   final List<File> _images = [];
   var productId = const Uuid().v4();
@@ -104,9 +109,9 @@ class SellerBikeDetailsFormState extends State<SellerBikeDetailsForm> {
       Product newProduct = Product(
         userId: userId,
         productId: productId,
-        categoryId: catList[0].categoryId,
-        categoryName: catList[0].name,
-        subCategoryName: '',
+        categoryId: selectedCategory?.categoryId ?? "",
+        categoryName: selectedCategory?.name ?? "",
+        subCategoryName: selectedSubcategory,
         sellerName: widget.sellerNameController.text,
         sellerContactNumber:
             '${widget.selectedCountryCode} ${widget.sellerContactController.text}',
@@ -203,15 +208,9 @@ class SellerBikeDetailsFormState extends State<SellerBikeDetailsForm> {
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: DropdownButtonFormField<String>(
-                  value: widget.selectedBrand,
-                  decoration:
-                      context.inputDecoration("Brand Name", "Choose brand"),
-                  items: bikeBrands
-                      .map((b) => DropdownMenuItem(value: b, child: Text(b)))
-                      .toList(),
-                  onChanged: widget.onBrandChanged,
-                  validator: (val) => val == null ? "Required" : null,
+                child: CategorySelector(
+                  onCategoryChanged: (cat) => selectedCategory = cat,
+                  onSubcategoryChanged: (sub) => selectedSubcategory = sub,
                 ),
               ),
               Padding(
@@ -251,10 +250,10 @@ class SellerBikeDetailsFormState extends State<SellerBikeDetailsForm> {
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: DropdownButtonFormField<String>(
+                child: CustomDropdownFormField<String>(
+                  label: "State",
+                  hint: "Select your state",
                   value: widget.selectedState,
-                  decoration:
-                      context.inputDecoration("State", "Select your state"),
                   items: stateNames
                       .map((state) =>
                           DropdownMenuItem(value: state, child: Text(state)))
@@ -280,7 +279,7 @@ class SellerBikeDetailsFormState extends State<SellerBikeDetailsForm> {
                   value: _areYouFirstOwner,
                   items: yesNoNA
                       .map((state) =>
-                          DropdownMenuItem(value: state, child: Text(state)))
+                      DropdownMenuItem(value: state, child: Text(state)))
                       .toList(),
                   onChanged: (val) => setState(() => _areYouFirstOwner = val),
                   validator: (val) =>
@@ -295,7 +294,7 @@ class SellerBikeDetailsFormState extends State<SellerBikeDetailsForm> {
                   value: _invoiceAvailable,
                   items: yesNoNA
                       .map((state) =>
-                          DropdownMenuItem(value: state, child: Text(state)))
+                      DropdownMenuItem(value: state, child: Text(state)))
                       .toList(),
                   onChanged: (val) => setState(() => _invoiceAvailable = val),
                   validator: (val) =>
@@ -310,7 +309,7 @@ class SellerBikeDetailsFormState extends State<SellerBikeDetailsForm> {
                   value: _nocAvailable,
                   items: yesNoNA
                       .map((state) =>
-                          DropdownMenuItem(value: state, child: Text(state)))
+                      DropdownMenuItem(value: state, child: Text(state)))
                       .toList(),
                   onChanged: (val) => setState(() => _nocAvailable = val),
                   validator: (val) =>

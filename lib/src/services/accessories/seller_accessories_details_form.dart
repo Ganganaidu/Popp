@@ -219,6 +219,7 @@ class SellerAccessoriesDetailsFormState
                 child: SwitchListTile(
                   title: const Text("Is your product bike specific?"),
                   value: isBikeSpecific,
+                  activeColor: Colors.orange,
                   inactiveThumbColor: Colors.white,
                   inactiveTrackColor: Colors.grey[400],
                   onChanged: (val) {
@@ -332,6 +333,7 @@ class SellerAccessoriesDetailsFormState
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: SwitchListTile(
                   title: const Text("Bill available?"),
+                  activeColor: Colors.orange,
                   value: isBillAvailable,
                   inactiveThumbColor: Colors.white,
                   inactiveTrackColor: Colors.grey[400],
@@ -378,6 +380,7 @@ class SellerAccessoriesDetailsFormState
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: SwitchListTile(
                   title: const Text("Warranty available?"),
+                  activeColor: Colors.orange,
                   value: isWarrantyAvailable,
                   inactiveThumbColor: Colors.white,
                   inactiveTrackColor: Colors.grey[400],

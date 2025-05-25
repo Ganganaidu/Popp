@@ -51,7 +51,7 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
                     product.nocAvailable != null ? "Yes" : "No", theme),
                 detailRow("Insurance Available",
                     product.insuranceAvailable != null ? "Yes" : "No", theme),
-                detailRow("Insurance Type", product.insuranceType, theme),
+                detailRow("Insurance Type", product.insuranceType ?? "-", theme),
                 detailRow("Seller Name", product.sellerName, theme),
                 detailRow("Seller Contact", product.sellerContactNumber, theme),
               ],

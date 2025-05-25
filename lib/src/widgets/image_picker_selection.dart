@@ -47,48 +47,61 @@ class _ImagePickerSectionState extends State<ImagePickerSection> {
     return Wrap(
       spacing: 10,
       children: [
-        ...widget.images.map((img) => Stack(
-              alignment: Alignment.topRight,
-              children: [
-                Image.file(File(img.path),
-                    width: 80, height: 80, fit: BoxFit.cover),
-                IconButton(
-                  icon: const Icon(Icons.close, size: 16, color: Colors.red),
-                  onPressed: () {
-                    final updated = [...widget.images]..remove(img);
-                    widget.onImagesChanged(updated);
-                  },
-                ),
-              ],
-            )),
         if (widget.images.length < 10)
           GestureDetector(
             onTap: _pickImages,
             child: Container(
-              width: 90,
-              height: 90,
-              color: Colors.white,
-              child: const Column(
-                // Wrap Icon in a Column
+              width: double.infinity,
+              height: 50,
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              // Add some horizontal padding
+              decoration: BoxDecoration(
+                color: Colors.lightBlue[100], // Example: Light blue background
+                borderRadius: BorderRadius.circular(8.0), // Rounded corners
+              ),
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                // Center content vertically
+                crossAxisAlignment: CrossAxisAlignment.center,
+                // Ensure vertical centering
+                mainAxisSize: MainAxisSize.min,
+                // Make the Row only as wide as its content
                 children: [
                   Text(
-                    "Add Bike Photos", // Your suggested title
+                    "Add Photos",
                     style: TextStyle(
-                      // Style similar to SellerBikeDetails (adjust as needed)
-                      fontSize: 12,
+                      fontSize: 14, // Slightly larger font
                       fontWeight: FontWeight.bold,
-                      color: Colors.black54,
+                      color: Colors.blue[800], // Example: Dark blue text
                     ),
-                    textAlign: TextAlign.center,
                   ),
-                  SizedBox(height: 4), // Add some space between title and icon
-                  Icon(Icons.add),
+                  const SizedBox(width: 8), // A bit more space
+                  Icon(
+                    Icons.camera_alt,
+                    size: 20, // Slightly larger icon
+                    color: Colors.blue[800], // Example: Dark blue icon
+                  ),
                 ],
               ),
             ),
           ),
+        ...widget.images.map((img) => Padding(
+              // Added Padding widget
+              padding: const EdgeInsets.all(8.0), // Adjust padding as needed
+              child: Stack(
+                alignment: Alignment.topRight,
+                children: [
+                  Image.file(File(img.path),
+                      width: 80, height: 80, fit: BoxFit.cover),
+                  IconButton(
+                    icon: const Icon(Icons.close, size: 16, color: Colors.red),
+                    onPressed: () {
+                      final updated = [...widget.images]..remove(img);
+                      widget.onImagesChanged(updated);
+                    },
+                  ),
+                ],
+              ),
+            )),
       ],
     );
   }

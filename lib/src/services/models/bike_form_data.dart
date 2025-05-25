@@ -21,12 +21,23 @@ const List<String> bikeBrands = [
   'Moto Guzzi',
   'MV Agusta',
   'Zontes',
-  'Keeway'
+  'Keeway',
+  'others'
 ];
 
 const List<String> countryCodes = ["+91", "+1"];
 
 const List<String> yesNoNA = ["Yes", "No"];
+
+const List<String> productConditionList = [
+  "New",
+  "Openbox",
+  "Used",
+  "Unused",
+  "Good",
+  "Fair",
+  "Poor"
+];
 
 const List<String> stateNames = [
   'Andhra Pradesh',
@@ -53,7 +64,7 @@ const List<String> stateNames = [
   'Odisha',
   'Punjab',
   'Puducherry'
-  'Rajasthan',
+      'Rajasthan',
   'Sikkim',
   'Tamil Nadu',
   'Telangana',

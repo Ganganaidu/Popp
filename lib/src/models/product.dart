@@ -21,12 +21,13 @@ class Product {
   final String state;
   final String? nocAvailable; // If other states
   final String? insuranceAvailable;
-  final String insuranceType;
+  final String? insuranceType;
   final String sellerName;
   final String sellerContactNumber;
-  final String kmDriven;
+  final String? kmDriven;
   final FieldValue? createdAt;
   bool? isFavorite;
+  DateTime? billDate;
 
   Product(
       {required this.userId,
@@ -38,22 +39,23 @@ class Product {
       required this.expectedPrice,
       required this.modelName,
       required this.additionalDetails,
-      required this.firstOwner,
+      this.firstOwner,
       this.mfgDate,
-      required this.invoiceAvailable,
+      this.invoiceAvailable,
       this.registrationDate,
       required this.registrationPlace,
       required this.city,
       required this.state,
-      required this.nocAvailable,
-      required this.insuranceAvailable,
-      required this.insuranceType,
+      this.nocAvailable,
+      this.insuranceAvailable,
+      this.insuranceType,
       required this.sellerName,
       required this.imageUrl,
       required this.thumbImageUrls,
       required this.sellerContactNumber,
       this.isFavorite,
-      required this.kmDriven,
+      this.kmDriven,
+      this.billDate,
       this.createdAt});
 
   factory Product.fromJson(Map<String, dynamic> json) {
@@ -64,7 +66,6 @@ class Product {
       categoryName: json['categoryName'],
       subCategoryName: json['subCategoryName'],
       additionalDetails: json['additionalDetails'],
-      firstOwner: json['firstOwner'],
       kmDriven: json['kmDriven'],
       brandName: json['brandName'],
       modelName: json['modelName'],
@@ -85,6 +86,7 @@ class Product {
       thumbImageUrls: json['thumbImageUrls'],
       sellerContactNumber: json['sellerContactNumber'],
       isFavorite: json['isFavorite'],
+      billDate: json['billDate'],
     );
   }
 
@@ -97,9 +99,7 @@ class Product {
       'subCategoryName': subCategoryName,
       'brandName': brandName,
       'modelName': modelName,
-      'mfgDate': mfgDate?.toIso8601String(),
       'invoiceAvailable': invoiceAvailable,
-      'registrationDate': registrationDate?.toIso8601String(),
       'registrationPlace': registrationPlace,
       'nocAvailable': nocAvailable,
       'insuranceAvailable': insuranceAvailable,
@@ -110,6 +110,9 @@ class Product {
       'imageUrl': imageUrl,
       'thumbImageUrls': thumbImageUrls,
       'isFavorite': isFavorite,
+      'mfgDate': mfgDate?.toIso8601String(),
+      'registrationDate': registrationDate?.toIso8601String(),
+      'billDate': billDate?.toIso8601String(),
     };
   }
 

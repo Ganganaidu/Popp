@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:poppflutter/src/utils/build_extensions.dart';
 
 class MonthYearPicker extends StatelessWidget {
   final String label;
@@ -113,30 +114,20 @@ class MonthYearPicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => _selectMonthYear(context),
+      // Conditionally allow tap
+      onTap: enable ? () => _selectMonthYear(context) : null,
       child: InputDecorator(
-        decoration: InputDecoration(
-          enabled: enable,
-          labelText: label,
-          hintText: hint,
-          floatingLabelBehavior: FloatingLabelBehavior.always,
-          filled: true,
-          fillColor: Colors.white,
-          enabledBorder: const OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.grey),
-          ),
-          focusedBorder: const OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.grey, width: 1.5),
-          ),
-          border: const OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.grey),
-          ),
-        ),
+        decoration: context.inputDecoration(label, hint, enable),
         child: Text(
           selectedDate != null
               ? "${selectedDate!.month.toString().padLeft(2, '0')}/${selectedDate!.year}"
               : 'Tap to select',
-          style: const TextStyle(fontSize: 16),
+          style: TextStyle(
+            fontSize: 16,
+            color: enable
+                ? Colors.black
+                : Colors.grey, // Change text color when disabled
+          ),
         ),
       ),
     );

@@ -6,14 +6,16 @@ class CustomDropdownFormField<T> extends StatelessWidget {
   final String label;
   final String hint;
   final T? value;
+  final bool enabled;
   final List<DropdownMenuItem<T>> items;
-  final ValueChanged<T?> onChanged;
+  final ValueChanged<T?>? onChanged;
   final FormFieldValidator<T>? validator;
 
   const CustomDropdownFormField({
     super.key,
     required this.label,
     required this.hint,
+    this.enabled = true,
     required this.value,
     required this.items,
     required this.onChanged,
@@ -25,7 +27,7 @@ class CustomDropdownFormField<T> extends StatelessWidget {
     return DropdownButtonFormField2<T>(
       isExpanded: true,
       value: value,
-      decoration: context.inputDecoration(label, hint),
+      decoration: context.inputDecoration(label, hint, enabled),
       items: items,
       onChanged: onChanged,
       validator: validator,

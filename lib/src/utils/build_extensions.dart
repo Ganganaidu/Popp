@@ -123,22 +123,44 @@ extension BuildContextEntension<T> on BuildContext {
     );
   }
 
-  InputDecoration inputDecoration(String label, String hint) => InputDecoration(
-        labelStyle: const TextStyle(fontSize: 18),
+  InputDecoration inputDecoration(String label, String hint,
+          [bool enable = true]) =>
+      InputDecoration(
+        enabled: enable,
         labelText: label,
         hintText: hint,
-        hintStyle: const TextStyle(color: Colors.grey),
         floatingLabelBehavior: FloatingLabelBehavior.always,
         filled: true,
-        fillColor: Colors.white,
+        hintStyle: const TextStyle(color: Colors.grey),
+        // Change fill color when disabled
+        fillColor: enable ? Colors.white : Colors.grey[200],
         enabledBorder: const OutlineInputBorder(
           borderSide: BorderSide(color: Colors.grey),
         ),
         focusedBorder: const OutlineInputBorder(
           borderSide: BorderSide(color: Colors.grey, width: 1.5),
         ),
+        disabledBorder: OutlineInputBorder(
+          // Add this for when InputDecorator is disabled
+          borderSide: BorderSide(color: Colors.grey.shade400),
+        ),
         border: const OutlineInputBorder(
           borderSide: BorderSide(color: Colors.grey),
         ),
       );
+}
+
+// Place the calculateAge function here or in a utility file
+Map<String, int> calculateAge(DateTime? startDate) {
+  if (startDate == null) {
+    return {'years': 0, 'months': 0};
+  }
+  final DateTime currentDate = DateTime.now();
+  int years = currentDate.year - startDate.year;
+  int months = currentDate.month - startDate.month;
+  if (months < 0 || (months == 0 && currentDate.day < startDate.day)) {
+    years--;
+    months += 12;
+  }
+  return {'years': years, 'months': months};
 }

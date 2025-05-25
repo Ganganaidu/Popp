@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:poppflutter/src/utils/app_loger.dart';
 import 'package:poppflutter/src/utils/build_extensions.dart';
 import 'package:poppflutter/src/widgets/category_selector.dart';
 import 'package:poppflutter/src/widgets/loading_overlay.dart';
@@ -25,16 +26,10 @@ class SellerAccessoriesDetailsForm extends StatefulWidget {
   final String selectedCountryCode;
   final String? selectedState;
   final Function(String) onCountryCodeChanged;
-  final Function(String?) onBrandChanged;
   final Function(String?) onStateChanged;
-  final TextEditingController? kmDrivenController;
   final TextEditingController? priceController;
   final TextEditingController? additionalDetailsController;
-  final String? insuranceType;
-  final Function(String?)? onInvoiceChanged;
-  final Function(String?)? onNocChanged;
-  final Function(String?)? onInsuranceChanged;
-  final Function(String?)? onInsuranceTypeChanged;
+
 
   const SellerAccessoriesDetailsForm(
       {super.key,
@@ -45,15 +40,8 @@ class SellerAccessoriesDetailsForm extends StatefulWidget {
       required this.onStateChanged,
       required this.selectedCountryCode,
       required this.onCountryCodeChanged,
-      required this.onBrandChanged,
-      this.kmDrivenController,
       this.priceController,
       this.additionalDetailsController,
-      this.insuranceType,
-      this.onInvoiceChanged,
-      this.onNocChanged,
-      this.onInsuranceChanged,
-      this.onInsuranceTypeChanged,
       this.selectedState});
 
   @override
@@ -66,16 +54,34 @@ class SellerAccessoriesDetailsFormState
   final _formKey = GlobalKey<FormState>();
 
   DateTime? _selectedManufactureDate;
-  DateTime? _selectedRegistrationDate;
-  String? _areYouFirstOwner;
-  String? _invoiceAvailable;
-  String? _nocAvailable;
-  String? _insuranceAvailable;
+  DateTime? _selectedBillDate;
+  String? _productCondition;
   Category? selectedCategory;
   String? selectedSubcategory;
   String? selectedBrand;
-
+  Function(String?)? onBrandChanged;
   bool isBikeSpecific = false;
+  bool isBillAvailable = false;
+  bool isWarrantyAvailable = false;
+  TextEditingController? productSizeController;
+  TextEditingController? productAgingController;
+  TextEditingController? warrantyLeftController;
+
+  @override
+  void initState() {
+    super.initState();
+    productAgingController = TextEditingController();
+    productSizeController = TextEditingController();
+    warrantyLeftController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    productAgingController?.dispose();
+    productSizeController?.dispose();
+    // Dispose other controllers created in this state
+    super.dispose();
+  }
 
   final List<File> _images = [];
   var productId = const Uuid().v4();
@@ -120,17 +126,11 @@ class SellerAccessoriesDetailsFormState
         modelName: widget.modelNameController.text,
         state: widget.selectedState ?? "",
         city: widget.cityController.text,
-        kmDriven: widget.kmDrivenController?.text ?? "",
         expectedPrice: widget.priceController?.text ?? "",
         additionalDetails: widget.additionalDetailsController?.text ?? "",
-        firstOwner: _areYouFirstOwner,
-        invoiceAvailable: _invoiceAvailable,
-        nocAvailable: _nocAvailable,
-        insuranceAvailable: _insuranceAvailable,
-        insuranceType: widget.insuranceType ?? "",
         imageUrl: uploadedImageUrls.first,
         thumbImageUrls: uploadedImageUrls,
-        registrationDate: _selectedRegistrationDate,
+        billDate: _selectedBillDate,
         registrationPlace: "",
         mfgDate: _selectedManufactureDate,
         createdAt: FieldValue
@@ -219,13 +219,23 @@ class SellerAccessoriesDetailsFormState
                 child: SwitchListTile(
                   title: const Text("Is your product bike specific?"),
                   value: isBikeSpecific,
+                  inactiveThumbColor: Colors.white,
+                  inactiveTrackColor: Colors.grey[400],
                   onChanged: (val) {
                     setState(() {
                       isBikeSpecific = val;
                       if (!val) {
                         selectedBrand = null;
+                        onBrandChanged = null;
                         widget.modelNameController.clear();
                         _selectedManufactureDate = null;
+                      } else {
+                        // Re-assign your default or active handler when it becomes bike-specific again
+                        onBrandChanged = (newValue) {
+                          setState(() {
+                            selectedBrand = newValue;
+                          });
+                        };
                       }
                     });
                   },
@@ -233,15 +243,19 @@ class SellerAccessoriesDetailsFormState
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: DropdownButtonFormField<String>(
+                child: CustomDropdownFormField<String>(
+                  enabled: isBikeSpecific,
                   value: selectedBrand,
-                  decoration:
-                  context.inputDecoration("Bike Brand Name", "Choose brand"),
+                  label: "Bike Brand Name",
+                  hint: "Choose brand",
                   items: bikeBrands
                       .map((b) => DropdownMenuItem(value: b, child: Text(b)))
                       .toList(),
-                  onChanged: widget.onBrandChanged,
-                  validator: (val) => val == null ? "Required" : null,
+                  onChanged: onBrandChanged,
+                  // This should now work
+                  validator: (val) => isBikeSpecific && val == null
+                      ? "Required"
+                      : null, // Adjust validator
                 ),
               ),
               Padding(
@@ -249,8 +263,8 @@ class SellerAccessoriesDetailsFormState
                 child: TextFormField(
                   enabled: isBikeSpecific,
                   controller: widget.modelNameController,
-                  decoration: context.inputDecoration(
-                      "Bike Model Name", "e.g. TRIUMPH Tiger 1200"),
+                  decoration: context.inputDecoration("Bike Model Name",
+                      "e.g. TRIUMPH Tiger 1200", isBikeSpecific),
                   validator: (val) => val!.isEmpty ? "Required" : null,
                 ),
               ),
@@ -264,20 +278,6 @@ class SellerAccessoriesDetailsFormState
                   onDateSelected: (date) {
                     setState(() {
                       _selectedManufactureDate = date;
-                    });
-                  },
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: MonthYearPicker(
-                  enable: isBikeSpecific,
-                  label: "Registration Date",
-                  hint: "Select month and year",
-                  selectedDate: _selectedRegistrationDate,
-                  onDateSelected: (date) {
-                    setState(() {
-                      _selectedRegistrationDate = date;
                     });
                   },
                 ),
@@ -307,56 +307,96 @@ class SellerAccessoriesDetailsFormState
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: CustomDropdownFormField(
-                  label: 'Are you the first owner?',
-                  hint: "Tap to select",
-                  value: _areYouFirstOwner,
-                  items: yesNoNA
-                      .map((state) =>
-                      DropdownMenuItem(value: state, child: Text(state)))
-                      .toList(),
-                  onChanged: (val) => setState(() => _areYouFirstOwner = val),
-                  validator: (val) =>
-                      val == null ? 'Please select ownership status' : null,
+                child: TextFormField(
+                  controller: productSizeController,
+                  decoration:
+                      context.inputDecoration("Product size", "If applicable"),
                 ),
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: CustomDropdownFormField(
-                  label: 'Invoice available?',
+                  label: 'Product condition',
                   hint: "Tap to select",
-                  value: _invoiceAvailable,
-                  items: yesNoNA
+                  value: _productCondition,
+                  items: productConditionList
                       .map((state) =>
-                      DropdownMenuItem(value: state, child: Text(state)))
+                          DropdownMenuItem(value: state, child: Text(state)))
                       .toList(),
-                  onChanged: (val) => setState(() => _invoiceAvailable = val),
+                  onChanged: (val) => setState(() => _productCondition = val),
                   validator: (val) =>
-                      val == null ? 'Please select Invoice availability' : null,
+                      val == null ? 'Please select Product condition' : null,
                 ),
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: CustomDropdownFormField(
-                  label: 'NOC available?',
-                  hint: "Tap to select",
-                  value: _nocAvailable,
-                  items: yesNoNA
-                      .map((state) =>
-                      DropdownMenuItem(value: state, child: Text(state)))
-                      .toList(),
-                  onChanged: (val) => setState(() => _nocAvailable = val),
-                  validator: (val) =>
-                      val == null ? 'Please select NOC status' : null,
+                child: SwitchListTile(
+                  title: const Text("Bill available?"),
+                  value: isBillAvailable,
+                  inactiveThumbColor: Colors.white,
+                  inactiveTrackColor: Colors.grey[400],
+                  onChanged: (val) {
+                    setState(() {
+                      isBillAvailable = val;
+                      if (!val) {
+                      } else {}
+                    });
+                  },
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: MonthYearPicker(
+                  enable: isBillAvailable,
+                  label: "Bill Date",
+                  hint: "Select month and year",
+                  selectedDate: _selectedBillDate,
+                  onDateSelected: (date) {
+                    setState(() {
+                      _selectedBillDate = date;
+                      final Map<String, int> age =
+                          calculateAge(_selectedBillDate);
+                      // Assuming productAgingController is initialized
+                      productAgingController?.text =
+                          "${age['years']} years and ${age['months']} months";
+                      AppLogger.d("productAgingController updated to: ${productAgingController?.text}"); // Debug
+                    });
+                  },
                 ),
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: TextFormField(
-                  controller: widget.kmDrivenController,
+                  readOnly: true,
+                  enabled: isBillAvailable,
+                  controller: productAgingController,
                   decoration: context.inputDecoration(
-                      "KM Driven", "Enter kilometers driven"),
-                  validator: (val) => val!.isEmpty ? "Required" : null,
+                      "Product aging", "Product age so far "),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: SwitchListTile(
+                  title: const Text("Warranty available?"),
+                  value: isWarrantyAvailable,
+                  inactiveThumbColor: Colors.white,
+                  inactiveTrackColor: Colors.grey[400],
+                  onChanged: (val) {
+                    setState(() {
+                      isWarrantyAvailable = val;
+                      if (!val) {
+                      } else {}
+                    });
+                  },
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: TextFormField(
+                  enabled: isWarrantyAvailable,
+                  controller: warrantyLeftController,
+                  decoration: context.inputDecoration(
+                      "Warranty limit", "How many months/years warranty left?"),
                 ),
               ),
               Padding(

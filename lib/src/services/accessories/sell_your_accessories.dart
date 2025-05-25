@@ -21,7 +21,6 @@ class _SellYourAccessoriesState extends State<SellYourAccessories>
   final TextEditingController cityController = TextEditingController();
 
   String selectedCountryCode = "+91";
-  String? selectedBrand;
   String? selectedState;
 
   @override
@@ -45,7 +44,6 @@ class _SellYourAccessoriesState extends State<SellYourAccessories>
                   selectedCountryCode: selectedCountryCode,
                   onCountryCodeChanged: (val) =>
                       setState(() => selectedCountryCode = val),
-                  onBrandChanged: (val) => setState(() => selectedBrand = val),
                   onStateChanged: (val) => setState(() => selectedState = val),
                 ),
               ),

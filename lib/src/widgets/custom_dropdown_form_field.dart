@@ -27,7 +27,7 @@ class CustomDropdownFormField<T> extends StatelessWidget {
     return DropdownButtonFormField2<T>(
       isExpanded: true,
       value: value,
-      decoration: context.inputDecoration(label, hint, enabled),
+      decoration: context.inputDecoration(label, hint, enable: enabled),
       items: items,
       onChanged: onChanged,
       validator: validator,

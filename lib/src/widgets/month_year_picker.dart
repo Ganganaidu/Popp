@@ -117,7 +117,7 @@ class MonthYearPicker extends StatelessWidget {
       // Conditionally allow tap
       onTap: enable ? () => _selectMonthYear(context) : null,
       child: InputDecorator(
-        decoration: context.inputDecoration(label, hint, enable),
+        decoration: context.inputDecoration(label, hint, enable: enable),
         child: Text(
           selectedDate != null
               ? "${selectedDate!.month.toString().padLeft(2, '0')}/${selectedDate!.year}"

@@ -124,21 +124,23 @@ extension BuildContextEntension<T> on BuildContext {
   }
 
   InputDecoration inputDecoration(String label, String hint,
-          [bool enable = true]) =>
+          {bool enable = true, IconData? icon}) =>
       InputDecoration(
         enabled: enable,
         labelText: label,
         hintText: hint,
         floatingLabelBehavior: FloatingLabelBehavior.always,
         filled: true,
+        prefixIcon: icon != null ? Icon(icon) : null,
         hintStyle: const TextStyle(color: Colors.grey),
+        labelStyle: const TextStyle(fontWeight: FontWeight.w500),
         // Change fill color when disabled
-        fillColor: enable ? Colors.white : Colors.grey[200],
-        enabledBorder: const OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.grey),
+        fillColor: enable ? primary.withOpacity(0.1) : primary.withOpacity(0.1),
+        enabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: primary),
         ),
-        focusedBorder: const OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.grey, width: 1.5),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: primary, width: 1.5),
         ),
         disabledBorder: OutlineInputBorder(
           // Add this for when InputDecorator is disabled

@@ -1,6 +1,6 @@
 import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
-import 'auth_service.dart';
+import '../firebase/auth_service.dart';
 
 enum AuthType { google, facebook, apple }
 

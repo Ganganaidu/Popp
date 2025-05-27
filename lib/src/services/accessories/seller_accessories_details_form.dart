@@ -265,7 +265,7 @@ class SellerAccessoriesDetailsFormState
                   enabled: isBikeSpecific,
                   controller: widget.modelNameController,
                   decoration: context.inputDecoration("Bike Model Name",
-                      "e.g. TRIUMPH Tiger 1200", isBikeSpecific),
+                      "e.g. TRIUMPH Tiger 1200", enable: isBikeSpecific),
                   validator: (val) => val!.isEmpty ? "Required" : null,
                 ),
               ),

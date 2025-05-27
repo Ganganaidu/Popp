@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+import 'package:poppflutter/src/login/model/user_data_model.dart';
 import 'package:poppflutter/src/utils/app_loger.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'dart:io' show Platform;
@@ -83,4 +84,24 @@ class AuthService {
       'provider': user.providerData.first.providerId,
     }, SetOptions(merge: true));
   }
+}
+
+Future<String?> registerUserWithEmail(String email, String password) async {
+  final credential = await FirebaseAuth.instance
+      .createUserWithEmailAndPassword(email: email, password: password);
+  // You can use this to save other data to FireStore
+  return credential.user?.uid;
+}
+
+// Save userData to FireStore using UID as document ID
+Future<void> saveUserDataToFireStore(UserData userData) async {
+  final auth = FirebaseAuth.instance;
+  final uid = auth.currentUser?.uid;
+
+  if (uid == null) {
+    throw Exception("User not logged in");
+  }
+
+  final fireStore = FirebaseFirestore.instance;
+  await fireStore.collection('users').doc(uid).set(userData.toMap());
 }

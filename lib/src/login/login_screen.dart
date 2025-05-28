@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:poppflutter/src/utils/build_extensions.dart';
+import 'forgot_password_screen.dart';
 import 'social_login_buttons.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -12,7 +12,10 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen>
     with SingleTickerProviderStateMixin {
   bool rememberMe = false;
-  bool isPasswordVisible = false; // <-- For Show/Hide Password
+  bool isPasswordVisible = false;
+
+  // Control visibility of social login
+  bool showSocialLogin = false;
 
   late AnimationController _controller;
   late Animation<double> _animation;
@@ -40,43 +43,38 @@ class _LoginScreenState extends State<LoginScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: false, // <-- Important to fix skip movement
-      body: Stack(
-        children: [
-          SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 40),
-                  ScaleTransition(
-                    scale: _animation,
-                    child: _buildLogo(),
-                  ),
-                  const SizedBox(height: 40),
-                  _buildEmailPasswordFields(),
-                  _buildRememberForgot(),
-                  const SizedBox(height: 20),
-                  _buildLoginButton(),
-                  const SizedBox(height: 30),
-                  _buildOrDivider(),
-                  const SizedBox(height: 30),
-                  const SocialLoginButtons(),
-                  const SizedBox(height: 40),
-                  _buildSignupLink(),
-                  const SizedBox(height: 100),
-                ],
+      resizeToAvoidBottomInset: true,
+      body: SafeArea(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          // Stick skip button to bottom
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 40),
+                    ScaleTransition(scale: _animation, child: _buildLogo()),
+                    const SizedBox(height: 40),
+                    _buildEmailPasswordFields(),
+                    _buildRememberForgot(),
+                    const SizedBox(height: 20),
+                    _buildLoginButton(),
+                    const SizedBox(height: 30),
+                    if (showSocialLogin) _buildOrDivider(),
+                    if (showSocialLogin) const SizedBox(height: 30),
+                    if (showSocialLogin) const SocialLoginButtons(),
+                    const SizedBox(height: 40),
+                    _buildSignupLink(),
+                  ],
+                ),
               ),
             ),
-          ),
-          Positioned(
-            bottom: 20,
-            left: 0,
-            right: 0,
-            child: _buildSkipButton(),
-          ),
-        ],
+            _buildSkipButton(),
+            const SizedBox(height: 20),
+          ],
+        ),
       ),
     );
   }
@@ -84,62 +82,53 @@ class _LoginScreenState extends State<LoginScreen>
   Widget _buildLogo() {
     return const Column(
       children: [
-        Text(
-          "POPP",
-          style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
-        ),
+        Text("POPP",
+            style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold)),
         SizedBox(height: 8),
-        Text(
-          "Pre Owned Products",
-          style: TextStyle(fontSize: 16, color: Colors.black54),
-        ),
+        Text("Pre Owned Products", style: TextStyle(fontSize: 16)),
       ],
     );
   }
 
   Widget _buildEmailPasswordFields() {
-    return Center(
-      child: SizedBox(
-        width: 360,
-        child: Column(
-          children: [
-            TextField(
-              decoration: InputDecoration(
-                hintText: "Email",
-                filled: true,
-                fillColor: context.primary.withOpacity(0.1),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide.none,
-                ),
+    return SizedBox(
+      width: 360,
+      child: Column(
+        children: [
+          TextField(
+            decoration: InputDecoration(
+              hintText: "Email",
+              filled: true,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide.none,
               ),
             ),
-            const SizedBox(height: 12),
-            TextField(
-              obscureText: !isPasswordVisible, // <-- use toggle
-              decoration: InputDecoration(
-                hintText: "Password",
-                filled: true,
-                fillColor: context.primary.withOpacity(0.1),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                    color: Colors.grey,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      isPasswordVisible = !isPasswordVisible;
-                    });
-                  },
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            obscureText: !isPasswordVisible,
+            decoration: InputDecoration(
+              hintText: "Password",
+              filled: true,
+              suffixIcon: IconButton(
+                icon: Icon(
+                  isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                  color: Colors.grey,
                 ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide.none,
-                ),
+                onPressed: () {
+                  setState(() {
+                    isPasswordVisible = !isPasswordVisible;
+                  });
+                },
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide.none,
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -165,8 +154,14 @@ class _LoginScreenState extends State<LoginScreen>
             ],
           ),
           TextButton(
-            onPressed: () {},
-            child: const Text('Forgot Password?'),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
+              );
+            },
+            child: const Text('Forgot Password?',
+                style: TextStyle(color: Colors.white70)),
           )
         ],
       ),
@@ -174,24 +169,21 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   Widget _buildLoginButton() {
-    return Center(
-      child: SizedBox(
-        width: 360,
-        child: ElevatedButton(
-          onPressed: () {
-            // Your login logic here
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.orange,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(30),
-            ),
-            padding: const EdgeInsets.symmetric(vertical: 16),
+    return SizedBox(
+      width: 360,
+      child: ElevatedButton(
+        onPressed: () {
+          // Your login logic here
+        },
+        style: ElevatedButton.styleFrom(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
           ),
-          child: const Text(
-            'Sign In',
-            style: TextStyle(fontSize: 18, color: Colors.white),
-          ),
+          padding: const EdgeInsets.symmetric(vertical: 16),
+        ),
+        child: const Text(
+          'Sign In',
+          style: TextStyle(fontSize: 18),
         ),
       ),
     );

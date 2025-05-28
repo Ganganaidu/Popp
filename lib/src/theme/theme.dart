@@ -6,7 +6,7 @@ final ThemeData poppLightTheme = ThemeData(
   scaffoldBackgroundColor: Colors.white,
   appBarTheme: const AppBarTheme(
     backgroundColor: Colors.white,
-    foregroundColor: Colors.black87,
+    foregroundColor: Colors.black87, //#0C0F0E
     elevation: 0,
   ),
   textTheme: const TextTheme(

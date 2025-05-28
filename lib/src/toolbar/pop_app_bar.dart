@@ -24,7 +24,6 @@ class PopAppBar extends StatelessWidget implements PreferredSizeWidget {
       duration: const Duration(milliseconds: 300),
       color: Colors.white,
       child: AppBar(
-        backgroundColor: Colors.transparent,
         elevation: 0,
         leading: AnimatedSwitcher(
           duration: const Duration(milliseconds: 300),

@@ -83,20 +83,6 @@ extension BuildContextEntension<T> on BuildContext {
 
   Color get background => Theme.of(this).colorScheme.background;
 
-  // // custome theme extensions, You must have to create theme extensions first
-  // // you can use them with shortcuts as well
-  // Gradient get vertical =>
-  //     Theme.of(this).extension<AppThemeExtension>()!.vertical;
-  //
-  // Gradient get horizontal =>
-  //     Theme.of(this).extension<AppThemeExtension>()!.horizontal;
-  //
-  // Color get extraLightGrey =>
-  //     Theme.of(this).extension<AppThemeExtension>()!.extraLightGrey;
-  //
-  // Color get lightGrey =>
-  //     Theme.of(this).extension<AppThemeExtension>()!.lightGrey;
-
   Future<T?> showBottomSheet(
     Widget child, {
     bool isScrollControlled = true,
@@ -135,12 +121,11 @@ extension BuildContextEntension<T> on BuildContext {
         hintStyle: const TextStyle(color: Colors.grey),
         labelStyle: const TextStyle(fontWeight: FontWeight.w500),
         // Change fill color when disabled
-        fillColor: enable ? primary.withOpacity(0.1) : primary.withOpacity(0.1),
         enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: primary),
+          borderSide: BorderSide(color: primaryColor),
         ),
         focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: primary, width: 1.5),
+          borderSide: BorderSide(color: primaryColor, width: 1.5),
         ),
         disabledBorder: OutlineInputBorder(
           // Add this for when InputDecorator is disabled

@@ -106,7 +106,7 @@ class _RegisterAndSubscribeScreenState
                     const SizedBox(height: 8),
                     Text(
                         "Right now, you're in the free access period. Explore all the features without spending a dime!",
-                        style: textTheme.bodyMedium),
+                        style: textTheme.bodyLarge),
                     const SizedBox(height: 24),
                     Text("🔥 What You Can Do:",
                         style: textTheme.titleMedium
@@ -123,13 +123,13 @@ class _RegisterAndSubscribeScreenState
                           child: Text("• $item", style: textTheme.bodyLarge),
                         )),
                     const SizedBox(height: 24),
-                    Text("🧾 Subscription? Practically Free",
+                    Text(" Subscription? Practically Free",
                         style: textTheme.titleMedium
                             ?.copyWith(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
                     Text(
                         "After trial ends, keep riding with us for a yearly subscription fee so low, it's almost unbelievable.",
-                        style: textTheme.bodyMedium),
+                        style: textTheme.bodyLarge),
                     const SizedBox(height: 20),
                     CheckboxListTile(
                       title: const Text(

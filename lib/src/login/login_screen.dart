@@ -41,7 +41,6 @@ class _LoginScreenState extends State<LoginScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false, // <-- Important to fix skip movement
-      backgroundColor: Colors.white,
       body: Stack(
         children: [
           SafeArea(

@@ -56,10 +56,10 @@ class _SignUpBikeDetailsScreenState extends State<SignUpBikeDetailsScreen> {
                 color: Colors.green)),
         const SizedBox(height: 10),
         buildInputField(
-            'Bike Brand', 'Enter Bike Brand name', bikes[index]['brand']!),
+            '', 'Enter Bike Brand name', bikes[index]['brand']!),
         buildInputField(
-            'Bike Model', 'Enter Bike Model name', bikes[index]['model']!),
-        buildInputField('MFG Month/Year', 'Enter Month and year of MFG',
+            '', 'Enter Bike Model name', bikes[index]['model']!),
+        buildInputField('', 'Enter Month and year of MFG',
             bikes[index]['monthYear']!),
         const SizedBox(height: 20),
       ],
@@ -69,7 +69,7 @@ class _SignUpBikeDetailsScreenState extends State<SignUpBikeDetailsScreen> {
   Widget buildInputField(
       String label, String hint, TextEditingController controller) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.only(bottom: 20),
       child: TextField(
         controller: controller,
         decoration: context.inputDecoration(label, hint),

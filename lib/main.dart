@@ -34,9 +34,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Popp',
-      themeMode: ThemeMode.light,
-      theme: AppTheme.lightThemeData,
-      darkTheme: AppTheme.darkThemeData,
+      themeMode: ThemeMode.system,
+      theme: poppLightTheme,
+      darkTheme: poppDarkTheme,
       home: const SplashScreen(),
       routes: {
         '/login': (context) => const LoginScreen(),

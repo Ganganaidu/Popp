@@ -1,48 +1,75 @@
 import 'package:flutter/material.dart';
 
-class AppTheme {
-  const AppTheme();
+final ThemeData poppLightTheme = ThemeData(
+  brightness: Brightness.light,
+  primaryColor: Colors.orange,
+  scaffoldBackgroundColor: Colors.white,
+  appBarTheme: const AppBarTheme(
+    backgroundColor: Colors.white,
+    foregroundColor: Colors.black87,
+    elevation: 0,
+  ),
+  textTheme: const TextTheme(
+    bodyLarge: TextStyle(color: Colors.black87),
+    bodyMedium: TextStyle(color: Colors.black87),
+    titleLarge: TextStyle(color: Colors.black87),
+  ),
+  elevatedButtonTheme: ElevatedButtonThemeData(
+    style: ElevatedButton.styleFrom(
+      backgroundColor: Colors.orange,
+      foregroundColor: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+    ),
+  ),
+  switchTheme: SwitchThemeData(
+    thumbColor: MaterialStateProperty.all(Colors.orange),
+    trackColor: MaterialStateProperty.all(Colors.orange.shade200),
+  ),
+  iconTheme: const IconThemeData(color: Colors.orange),
+  inputDecorationTheme: InputDecorationTheme(
+    filled: true,
+    fillColor: Colors.grey.shade100,
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide.none,
+    ),
+    hintStyle: const TextStyle(color: Colors.black54),
+  ),
+);
 
-  static final Color _lightFocusColor = Colors.black.withOpacity(0.12);
-  static final Color _darkFocusColor = Colors.white.withOpacity(0.12);
-  static ThemeData lightThemeData =
-      themeData(lightColorScheme, _lightFocusColor);
-  static ThemeData darkThemeData = themeData(darkColorScheme, _darkFocusColor);
-
-  static ThemeData themeData(ColorScheme colorScheme, Color focusColor) {
-    return ThemeData(
-        colorScheme: colorScheme,
-        canvasColor: colorScheme.background,
-        scaffoldBackgroundColor: colorScheme.background,
-        highlightColor: Colors.transparent,
-        focusColor: focusColor);
-  }
-
-  static const ColorScheme lightColorScheme = ColorScheme(
-    primary: Color(0xff2890c8),
-    onPrimary: Colors.white,
-    secondary: Color(0xFFEFF3F3),
-    onSecondary: Color(0xFF322942),
-    error: Colors.redAccent,
-    onError: Colors.white,
-    background: Color(0xFFE6EBEB),
-    onBackground: Colors.white,
-    surface: Color(0xFFFAFBFB),
-    onSurface: Color(0xFF241E30),
-    brightness: Brightness.light,
-  );
-
-  static const ColorScheme darkColorScheme = ColorScheme(
-    primary: Color(0xff2890c8),
-    secondary: Color(0xFF4D1F7C),
-    background: Color(0xFF241E30),
-    surface: Color(0xFF1F1929),
-    onBackground: Color(0x0DFFFFFF),
-    error: Colors.redAccent,
-    onError: Colors.white,
-    onPrimary: Colors.white,
-    onSecondary: Colors.white,
-    onSurface: Colors.white,
-    brightness: Brightness.dark,
-  );
-}
+final ThemeData poppDarkTheme = ThemeData(
+  brightness: Brightness.dark,
+  primaryColor: Colors.orange,
+  scaffoldBackgroundColor: Colors.grey[900],
+  appBarTheme: AppBarTheme(
+    backgroundColor: Colors.grey[900],
+    foregroundColor: Colors.white,
+    elevation: 0,
+  ),
+  textTheme: const TextTheme(
+    bodyLarge: TextStyle(color: Colors.white),
+    bodyMedium: TextStyle(color: Colors.white70),
+    titleLarge: TextStyle(color: Colors.white),
+  ),
+  elevatedButtonTheme: ElevatedButtonThemeData(
+    style: ElevatedButton.styleFrom(
+      backgroundColor: Colors.orange,
+      foregroundColor: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+    ),
+  ),
+  switchTheme: SwitchThemeData(
+    thumbColor: MaterialStateProperty.all(Colors.orange),
+    trackColor: MaterialStateProperty.all(Colors.orange.shade300),
+  ),
+  iconTheme: const IconThemeData(color: Colors.orange),
+  inputDecorationTheme: InputDecorationTheme(
+    filled: true,
+    fillColor: Colors.grey[800],
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide.none,
+    ),
+    hintStyle: const TextStyle(color: Colors.white54),
+  ),
+);

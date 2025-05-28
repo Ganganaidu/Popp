@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:poppflutter/src/login/model/user_data_model.dart';
 import 'package:poppflutter/src/login/sign_up_bike_details_screen.dart';
+import 'package:poppflutter/src/utils/app_utils.dart';
 import 'package:poppflutter/src/utils/build_extensions.dart';
+
 import '../services/models/bike_form_data.dart';
+import '../widgets/custom_dropdown_form_field.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -100,16 +103,18 @@ class _SignupScreenState extends State<SignupScreen> {
                         setState(() => _isConfirmPasswordVisible =
                             !_isConfirmPasswordVisible);
                       }),
-                      DropdownButtonFormField<String>(
+                      CustomDropdownFormField<String>(
                         value: selectedState,
-                        decoration:
-                            context.inputDecoration("", "Select your state"),
+                        label: "",
+                        hint: "Select your state",
                         items: stateNames
-                            .map((state) => DropdownMenuItem(
-                                value: state, child: Text(state)))
+                            .map((b) =>
+                                DropdownMenuItem(value: b, child: Text(b)))
                             .toList(),
                         onChanged: (val) => setState(() => selectedState = val),
-                        validator: (val) => val == null ? "Required" : null,
+                        // This should now work
+                        validator: (val) =>
+                            val == null ? "Required" : null, // Adjust validator
                       ),
                       const SizedBox(height: 20),
                       _buildTextField("City", cityController),
@@ -169,9 +174,7 @@ class _SignupScreenState extends State<SignupScreen> {
           }
           if (hint == "Email") {
             // Check if the field is for Email
-            if (value != null &&
-                !RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
-                    .hasMatch(value)) {
+            if (value != null && !AppUtils.isEmailValid(value)) {
               return 'Enter a valid email address';
             }
           }
@@ -182,10 +185,10 @@ class _SignupScreenState extends State<SignupScreen> {
           // PinCode Validation
           if (hint == "Pin Code") {
             if (value != null) {
-              if (value.length != 6) {
+              if (value.length != 5) {
                 return 'Pincode must be 6 digits';
               }
-              if (!RegExp(r"^[0-9]{6}$").hasMatch(value)) {
+              if (!RegExp(r"^[0-9]{5}$").hasMatch(value)) {
                 return 'Enter a valid pincode (only numbers)';
               }
             }

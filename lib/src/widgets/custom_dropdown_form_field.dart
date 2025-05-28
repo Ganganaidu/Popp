@@ -34,7 +34,6 @@ class CustomDropdownFormField<T> extends StatelessWidget {
       dropdownStyleData: DropdownStyleData(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(14),
-          color: Colors.white,
         ),
         scrollbarTheme: ScrollbarThemeData(
           radius: const Radius.circular(40),

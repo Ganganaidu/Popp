@@ -1,4 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import '../navigation/nav_router.dart';
+import '../utils/app_utils.dart';
 import 'forgot_password_screen.dart';
 import 'social_login_buttons.dart';
 
@@ -16,6 +19,11 @@ class _LoginScreenState extends State<LoginScreen>
 
   // Control visibility of social login
   bool showSocialLogin = false;
+
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final GlobalKey<ScaffoldMessengerState> _scaffoldMessengerKey =
+      GlobalKey<ScaffoldMessengerState>();
 
   late AnimationController _controller;
   late Animation<double> _animation;
@@ -43,6 +51,7 @@ class _LoginScreenState extends State<LoginScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldMessengerKey,
       resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: Column(
@@ -96,6 +105,8 @@ class _LoginScreenState extends State<LoginScreen>
       child: Column(
         children: [
           TextField(
+            controller: _emailController,
+            keyboardType: TextInputType.emailAddress,
             decoration: InputDecoration(
               hintText: "Email",
               filled: true,
@@ -107,6 +118,7 @@ class _LoginScreenState extends State<LoginScreen>
           ),
           const SizedBox(height: 12),
           TextField(
+            controller: _passwordController,
             obscureText: !isPasswordVisible,
             decoration: InputDecoration(
               hintText: "Password",
@@ -155,36 +167,12 @@ class _LoginScreenState extends State<LoginScreen>
           ),
           TextButton(
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
-              );
+              onForgotPasswordTap(context);
             },
             child: const Text('Forgot Password?',
                 style: TextStyle(color: Colors.white70)),
           )
         ],
-      ),
-    );
-  }
-
-  Widget _buildLoginButton() {
-    return SizedBox(
-      width: 360,
-      child: ElevatedButton(
-        onPressed: () {
-          // Your login logic here
-        },
-        style: ElevatedButton.styleFrom(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
-          ),
-          padding: const EdgeInsets.symmetric(vertical: 16),
-        ),
-        child: const Text(
-          'Sign In',
-          style: TextStyle(fontSize: 18),
-        ),
       ),
     );
   }
@@ -232,6 +220,58 @@ class _LoginScreenState extends State<LoginScreen>
       child: const Text(
         "Skip for now",
         style: TextStyle(color: Colors.grey),
+      ),
+    );
+  }
+
+  Widget _buildLoginButton() {
+    return SizedBox(
+      width: 360,
+      child: ElevatedButton(
+        onPressed: () async {
+          final email = _emailController.text.trim();
+          final password = _passwordController.text;
+
+          if (!AppUtils.isEmailValid(email)) {
+            _showError("Please enter a valid email address.");
+            return;
+          }
+          if (password.isEmpty) {
+            _showError("Password cannot be empty.");
+            return;
+          }
+
+          try {
+            await FirebaseAuth.instance
+                .signInWithEmailAndPassword(email: email, password: password);
+            if (!mounted) return;
+            Navigator.pushReplacementNamed(context, '/home');
+          } on FirebaseAuthException catch (e) {
+            _showError(e.message ?? "Authentication failed");
+          } catch (e) {
+            _showError("Something went wrong. Please try again.");
+          }
+        },
+        style: ElevatedButton.styleFrom(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 16),
+        ),
+        child: const Text(
+          'Sign In',
+          style: TextStyle(fontSize: 18),
+        ),
+      ),
+    );
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 3),
       ),
     );
   }

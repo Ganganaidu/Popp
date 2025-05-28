@@ -45,8 +45,6 @@ class _RegisterAndSubscribeScreenState
       }
       AppLogger.d("User registered successfully with UID: $result");
       if (!mounted) return;
-      // reset the password, before saving to FireStore
-      widget.userData.password = "";
       widget.userData.uid = result;
 
       await saveUserDataToFireStore(widget.userData);

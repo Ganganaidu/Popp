@@ -51,13 +51,13 @@ class UserData {
     return {
       'username': username,
       'email': email,
-      'password': password,
       'phoneNumber': phoneNumber,
       'address': address,
       'state': state,
       'city': city,
       'pinCode': pinCode,
-      'receiveNotifications': receiveNotifications,
+      'displayName': displayName ?? username,
+      'receiveNotifications': receiveNotifications ?? false,
       'bikes_subscribed': bikes?.map((bike) => bike.toMap()).toList(),
     };
   }

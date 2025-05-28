@@ -111,16 +111,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       style: TextStyle(fontSize: 18),
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                Center(
-                  child: TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: const Text("Back to Login",
-                        style: TextStyle(color: Colors.grey)),
-                  ),
                 )
               ],
             ),

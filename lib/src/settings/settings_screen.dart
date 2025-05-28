@@ -1,0 +1,177 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+
+import '../../main.dart';
+import '../navigation/nav_router.dart';
+
+class SettingsScreen extends StatelessWidget {
+  const SettingsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+    final bool isLoggedIn = user != null;
+    final String userName = user?.displayName ?? 'No Name';
+    final String userEmailOrPhone = user?.email ?? user?.phoneNumber ?? '';
+    final String? photoURL = user?.photoURL;
+
+    ImageProvider<Object> backgroundImage;
+    if (photoURL != null && photoURL.isNotEmpty) {
+      backgroundImage = NetworkImage(photoURL);
+    } else {
+      backgroundImage = const AssetImage('assets/user_avatar.png');
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Profile Settings"),
+        centerTitle: true,
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Column(
+                      children: [
+                        CircleAvatar(
+                          radius: 50,
+                          backgroundImage: backgroundImage,
+                        ),
+                        const SizedBox(height: 12),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 2,
+                    child: ListTile(
+                      leading: const Icon(Icons.person),
+                      title: Text(userName),
+                      subtitle: userEmailOrPhone.isNotEmpty
+                          ? Text(userEmailOrPhone)
+                          : null,
+                      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                      enabled: isLoggedIn,
+                      onTap: isLoggedIn
+                          ? () {
+                              // Navigate to profile details
+                            }
+                          : null,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  _buildDisabledCard(
+                    context,
+                    icon: Icons.motorcycle,
+                    title: "My Listings",
+                    enabled: isLoggedIn,
+                  ),
+                  _buildDisabledCard(
+                    context,
+                    icon: Icons.favorite,
+                    title: "Favorites",
+                    enabled: isLoggedIn,
+                  ),
+                  _buildDisabledCard(
+                    context,
+                    icon: Icons.chat,
+                    title: "Messages",
+                    enabled: isLoggedIn,
+                  ),
+                  const SizedBox(height: 24),
+                  const Text(
+                    "Other Settings",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 12),
+                  ValueListenableBuilder<ThemeMode>(
+                    valueListenable: themeNotifier,
+                    builder: (context, themeMode, _) {
+                      return SwitchListTile(
+                        title: const Text("Dark Mode"),
+                        value: themeMode == ThemeMode.dark,
+                        onChanged: (value) {
+                          themeNotifier.toggle(value);
+                        },
+                      );
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.lock),
+                    title: const Text("Change Password"),
+                    enabled: isLoggedIn,
+                    onTap: isLoggedIn
+                        ? () {
+                            onForgotPasswordTap(context);
+                          }
+                        : null,
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.language),
+                    title: const Text("Language Preference"),
+                    onTap: () {
+                      // Always enabled
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(30.0),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                        isLoggedIn ? Colors.redAccent : Colors.orange,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    )),
+                onPressed: () async {
+                  if (isLoggedIn) {
+                    await FirebaseAuth.instance.signOut();
+                    if (context.mounted) {
+                      Navigator.pushReplacementNamed(context, '/login');
+                    }
+                  } else {
+                    Navigator.pushNamed(context, '/login');
+                  }
+                },
+                child: Text(isLoggedIn ? "Logout" : "Login"),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDisabledCard(BuildContext context,
+      {required IconData icon, required String title, required bool enabled}) {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 2,
+      child: ListTile(
+        leading: Icon(icon),
+        title: Text(title),
+        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+        enabled: enabled,
+        onTap: enabled
+            ? () {
+                // Implement navigation
+              }
+            : null,
+      ),
+    );
+  }
+}

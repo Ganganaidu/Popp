@@ -1,16 +1,16 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Product {
-  final String userId;
-  final String productId;
+  final String? id;
+  final String? userId;
   final String categoryId;
   final String categoryName;
   final String? subCategoryName;
   final String brandName;
   final String modelName;
   final String expectedPrice;
-  final String imageUrl;
-  final List<String> thumbImageUrls;
+  final String? imageUrl;
+  final List<String>? thumbImageUrls;
   final String additionalDetails;
   final DateTime? mfgDate;
   final String? firstOwner;
@@ -30,8 +30,8 @@ class Product {
   DateTime? billDate;
 
   Product(
-      {required this.userId,
-      required this.productId,
+      {this.userId,
+      this.id,
       required this.categoryId,
       required this.categoryName,
       required this.subCategoryName,
@@ -50,8 +50,8 @@ class Product {
       this.insuranceAvailable,
       this.insuranceType,
       required this.sellerName,
-      required this.imageUrl,
-      required this.thumbImageUrls,
+      this.imageUrl,
+      this.thumbImageUrls,
       required this.sellerContactNumber,
       this.isFavorite,
       this.kmDriven,
@@ -61,7 +61,7 @@ class Product {
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
       userId: json['userId'],
-      productId: json['productId'],
+      id: json['id'],
       categoryId: json['categoryId'],
       categoryName: json['categoryName'],
       subCategoryName: json['subCategoryName'],
@@ -92,8 +92,8 @@ class Product {
 
   Map<String, dynamic> toJson() {
     return {
-      userId: userId,
-      'productId': productId,
+      'userId': userId,
+      'id': id,
       'categoryId': categoryId,
       'categoryName': categoryName,
       'subCategoryName': subCategoryName,
@@ -119,12 +119,72 @@ class Product {
   String getTitle() {
     return "$brandName $modelName - $city";
   }
+
+  Product copyWith({
+    String? userId,
+    String? id,
+    String? categoryId,
+    String? categoryName,
+    String? subCategoryName,
+    String? brandName,
+    String? modelName,
+    String? expectedPrice,
+    String? imageUrl,
+    List<String>? thumbImageUrls,
+    String? additionalDetails,
+    DateTime? mfgDate,
+    String? firstOwner,
+    String? invoiceAvailable,
+    DateTime? registrationDate,
+    String? registrationPlace,
+    String? city,
+    String? state,
+    String? nocAvailable,
+    String? insuranceAvailable,
+    String? insuranceType,
+    String? sellerName,
+    String? sellerContactNumber,
+    String? kmDriven,
+    FieldValue? createdAt,
+    bool? isFavorite,
+    DateTime? billDate,
+  }) {
+    return Product(
+      userId: userId ?? this.userId,
+      id: id ?? this.id,
+      categoryId: categoryId ?? this.categoryId,
+      categoryName: categoryName ?? this.categoryName,
+      subCategoryName: subCategoryName ?? this.subCategoryName,
+      brandName: brandName ?? this.brandName,
+      modelName: modelName ?? this.modelName,
+      expectedPrice: expectedPrice ?? this.expectedPrice,
+      imageUrl: imageUrl ?? this.imageUrl,
+      thumbImageUrls: thumbImageUrls ?? this.thumbImageUrls,
+      additionalDetails: additionalDetails ?? this.additionalDetails,
+      mfgDate: mfgDate ?? this.mfgDate,
+      firstOwner: firstOwner ?? this.firstOwner,
+      invoiceAvailable: invoiceAvailable ?? this.invoiceAvailable,
+      registrationDate: registrationDate ?? this.registrationDate,
+      registrationPlace: registrationPlace ?? this.registrationPlace,
+      city: city ?? this.city,
+      state: state ?? this.state,
+      nocAvailable: nocAvailable ?? this.nocAvailable,
+      insuranceAvailable: insuranceAvailable ?? this.insuranceAvailable,
+      insuranceType: insuranceType ?? this.insuranceType,
+      sellerName: sellerName ?? this.sellerName,
+      sellerContactNumber: sellerContactNumber ?? this.sellerContactNumber,
+      kmDriven: kmDriven ?? this.kmDriven,
+      createdAt: createdAt ?? this.createdAt,
+      isFavorite: isFavorite ?? this.isFavorite,
+      billDate: billDate ?? this.billDate,
+    );
+  }
 }
 
 List<Product> productList = [
   Product(
       userId: "uid",
-      productId: 'P001',
+      id: 'P001',
       categoryId: 'C001',
       subCategoryName: '',
       categoryName: '',
@@ -157,7 +217,7 @@ List<Product> productList = [
       isFavorite: true),
   Product(
       userId: "userId",
-      productId: 'P002',
+      id: 'P002',
       categoryName: '',
       subCategoryName: '',
       categoryId: 'C001',
@@ -189,7 +249,7 @@ List<Product> productList = [
       isFavorite: false),
   Product(
       userId: "id",
-      productId: 'P003',
+      id: 'P003',
       categoryName: '',
       subCategoryName: '',
       categoryId: 'C002',

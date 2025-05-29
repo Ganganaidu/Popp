@@ -1,120 +1,402 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:poppflutter/src/utils/app_loger.dart';
 
-/// Saves a list of products associated with a specific category to Firestore.
-///
-/// This function creates or updates a document in the 'category_products' collection.
-/// The document ID is determined by the `categoryId`.
-///
-/// Args:
-///   categoryId: The unique identifier for the category.
-///   categoryName: The name of the category.
-///   products: A list of maps, where each map represents a product with its details.
-///
-/// Returns:
-///   A Future that completes when the operation is done.
-///
-/// Throws:
-///   FirebaseException: If there is an error during the Firestore operation.
-///
-/// ex:
-///   await saveCategoryProducts(
-///   "cat_001",
-///   "Premium Bikes",
-///   premiumBikesProducts,
-/// );
+import '../gallery/pic_image_gallery.dart';
+import '../models/product.dart';
 
-Future<bool> saveCategoryProducts({
-  required String categoryId,
-  required String categoryName,
-  required Map<String, dynamic> products,
-}) async {
-  try {
-    final categoryRef = FirebaseFirestore.instance
-        .collection('categories')
-        .doc(categoryId);
+class FirebaseProductsService {
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
-    // Ensure category exists (optional)
-    await categoryRef.set({
-      'categoryName': categoryName,
-    }, SetOptions(merge: true));
+  User? get currentUser => _auth.currentUser;
 
-    await categoryRef.collection('products').add({
-      ...products,
-      'createdAt': FieldValue.serverTimestamp(),
-    });
+  Future<bool> submitProductForm({
+    required BuildContext context,
+    // Original product data from the form (without ID yet)
+    required Product product,
+    required List<File> images,
+    required Future<void> Function(bool) onLoading, // setState handler
+  }) async {
 
-    return true;
-  } catch (e) {
-    AppLogger.d("Error saving product: $e");
-    return false;
-  }
-}
+    final userId = currentUser?.uid;
+    if (userId == null || userId.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please login before and try again')),
+      );
+      return false;
+    }
 
+    onLoading(true); // Show loading
 
-Future<List<Map<String, dynamic>>> fetchAllProducts() async {
-  final categoriesSnapshot = await FirebaseFirestore.instance
-      .collection('categories')
-      .get();
+    // 1. Generate Product ID client-side
+    final newProductRef = _db.collection('products').doc();
+    final String newProductId = newProductRef.id;
 
-  final List<Map<String, dynamic>> allProducts = [];
+    // 2. Upload Images using the generated newProductId
+    List<String> uploadedImageUrls = [];
+    if (images.isNotEmpty) {
+      uploadedImageUrls = await uploadMultipleImages(images, newProductId);
 
-  for (final cat in categoriesSnapshot.docs) {
-    final productsSnapshot = await cat.reference
-        .collection('products')
-        .get();
+      // Check if image upload failed (if images were provided but none were uploaded)
+      if (uploadedImageUrls.isEmpty) {
+        onLoading(false);
+        if (!context.mounted) return false;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Image upload failed. Please try again.')),
+        );
+        return false;
+      }
+      // You can add more specific checks, e.g., minimum number of images
+      // if (uploadedImageUrls.length < 3) { ... }
+    }
 
-    for (final doc in productsSnapshot.docs) {
-      allProducts.add(doc.data());
+    // 3. Prepare the complete product data with IDs and image URLs
+    final Product completeProduct = product.copyWith(
+      id: newProductId,
+      // Add the generated ID
+      userId: userId,
+      imageUrl: uploadedImageUrls.isNotEmpty ? uploadedImageUrls.first : null,
+      thumbImageUrls: uploadedImageUrls,
+      createdAt: FieldValue.serverTimestamp(), // Set creation timestamp
+      // Ensure other fields from the 'product' instance are carried over by copyWith
+    );
+
+    // 4. Create the product in FireStore and update user's created list
+    final String? createdProductId =
+        await createProduct(newProductId, completeProduct.toJson());
+
+    if (createdProductId != null) {
+      // Product was successfully created in 'products' collection
+      // and added to the user's 'createdProductIds' list.
+
+      // Now, if this action also implies the user "saves" or "favorites"
+      // their own listing immediately, you can call saveProductToUserProfile.
+      // If creating a product doesn't mean it's automatically "saved" in a separate list,
+      // you might skip this or have different logic.
+      // For this example, let's assume creating also means it's "saved" by the creator.
+      final bool savedToProfile =
+          await saveProductToUserProfile(createdProductId);
+
+      onLoading(false); // Hide loading
+      if (!context.mounted) return false;
+
+      if (savedToProfile) {
+        // Or just check if createdProductId != null if not auto-saving
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Product listed successfully!')),
+        );
+        return true;
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text(
+                  'Product listed, but failed to add to your saved items.')),
+        );
+        return false;
+      }
+    } else {
+      onLoading(false); // Hide loading
+      // Attempt to delete already uploaded images if product creation fails
+      if (uploadedImageUrls.isNotEmpty) {
+        // You'd need a function in `pic_image_gallery.dart` to delete images from storage
+        // await deleteImagesFromStorage(uploadedImageUrls); // Or by path `product_images/$newProductId`
+        AppLogger.w(
+            "Product creation failed. Uploaded images for $newProductId might be orphaned if not deleted.");
+      }
+      if (!context.mounted) return false;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Failed to list product. Please try again.')),
+      );
+      return false;
     }
   }
 
-  return allProducts;
-}
+// --- Product Creation ---
+  Future<String?> createProduct(
+      String productId, Map<String, dynamic> productData) async {
+    final user = currentUser;
+    if (user == null) {
+      AppLogger.d("User not logged in to create product.");
+      return null;
+    }
 
+    // Ensure userId in productData matches the current user
+    if (productData['userId'] != user.uid) {
+      AppLogger.e(
+          "Mismatch: productData.userId does not match current user.uid");
+      return null; // Or throw an error
+    }
+    // Ensure id in productData matches the passed productId
+    if (productData['id'] != productId) {
+      AppLogger.e("Mismatch: productData.id does not match passed productId.");
+      return null; // Or throw an error
+    }
 
-Future<List<Map<String, dynamic>>> getProductsByCategoryId(String categoryId) async {
-  final snapshot = await FirebaseFirestore.instance
-      .collection('categories')
-      .doc(categoryId)
-      .collection('products')
-      .get();
+    WriteBatch batch = _db.batch();
 
-  return snapshot.docs.map((doc) => doc.data()).toList();
-}
+    try {
+      // 1. Set product in the global 'products' collection using the provided productId
+      DocumentReference productRef = _db.collection('products').doc(productId);
+      batch.set(productRef, productData);
 
+      // 2. Add product ID to the user's 'createdProductIds'
+      DocumentReference userRef = _db.collection('users').doc(user.uid);
+      batch.update(userRef, {
+        'createdProductIds': FieldValue.arrayUnion([productId])
+      });
 
-Future<List<Map<String, dynamic>>> getProductsByCategoryName(String name) async {
-  final categorySnap = await FirebaseFirestore.instance
-      .collection('categories')
-      .where('categoryName', isEqualTo: name)
-      .limit(1)
-      .get();
+      await batch.commit(); // Commit both operations atomically
 
-  if (categorySnap.docs.isEmpty) return [];
-
-  final categoryId = categorySnap.docs.first.id;
-
-  return getProductsByCategoryId(categoryId);
-}
-
-// For Dashboard view
-Future<Map<String, List<Map<String, dynamic>>>> getProductsGroupedByCategory() async {
-  final categoriesSnapshot = await FirebaseFirestore.instance
-      .collection('categories')
-      .get();
-
-  final Map<String, List<Map<String, dynamic>>> grouped = {};
-
-  for (final cat in categoriesSnapshot.docs) {
-    final productsSnapshot = await cat.reference.collection('products').get();
-
-    grouped[cat['categoryName']] = productsSnapshot.docs
-        .map((doc) => doc.data())
-        .toList();
+      AppLogger.d(
+          "Product created successfully: $productId and linked to user ${user.uid}");
+      return productId;
+    } catch (e) {
+      AppLogger.d("Error creating product or updating user profile: $e");
+      // Batch will automatically roll back if any operation fails.
+      return null;
+    }
   }
 
-  return grouped;
+// --- Saving/Favoriting a Product ---
+  Future<bool> saveProductToUserProfile(String productId) async {
+    final user = currentUser;
+    if (user == null) {
+      // AppLogger.d("User not logged in to save product.");
+      AppLogger.d("User not logged in to save product.");
+      return false;
+    }
+
+    try {
+      // Check if product exists (optional, but good practice)
+      final productDoc = await _db.collection('products').doc(productId).get();
+      if (!productDoc.exists) {
+        // AppLogger.d("Product with ID $productId does not exist.");
+        AppLogger.d("Product with ID $productId does not exist.");
+        return false;
+      }
+
+      await _db.collection('users').doc(user.uid).update({
+        'savedProductIds': FieldValue.arrayUnion([productId])
+      });
+      // AppLogger.d("Product $productId saved to user ${user.uid}");
+      AppLogger.d("Product $productId saved to user ${user.uid}");
+      return true;
+    } catch (e) {
+      // AppLogger.d("Error saving product to user profile: $e");
+      AppLogger.d("Error saving product to user profile: $e");
+      return false;
+    }
+  }
+
+  Future<bool> removeSavedProductFromUserProfile(String productId) async {
+    final user = currentUser;
+    if (user == null) {
+      // AppLogger.d("User not logged in to remove saved product.");
+      AppLogger.d("User not logged in to remove saved product.");
+      return false;
+    }
+
+    try {
+      await _db.collection('users').doc(user.uid).update({
+        'savedProductIds': FieldValue.arrayRemove([productId])
+      });
+      // AppLogger.d("Product $productId removed from user ${user.uid}'s saved list");
+      AppLogger.d(
+          "Product $productId removed from user ${user.uid}'s saved list");
+      return true;
+    } catch (e) {
+      // AppLogger.d("Error removing saved product from user profile: $e");
+      AppLogger.d("Error removing saved product from user profile: $e");
+      return false;
+    }
+  }
+
+  // In FirebaseProductsService -> updateProduct method
+  Future<bool> updateProduct(
+      String productId, Map<String, dynamic> dataToUpdate) async {
+    final user = currentUser;
+    if (user == null) {
+      AppLogger.d("User not logged in to update product.");
+      return false;
+    }
+
+    try {
+      DocumentSnapshot productDoc =
+          await _db.collection('products').doc(productId).get();
+      if (!productDoc.exists) {
+        AppLogger.d("Product $productId does not exist, cannot update.");
+        return false;
+      }
+
+      final productData = productDoc.data() as Map<String, dynamic>?;
+
+      if (productData == null || productData['userId'] != user.uid) {
+        AppLogger.e(
+            "User ${user.uid} is not authorized to update product $productId (or product data is null).");
+        // Depending on your rules, Firestore security rules should also prevent this.
+        return false;
+      }
+
+      // Add a 'updatedAt' timestamp
+      Map<String, dynamic> updatePayload =
+          Map.from(dataToUpdate); // Create a mutable copy
+      updatePayload['updatedAt'] = FieldValue.serverTimestamp();
+
+      await _db.collection('products').doc(productId).update(updatePayload);
+      AppLogger.d("Product $productId updated successfully.");
+      return true;
+    } catch (e) {
+      AppLogger.d("Error updating product $productId: $e");
+      return false;
+    }
+  }
+
+// --- Fetching Products ---
+
+// Fetch a single product by ID
+  Future<Map<String, dynamic>?> getProductById(String productId) async {
+    try {
+      DocumentSnapshot doc =
+          await _db.collection('products').doc(productId).get();
+      if (doc.exists) {
+        return doc.data() as Map<String, dynamic>?;
+      }
+      return null;
+    } catch (e) {
+      // AppLogger.d("Error fetching product by ID: $e");
+      AppLogger.d("Error fetching product by ID: $e");
+      return null;
+    }
+  }
+
+// Fetch all products created by the current user
+  Future<List<Map<String, dynamic>>> getProductsCreatedByUser() async {
+    final user = currentUser;
+    if (user == null) return [];
+
+    try {
+      final userDoc = await _db.collection('users').doc(user.uid).get();
+      if (!userDoc.exists || userDoc.data()?['createdProductIds'] == null) {
+        return [];
+      }
+      final List<String> productIds =
+          List<String>.from(userDoc.data()!['createdProductIds']);
+      if (productIds.isEmpty) return [];
+
+      // Fetch products in batches of 10 (Firestore 'in' query limit)
+      List<Map<String, dynamic>> products = [];
+      for (var i = 0; i < productIds.length; i += 10) {
+        List<String> sublist = productIds.sublist(
+            i, i + 10 > productIds.length ? productIds.length : i + 10);
+        final querySnapshot = await _db
+            .collection('products')
+            .where(FieldPath.documentId, whereIn: sublist)
+            .get();
+        products.addAll(querySnapshot.docs.map((doc) => doc.data()));
+      }
+      return products;
+    } catch (e) {
+      // AppLogger.d("Error fetching products created by user: $e");
+      AppLogger.d("Error fetching products created by user: $e");
+      return [];
+    }
+  }
+
+// Fetch all products saved by the current user
+  Future<List<Map<String, dynamic>>> getProductsSavedByUser() async {
+    final user = currentUser;
+    if (user == null) return [];
+
+    try {
+      final userDoc = await _db.collection('users').doc(user.uid).get();
+      if (!userDoc.exists || userDoc.data()?['savedProductIds'] == null) {
+        return [];
+      }
+      final List<String> productIds =
+          List<String>.from(userDoc.data()!['savedProductIds']);
+      if (productIds.isEmpty) return [];
+
+      List<Map<String, dynamic>> products = [];
+      for (var i = 0; i < productIds.length; i += 10) {
+        List<String> sublist = productIds.sublist(
+            i, i + 10 > productIds.length ? productIds.length : i + 10);
+        final querySnapshot = await _db
+            .collection('products')
+            .where(FieldPath.documentId, whereIn: sublist)
+            .get();
+        products.addAll(querySnapshot.docs.map((doc) => doc.data()));
+      }
+      return products;
+    } catch (e) {
+      // AppLogger.d("Error fetching products saved by user: $e");
+      AppLogger.d("Error fetching products saved by user: $e");
+      return [];
+    }
+  }
+
+// Fetch all products (e.g., for a public catalog)
+  Future<List<Map<String, dynamic>>> getAllProducts({int limit = 20}) async {
+    try {
+      QuerySnapshot snapshot = await _db
+          .collection('products')
+          .orderBy('createdAt', descending: true)
+          .limit(limit)
+          .get();
+      return snapshot.docs
+          .map((doc) => doc.data() as Map<String, dynamic>)
+          .toList();
+    } catch (e) {
+      // AppLogger.d("Error fetching all products: $e");
+      AppLogger.d("Error fetching all products: $e");
+      return [];
+    }
+  }
+
+// Fetch products by category
+  Future<List<Map<String, dynamic>>> getProductsByCategory(String categoryId,
+      {int limit = 20}) async {
+    try {
+      QuerySnapshot snapshot = await _db
+          .collection('products')
+          .where('categoryId', isEqualTo: categoryId)
+          .orderBy('createdAt', descending: true)
+          .limit(limit)
+          .get();
+      return snapshot.docs
+          .map((doc) => doc.data() as Map<String, dynamic>)
+          .toList();
+    } catch (e) {
+      // AppLogger.d("Error fetching products by category: $e");
+      AppLogger.d("Error fetching products by category: $e");
+      return [];
+    }
+  }
+
+// --- User Profile Setup (Call this when a user signs up) ---
+  Future<void> createUserProfileDocument(User user, {String? email}) async {
+    try {
+      await _db.collection('users').doc(user.uid).set(
+          {
+            'uid': user.uid,
+            'email':
+                email ?? user.email, // Use provided email or from User object
+            'createdAt': FieldValue.serverTimestamp(),
+            'createdProductIds': [], // Initialize as empty arrays
+            'savedProductIds': [],
+          },
+          SetOptions(
+              merge: true)); // Merge to avoid overwriting if doc somehow exists
+      // AppLogger.d("User profile created for ${user.uid}");
+      AppLogger.d("User profile created for ${user.uid}");
+    } catch (e) {
+      // AppLogger.d("Error creating user profile document: $e");
+      AppLogger.d("Error creating user profile document: $e");
+    }
+  }
 }
-
-

@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:poppflutter/src/utils/app_loger.dart';
 import 'package:poppflutter/src/utils/build_extensions.dart';
@@ -10,7 +9,6 @@ import 'package:poppflutter/src/widgets/loading_overlay.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../firebase/firebase_save_prodcuts_api.dart';
-import '../../gallery/pic_image_gallery.dart';
 import '../../models/category.dart';
 import '../../models/product.dart';
 import '../../widgets/custom_dropdown_form_field.dart';
@@ -29,7 +27,6 @@ class SellerAccessoriesDetailsForm extends StatefulWidget {
   final Function(String?) onStateChanged;
   final TextEditingController? priceController;
   final TextEditingController? additionalDetailsController;
-
 
   const SellerAccessoriesDetailsForm(
       {super.key,
@@ -52,6 +49,7 @@ class SellerAccessoriesDetailsForm extends StatefulWidget {
 class SellerAccessoriesDetailsFormState
     extends State<SellerAccessoriesDetailsForm> {
   final _formKey = GlobalKey<FormState>();
+  final FirebaseProductsService _productsService = FirebaseProductsService();
 
   DateTime? _selectedManufactureDate;
   DateTime? _selectedBillDate;
@@ -66,6 +64,10 @@ class SellerAccessoriesDetailsFormState
   TextEditingController? productSizeController;
   TextEditingController? productAgingController;
   TextEditingController? warrantyLeftController;
+
+  final List<File> _images = [];
+  var productId = const Uuid().v4();
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -83,39 +85,22 @@ class SellerAccessoriesDetailsFormState
     super.dispose();
   }
 
-  final List<File> _images = [];
-  var productId = const Uuid().v4();
-  bool _isLoading = false;
+  // Function to manage loading state (passed to submitProductForm)
+  Future<void> _handleLoading(bool isLoading) async {
+    // Using async here just to match the signature, though not strictly necessary
+    // if the setState call is synchronous.
+    if (mounted) {
+      // Check if the widget is still in the tree
+      setState(() {
+        _isLoading = isLoading;
+      });
+    }
+  }
 
   void submitForm() async {
     if (_formKey.currentState!.validate()) {
-      var userId = FirebaseAuth.instance.currentUser?.uid;
-      if (userId == null || userId.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please login before and try again')),
-        );
-        return;
-      }
-
-      setState(() {
-        _isLoading = true; // Show progress indicator
-      });
-
-      final uploadedImageUrls = await uploadMultipleImages(_images, productId);
-      if (!mounted) return;
-
-      if (uploadedImageUrls.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text(
-                  'Please at submit at least 3 images to proceed further')),
-        );
-        return;
-      }
-
       Product newProduct = Product(
-        userId: userId,
-        productId: productId,
+        id: productId,
         categoryId: selectedCategory?.categoryId ?? "",
         categoryName: selectedCategory?.name ?? "",
         subCategoryName: selectedSubcategory,
@@ -128,34 +113,33 @@ class SellerAccessoriesDetailsFormState
         city: widget.cityController.text,
         expectedPrice: widget.priceController?.text ?? "",
         additionalDetails: widget.additionalDetailsController?.text ?? "",
-        imageUrl: uploadedImageUrls.first,
-        thumbImageUrls: uploadedImageUrls,
         billDate: _selectedBillDate,
         registrationPlace: "",
         mfgDate: _selectedManufactureDate,
         createdAt: FieldValue
             .serverTimestamp(), // Default for a new product, or based on user input
       );
-
-      final success = await saveCategoryProducts(
-          categoryId: catList[0].categoryId,
-          categoryName: catList[0].name,
-          products: newProduct.toJson());
-
-      // Crucial check: Ensure the widget is still mounted before using context
-      if (!mounted) return;
-
+      // Call the service method
+      bool success = await _productsService.submitProductForm(
+        context: context,
+        product: newProduct,
+        images: _images,
+        onLoading: _handleLoading, // Pass the loading handler
+      );
       if (success) {
+        _formKey.currentState?.reset();
+        widget.sellerNameController.clear();
+        widget.sellerContactController.clear();
+        widget.modelNameController.clear();
+        widget.cityController.clear();
+        widget.priceController?.clear();
+        widget.additionalDetailsController?.clear();
         setState(() {
-          _isLoading = false; // Hide progress indicator
+          _images.clear();
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Bike listed successfully!')),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to list bike.')),
-        );
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, '/home');
+        }
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -264,8 +248,9 @@ class SellerAccessoriesDetailsFormState
                 child: TextFormField(
                   enabled: isBikeSpecific,
                   controller: widget.modelNameController,
-                  decoration: context.inputDecoration("Bike Model Name",
-                      "e.g. TRIUMPH Tiger 1200", enable: isBikeSpecific),
+                  decoration: context.inputDecoration(
+                      "Bike Model Name", "e.g. TRIUMPH Tiger 1200",
+                      enable: isBikeSpecific),
                   validator: (val) => val!.isEmpty ? "Required" : null,
                 ),
               ),
@@ -361,7 +346,8 @@ class SellerAccessoriesDetailsFormState
                       // Assuming productAgingController is initialized
                       productAgingController?.text =
                           "${age['years']} years and ${age['months']} months";
-                      AppLogger.d("productAgingController updated to: ${productAgingController?.text}"); // Debug
+                      AppLogger.d(
+                          "productAgingController updated to: ${productAgingController?.text}"); // Debug
                     });
                   },
                 ),

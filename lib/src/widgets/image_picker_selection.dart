@@ -56,7 +56,7 @@ class _ImagePickerSectionState extends State<ImagePickerSection> {
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               // Add some horizontal padding
               decoration: BoxDecoration(
-                color: Colors.lightBlue[100], // Example: Light blue background
+                color: Colors.orange[100], // Example: Light blue background
                 borderRadius: BorderRadius.circular(8.0), // Rounded corners
               ),
               child: Row(

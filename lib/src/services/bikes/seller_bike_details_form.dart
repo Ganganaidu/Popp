@@ -63,6 +63,7 @@ class SellerBikeDetailsForm extends StatefulWidget {
 
 class SellerBikeDetailsFormState extends State<SellerBikeDetailsForm> {
   final _formKey = GlobalKey<FormState>();
+  final FirebaseProductsService _productsService = FirebaseProductsService();
 
   DateTime? _selectedManufactureDate;
   DateTime? _selectedRegistrationDate;
@@ -70,40 +71,25 @@ class SellerBikeDetailsFormState extends State<SellerBikeDetailsForm> {
   String? _invoiceAvailable;
   String? _nocAvailable;
   String? _insuranceAvailable;
+  bool _isLoading = false;
 
   final List<File> _images = [];
-  var productId = const Uuid().v4();
-  bool _isLoading = false;
+
+// Function to manage loading state (passed to submitProductForm)
+  Future<void> _handleLoading(bool isLoading) async {
+    // Using async here just to match the signature, though not strictly necessary
+    // if the setState call is synchronous.
+    if (mounted) {
+      // Check if the widget is still in the tree
+      setState(() {
+        _isLoading = isLoading;
+      });
+    }
+  }
 
   void submitForm() async {
     if (_formKey.currentState!.validate()) {
-      var userId = FirebaseAuth.instance.currentUser?.uid;
-      if (userId == null || userId.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please login before and try again')),
-        );
-        return;
-      }
-
-      setState(() {
-        _isLoading = true; // Show progress indicator
-      });
-
-      final uploadedImageUrls = await uploadMultipleImages(_images, productId);
-      if (!mounted) return;
-
-      if (uploadedImageUrls.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text(
-                  'Please at submit at least 3 images to proceed further')),
-        );
-        return;
-      }
-
       Product newProduct = Product(
-        userId: userId,
-        productId: productId,
         categoryId: catList[0].categoryId,
         categoryName: catList[0].name,
         subCategoryName: '',
@@ -122,38 +108,38 @@ class SellerBikeDetailsFormState extends State<SellerBikeDetailsForm> {
         nocAvailable: _nocAvailable,
         insuranceAvailable: _insuranceAvailable,
         insuranceType: widget.insuranceType ?? "",
-        imageUrl: uploadedImageUrls.first,
-        thumbImageUrls: uploadedImageUrls,
         registrationDate: _selectedRegistrationDate,
         registrationPlace: "",
         mfgDate: _selectedManufactureDate,
         createdAt: FieldValue
             .serverTimestamp(), // Default for a new product, or based on user input
       );
-
-      final success = await saveCategoryProducts(
-          categoryId: catList[0].categoryId,
-          categoryName: catList[0].name,
-          products: newProduct.toJson());
-
-      // Crucial check: Ensure the widget is still mounted before using context
-      if (!mounted) return;
-
+      // Call the service method
+      bool success = await _productsService.submitProductForm(
+        context: context,
+        product: newProduct,
+        images: _images,
+        onLoading: _handleLoading, // Pass the loading handler
+      );
       if (success) {
+        _formKey.currentState?.reset();
+        widget.sellerNameController.clear();
+        widget.sellerContactController.clear();
+        widget.modelNameController.clear();
+        widget.cityController.clear();
+        widget.kmDrivenController?.clear();
+        widget.priceController?.clear();
+        widget.additionalDetailsController?.clear();
         setState(() {
-          _isLoading = false; // Hide progress indicator
+          _images.clear();
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Bike listed successfully!')),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to list bike.')),
-        );
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, '/home');
+        }
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all required fields.')),
+        const SnackBar(content: Text('Please fill in all required fields')),
       );
     }
   }
@@ -169,7 +155,7 @@ class SellerBikeDetailsFormState extends State<SellerBikeDetailsForm> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                padding: const EdgeInsets.symmetric(vertical: 12.0),
                 child: TextFormField(
                   controller: widget.sellerNameController,
                   decoration: context.inputDecoration(
@@ -178,7 +164,7 @@ class SellerBikeDetailsFormState extends State<SellerBikeDetailsForm> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                padding: const EdgeInsets.symmetric(vertical: 10.0),
                 child: Row(
                   children: [
                     DropdownButton<String>(
@@ -202,7 +188,7 @@ class SellerBikeDetailsFormState extends State<SellerBikeDetailsForm> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                padding: const EdgeInsets.symmetric(vertical: 12.0),
                 child: DropdownButtonFormField<String>(
                   value: widget.selectedBrand,
                   decoration:
@@ -215,7 +201,7 @@ class SellerBikeDetailsFormState extends State<SellerBikeDetailsForm> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                padding: const EdgeInsets.symmetric(vertical: 12.0),
                 child: TextFormField(
                   controller: widget.modelNameController,
                   decoration: context.inputDecoration(
@@ -224,7 +210,7 @@ class SellerBikeDetailsFormState extends State<SellerBikeDetailsForm> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                padding: const EdgeInsets.symmetric(vertical: 12.0),
                 child: MonthYearPicker(
                   enable: true,
                   label: "Manufacture Date",
@@ -238,7 +224,7 @@ class SellerBikeDetailsFormState extends State<SellerBikeDetailsForm> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                padding: const EdgeInsets.symmetric(vertical: 12.0),
                 child: MonthYearPicker(
                   enable: true,
                   label: "Registration Date",
@@ -252,7 +238,7 @@ class SellerBikeDetailsFormState extends State<SellerBikeDetailsForm> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                padding: const EdgeInsets.symmetric(vertical: 12.0),
                 child: DropdownButtonFormField<String>(
                   value: widget.selectedState,
                   decoration:
@@ -266,7 +252,7 @@ class SellerBikeDetailsFormState extends State<SellerBikeDetailsForm> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                padding: const EdgeInsets.symmetric(vertical: 12.0),
                 child: TextFormField(
                   controller: widget.cityController,
                   decoration:
@@ -275,7 +261,7 @@ class SellerBikeDetailsFormState extends State<SellerBikeDetailsForm> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                padding: const EdgeInsets.symmetric(vertical: 12.0),
                 child: CustomDropdownFormField(
                   label: 'Are you the first owner?',
                   hint: "Tap to select",
@@ -290,7 +276,7 @@ class SellerBikeDetailsFormState extends State<SellerBikeDetailsForm> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                padding: const EdgeInsets.symmetric(vertical: 12.0),
                 child: CustomDropdownFormField(
                   label: 'Invoice available?',
                   hint: "Tap to select",
@@ -305,7 +291,7 @@ class SellerBikeDetailsFormState extends State<SellerBikeDetailsForm> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                padding: const EdgeInsets.symmetric(vertical: 12.0),
                 child: CustomDropdownFormField(
                   label: 'NOC available?',
                   hint: "Tap to select",
@@ -320,7 +306,7 @@ class SellerBikeDetailsFormState extends State<SellerBikeDetailsForm> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                padding: const EdgeInsets.symmetric(vertical: 12.0),
                 child: TextFormField(
                   controller: widget.kmDrivenController,
                   decoration: context.inputDecoration(
@@ -329,7 +315,7 @@ class SellerBikeDetailsFormState extends State<SellerBikeDetailsForm> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                padding: const EdgeInsets.symmetric(vertical: 12.0),
                 child: TextFormField(
                   controller: widget.priceController,
                   decoration: context.inputDecoration(
@@ -338,7 +324,7 @@ class SellerBikeDetailsFormState extends State<SellerBikeDetailsForm> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                padding: const EdgeInsets.symmetric(vertical: 12.0),
                 child: TextFormField(
                   controller: widget.additionalDetailsController,
                   decoration: context.inputDecoration(
@@ -347,7 +333,7 @@ class SellerBikeDetailsFormState extends State<SellerBikeDetailsForm> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                padding: const EdgeInsets.symmetric(vertical: 12.0),
                 child: ImagePickerSection(
                   images: _images,
                   onImagesChanged: (images) {

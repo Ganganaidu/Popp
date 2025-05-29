@@ -70,7 +70,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
     return useHero
         ? Hero(
-            tag: widget.product.imageUrl,
+            tag: widget.product.imageUrl ?? '',
             child: imageWidget,
           )
         : imageWidget;
@@ -93,14 +93,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     width: double.infinity,
                     child: PageView.builder(
                       controller: _pageController,
-                      itemCount: widget.product.thumbImageUrls.length,
+                      itemCount: widget.product.thumbImageUrls?.length,
                       onPageChanged: (index) {
                         setState(() {
                           selectedImageIndex = index;
                         });
                       },
                       itemBuilder: (context, index) {
-                        final url = widget.product.thumbImageUrls[index];
+                        final url = widget.product.thumbImageUrls?[index] ?? '';
                         return _buildImage(
                           url,
                           useHero: index == 0,
@@ -134,7 +134,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: List.generate(
-                            widget.product.thumbImageUrls.length, (index) {
+                            widget.product.thumbImageUrls?.length ?? 0,
+                            (index) {
                           bool isActive = index == selectedImageIndex;
                           return AnimatedContainer(
                             duration: const Duration(milliseconds: 300),
@@ -163,7 +164,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
-                        '${selectedImageIndex + 1} / ${widget.product.thumbImageUrls.length}',
+                        '${selectedImageIndex + 1} / ${widget.product.thumbImageUrls?.length}',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 14,
@@ -182,10 +183,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 height: 100,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  itemCount: widget.product.thumbImageUrls.length,
+                  itemCount: widget.product.thumbImageUrls?.length,
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   itemBuilder: (context, index) {
-                    final url = widget.product.thumbImageUrls[index];
+                    final url = widget.product.thumbImageUrls?[index] ?? '';
                     return GestureDetector(
                       onTap: () {
                         setState(() {

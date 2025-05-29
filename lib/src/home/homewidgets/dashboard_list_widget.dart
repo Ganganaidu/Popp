@@ -68,12 +68,13 @@ class _CategorySection extends StatelessWidget {
                         child: InkWell(
                           onTap: () => onProductTap(context, product),
                           child: Hero(
-                            tag: product.productId, // Unique tag for Hero
+                            tag: product.id ?? product.categoryId,
+                            // Unique tag for Hero
                             child: SizedBox(
                               height: itemWidth,
                               width: itemWidth,
                               child: Image.network(
-                                product.imageUrl,
+                                product.imageUrl ?? '',
                                 fit: BoxFit.cover,
                               ),
                             ),

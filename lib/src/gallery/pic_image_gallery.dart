@@ -3,6 +3,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../utils/app_loger.dart';
+
 Future<File?> pickImageFromGallery() async {
   final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
   if (pickedFile != null) {
@@ -55,6 +57,33 @@ Future<List<String>> uploadMultipleImages(List<File> imageFiles, String productI
   return downloadUrls;
 }
 
+// In FirebaseProductsService or a separate StorageService
+
+Future<void> deleteImageFromStorageByUrl(String imageUrl) async {
+  if (imageUrl.isEmpty) return;
+  try {
+    Reference storageRef = FirebaseStorage.instance.refFromURL(imageUrl);
+    await storageRef.delete();
+    AppLogger.d("Image deleted from storage: $imageUrl");
+  } catch (e) {
+    // It's possible the file doesn't exist, or permissions error
+    // Log it but don't necessarily treat it as a hard failure for the update flow
+    AppLogger.w("Error deleting image from storage ($imageUrl): $e. It might have already been deleted or path is incorrect.");
+  }
+}
+
+// You might also want a function to delete a whole folder if all images for a product are changed.
+Future<void> deleteProductImagesFolder(String productId) async {
+  try {
+    final listResult = await FirebaseStorage.instance.ref('product_images/$productId').listAll();
+    for (final item in listResult.items) {
+      await item.delete();
+    }
+    AppLogger.d("All images for product $productId deleted from storage.");
+  } catch (e) {
+    AppLogger.w("Error deleting images folder for product $productId: $e");
+  }
+}
 
 // Future<void> pickAndUploadMultipleImages() async {
 //   final imageFiles = await pickMultipleImages();

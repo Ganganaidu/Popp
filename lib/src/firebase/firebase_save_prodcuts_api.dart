@@ -21,7 +21,6 @@ class FirebaseProductsService {
     required List<File> images,
     required Future<void> Function(bool) onLoading, // setState handler
   }) async {
-
     final userId = currentUser?.uid;
     if (userId == null || userId.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -38,35 +37,49 @@ class FirebaseProductsService {
 
     // 2. Upload Images using the generated newProductId
     List<String> uploadedImageUrls = [];
-    if (images.isNotEmpty) {
-      uploadedImageUrls = await uploadMultipleImages(images, newProductId);
+    try {
+      if (images.isNotEmpty) {
+        uploadedImageUrls = await uploadMultipleImages(images, newProductId);
 
-      // Check if image upload failed (if images were provided but none were uploaded)
-      if (uploadedImageUrls.isEmpty) {
-        onLoading(false);
-        if (!context.mounted) return false;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Image upload failed. Please try again.')),
-        );
-        return false;
+        // Check if image upload failed (if images were provided but none were uploaded)
+        if (uploadedImageUrls.isEmpty) {
+          onLoading(false);
+          if (!context.mounted) return false;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text('Image upload failed. Please try again.')),
+          );
+          return false;
+        }
       }
-      // You can add more specific checks, e.g., minimum number of images
-      // if (uploadedImageUrls.length < 3) { ... }
+    } catch (e) {
+      onLoading(false);
+      if (!context.mounted) return false;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Image upload failed. Please try again.')),
+      );
     }
 
     // 3. Prepare the complete product data with IDs and image URLs
     final Product completeProduct = product.copyWith(
-      id: newProductId,
       userId: userId,
+      id: newProductId,
       imageUrl: uploadedImageUrls.isNotEmpty ? uploadedImageUrls.first : null,
       thumbImageUrls: uploadedImageUrls,
       createdAt: FieldValue.serverTimestamp(), // Set creation timestamp
     );
 
+    final productDataForCheck = completeProduct.toJson(); // Store it in a variable
+
+    AppLogger.d("newProductId (passed to createProduct): $newProductId");
+    AppLogger.d("completeProduct.id (after copyWith): ${completeProduct.id}");
+    AppLogger.d("productDataForCheck['id'] (from toJson): ${productDataForCheck['id']}");
+    AppLogger.d("productDataForCheck (from toJson): $productDataForCheck");
+
     // 4. Create the product in FireStore and update user's created list
     final String? createdProductId =
-        await createProduct(newProductId, completeProduct.toJson());
+        await createProduct(newProductId, productDataForCheck);
 
     if (createdProductId != null) {
       // Product was successfully created in 'products' collection
@@ -101,10 +114,7 @@ class FirebaseProductsService {
       onLoading(false); // Hide loading
       // Attempt to delete already uploaded images if product creation fails
       if (uploadedImageUrls.isNotEmpty) {
-        // You'd need a function in `pic_image_gallery.dart` to delete images from storage
-        // await deleteImagesFromStorage(uploadedImageUrls); // Or by path `product_images/$newProductId`
-        AppLogger.w(
-            "Product creation failed. Uploaded images for $newProductId might be orphaned if not deleted.");
+        await deleteImagesFromStorage(uploadedImageUrls);
       }
       if (!context.mounted) return false;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -139,15 +149,19 @@ class FirebaseProductsService {
     WriteBatch batch = _db.batch();
 
     try {
+      AppLogger.d("Batch process started");
       // 1. Set product in the global 'products' collection using the provided productId
       DocumentReference productRef = _db.collection('products').doc(productId);
       batch.set(productRef, productData);
 
+      AppLogger.d("Batch process productRef $productRef");
       // 2. Add product ID to the user's 'createdProductIds'
       DocumentReference userRef = _db.collection('users').doc(user.uid);
       batch.update(userRef, {
         'createdProductIds': FieldValue.arrayUnion([productId])
       });
+
+      AppLogger.d("Batch process updated $userRef");
 
       await batch.commit(); // Commit both operations atomically
 

@@ -108,9 +108,10 @@ class _SignupScreenState extends State<SignupScreen> {
                           icon: Icons.email,
                           keyboardType: TextInputType.emailAddress),
                       _buildTextField(
-                          "Phone number optional", phoneNumberController,
+                          "Phone number ", phoneNumberController,
+                          icon: Icons.phone_android_sharp,
                           keyboardType: TextInputType.number,
-                          isRequired: false),
+                          isRequired: true),
                       _buildTextField("Password", passwordController,
                           icon: Icons.lock,
                           isPasswordTextField: true,

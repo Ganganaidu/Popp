@@ -102,7 +102,7 @@ class Product {
   Map<String, dynamic> toJson() {
     return {
       if (userId != null) 'userId': userId,
-      // id is usually the document ID, so not always included in the map itself
+      'id': id,
       'categoryId': categoryId,
       'categoryName': categoryName,
       if (subCategoryName != null) 'subCategoryName': subCategoryName,

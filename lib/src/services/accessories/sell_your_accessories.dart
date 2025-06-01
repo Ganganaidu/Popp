@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:poppflutter/src/services/accessories/seller_accessories_details_form.dart';
-import 'package:poppflutter/src/services/bikes/seller_bike_details_form.dart';
 
 class SellYourAccessories extends StatefulWidget {
   const SellYourAccessories({super.key});
@@ -12,8 +11,8 @@ class SellYourAccessories extends StatefulWidget {
 class _SellYourAccessoriesState extends State<SellYourAccessories>
     with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
-  final GlobalKey<SellerBikeDetailsFormState> _sellerFormKey =
-      GlobalKey<SellerBikeDetailsFormState>();
+  final GlobalKey<SellerAccessoriesDetailsFormState> _sellerFormKey =
+      GlobalKey<SellerAccessoriesDetailsFormState>();
 
   final TextEditingController sellerNameController = TextEditingController();
   final TextEditingController sellerContactController = TextEditingController();

@@ -500,6 +500,12 @@
       "languageVersion": "3.2"
     },
     {
+      "name": "nested",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/nested-1.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
       "name": "path",
       "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/path-1.9.1",
       "packageUri": "lib/",
@@ -564,6 +570,12 @@
       "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/posix-6.0.2",
       "packageUri": "lib/",
       "languageVersion": "3.0"
+    },
+    {
+      "name": "provider",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/provider-6.1.5",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
     },
     {
       "name": "shimmer",
@@ -752,7 +764,7 @@
       "languageVersion": "3.4"
     }
   ],
-  "generated": "2025-05-28T06:35:42.340895Z",
+  "generated": "2025-06-01T15:33:20.525535Z",
   "generator": "pub",
   "generatorVersion": "3.7.2",
   "flutterRoot": "file:///Users/gangadharkondati/development/flutter",

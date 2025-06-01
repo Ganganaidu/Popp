@@ -41,24 +41,42 @@ Future<List<File>> pickMultipleImages() async {
   }
 }
 
-Future<List<String>> uploadMultipleImages(List<File> imageFiles, String productId) async {
+Future<List<String>> uploadMultipleImages(
+    List<File> imageFiles, String productId) async {
   List<String> downloadUrls = [];
 
   for (int i = 0; i < imageFiles.length; i++) {
-    final storageRef = FirebaseStorage.instance.ref().child('product_images/${productId}_$i.jpg');
+    try {
+      final storageRef = FirebaseStorage.instance
+          .ref()
+          .child('product_images/${productId}_$i.jpg');
 
-    final uploadTask = storageRef.putFile(imageFiles[i]);
-    final snapshot = await uploadTask;
-    final downloadUrl = await snapshot.ref.getDownloadURL();
+      final uploadTask = storageRef.putFile(imageFiles[i]);
 
-    downloadUrls.add(downloadUrl);
+      // Await the upload and get download URL
+      final TaskSnapshot snapshot = await uploadTask;
+      final String downloadUrl = await snapshot.ref.getDownloadURL();
+
+      downloadUrls.add(downloadUrl);
+    } on FirebaseException catch (e) {
+      AppLogger.e(
+          'Firebase upload error for image $i: ${e.code} - ${e.message}');
+      rethrow; // or return []; to stop and indicate failure
+    } catch (e) {
+      AppLogger.e('Unexpected error during image upload $i: $e');
+      rethrow; // or return []; or continue; based on desired behavior
+    }
   }
-
   return downloadUrls;
 }
 
-// In FirebaseProductsService or a separate StorageService
+Future<void> deleteImagesFromStorage(List<String> imageUrls) async {
+  for (final imageUrl in imageUrls) {
+    await deleteImageFromStorageByUrl(imageUrl);
+  }
+}
 
+// In FirebaseProductsService or a separate StorageService
 Future<void> deleteImageFromStorageByUrl(String imageUrl) async {
   if (imageUrl.isEmpty) return;
   try {
@@ -68,14 +86,18 @@ Future<void> deleteImageFromStorageByUrl(String imageUrl) async {
   } catch (e) {
     // It's possible the file doesn't exist, or permissions error
     // Log it but don't necessarily treat it as a hard failure for the update flow
-    AppLogger.w("Error deleting image from storage ($imageUrl): $e. It might have already been deleted or path is incorrect.");
+    AppLogger.w(
+        "Error deleting image from storage ($imageUrl): $e. "
+            "It might have already been deleted or path is incorrect.");
   }
 }
 
 // You might also want a function to delete a whole folder if all images for a product are changed.
 Future<void> deleteProductImagesFolder(String productId) async {
   try {
-    final listResult = await FirebaseStorage.instance.ref('product_images/$productId').listAll();
+    final listResult = await FirebaseStorage.instance
+        .ref('product_images/$productId')
+        .listAll();
     for (final item in listResult.items) {
       await item.delete();
     }

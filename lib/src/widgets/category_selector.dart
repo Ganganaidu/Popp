@@ -20,6 +20,7 @@ class CategorySelector extends StatefulWidget {
 class _CategorySelectorState extends State<CategorySelector> {
   Category? selectedCategory;
   String? selectedSubcategory;
+  List<Category> filteredCatList = catList.isNotEmpty ? catList.sublist(1) : [];
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +31,7 @@ class _CategorySelectorState extends State<CategorySelector> {
           label: "Category",
           hint: "Select your Category",
           value: selectedCategory,
-          items: catList
+          items: filteredCatList
               .map((cat) => DropdownMenuItem(value: cat, child: Text(cat.name)))
               .toList(),
           onChanged: (cat) {
@@ -48,7 +49,7 @@ class _CategorySelectorState extends State<CategorySelector> {
           hint: "Select your Sub Category",
           value: selectedSubcategory,
           items: selectedCategory?.subcategories
-                  .map((sub) => DropdownMenuItem(value: sub, child: Text(sub)))
+                  ?.map((sub) => DropdownMenuItem(value: sub, child: Text(sub)))
                   .toList() ??
               [],
           onChanged: (sub) {

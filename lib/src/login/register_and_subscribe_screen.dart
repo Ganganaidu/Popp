@@ -28,29 +28,36 @@ class _RegisterAndSubscribeScreenState
       );
       return;
     }
-
     setState(() => isSubmitting = true);
 
     try {
-      final result = await registerUserWithEmail(
-          widget.userData.email, widget.userData.password);
-      if (result == null || result.startsWith('Error')) {
-        // Show error to user
+      FirestoreResult saveUserDataResult =
+          await saveUserDataToFireStore(widget.userData);
+      if (saveUserDataResult.success) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(result ?? 'Registration failed, please try again')),
+          const SnackBar(content: Text("Profile data saved successfully!")),
         );
-        return;
+        Navigator.pushReplacementNamed(context, '/finalCongrats');
+      } else {
+        // More specific error handling
+        String userMessage =
+            saveUserDataResult.errorMessage ?? "An unknown error occurred.";
+        if (saveUserDataResult.errorCode == 'permission-denied') {
+          userMessage =
+              "You do not have permission to save this data. Please contact support.";
+          // You might also log out the user or take other specific actions
+        } else if (saveUserDataResult.errorCode == 'unavailable') {
+          userMessage =
+              "Could not connect to the server. Please check your internet connection and try again.";
+        }
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: $userMessage")),
+        );
+        AppLogger.w(
+            "Failed to save user data. Error: ${saveUserDataResult.errorMessage}, Code: ${saveUserDataResult.errorCode}");
       }
-      AppLogger.d("User registered successfully with UID: $result");
-      if (!mounted) return;
-      widget.userData.uid = result;
-
-      await saveUserDataToFireStore(widget.userData);
-
-      if (!mounted) return;
-      Navigator.pushReplacementNamed(context, '/finalCongrats');
     } on FirebaseAuthException catch (e) {
       if (e.code == 'email-already-in-use' ||
           e.code == 'account-exists-with-different-credential' ||

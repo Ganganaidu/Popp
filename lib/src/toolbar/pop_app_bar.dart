@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:poppflutter/src/home/search_screen.dart';
-import 'package:poppflutter/src/login/login_screen.dart';
 import 'package:poppflutter/src/navigation/nav_router.dart';
 
 class PopAppBar extends StatelessWidget implements PreferredSizeWidget {

@@ -1,65 +1,78 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class UserData {
-  String? uid;
-  final String username;
-  final String email;
-  final String? phoneNumber;
-  String password;
-  final String address;
-  final String state;
-  final String city;
-  final String pinCode;
-  String? photoURL;
-  String? provider;
+  String uid; // Required by create rule
+  String email; // Standard, good to have
   String? displayName;
-  final List<BikeData>? bikes;
-  final bool? receiveNotifications;
+  String? photoURL;
+  // Required by create rule (use FieldValue.serverTimestamp())
+  FieldValue createdAt;
+  List<String> createdProductIds; // Required by create rule
+  List<String> savedProductIds;   // Required by create rule
+  List<BikeData>? bikeData; // List of bike data>
+  // Add other fields from your sign-up form
+  String? username;
+  String? phoneNumber;
+  String? address;
+  String? city;
+  String? pinCode;
+  String? stateName; // Assuming from your earlier UI context
 
   UserData({
-    this.uid,
-    required this.username,
+    required this.uid,
     required this.email,
-    this.phoneNumber,
-    required this.password,
-    required this.address,
-    required this.state,
-    required this.city,
-    required this.pinCode,
-    this.bikes,
-    this.photoURL,
     this.displayName,
-    this.provider,
-    this.receiveNotifications,
-  });
-
-  UserData copyWith({
-    List<BikeData>? bikes,
-  }) {
-    return UserData(
-      username: username,
-      email: email,
-      password: password,
-      address: address,
-      state: state,
-      city: city,
-      pinCode: pinCode,
-      bikes: bikes ?? this.bikes,
-      receiveNotifications: receiveNotifications,
-    );
-  }
+    this.photoURL,
+    required this.createdAt,
+    List<String>? createdProductIds, // Allow null for default empty list
+    List<String>? savedProductIds,   // Allow null for default empty list
+    List<BikeData>? bikeData,   // Allow null for default empty list
+    this.username,
+    this.phoneNumber,
+    this.address,
+    this.city,
+    this.pinCode,
+    this.stateName,
+  })  : createdProductIds = createdProductIds ?? [], // Default to empty list
+        savedProductIds = savedProductIds ?? [];   // Default to empty list
 
   Map<String, dynamic> toMap() {
     return {
-      'username': username,
+      'uid': uid,
       'email': email,
-      'phoneNumber': phoneNumber,
-      'address': address,
-      'state': state,
-      'city': city,
-      'pinCode': pinCode,
       'displayName': displayName ?? username,
-      'receiveNotifications': receiveNotifications ?? false,
-      'bikes_subscribed': bikes?.map((bike) => bike.toMap()).toList(),
+      if (photoURL != null) 'photoURL': photoURL,
+      'createdAt': createdAt, // This will be FieldValue.serverTimestamp()
+      'createdProductIds': createdProductIds,
+      'savedProductIds': savedProductIds,
+      'bikeData': bikeData,
+      if (username != null) 'username': username,
+      if (phoneNumber != null) 'phoneNumber': phoneNumber,
+      if (address != null) 'address': address,
+      if (city != null) 'city': city,
+      if (pinCode != null) 'pinCode': pinCode,
+      if (stateName != null) 'stateName': stateName,
     };
+  }
+
+  // Optional: Add a fromJson factory if you fetch this data
+  factory UserData.fromFireStore(DocumentSnapshot<Map<String, dynamic>> doc) {
+    final data = doc.data()!;
+    return UserData(
+      uid: doc.id, // Or data['uid'] if you store it redundantly
+      email: data['email'] ?? '',
+      displayName: data['displayName'],
+      photoURL: data['photoURL'],
+      createdAt: data['createdAt'], // This will be a Timestamp when read
+      createdProductIds: List<String>.from(data['createdProductIds'] ?? []),
+      savedProductIds: List<String>.from(data['savedProductIds'] ?? []),
+      username: data['username'],
+      phoneNumber: data['phoneNumber'],
+      address: data['address'],
+      city: data['city'],
+      pinCode: data['pinCode'],
+      stateName: data['stateName']
+    );
   }
 }
 

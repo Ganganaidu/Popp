@@ -58,12 +58,10 @@ class FirebaseProductsService {
     // 3. Prepare the complete product data with IDs and image URLs
     final Product completeProduct = product.copyWith(
       id: newProductId,
-      // Add the generated ID
       userId: userId,
       imageUrl: uploadedImageUrls.isNotEmpty ? uploadedImageUrls.first : null,
       thumbImageUrls: uploadedImageUrls,
       createdAt: FieldValue.serverTimestamp(), // Set creation timestamp
-      // Ensure other fields from the 'product' instance are carried over by copyWith
     );
 
     // 4. Create the product in FireStore and update user's created list

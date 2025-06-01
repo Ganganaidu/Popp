@@ -116,8 +116,8 @@ class SellerAccessoriesDetailsFormState
         billDate: _selectedBillDate,
         registrationPlace: "",
         mfgDate: _selectedManufactureDate,
-        createdAt: FieldValue
-            .serverTimestamp(), // Default for a new product, or based on user input
+        // Default for a new product, or based on user input
+        createdAt: FieldValue.serverTimestamp(),
       );
       // Call the service method
       bool success = await _productsService.submitProductForm(
@@ -126,6 +126,7 @@ class SellerAccessoriesDetailsFormState
         images: _images,
         onLoading: _handleLoading, // Pass the loading handler
       );
+
       if (success) {
         _formKey.currentState?.reset();
         widget.sellerNameController.clear();

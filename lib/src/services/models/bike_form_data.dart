@@ -41,6 +41,7 @@ const List<String> productConditionList = [
 
 const List<String> stateNames = [
   'Andhra Pradesh',
+  'Telangana',
   'Assam',
   'Bihar',
   'Chhattisgarh',
@@ -64,10 +65,9 @@ const List<String> stateNames = [
   'Odisha',
   'Punjab',
   'Puducherry'
-      'Rajasthan',
+  'Rajasthan',
   'Sikkim',
   'Tamil Nadu',
-  'Telangana',
   'Tripura',
   'Uttar Pradesh',
   'Arunachal Pradesh',

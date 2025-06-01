@@ -1,14 +1,11 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:poppflutter/src/utils/build_extensions.dart';
 import 'package:poppflutter/src/widgets/loading_overlay.dart';
-import 'package:uuid/uuid.dart';
 
 import '../../firebase/firebase_save_prodcuts_api.dart';
-import '../../gallery/pic_image_gallery.dart';
 import '../../models/category.dart';
 import '../../models/product.dart';
 import '../../widgets/custom_dropdown_form_field.dart';

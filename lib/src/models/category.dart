@@ -1,16 +1,16 @@
+import 'package:poppflutter/src/models/product.dart';
+
 class Category {
   final String categoryId;
   final String name;
-  final String? description;
-  final String? imageUrl;
-  final List<String> subcategories;
+  List<String>? subcategories;
+  List<Product>? products;
 
   Category(
       {required this.categoryId,
       required this.name,
-      this.description,
-      this.imageUrl,
-      required this.subcategories});
+      this.subcategories,
+      this.products});
 }
 
 final List<Category> catList = [

@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
 import '../navigation/nav_router.dart';
 import '../utils/app_utils.dart';
-import 'forgot_password_screen.dart';
 import 'social_login_buttons.dart';
 
 class LoginScreen extends StatefulWidget {

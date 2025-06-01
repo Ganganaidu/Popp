@@ -24,7 +24,7 @@ class _SignUpBikeDetailsScreenState extends State<SignUpBikeDetailsScreen> {
   );
 
   void goToRegisterAndSubscribeScreen() {
-    final bikeList = bikes
+    widget.userData.bikeData = bikes
         .map((bike) => BikeData(
               brand: bike['brand']!.text,
               model: bike['model']!.text,
@@ -34,13 +34,12 @@ class _SignUpBikeDetailsScreenState extends State<SignUpBikeDetailsScreen> {
             b.brand.isNotEmpty || b.model.isNotEmpty || b.monthYear.isNotEmpty)
         .toList();
 
-    final updatedUserData = widget.userData.copyWith(bikes: bikeList);
 
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) =>
-            RegisterAndSubscribeScreen(userData: updatedUserData),
+            RegisterAndSubscribeScreen(userData:  widget.userData),
       ),
     );
   }

@@ -93,15 +93,37 @@ Future<String?> registerUserWithEmail(String email, String password) async {
   return credential.user?.uid;
 }
 
-// Save userData to FireStore using UID as document ID
-Future<void> saveUserDataToFireStore(UserData userData) async {
+// Option B: Return a more detailed result object (recommended for richer feedback)
+class FirestoreResult {
+  final bool success;
+  final String? errorMessage;
+  final String? errorCode; // For Firebase specific error codes
+
+  FirestoreResult({required this.success, this.errorMessage, this.errorCode});
+}
+
+Future<FirestoreResult> saveUserDataToFireStore(UserData userData) async {
   final auth = FirebaseAuth.instance;
   final uid = auth.currentUser?.uid;
 
   if (uid == null) {
-    throw Exception("User not logged in");
+    const message = "User not logged in, cannot save data.";
+    AppLogger.e("saveUserDataToFireStore: $message");
+    return FirestoreResult(success: false, errorMessage: message);
   }
 
   final fireStore = FirebaseFirestore.instance;
-  await fireStore.collection('users').doc(uid).set(userData.toMap());
+  try {
+    AppLogger.d("Attempting to save user data for UID: $uid. Data: ${userData.toMap()}");
+    await fireStore.collection('users').doc(uid).set(userData.toMap());
+    AppLogger.i("User data successfully saved for UID: $uid");
+    return FirestoreResult(success: true);
+  } on FirebaseException catch (e) {
+    AppLogger.e("FirebaseException while saving user data for UID: $uid. Code: ${e.code}. Message: ${e.message}");
+    return FirestoreResult(
+        success: false, errorMessage: e.message ?? "A Firebase error occurred.", errorCode: e.code);
+  } catch (e, s) {
+    AppLogger.e("Unexpected error while saving user data for UID: $uid. Error: $e. StackTrace: $s");
+    return FirestoreResult(success: false, errorMessage: "An unexpected error occurred: ${e.toString()}");
+  }
 }

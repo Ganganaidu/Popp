@@ -25,94 +25,116 @@ class Product {
   final String sellerName;
   final String sellerContactNumber;
   final String? kmDriven;
-  final FieldValue? createdAt;
   bool? isFavorite;
   DateTime? billDate;
+  final FieldValue? createdAt; // For writing to Firestore
+  final DateTime? createdAtDate; // For reading from Firestore
 
-  Product(
-      {this.userId,
-      this.id,
-      required this.categoryId,
-      required this.categoryName,
-      required this.subCategoryName,
-      required this.brandName,
-      required this.expectedPrice,
-      required this.modelName,
-      required this.additionalDetails,
-      this.firstOwner,
-      this.mfgDate,
-      this.invoiceAvailable,
-      this.registrationDate,
-      required this.registrationPlace,
-      required this.city,
-      required this.state,
-      this.nocAvailable,
-      this.insuranceAvailable,
-      this.insuranceType,
-      required this.sellerName,
-      this.imageUrl,
-      this.thumbImageUrls,
-      required this.sellerContactNumber,
-      this.isFavorite,
-      this.kmDriven,
-      this.billDate,
-      this.createdAt});
+  Product({
+    this.id,
+    this.userId,
+    required this.categoryId,
+    required this.categoryName,
+    this.subCategoryName, // Made nullable to match potential fromJson scenarios
+    required this.brandName,
+    required this.expectedPrice,
+    required this.modelName,
+    required this.additionalDetails,
+    this.firstOwner,
+    this.mfgDate,
+    this.invoiceAvailable,
+    this.registrationDate,
+    required this.registrationPlace,
+    required this.city,
+    required this.state,
+    this.nocAvailable,
+    this.insuranceAvailable,
+    this.insuranceType,
+    required this.sellerName,
+    this.imageUrl,
+    this.thumbImageUrls,
+    required this.sellerContactNumber,
+    this.isFavorite,
+    this.kmDriven,
+    this.billDate,
+    this.createdAt, // Used when creating/updating
+    this.createdAtDate, // Used when reading
+  });
 
-  factory Product.fromJson(Map<String, dynamic> json) {
+  // Factory constructor to create a Product from a JSON map (e.g., from Firestore)
+  factory Product.fromJson(Map<String, dynamic> json, String documentId) {
     return Product(
-      userId: json['userId'],
-      id: json['id'],
-      categoryId: json['categoryId'],
-      categoryName: json['categoryName'],
-      subCategoryName: json['subCategoryName'],
-      additionalDetails: json['additionalDetails'],
-      kmDriven: json['kmDriven'],
-      brandName: json['brandName'],
-      modelName: json['modelName'],
-      expectedPrice: json['expectedPrice'],
-      mfgDate: json['mfgDate'] != null ? DateTime.parse(json['mfgDate']) : null,
-      invoiceAvailable: json['invoiceAvailable'],
-      registrationDate: json['registrationDate'] != null
-          ? DateTime.parse(json['registrationDate'])
-          : null,
-      registrationPlace: json['registrationPlace'],
-      city: json['city'],
-      state: json['state'],
-      nocAvailable: json['nocAvailable'],
-      insuranceAvailable: json['insuranceAvailable'],
-      insuranceType: json['insuranceType'],
-      sellerName: json['sellerName'],
-      imageUrl: json['imageUrl'],
-      thumbImageUrls: json['thumbImageUrls'],
-      sellerContactNumber: json['sellerContactNumber'],
-      isFavorite: json['isFavorite'],
-      billDate: json['billDate'],
+      id: documentId, // Use the document ID from Firestore
+      userId: json['userId'] as String?,
+      categoryId: json['categoryId'] as String,
+      categoryName: json['categoryName'] as String,
+      subCategoryName: json['subCategoryName'] as String?,
+      brandName: json['brandName'] as String,
+      modelName: json['modelName'] as String,
+      expectedPrice: json['expectedPrice'] as String,
+      imageUrl: json['imageUrl'] as String?,
+      thumbImageUrls: (json['thumbImageUrls'] as List<dynamic>?)
+          ?.map((item) => item as String)
+          .toList(),
+      additionalDetails: json['additionalDetails'] as String,
+      mfgDate: (json['mfgDate'] as Timestamp?)?.toDate(),
+      firstOwner: json['firstOwner'] as String?,
+      invoiceAvailable: json['invoiceAvailable'] as String?,
+      registrationDate: (json['registrationDate'] as Timestamp?)?.toDate(),
+      registrationPlace: json['registrationPlace'] as String,
+      city: json['city'] as String,
+      state: json['state'] as String,
+      nocAvailable: json['nocAvailable'] as String?,
+      insuranceAvailable: json['insuranceAvailable'] as String?,
+      insuranceType: json['insuranceType'] as String?,
+      sellerName: json['sellerName'] as String,
+      sellerContactNumber: json['sellerContactNumber'] as String,
+      kmDriven: json['kmDriven'] as String?,
+      isFavorite: json['isFavorite'] as bool?,
+      billDate: (json['billDate'] as Timestamp?)?.toDate(),
+      // `createdAt` is a FieldValue for writing, so we read it as DateTime
+      createdAtDate: (json['createdAt'] as Timestamp?)?.toDate(),
+      // We don't typically re-initialize `createdAt` (FieldValue) from json
     );
   }
 
+  // Method to convert a Product instance to a JSON map (e.g., for Firestore)
   Map<String, dynamic> toJson() {
     return {
-      'userId': userId,
-      'id': id,
+      if (userId != null) 'userId': userId,
+      // id is usually the document ID, so not always included in the map itself
       'categoryId': categoryId,
       'categoryName': categoryName,
-      'subCategoryName': subCategoryName,
+      if (subCategoryName != null) 'subCategoryName': subCategoryName,
       'brandName': brandName,
       'modelName': modelName,
-      'invoiceAvailable': invoiceAvailable,
-      'registrationPlace': registrationPlace,
-      'nocAvailable': nocAvailable,
-      'insuranceAvailable': insuranceAvailable,
-      'insuranceType': insuranceType,
       'expectedPrice': expectedPrice,
+      if (imageUrl != null) 'imageUrl': imageUrl,
+      if (thumbImageUrls != null) 'thumbImageUrls': thumbImageUrls,
+      'additionalDetails': additionalDetails,
+      if (mfgDate != null) 'mfgDate': Timestamp.fromDate(mfgDate!),
+      if (firstOwner != null) 'firstOwner': firstOwner,
+      if (invoiceAvailable != null) 'invoiceAvailable': invoiceAvailable,
+      if (registrationDate != null)
+        'registrationDate': Timestamp.fromDate(registrationDate!),
+      'registrationPlace': registrationPlace,
+      'city': city,
+      'state': state,
+      if (nocAvailable != null) 'nocAvailable': nocAvailable,
+      if (insuranceAvailable != null) 'insuranceAvailable': insuranceAvailable,
+      if (insuranceType != null) 'insuranceType': insuranceType,
       'sellerName': sellerName,
       'sellerContactNumber': sellerContactNumber,
-      'imageUrl': imageUrl,
-      'thumbImageUrls': thumbImageUrls,
-      'isFavorite': isFavorite,
-      'mfgDate': mfgDate?.toIso8601String(),
-      'registrationDate': registrationDate?.toIso8601String(),
-      'billDate': billDate?.toIso8601String(),
+      if (kmDriven != null) 'kmDriven': kmDriven,
+      if (isFavorite != null) 'isFavorite': isFavorite,
+      if (billDate != null) 'billDate': Timestamp.fromDate(billDate!),
+      // `createdAt` is usually FieldValue.serverTimestamp() when creating
+      // If it's null and you're creating, Firestore handles it.
+      // If you're updating and don't want to change it, don't include it.
+      // If you want to force set a timestamp on update, include it.
+      if (createdAt != null) 'createdAt': createdAt,
+      // Do not include createdAtDate in toJson for writing back to Firestore
+      // as it's derived from the Timestamp.
     };
   }
 
@@ -145,7 +167,8 @@ class Product {
     String? sellerName,
     String? sellerContactNumber,
     String? kmDriven,
-    FieldValue? createdAt,
+    FieldValue? createdAt, // Keep for writing
+    DateTime? createdAtDate, // Keep for reading/display
     bool? isFavorite,
     DateTime? billDate,
   }) {
@@ -175,6 +198,7 @@ class Product {
       sellerContactNumber: sellerContactNumber ?? this.sellerContactNumber,
       kmDriven: kmDriven ?? this.kmDriven,
       createdAt: createdAt ?? this.createdAt,
+      createdAtDate: createdAtDate ?? this.createdAtDate,
       isFavorite: isFavorite ?? this.isFavorite,
       billDate: billDate ?? this.billDate,
     );

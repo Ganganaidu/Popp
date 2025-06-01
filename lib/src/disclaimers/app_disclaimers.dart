@@ -14,39 +14,50 @@ class Disclaimers extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           // Header
+          // const Text(
+          //   'Important Disclaimers',
+          //   style: TextStyle(
+          //       fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+          // ),
+          // const SizedBox(height: 16),
+          //
+          // // Description with Hyperlink
+          // const Text(
+          //   'Please read the following disclaimers carefully. By using our app, you agree to our ',
+          //   style: TextStyle(color: Colors.white),
+          // ),
+          // const SizedBox(height: 16),
+          // InkWell(
+          //   onTap: () => launchUrl(Uri.parse('https://www.example.com/terms')),
+          //   child: const Text(
+          //     'Terms of Service',
+          //     style: TextStyle(
+          //         color: Colors.white, decoration: TextDecoration.underline),
+          //   ),
+          // ),
+          // const SizedBox(height: 10),
+          // InkWell(
+          //   onTap: () =>
+          //       launchUrl(Uri.parse('https://www.example.com/privacy')),
+          //   child: const Text(
+          //     'Privacy Policy',
+          //     style: TextStyle(
+          //         color: Colors.white, decoration: TextDecoration.underline),
+          //   ),
+          // ),
+          // const SizedBox(height: 16),
+
+          // Additional Disclaimer Sections (Repeat as needed)
           const Text(
-            'Important Disclaimers',
+            'Disclaimer for Content:',
             style: TextStyle(
-                fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+                fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
           ),
-          const SizedBox(height: 16),
-
-          // Description with Hyperlink
+          const SizedBox(height: 8),
           const Text(
-            'Please read the following disclaimers carefully. By using our app, you agree to our ',
-            style: TextStyle(color: Colors.white),
-          ),
-          const SizedBox(height: 16),
-          InkWell(
-            onTap: () => launchUrl(Uri.parse('https://www.example.com/terms')),
-            child: const Text(
-              'Terms of Service',
-              style: TextStyle(
-                  color: Colors.white, decoration: TextDecoration.underline),
-            ),
-          ),
-          const SizedBox(height: 10),
-          InkWell(
-            onTap: () =>
-                launchUrl(Uri.parse('https://www.example.com/privacy')),
-            child: const Text(
-              'Privacy Policy',
-              style: TextStyle(
-                  color: Colors.white, decoration: TextDecoration.underline),
-            ),
-          ),
-          const SizedBox(height: 16),
-
+              'The content provided in this app is for informational purposes only and should not be considered professional advice.',
+              style: TextStyle(color: Colors.white)),
+          const SizedBox(height: 20),
           // Phone Number and Email
           const Text('Contact Us:', style: TextStyle(color: Colors.white)),
           InkWell(
@@ -75,22 +86,6 @@ class Disclaimers extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-
-          // Replace with your image path
-          const SizedBox(height: 16),
-
-          // Additional Disclaimer Sections (Repeat as needed)
-          const Text(
-            'Disclaimer for Content:',
-            style: TextStyle(
-                fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-              'The content provided in this app is for informational purposes only and should not be considered professional advice.',
-              style: TextStyle(color: Colors.white)),
-          const SizedBox(height: 20),
-          // ... more disclaimer sections
         ],
       ),
     );

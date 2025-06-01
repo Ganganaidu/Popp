@@ -1,10 +1,14 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:poppflutter/src/login/model/user_data_model.dart';
 import 'package:poppflutter/src/login/sign_up_bike_details_screen.dart';
+import 'package:poppflutter/src/login/validation_requiremen_text.dart';
 import 'package:poppflutter/src/utils/app_utils.dart';
 import 'package:poppflutter/src/utils/build_extensions.dart';
 
+import '../firebase/auth_service.dart';
 import '../services/models/bike_form_data.dart';
+import '../utils/app_loger.dart';
 import '../widgets/custom_dropdown_form_field.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -28,20 +32,41 @@ class _SignupScreenState extends State<SignupScreen> {
   final TextEditingController pinCodeController = TextEditingController();
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
+  bool _isPasswordRequirementsExpanded = false; // Initially collapsed
+  bool isSubmitting = false;
 
-  void goToBikeDetailsPage() {
+  Future<void> goToBikeDetailsPage() async {
     if (_formKey.currentState!.validate()) {
+      setState(() => isSubmitting = true);
+
+      final result = await registerUserWithEmail(
+          emailController.text, passwordController.text);
+      if (result == null || result.startsWith('Error')) {
+        // Show error to user
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(result ?? 'Registration failed, please try again')),
+        );
+        setState(() => isSubmitting = false);
+        return;
+      }
+      AppLogger.d("User registered successfully with UID: $result");
+
+      setState(() => isSubmitting = false);
       UserData userData = UserData(
+        uid: result,
         username: usernameController.text,
         email: emailController.text,
         phoneNumber: phoneNumberController.text,
-        password: passwordController.text,
         address: addressController.text,
-        state: selectedState ?? "",
+        stateName: selectedState ?? "",
         city: cityController.text,
         pinCode: pinCodeController.text,
+        createdAt: FieldValue.serverTimestamp(),
       );
 
+      if (!mounted) return;
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -122,6 +147,12 @@ class _SignupScreenState extends State<SignupScreen> {
                           icon: null, maxLines: 2),
                       _buildTextField("Pin Code", pinCodeController,
                           keyboardType: TextInputType.number),
+                      const SizedBox(height: 20),
+                      _buildPasswordRequirementsDisclosure(),
+                      // Your new disclosure widget
+                      const SizedBox(height: 10),
+                      _buildGeneralRequirementsDisclosure(),
+                      // Optional: for other fields
                     ],
                   ),
                 ),
@@ -131,14 +162,16 @@ class _SignupScreenState extends State<SignupScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               child: ElevatedButton(
-                onPressed: goToBikeDetailsPage,
+                onPressed: isSubmitting ? null : goToBikeDetailsPage,
                 style: ElevatedButton.styleFrom(
                   shape: const StadiumBorder(),
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   backgroundColor: Colors.orange,
                 ),
-                child: const Text("Next",
-                    style: TextStyle(fontSize: 16, color: Colors.white)),
+                child: isSubmitting
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text("Next",
+                        style: TextStyle(fontSize: 18, color: Colors.white)),
               ),
             )
           ],
@@ -147,6 +180,107 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
+  // Widget for Password Requirements Disclosure
+  Widget _buildPasswordRequirementsDisclosure() {
+    final currentPassword = passwordController.text;
+    ThemeData theme = Theme.of(context);
+
+    return Card(
+      // Wrap ExpansionTile in a Card for distinct background and elevation
+      margin: const EdgeInsets.symmetric(vertical: 8.0),
+      elevation: 1, // Subtle elevation
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      child: ExpansionTile(
+        key: const PageStorageKey<String>('passwordRequirements'),
+        // Helps maintain state on scroll
+        title: Text(
+          "Password Requirements",
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+            color: theme.primaryColor.withOpacity(0.5),
+          ),
+        ),
+        initiallyExpanded: _isPasswordRequirementsExpanded,
+        onExpansionChanged: (bool expanded) {
+          setState(() {
+            _isPasswordRequirementsExpanded = expanded;
+          });
+        },
+        tilePadding:
+            const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+        childrenPadding:
+            const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0)
+                .copyWith(top: 0),
+        iconColor: theme.colorScheme.primary,
+        collapsedIconColor: theme.colorScheme.onSurfaceVariant,
+        children: <Widget>[
+          ValidationRequirementText(
+            text: "At least 8 characters",
+            isValid: currentPassword.length >= 8,
+          ),
+          ValidationRequirementText(
+            text: "At least one uppercase letter (A-Z)",
+            isValid: RegExp(r'(?=.*[A-Z])').hasMatch(currentPassword),
+          ),
+          ValidationRequirementText(
+            text: "At least one lowercase letter (a-z)",
+            isValid: RegExp(r'(?=.*[a-z])').hasMatch(currentPassword),
+          ),
+          ValidationRequirementText(
+            text: "At least one number (0-9)",
+            isValid: RegExp(r'(?=.*\d)').hasMatch(currentPassword),
+          ),
+          // ValidationRequirementText(
+          //   text: "At least one special character (!@#\$%^&*...)",
+          //   isValid: RegExp(r'(?=.*[!@#$%^&*(),.?":{}|<>])').hasMatch(currentPassword),
+          // ),
+        ],
+      ),
+    );
+  }
+
+  // Optional: Disclosure for other general requirements
+  Widget _buildGeneralRequirementsDisclosure() {
+    ThemeData theme = Theme.of(context);
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8.0),
+      elevation: 1,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      child: ExpansionTile(
+        key: const PageStorageKey<String>('generalRequirements'),
+        title: Text(
+          "Other Required Fields",
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+            color: theme.primaryColor.withOpacity(0.5),
+          ),
+        ),
+        initiallyExpanded: false,
+        // Collapse by default
+        tilePadding:
+            const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+        childrenPadding:
+            const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0)
+                .copyWith(top: 0),
+        iconColor: theme.colorScheme.primary,
+        collapsedIconColor: theme.colorScheme.onSurfaceVariant,
+        children: const <Widget>[
+          ValidationRequirementText(text: "Username", isValid: true),
+          // 'isValid' might be static for these
+          ValidationRequirementText(
+              text: "Email (must be valid)", isValid: true),
+          ValidationRequirementText(text: "State", isValid: true),
+          ValidationRequirementText(text: "City", isValid: true),
+          ValidationRequirementText(text: "Address", isValid: true),
+          ValidationRequirementText(text: "Pin Code (6 digits)", isValid: true),
+        ],
+      ),
+    );
+  }
+
+  // Inside _SignupScreenState class
   Widget _buildTextField(
     String hint,
     TextEditingController controller, {
@@ -172,23 +306,51 @@ class _SignupScreenState extends State<SignupScreen> {
           if (isRequired && (value == null || value.isEmpty)) {
             return 'Required';
           }
+
           if (hint == "Email") {
-            // Check if the field is for Email
             if (value != null && !AppUtils.isEmailValid(value)) {
               return 'Enter a valid email address';
             }
           }
-          if (hint == "Confirm Password" &&
-              controller.text != passwordController.text) {
-            return "Passwords do not match";
+
+          // --- Password Validations ---
+          if (hint == "Password") {
+            if (value != null) {
+              if (value.length < 6) {
+                return 'Password must be at least 6 characters long';
+              }
+              if (!RegExp(r'(?=.*[A-Z])').hasMatch(value)) {
+                return 'Password must contain an uppercase letter';
+              }
+              if (!RegExp(r'(?=.*[a-z])').hasMatch(value)) {
+                return 'Password must contain a lowercase letter';
+              }
+              if (!RegExp(r'(?=.*\d)').hasMatch(value)) {
+                return 'Password must contain a number';
+              }
+              // Optional: Special character validation
+              // if (!RegExp(r'(?=.*[!@#$%^&*(),.?":{}|<>])').hasMatch(value)) {
+              //   return 'Password must contain a special character';
+              // }
+            }
           }
-          // PinCode Validation
+          // --- End Password Validations ---
+          if (hint == "Confirm Password") {
+            if (controller.text != passwordController.text) {
+              // Accessing passwordController directly
+              return "Passwords do not match";
+            }
+          }
+
           if (hint == "Pin Code") {
             if (value != null) {
-              if (value.length != 5) {
+              // Your existing pincode validation
+              if (value.length != 6) {
+                // Assuming pincode should be 6 digits
                 return 'Pincode must be 6 digits';
               }
-              if (!RegExp(r"^[0-9]{5}$").hasMatch(value)) {
+              if (!RegExp(r"^[0-9]{6}$").hasMatch(value)) {
+                // Assuming 6 digits
                 return 'Enter a valid pincode (only numbers)';
               }
             }

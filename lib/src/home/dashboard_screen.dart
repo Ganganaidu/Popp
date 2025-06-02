@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:poppflutter/src/disclaimers/app_disclaimers.dart';
+import '../adbanner/ad_carousel_widget.dart';
 import '../utils/app_loger.dart';
 import 'homewidgets/carousel_widget.dart';
 import 'homewidgets/dashboard_list_widget.dart';
@@ -26,7 +27,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       // Wrap the entire content with SingleChildScrollView
       child: Column(
         children: [
-          CarouselWidget(),
+          AdCarouselWidget(),
           PopServicesWidgets(),
           SizedBox(height: 20.0),
           DashboardListViewWidget(),

@@ -50,4 +50,44 @@ class AppDialogs {
       confirmText: "Login",
     );
   }
+
+  static Future<void> showUserLoginDialog(
+      BuildContext context, VoidCallback onLogin, String description) {
+    return showConfirmationDialog(
+      context: context,
+      title: "Want to $description?",
+      content: "Please login in to access this feature",
+      onConfirm: onLogin,
+      confirmText: "Login",
+    );
+  }
+
+  static Future<void> showOkayDialog(
+      BuildContext context,
+      VoidCallback callBack,
+      String title,
+      String content,
+      String cancelText,
+      String confirmText) {
+    return showConfirmationDialog(
+      context: context,
+      title: title,
+      content: content,
+      onConfirm: callBack,
+      cancelText: cancelText,
+      confirmText: confirmText,
+    );
+  }
+
+  static Future<void> showComingSoonDialog(
+      BuildContext context, VoidCallback callBack) {
+    return showConfirmationDialog(
+      context: context,
+      title: "Coming Soon!",
+      content: "We’re building something awesome. Stay tuned!",
+      onConfirm: callBack,
+      cancelText: "",
+      confirmText: "okay",
+    );
+  }
 }

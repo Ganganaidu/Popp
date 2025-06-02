@@ -1,6 +1,11 @@
 enum PopServiceAction {
   sellBike,
   sellAccessory,
+  bookService,
+  bookTrackTraining,
+  findBikeRentals,
+  listYourServices,
+  premiumBikeInspection,
   comingSoon,
 }
 
@@ -49,25 +54,25 @@ final List<PopServiceItem> items = [
       imageUrl: null,
       title: 'Book your service',
       assetImageUrl: "assets/book_your_services.png",
-      action: PopServiceAction.comingSoon),
+      action: PopServiceAction.bookService),
   PopServiceItem(
       imageUrl: null,
       title: 'Book track day & Training ',
       assetImageUrl: "assets/book_track_trainings.png",
-      action: PopServiceAction.comingSoon),
+      action: PopServiceAction.bookTrackTraining),
   PopServiceItem(
       imageUrl: null,
       title: 'Find bike rentals',
       assetImageUrl: "assets/find_bike_rentals.png",
-      action: PopServiceAction.comingSoon),
+      action: PopServiceAction.findBikeRentals),
   PopServiceItem(
       imageUrl: null,
       title: 'List your services',
       assetImageUrl: "assets/list_your_services.png",
-      action: PopServiceAction.comingSoon),
+      action: PopServiceAction.listYourServices),
   PopServiceItem(
       imageUrl: null,
       title: 'Premium Bike Inspection',
       assetImageUrl: "assets/premium_bike_inspections.png",
-      action: PopServiceAction.comingSoon),
+      action: PopServiceAction.premiumBikeInspection),
 ];

@@ -1,28 +1,51 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:poppflutter/src/services/accessories/sell_your_accessories.dart';
 import '../../models/pop_service_item.dart';
 import '../../services/bikes/sell_your_bike.dart';
+import '../../widgets/app_dialogs.dart';
 
 class PopServicesWidgets extends StatelessWidget {
   const PopServicesWidgets({super.key});
 
   void _handleAction(BuildContext context, PopServiceAction action) {
+    final user = FirebaseAuth.instance.currentUser;
     switch (action) {
       case PopServiceAction.sellBike:
+        if (user == null) {
+          AppDialogs.showUserLoginDialog(context, () {
+            Navigator.pushReplacementNamed(context, '/login');
+          }, "sell your bike");
+          return;
+        }
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const SellYourBike()),
         );
         break;
       case PopServiceAction.sellAccessory:
+        if (user == null) {
+          AppDialogs.showUserLoginDialog(context, () {
+            Navigator.pushReplacementNamed(context, '/login');
+          }, "sell your bike");
+          return;
+        }
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const SellYourAccessories()),
         );
         break;
+        case PopServiceAction.bookService:
       case PopServiceAction.comingSoon:
-        // TODO: Handle this case.
-        throw UnimplementedError();
+      AppDialogs.showComingSoonDialog(context, () {});
+      case PopServiceAction.bookTrackTraining:
+        AppDialogs.showComingSoonDialog(context, () {});
+      case PopServiceAction.findBikeRentals:
+        AppDialogs.showComingSoonDialog(context, () {});
+      case PopServiceAction.listYourServices:
+        AppDialogs.showComingSoonDialog(context, () {});
+      case PopServiceAction.premiumBikeInspection:
+        AppDialogs.showComingSoonDialog(context, () {});
     }
   }
 

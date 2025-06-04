@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:poppflutter/src/products/product_card.dart';
+import 'package:poppflutter/src/utils/app_loger.dart';
 import '../filters/filter_bar.dart';
 import '../models/product.dart';
 
@@ -19,18 +20,17 @@ class CategoryDetailScreen extends StatelessWidget {
       appBar: AppBar(title: Text(categoryName)),
       body: Column(
         children: [
-          const FilterBar(
-            filters: [
+          FilterBar(
+            filters: const [
               'Budget',
               'Brand / Model',
               'By KM Driven',
               'By Year',
-              'By Fuel',
               'Sort By'
             ],
-            activeFilterCounts: {
-              'Budget': 1,
-              'By KM Driven': 2,
+            activeFilterCounts: const {},
+            onFiltersChanged: (selectedValues) {
+              AppLogger.d("User selected: $selectedValues");
             },
           ),
           Expanded(

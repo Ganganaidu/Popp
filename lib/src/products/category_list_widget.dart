@@ -36,20 +36,26 @@ class CategoryListWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  categoryName,
-                  style:
-                  theme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                ),
+          InkWell(
+            onTap: () => _navigateToCategoryPage(context),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      categoryName,
+                      style: theme.titleLarge
+                          ?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.arrow_forward_ios, size: 18),
+                    onPressed: () {},
+                  ),
+                ],
               ),
-              IconButton(
-                icon: const Icon(Icons.arrow_forward_ios, size: 18),
-                onPressed: () => _navigateToCategoryPage(context),
-              ),
-            ],
+            ),
           ),
           const SizedBox(height: 8),
           SizedBox(

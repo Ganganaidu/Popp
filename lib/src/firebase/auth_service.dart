@@ -87,10 +87,19 @@ class AuthService {
 }
 
 Future<String?> registerUserWithEmail(String email, String password) async {
-  final credential = await FirebaseAuth.instance
-      .createUserWithEmailAndPassword(email: email, password: password);
-  // You can use this to save other data to FireStore
-  return credential.user?.uid;
+  try {
+    final credential = await FirebaseAuth.instance
+        .createUserWithEmailAndPassword(email: email, password: password);
+    return credential.user?.uid;
+  } on FirebaseAuthException catch (e) {
+    // You can handle specific error codes here or re-throw a more specific exception
+    AppLogger.e("FirebaseAuthException during registration: ${e.code} - ${e.message}");
+    rethrow; // Re-throwing the Firebase specific exception
+  } catch (e, s) {
+    AppLogger.e("Unexpected error during registration: $e. StackTrace: $s");
+    // You might want to throw a generic error or a custom one
+    throw Exception("An unexpected error occurred during registration.");
+  }
 }
 
 // Option B: Return a more detailed result object (recommended for richer feedback)

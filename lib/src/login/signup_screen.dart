@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:poppflutter/src/login/model/user_data_model.dart';
 import 'package:poppflutter/src/login/sign_up_bike_details_screen.dart';
@@ -39,40 +40,69 @@ class _SignupScreenState extends State<SignupScreen> {
     if (_formKey.currentState!.validate()) {
       setState(() => isSubmitting = true);
 
-      final result = await registerUserWithEmail(
-          emailController.text, passwordController.text);
-      if (result == null || result.startsWith('Error')) {
-        // Show error to user
+      try {
+        final userId = await registerUserWithEmail(
+            emailController.text, passwordController.text);
+
+        setState(() => isSubmitting = false);
+        if (userId != null) {
+          // Registration successful, navigate to home screen or show success message
+          AppLogger.d("User registered successfully: $userId");
+          UserData userData = UserData(
+            uid: userId,
+            username: usernameController.text,
+            email: emailController.text,
+            phoneNumber: phoneNumberController.text,
+            address: addressController.text,
+            stateName: selectedState ?? "",
+            city: cityController.text,
+            pinCode: pinCodeController.text,
+            createdAt: FieldValue.serverTimestamp(),
+          );
+
+          if (!mounted) return;
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => SignUpBikeDetailsScreen(userData: userData),
+            ),
+          );
+        } else {}
+      } on FirebaseAuthException catch (e) {
+        setState(() => isSubmitting = false);
+        String errorMessage;
+        switch (e.code) {
+          case 'weak-password':
+            errorMessage = 'The password provided is too weak.';
+            break;
+          case 'email-already-in-use':
+            errorMessage = 'The account already exists for that email.';
+            break;
+          case 'invalid-email':
+            errorMessage = 'The email address is not valid.';
+            break;
+          default:
+            errorMessage = 'An undefined error happened.';
+        }
+        // Display errorMessage to the user (e.g., in a SnackBar or Dialog)
+        AppLogger.e("Error registering user: $errorMessage (Code: ${e.code})");
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(result ?? 'Registration failed, please try again')),
+          SnackBar(content: Text(errorMessage)),
         );
-        setState(() => isSubmitting = false);
         return;
+      } catch (e) {
+        setState(() => isSubmitting = false);
+        // Handle other generic errors
+        AppLogger.e("An unexpected error occurred: $e");
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text("An unexpected error occurred Please try again")),
+        );
+        return;
+        // Display a generic error message to the user
       }
-      AppLogger.d("User registered successfully with UID: $result");
-
-      setState(() => isSubmitting = false);
-      UserData userData = UserData(
-        uid: result,
-        username: usernameController.text,
-        email: emailController.text,
-        phoneNumber: phoneNumberController.text,
-        address: addressController.text,
-        stateName: selectedState ?? "",
-        city: cityController.text,
-        pinCode: pinCodeController.text,
-        createdAt: FieldValue.serverTimestamp(),
-      );
-
-      if (!mounted) return;
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => SignUpBikeDetailsScreen(userData: userData),
-        ),
-      );
     }
   }
 
@@ -107,8 +137,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       _buildTextField("Email", emailController,
                           icon: Icons.email,
                           keyboardType: TextInputType.emailAddress),
-                      _buildTextField(
-                          "Phone number ", phoneNumberController,
+                      _buildTextField("Phone number ", phoneNumberController,
                           icon: Icons.phone_android_sharp,
                           keyboardType: TextInputType.number,
                           isRequired: true),

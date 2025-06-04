@@ -16,7 +16,7 @@ class Product {
   final String? firstOwner;
   final String? invoiceAvailable;
   final DateTime? registrationDate;
-  final String registrationPlace; // City & State
+  String? registrationPlace; // City & State
   final String city;
   final String state;
   final String? nocAvailable; // If other states
@@ -27,15 +27,23 @@ class Product {
   final String? kmDriven;
   bool? isFavorite;
   DateTime? billDate;
-  final FieldValue? createdAt; // For writing to Firestore
-  final DateTime? createdAtDate; // For reading from Firestore
+  bool? isProductBikeSpecific;
+  String? productSize;
+  String? productCondition;
+  String? productAging;
+  String? warrantyLimit;
+  String? bikeBrandName; // we choose this filed for accessories
+  String? bikeModelName; // we choose this filed for accessories
+  DateTime? bikeMfgDate; // we choose this filed for accessories
+  final FieldValue? createdAt; // For writing to FireStore
+  final DateTime? createdAtDate; // For reading from FireStore
 
   Product({
     this.id,
     this.userId,
     required this.categoryId,
     required this.categoryName,
-    this.subCategoryName, // Made nullable to match potential fromJson scenarios
+    this.subCategoryName,
     required this.brandName,
     required this.expectedPrice,
     required this.modelName,
@@ -44,7 +52,7 @@ class Product {
     this.mfgDate,
     this.invoiceAvailable,
     this.registrationDate,
-    required this.registrationPlace,
+    this.registrationPlace,
     required this.city,
     required this.state,
     this.nocAvailable,
@@ -57,9 +65,17 @@ class Product {
     this.isFavorite,
     this.kmDriven,
     this.billDate,
+    this.isProductBikeSpecific = false,
     this.createdAt, // Used when creating/updating
     this.createdAtDate, // Used when reading
-  });
+    this.productSize,
+    this.productCondition,
+    this.productAging,
+    this.warrantyLimit,
+    this.bikeBrandName,
+    this.bikeModelName,
+    this.bikeMfgDate,
+});
 
   // Factory constructor to create a Product from a JSON map (e.g., from Firestore)
   factory Product.fromJson(Map<String, dynamic> json, String documentId) {
@@ -91,7 +107,15 @@ class Product {
       sellerContactNumber: json['sellerContactNumber'] as String,
       kmDriven: json['kmDriven'] as String?,
       isFavorite: json['isFavorite'] as bool?,
+      isProductBikeSpecific: json['isProductBikeSpecific'] as bool?,
       billDate: (json['billDate'] as Timestamp?)?.toDate(),
+      productSize: json['productSize'] as String?,
+      productCondition: json['productCondition'] as String?,
+      productAging: json['productAging'] as String?,
+      warrantyLimit: json['warrantyLimit'] as String?,
+      bikeBrandName: json['bikeBrandName'] as String?,
+      bikeModelName: json['bikeModelName'] as String?,
+      bikeMfgDate: (json['bikeMfgDate'] as Timestamp?)?.toDate(),
       // `createdAt` is a FieldValue for writing, so we read it as DateTime
       createdAtDate: (json['createdAt'] as Timestamp?)?.toDate(),
       // We don't typically re-initialize `createdAt` (FieldValue) from json
@@ -117,7 +141,7 @@ class Product {
       if (invoiceAvailable != null) 'invoiceAvailable': invoiceAvailable,
       if (registrationDate != null)
         'registrationDate': Timestamp.fromDate(registrationDate!),
-      'registrationPlace': registrationPlace,
+      'registrationPlace': "$city - $state",
       'city': city,
       'state': state,
       if (nocAvailable != null) 'nocAvailable': nocAvailable,
@@ -127,8 +151,16 @@ class Product {
       'sellerContactNumber': sellerContactNumber,
       if (kmDriven != null) 'kmDriven': kmDriven,
       if (isFavorite != null) 'isFavorite': isFavorite,
+      if (isProductBikeSpecific != null) 'isProductBikeSpecific': isProductBikeSpecific,
       if (billDate != null) 'billDate': Timestamp.fromDate(billDate!),
       // `createdAt` is usually FieldValue.serverTimestamp() when creating
+      if (productSize != null) 'productSize': productSize,
+      if (productCondition != null) 'productCondition': productCondition,
+      if (productAging != null) 'productAging': productAging,
+      if (warrantyLimit != null) 'warrantyLimit': warrantyLimit,
+      if (bikeBrandName != null) 'bikeBrandName': bikeBrandName,
+      if (bikeModelName != null) 'bikeModelName': bikeModelName,
+      if (bikeMfgDate != null) 'bikeMfgDate': Timestamp.fromDate(bikeMfgDate!),
       // If it's null and you're creating, Firestore handles it.
       // If you're updating and don't want to change it, don't include it.
       // If you want to force set a timestamp on update, include it.
@@ -171,6 +203,16 @@ class Product {
     DateTime? createdAtDate, // Keep for reading/display
     bool? isFavorite,
     DateTime? billDate,
+    String? productSize,
+  String? productCondition,
+  String? productAging,
+  String? warrantyLimit,
+  String? bikeBrandName,
+  String? bikeModelName,
+  DateTime? bikeMfgDate,
+  String? engineNo,
+  String? chassisNo,
+  String? rcNumber,
   }) {
     return Product(
       userId: userId ?? this.userId,
@@ -201,6 +243,13 @@ class Product {
       createdAtDate: createdAtDate ?? this.createdAtDate,
       isFavorite: isFavorite ?? this.isFavorite,
       billDate: billDate ?? this.billDate,
+      productSize: productSize ?? this.productSize,
+      productCondition: productCondition ?? this.productCondition,
+      productAging: productAging ?? this.productAging,
+      warrantyLimit: warrantyLimit ?? this.warrantyLimit,
+      bikeBrandName: bikeBrandName ?? this.bikeBrandName,
+      bikeModelName: bikeModelName ?? this.bikeModelName,
+      bikeMfgDate: bikeMfgDate ?? this.bikeMfgDate,
     );
   }
 }

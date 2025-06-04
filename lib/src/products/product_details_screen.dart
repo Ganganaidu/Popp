@@ -295,7 +295,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                       style:
                                           const TextStyle(color: Colors.grey)),
                                   const SizedBox(height: 4),
-                                  Text(widget.product.registrationPlace,
+                                  Text(widget.product.registrationPlace ?? "",
                                       style:
                                           const TextStyle(color: Colors.grey)),
                                 ],

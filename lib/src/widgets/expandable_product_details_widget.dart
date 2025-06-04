@@ -24,10 +24,14 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Always Visible Important Fields
-        detailRow("Features", product.additionalDetails, theme),
+        // detailRow("Features", product.additionalDetails, theme),
+        if(product.mfgDate != null)
         detailRow("Manufacturing Date", _formatDate(product.mfgDate), theme),
         detailRow("Expected Price", "₹${product.expectedPrice}", theme),
-        detailRow("Registration Place", product.registrationPlace, theme),
+        if (product.registrationPlace?.isNotEmpty ?? false)
+          detailRow("Registration Place", product.registrationPlace!, theme)
+        else
+          const SizedBox.shrink(),
 
         const SizedBox(height: 8),
 
@@ -40,20 +44,39 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
                 ? const BoxConstraints()
                 : const BoxConstraints(maxHeight: 0),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                detailRow("City", product.city, theme),
-                detailRow("State", product.state, theme),
+                if (product.city.isNotEmpty)
+                  detailRow("City", product.city, theme),
+                if (product.state.isNotEmpty)
+                  detailRow("State", product.state, theme),
+                if (product.kmDriven?.isNotEmpty ?? false)
+                  detailRow("KM Driven", product.kmDriven!, theme),
+                if (product.registrationDate != null)
+                  detailRow("Registration Date",
+                      _formatDate(product.registrationDate), theme),
+                if (product.registrationDate != null)
+                  detailRow("Bill Date", _formatDate(product.billDate), theme),
+                if (product.productAging?.isNotEmpty ?? false)
+                  detailRow("Product Aging", product.productAging!, theme),
+                if (product.productSize?.isNotEmpty ?? false)
+                  detailRow("Product Size", product.productSize!, theme),
+                if (product.productCondition?.isNotEmpty ?? false)
+                  detailRow(
+                      "Product Condition", product.productCondition!, theme),
+                if (product.insuranceAvailable != null)
+                  detailRow("Insurance Available",
+                      product.insuranceAvailable != null ? "Yes" : "No", theme),
+                if (product.insuranceType?.isNotEmpty ?? false)
+                  detailRow("Insurance Type", product.insuranceType!, theme),
+                detailRow("Warranty Available",
+                    product.warrantyLimit != null ? "Yes" : "No", theme),
+                if (product.warrantyLimit?.isNotEmpty ?? false)
+                  detailRow("Warranty Limit", product.warrantyLimit!, theme),
                 detailRow("Invoice Available",
                     product.invoiceAvailable != null ? "Yes" : "No", theme),
-                detailRow("Registration Date",
-                    _formatDate(product.registrationDate), theme),
                 detailRow("NOC Available",
                     product.nocAvailable != null ? "Yes" : "No", theme),
-                detailRow("Insurance Available",
-                    product.insuranceAvailable != null ? "Yes" : "No", theme),
-                detailRow("Insurance Type", product.insuranceType ?? "-", theme),
-                detailRow("Seller Name", product.sellerName, theme),
-                detailRow("Seller Contact", product.sellerContactNumber, theme),
               ],
             ),
           ),

@@ -17,7 +17,7 @@ class ProductCard extends StatelessWidget {
     return SizedBox(
       width: width,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Card(
             elevation: 2,
@@ -62,10 +62,13 @@ class ProductCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          Text(product.getTitle(),
-              style: theme.titleMedium,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis),
+          Text(
+            product.getTitle(),
+            style: theme.titleMedium,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+          ),
           const SizedBox(height: 4),
           Text(product.expectedPrice,
               style: theme.titleMedium?.copyWith(

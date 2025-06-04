@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:poppflutter/src/products/product_card.dart';
-
 import '../models/product.dart';
+import 'category_detail_screen.dart';
 
 class CategoryListWidget extends StatelessWidget {
   final String categoryName;
@@ -12,6 +12,18 @@ class CategoryListWidget extends StatelessWidget {
     required this.categoryName,
     required this.products,
   });
+
+  void _navigateToCategoryPage(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => CategoryDetailScreen(
+          categoryName: categoryName,
+          products: products,
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,8 +36,21 @@ class CategoryListWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(categoryName,
-              style: theme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  categoryName,
+                  style:
+                  theme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.arrow_forward_ios, size: 18),
+                onPressed: () => _navigateToCategoryPage(context),
+              ),
+            ],
+          ),
           const SizedBox(height: 8),
           SizedBox(
             height: itemWidth + 100,

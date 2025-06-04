@@ -19,44 +19,35 @@ class ProductCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Card(
-            elevation: 2,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            clipBehavior: Clip.antiAlias,
-            child: InkWell(
-              onTap: () {
-                onProductTap(context, product);
-              },
-              child: Hero(
-                tag: product.id ?? UniqueKey().toString(),
-                child: SizedBox(
-                  height: width,
-                  width: width,
-                  child: product.imageUrl?.isNotEmpty == true
-                      ? Image.network(
-                          product.imageUrl!,
-                          fit: BoxFit.cover,
-                          loadingBuilder: (_, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return Shimmer.fromColors(
-                              baseColor: Colors.grey[300]!,
-                              highlightColor: Colors.grey[100]!,
-                              child: Container(
-                                height: width,
-                                width: width,
-                                color: Colors.white,
-                              ),
-                            );
-                          },
-                          errorBuilder: (_, __, ___) =>
-                              Icon(Icons.broken_image, size: width * 0.5),
-                        )
-                      : Container(
-                          color: Colors.grey[300],
-                          child: Icon(Icons.image_not_supported,
-                              size: width * 0.5),
-                        ),
+          AspectRatio(
+            aspectRatio: 1, // Keeps the image square
+            child: Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: InkWell(
+                onTap: () => onProductTap(context, product),
+                child: product.imageUrl?.isNotEmpty == true
+                    ? Image.network(
+                  product.imageUrl!,
+                  fit: BoxFit.cover,
+                  loadingBuilder: (_, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Shimmer.fromColors(
+                      baseColor: Colors.grey[300]!,
+                      highlightColor: Colors.grey[100]!,
+                      child: Container(color: Colors.white),
+                    );
+                  },
+                  errorBuilder: (_, __, ___) =>
+                      Icon(Icons.broken_image, size: width * 0.5),
+                )
+                    : Container(
+                  color: Colors.grey[300],
+                  child:
+                  Icon(Icons.image_not_supported, size: width * 0.5),
                 ),
               ),
             ),
@@ -70,11 +61,16 @@ class ProductCard extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 4),
-          Text(product.expectedPrice,
-              style: theme.titleMedium?.copyWith(
-                  color: Colors.orange[700], fontWeight: FontWeight.bold)),
+          Text(
+            product.expectedPrice,
+            style: theme.titleMedium?.copyWith(
+              color: Colors.orange[700],
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ],
       ),
     );
   }
 }
+

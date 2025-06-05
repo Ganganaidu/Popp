@@ -1,25 +1,25 @@
 import 'package:poppflutter/src/models/product.dart';
 
-class Category {
+class PopCategory {
   final String categoryId;
   final String name;
   List<String>? subcategories;
   List<Product>? products;
 
-  Category(
+  PopCategory(
       {required this.categoryId,
       required this.name,
       this.subcategories,
       this.products});
 }
 
-final List<Category> catList = [
-  Category(
+final List<PopCategory> catList = [
+  PopCategory(
     categoryId: "cat_001",
     name: "Premium Bikes",
     subcategories: [],
   ),
-  Category(
+  PopCategory(
     categoryId: "cat_002",
     name: "Protection Gear",
     subcategories: [
@@ -31,7 +31,7 @@ final List<Category> catList = [
       "Other Protectors",
     ],
   ),
-  Category(
+  PopCategory(
     categoryId: "cat_003",
     name: "Luggage & Accessories",
     subcategories: [
@@ -47,7 +47,7 @@ final List<Category> catList = [
       "Other Luggage accessories",
     ],
   ),
-  Category(
+  PopCategory(
     categoryId: "cat_004",
     name: "Lights & Mounts",
     subcategories: [
@@ -57,7 +57,7 @@ final List<Category> catList = [
       "Phone Mounts",
     ],
   ),
-  Category(
+  PopCategory(
     categoryId: "cat_005",
     name: "Electronic Accessories",
     subcategories: [
@@ -69,7 +69,7 @@ final List<Category> catList = [
       "Other Electronic Accessories",
     ],
   ),
-  Category(
+  PopCategory(
     categoryId: "cat_006",
     name: "Universal Bike Accessories",
     subcategories: [
@@ -82,7 +82,7 @@ final List<Category> catList = [
       "Other Bike Accessories",
     ],
   ),
-  Category(
+  PopCategory(
     categoryId: "cat_007",
     name: "Other Products",
     subcategories: [],

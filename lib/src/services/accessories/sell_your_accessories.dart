@@ -9,7 +9,7 @@ import 'package:poppflutter/src/widgets/loading_overlay.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../firebase/firebase_save_prodcuts_api.dart';
-import '../../models/category.dart';
+import '../../models/pop_category.dart';
 import '../../models/product.dart';
 import '../../widgets/custom_dropdown_form_field.dart';
 import '../../widgets/image_picker_selection.dart';
@@ -46,7 +46,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
   DateTime? _selectedManufactureDate;
   DateTime? _selectedBillDate;
   String? _productCondition;
-  Category? selectedCategory;
+  PopCategory? selectedCategory;
   String? selectedSubcategory;
   String? selectedBikeBrand;
   Function(String?)? onBrandChanged;

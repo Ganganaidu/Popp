@@ -25,6 +25,24 @@ const List<String> bikeBrands = [
   'others'
 ];
 
+const bikeFilters = [
+  'Budget',
+  'Brand / Model',
+  'By KM Driven',
+  'By Year',
+  'By State',
+  'Sort By'
+];
+
+const categoryFilters = [
+  'Budget',
+  'Category',
+  'Sub Category',
+  'By State',
+  'By Year',
+  'Sort By'
+];
+
 const List<String> countryCodes = ["+91", "+1"];
 
 const List<String> yesNoNA = ["Yes", "No"];
@@ -64,7 +82,7 @@ const List<String> stateNames = [
   'Nagaland',
   'Odisha',
   'Punjab',
-  'Puducherry'
+  'Puducherry',
   'Rajasthan',
   'Sikkim',
   'Tamil Nadu',

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:poppflutter/src/products/product_card.dart';
 import '../models/product.dart';
+import '../services/models/bike_form_data.dart';
 import 'category_detail_screen.dart';
 
 class CategoryListWidget extends StatelessWidget {
@@ -20,6 +21,9 @@ class CategoryListWidget extends StatelessWidget {
         builder: (_) => CategoryDetailScreen(
           categoryName: categoryName,
           products: products,
+          filters: categoryName.contains('Premium Bikes')
+              ? bikeFilters
+              : categoryFilters,
         ),
       ),
     );

@@ -1,12 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:poppflutter/src/utils/app_loger.dart';
-import '../models/product.dart';
-import '../models/category.dart';
+import '../../models/product.dart';
+import 'package:poppflutter/src/models/pop_category.dart';
 
 class ProductRepository {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  Future<List<Category>> fetchProductsGroupedByCategory() async {
+  Future<List<PopCategory>> fetchProductsGroupedByCategory() async {
     QuerySnapshot snapshot = await _db.collection('products').get();
     if (snapshot.docs.isEmpty) return [];
 
@@ -26,11 +26,17 @@ class ProductRepository {
     }
 
     return grouped.entries.map((entry) {
-      return Category(
+      return PopCategory(
         categoryId: entry.key,
         name: categoryNames[entry.key] ?? 'Unknown',
         products: entry.value,
       );
-    }).toList();
+    }).toList()
+      // Sort so that 'Premium bike' category comes first
+      ..sort((a, b) {
+        if (a.name == 'Premium Bikes') return -1;
+        if (b.name == 'Premium Bikes') return 1;
+        return 0;
+      });
   }
 }

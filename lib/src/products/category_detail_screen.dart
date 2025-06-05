@@ -7,11 +7,13 @@ import '../models/product.dart';
 class CategoryDetailScreen extends StatelessWidget {
   final String categoryName;
   final List<Product> products;
+  final List<String> filters;
 
   const CategoryDetailScreen({
     super.key,
     required this.categoryName,
     required this.products,
+    required this.filters,
   });
 
   @override
@@ -21,13 +23,7 @@ class CategoryDetailScreen extends StatelessWidget {
       body: Column(
         children: [
           FilterBar(
-            filters: const [
-              'Budget',
-              'Brand / Model',
-              'By KM Driven',
-              'By Year',
-              'Sort By'
-            ],
+            filters: filters,
             activeFilterCounts: const {},
             onFiltersChanged: (selectedValues) {
               AppLogger.d("User selected: $selectedValues");

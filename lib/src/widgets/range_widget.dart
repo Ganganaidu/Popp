@@ -26,11 +26,12 @@ class RangeFilterWidget extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text(title, style: Theme.of(context).textTheme.titleLarge),
+        Text(title, style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 20),
         RangeSlider(
           min: min,
           max: max,
+          activeColor: Theme.of(context).primaryColor,
           divisions: 100,
           labels: RangeLabels(
             '${values.start.toInt()}',

@@ -60,7 +60,8 @@ class _FilterBarState extends State<FilterBar> {
           builder: (context, setModalState) {
             String currentFilter = initialFilter;
             // Use copies of the current state for temp values
-            Map<String, RangeValues> tempValues = Map<String, RangeValues>.from(rangeFilterValues);
+            Map<String, RangeValues> tempValues =
+                Map<String, RangeValues>.from(rangeFilterValues);
             List<String> selectedBrands = List<String>.from(_selectedBrands);
 
             return StatefulBuilder(
@@ -101,17 +102,26 @@ class _FilterBarState extends State<FilterBar> {
                               color: Colors.grey[200],
                               child: ListView.separated(
                                 itemCount: widget.filters.length,
-                                separatorBuilder: (context, index) => const Divider(height: 1),
+                                separatorBuilder: (context, index) =>
+                                    const Divider(height: 1),
                                 itemBuilder: (context, index) {
-                                  final f = widget.filters[index];
-                                  final isSelected = f == currentFilter;
+                                  final filterName = widget.filters[index];
+                                  final isSelected =
+                                      filterName == currentFilter;
                                   return ListTile(
                                     selected: isSelected,
                                     selectedTileColor: Colors.white,
-                                    title: Text(f),
+                                    title: Text(filterName,
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: isSelected
+                                              ? Colors.orange
+                                              : Colors.black54,
+                                        )),
                                     onTap: () {
                                       setSheetState(() {
-                                        currentFilter = f;
+                                        currentFilter = filterName;
                                       });
                                     },
                                   );
@@ -174,11 +184,11 @@ class _FilterBarState extends State<FilterBar> {
   }
 
   Widget _buildFilterOptions(
-    String filterName,
-    Map<String, RangeValues> tempValues,
-    void Function(String, RangeValues) updateValue,
-    [List<String>? selectedBrands, void Function(List<String>)? onBrandsChanged]
-  ) {
+      String filterName,
+      Map<String, RangeValues> tempValues,
+      void Function(String, RangeValues) updateValue,
+      [List<String>? selectedBrands,
+      void Function(List<String>)? onBrandsChanged]) {
     AppLogger.d("filterName $filterName");
     if (tempValues.containsKey(filterName)) {
       final RangeValues values = tempValues[filterName]!;
@@ -219,8 +229,10 @@ class _FilterBarState extends State<FilterBar> {
     } else if (rangeFilterValues.containsKey(filterName)) {
       final RangeValues values = rangeFilterValues[filterName]!;
       // Count as selected if not default
-      if ((filterName == 'Budget' && (values.start > 0 || values.end < 20000)) ||
-          (filterName == 'By KM Driven' && (values.start > 0 || values.end < 200000))) {
+      if ((filterName == 'Budget' &&
+              (values.start > 0 || values.end < 20000)) ||
+          (filterName == 'By KM Driven' &&
+              (values.start > 0 || values.end < 200000))) {
         count = 1;
       }
     }

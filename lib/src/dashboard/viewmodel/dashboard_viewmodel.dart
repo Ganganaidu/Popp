@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
-import '../models/category.dart';
+import 'package:flutter/cupertino.dart';
+
+import '../../models/pop_category.dart';
 import '../repository/product_repository.dart';
 
 class DashboardViewModel extends ChangeNotifier {
@@ -7,7 +8,7 @@ class DashboardViewModel extends ChangeNotifier {
 
   DashboardViewModel(this.repository);
 
-  List<Category> categories = [];
+  List<PopCategory> categories = [];
   bool isLoading = false;
   String? error;
 

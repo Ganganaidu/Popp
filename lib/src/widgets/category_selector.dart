@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../models/category.dart';
+import '../models/pop_category.dart';
 import 'custom_dropdown_form_field.dart'; // <--- Your Category model
 
 class CategorySelector extends StatefulWidget {
-  final Function(Category?) onCategoryChanged;
+  final Function(PopCategory?) onCategoryChanged;
   final Function(String?) onSubcategoryChanged;
 
   const CategorySelector({
@@ -18,16 +18,16 @@ class CategorySelector extends StatefulWidget {
 }
 
 class _CategorySelectorState extends State<CategorySelector> {
-  Category? selectedCategory;
+  PopCategory? selectedCategory;
   String? selectedSubcategory;
-  List<Category> filteredCatList = catList.isNotEmpty ? catList.sublist(1) : [];
+  List<PopCategory> filteredCatList = catList.isNotEmpty ? catList.sublist(1) : [];
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        CustomDropdownFormField<Category>(
+        CustomDropdownFormField<PopCategory>(
           label: "Category",
           hint: "Select your Category",
           value: selectedCategory,

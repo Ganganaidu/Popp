@@ -8,7 +8,7 @@ import 'package:poppflutter/src/utils/app_utils.dart';
 import 'package:poppflutter/src/utils/build_extensions.dart';
 
 import '../firebase/auth_service.dart';
-import '../services/models/bike_form_data.dart';
+import '../utils/product_content_data.dart';
 import '../utils/app_loger.dart';
 import '../widgets/custom_dropdown_form_field.dart';
 

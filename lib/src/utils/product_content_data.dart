@@ -26,10 +26,10 @@ const List<String> bikeBrands = [
 ];
 
 const bikeFilters = [
+  'By Year',
   'Budget',
   'Brand / Model',
   'By KM Driven',
-  'By Year',
   'By State',
   'Sort By'
 ];

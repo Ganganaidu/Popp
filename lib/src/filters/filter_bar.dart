@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:poppflutter/src/utils/app_loger.dart';
+import 'package:poppflutter/src/utils/build_extensions.dart';
 
-import '../services/models/bike_form_data.dart';
+import '../utils/product_content_data.dart';
 import '../widgets/checkbox_filter_widget.dart';
 import '../widgets/range_widget.dart';
 
@@ -23,12 +24,15 @@ class FilterBar extends StatefulWidget {
 
 class _FilterBarState extends State<FilterBar> {
   String? selectedFilter;
+  int _yearFrom = DateTime.now().year - 1; // Default to 1 years ago
+  int _yearTo = DateTime.now().year;
 
   final Map<String, RangeValues> rangeFilterValues = {
     'Budget': const RangeValues(0, 20000),
     'By KM Driven': const RangeValues(0, 200000),
   };
   String selectedBrand = 'Brand / Model';
+  String selectedYear = "By Year";
 
   // Store selected brands in the state
   List<String> _selectedBrands = [];
@@ -219,6 +223,11 @@ class _FilterBarState extends State<FilterBar> {
       );
     }
 
+    if (selectedYear.contains(filterName.trim())) {
+      AppLogger.d("selectedYear  $filterName");
+      return _yearFilterWidget();
+    }
+
     return Center(child: Text('Options for "$filterName"'));
   }
 
@@ -259,6 +268,46 @@ class _FilterBarState extends State<FilterBar> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _yearFilterWidget() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(width: 35),
+        Row(
+          children: [
+            Expanded(
+              child: TextFormField(
+                keyboardType: TextInputType.number,
+                decoration: context.inputDecoration(
+                    "From year", "$_yearFrom"),
+                onChanged: (val) {
+                  final parsed = int.tryParse(val);
+                  if (parsed != null) {
+                    setState(() => _yearFrom = parsed);
+                  }
+                },
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: TextFormField(
+                keyboardType: TextInputType.number,
+                decoration: context.inputDecoration(
+                    "To year", "$_yearTo"),
+                onChanged: (val) {
+                  final parsed = int.tryParse(val);
+                  if (parsed != null) {
+                    setState(() => _yearTo = parsed);
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

@@ -11,7 +11,7 @@ import '../../models/product.dart';
 import '../../widgets/custom_dropdown_form_field.dart';
 import '../../widgets/image_picker_selection.dart';
 import '../../widgets/month_year_picker.dart';
-import '../models/bike_form_data.dart';
+import '../../utils/product_content_data.dart';
 
 class SellYourBike extends StatefulWidget {
   const SellYourBike({super.key});

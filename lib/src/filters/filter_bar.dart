@@ -59,6 +59,8 @@ class _FilterBarState extends State<FilterBar> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      isDismissible: false, // Prevent closing by tapping outside
+      enableDrag: false,    // Prevent closing by dragging
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
@@ -70,6 +72,8 @@ class _FilterBarState extends State<FilterBar> {
             Map<String, RangeValues> tempValues =
                 Map<String, RangeValues>.from(rangeFilterValues);
             List<String> selectedBrands = List<String>.from(_selectedBrands);
+            int tempYearFrom = _yearFrom;
+            int tempYearTo = _yearTo;
 
             return StatefulBuilder(
               builder: (context, setSheetState) {
@@ -79,8 +83,21 @@ class _FilterBarState extends State<FilterBar> {
                       'Budget': const RangeValues(0, 20000),
                       'By KM Driven': const RangeValues(0, 200000),
                     };
-                    selectedBrands = [];
+                    rangeFilterValues.clear();
+                    rangeFilterValues.addAll(tempValues);
+                    _selectedBrands = [];
+                    _yearFrom = DateTime.now().year - 1;
+                    _yearTo = DateTime.now().year;
                   });
+                  widget.onFiltersChanged({
+                    ...{
+                      'Budget': const RangeValues(0, 20000),
+                      'By KM Driven': const RangeValues(0, 200000),
+                      'Brand / Model': [],
+                      'By Year': [DateTime.now().year - 1, DateTime.now().year],
+                    }
+                  });
+                  Navigator.pop(context); // Close on clear all
                 }
 
                 void applyAll() {
@@ -88,18 +105,41 @@ class _FilterBarState extends State<FilterBar> {
                     rangeFilterValues.clear();
                     rangeFilterValues.addAll(tempValues);
                     _selectedBrands = List<String>.from(selectedBrands);
+                    _yearFrom = tempYearFrom;
+                    _yearTo = tempYearTo;
                   });
                   widget.onFiltersChanged({
                     ...tempValues,
                     'Brand / Model': selectedBrands,
+                    'By Year': [tempYearFrom, tempYearTo],
                   });
-                  Navigator.pop(context);
+                  Navigator.pop(context); // Close on apply
                 }
 
                 return SizedBox(
                   height: MediaQuery.of(context).size.height * 0.8,
                   child: Column(
                     children: [
+                      // Header with title and close icon
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        child: Row(
+                          children: [
+                            const Text(
+                              'Filters & Sort',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const Spacer(),
+                            IconButton(
+                              icon: const Icon(Icons.close),
+                              onPressed: () => Navigator.pop(context),
+                            ),
+                          ],
+                        ),
+                      ),
                       Expanded(
                         child: Row(
                           children: [
@@ -153,6 +193,18 @@ class _FilterBarState extends State<FilterBar> {
                                       selectedBrands = brands;
                                     });
                                   },
+                                  tempYearFrom,
+                                  (from) {
+                                    setSheetState(() {
+                                      tempYearFrom = from;
+                                    });
+                                  },
+                                  tempYearTo,
+                                  (to) {
+                                    setSheetState(() {
+                                      tempYearTo = to;
+                                    });
+                                  },
                                 ),
                               ),
                             ),
@@ -195,7 +247,12 @@ class _FilterBarState extends State<FilterBar> {
       Map<String, RangeValues> tempValues,
       void Function(String, RangeValues) updateValue,
       [List<String>? selectedBrands,
-      void Function(List<String>)? onBrandsChanged]) {
+      void Function(List<String>)? onBrandsChanged,
+      int? tempYearFrom,
+      void Function(int)? onYearFromChanged,
+      int? tempYearTo,
+      void Function(int)? onYearToChanged]) {
+
     AppLogger.d("filterName $filterName");
     if (tempValues.containsKey(filterName)) {
       final RangeValues values = tempValues[filterName]!;
@@ -228,7 +285,12 @@ class _FilterBarState extends State<FilterBar> {
 
     if (selectedYear.contains(filterName.trim())) {
       AppLogger.d("selectedYear  $filterName");
-      return _yearFilterWidget();
+      return _yearFilterWidget(
+        tempYearFrom: tempYearFrom ?? _yearFrom,
+        onYearFromChanged: onYearFromChanged,
+        tempYearTo: tempYearTo ?? _yearTo,
+        onYearToChanged: onYearToChanged,
+      );
     }
 
     return Center(child: Text('Options for "$filterName"'));
@@ -245,6 +307,13 @@ class _FilterBarState extends State<FilterBar> {
               (values.start > 0 || values.end < 20000)) ||
           (filterName == 'By KM Driven' &&
               (values.start > 0 || values.end < 200000))) {
+        count = 1;
+      }
+    } else if (filterName == 'By Year') {
+      // Show count if year range is not default
+      final int defaultFrom = DateTime.now().year - 1;
+      final int defaultTo = DateTime.now().year;
+      if (_yearFrom != defaultFrom || _yearTo != defaultTo) {
         count = 1;
       }
     }
@@ -274,7 +343,12 @@ class _FilterBarState extends State<FilterBar> {
     );
   }
 
-  Widget _yearFilterWidget() {
+  Widget _yearFilterWidget({
+    int? tempYearFrom,
+    void Function(int)? onYearFromChanged,
+    int? tempYearTo,
+    void Function(int)? onYearToChanged,
+  }) {
     final int currentYear = DateTime.now().year;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -286,7 +360,7 @@ class _FilterBarState extends State<FilterBar> {
               child: TextFormField(
                 keyboardType: TextInputType.number,
                 decoration: context.inputDecoration(
-                    "From year", "$_yearFrom"),
+                    "From year", "${tempYearFrom ?? _yearFrom}"),
                 onChanged: (val) {
                   final parsed = int.tryParse(val);
                   String? error;
@@ -294,21 +368,15 @@ class _FilterBarState extends State<FilterBar> {
                     error = 'Enter a valid year';
                   } else if (parsed > currentYear) {
                     error = 'Year cannot be in the future';
-                  } else if (parsed >= _yearTo) {
+                  } else if (parsed >= (tempYearTo ?? _yearTo)) {
                     error = 'From year must be less than To year';
                   }
                   setState(() {
-                    _yearFrom = parsed ?? _yearFrom;
                     _yearFromError = error;
-                    // Also update To year error if needed
-                    if (_yearTo <= _yearFrom) {
-                      _yearToError = 'To year must be greater than From year';
-                    } else if (_yearTo > currentYear) {
-                      _yearToError = 'Year cannot be in the future';
-                    } else {
-                      _yearToError = null;
-                    }
                   });
+                  if (parsed != null && onYearFromChanged != null) {
+                    onYearFromChanged(parsed);
+                  }
                 },
               ),
             ),
@@ -317,7 +385,7 @@ class _FilterBarState extends State<FilterBar> {
               child: TextFormField(
                 keyboardType: TextInputType.number,
                 decoration: context.inputDecoration(
-                    "To year", "$_yearTo"),
+                    "To year", "${tempYearTo ?? _yearTo}"),
                 onChanged: (val) {
                   final parsed = int.tryParse(val);
                   String? error;
@@ -325,21 +393,15 @@ class _FilterBarState extends State<FilterBar> {
                     error = 'Enter a valid year';
                   } else if (parsed > currentYear) {
                     error = 'Year cannot be in the future';
-                  } else if (parsed <= _yearFrom) {
+                  } else if (parsed <= (tempYearFrom ?? _yearFrom)) {
                     error = 'To year must be greater than From year';
                   }
                   setState(() {
-                    _yearTo = parsed ?? _yearTo;
                     _yearToError = error;
-                    // Also update From year error if needed
-                    if (_yearFrom >= _yearTo) {
-                      _yearFromError = 'From year must be less than To year';
-                    } else if (_yearFrom > currentYear) {
-                      _yearFromError = 'Year cannot be in the future';
-                    } else {
-                      _yearFromError = null;
-                    }
                   });
+                  if (parsed != null && onYearToChanged != null) {
+                    onYearToChanged(parsed);
+                  }
                 },
               ),
             ),

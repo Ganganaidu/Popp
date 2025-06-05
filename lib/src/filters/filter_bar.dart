@@ -27,6 +27,9 @@ class _FilterBarState extends State<FilterBar> {
   int _yearFrom = DateTime.now().year - 1; // Default to 1 years ago
   int _yearTo = DateTime.now().year;
 
+  String? _yearFromError;
+  String? _yearToError;
+
   final Map<String, RangeValues> rangeFilterValues = {
     'Budget': const RangeValues(0, 20000),
     'By KM Driven': const RangeValues(0, 200000),
@@ -272,6 +275,7 @@ class _FilterBarState extends State<FilterBar> {
   }
 
   Widget _yearFilterWidget() {
+    final int currentYear = DateTime.now().year;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -285,9 +289,26 @@ class _FilterBarState extends State<FilterBar> {
                     "From year", "$_yearFrom"),
                 onChanged: (val) {
                   final parsed = int.tryParse(val);
-                  if (parsed != null) {
-                    setState(() => _yearFrom = parsed);
+                  String? error;
+                  if (parsed == null) {
+                    error = 'Enter a valid year';
+                  } else if (parsed > currentYear) {
+                    error = 'Year cannot be in the future';
+                  } else if (parsed >= _yearTo) {
+                    error = 'From year must be less than To year';
                   }
+                  setState(() {
+                    _yearFrom = parsed ?? _yearFrom;
+                    _yearFromError = error;
+                    // Also update To year error if needed
+                    if (_yearTo <= _yearFrom) {
+                      _yearToError = 'To year must be greater than From year';
+                    } else if (_yearTo > currentYear) {
+                      _yearToError = 'Year cannot be in the future';
+                    } else {
+                      _yearToError = null;
+                    }
+                  });
                 },
               ),
             ),
@@ -299,14 +320,49 @@ class _FilterBarState extends State<FilterBar> {
                     "To year", "$_yearTo"),
                 onChanged: (val) {
                   final parsed = int.tryParse(val);
-                  if (parsed != null) {
-                    setState(() => _yearTo = parsed);
+                  String? error;
+                  if (parsed == null) {
+                    error = 'Enter a valid year';
+                  } else if (parsed > currentYear) {
+                    error = 'Year cannot be in the future';
+                  } else if (parsed <= _yearFrom) {
+                    error = 'To year must be greater than From year';
                   }
+                  setState(() {
+                    _yearTo = parsed ?? _yearTo;
+                    _yearToError = error;
+                    // Also update From year error if needed
+                    if (_yearFrom >= _yearTo) {
+                      _yearFromError = 'From year must be less than To year';
+                    } else if (_yearFrom > currentYear) {
+                      _yearFromError = 'Year cannot be in the future';
+                    } else {
+                      _yearFromError = null;
+                    }
+                  });
                 },
               ),
             ),
           ],
         ),
+        const SizedBox(width: 30),
+        if (_yearFromError != null && _yearFromError!.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0, left: 4.0),
+            child: Text(
+              _yearFromError!,
+              style: const TextStyle(color: Colors.red, fontSize: 12),
+            ),
+          ),
+        const SizedBox(width: 20),
+        if (_yearToError != null && _yearToError!.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 4.0, left: 4.0),
+            child: Text(
+              _yearToError!,
+              style: const TextStyle(color: Colors.red, fontSize: 12),
+            ),
+          ),
       ],
     );
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:poppflutter/src/utils/app_loger.dart';
 import 'package:poppflutter/src/utils/build_extensions.dart';
 
+import '../models/pop_category.dart';
 import '../utils/product_content_data.dart';
 import '../widgets/checkbox_filter_widget.dart';
 import '../widgets/range_widget.dart';
@@ -35,10 +36,15 @@ class _FilterBarState extends State<FilterBar> {
     'By KM Driven': const RangeValues(0, 200000),
   };
   String selectedBrand = 'Brand / Model';
+  String selectedState = 'By State';
+  String selectedCategory = 'By Category';
+  String selectedSubCategory = 'By SubCategory';
   String selectedYear = "By Year";
 
-  // Store selected brands in the state
   List<String> _selectedBrands = [];
+  List<String> _selectedStates = [];
+  List<String> _selectedCategories = [];
+  List<String> _selectedSubCategories = [];
 
   @override
   Widget build(BuildContext context) {
@@ -59,8 +65,10 @@ class _FilterBarState extends State<FilterBar> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      isDismissible: false, // Prevent closing by tapping outside
-      enableDrag: false,    // Prevent closing by dragging
+      isDismissible: false,
+      // Prevent closing by tapping outside
+      enableDrag: false,
+      // Prevent closing by dragging
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
@@ -72,6 +80,11 @@ class _FilterBarState extends State<FilterBar> {
             Map<String, RangeValues> tempValues =
                 Map<String, RangeValues>.from(rangeFilterValues);
             List<String> selectedBrands = List<String>.from(_selectedBrands);
+            List<String> selectedStates = List<String>.from(_selectedStates);
+            List<String> selectedCategories =
+                List<String>.from(_selectedCategories);
+            List<String> selectedSubCategories =
+                List<String>.from(_selectedSubCategories);
             int tempYearFrom = _yearFrom;
             int tempYearTo = _yearTo;
 
@@ -86,6 +99,9 @@ class _FilterBarState extends State<FilterBar> {
                     rangeFilterValues.clear();
                     rangeFilterValues.addAll(tempValues);
                     _selectedBrands = [];
+                    _selectedStates = [];
+                    _selectedCategories = [];
+                    _selectedSubCategories = [];
                     _yearFrom = DateTime.now().year - 1;
                     _yearTo = DateTime.now().year;
                   });
@@ -94,6 +110,9 @@ class _FilterBarState extends State<FilterBar> {
                       'Budget': const RangeValues(0, 20000),
                       'By KM Driven': const RangeValues(0, 200000),
                       'Brand / Model': [],
+                      'By State': [],
+                      'By Category': [],
+                      'By SubCategory': [],
                       'By Year': [DateTime.now().year - 1, DateTime.now().year],
                     }
                   });
@@ -105,12 +124,19 @@ class _FilterBarState extends State<FilterBar> {
                     rangeFilterValues.clear();
                     rangeFilterValues.addAll(tempValues);
                     _selectedBrands = List<String>.from(selectedBrands);
+                    _selectedStates = List<String>.from(selectedStates);
+                    _selectedCategories = List<String>.from(selectedCategories);
+                    _selectedSubCategories =
+                        List<String>.from(selectedSubCategories);
                     _yearFrom = tempYearFrom;
                     _yearTo = tempYearTo;
                   });
                   widget.onFiltersChanged({
                     ...tempValues,
                     'Brand / Model': selectedBrands,
+                    'By State': selectedStates,
+                    'By Category': selectedCategories,
+                    'By SubCategory': selectedSubCategories,
                     'By Year': [tempYearFrom, tempYearTo],
                   });
                   Navigator.pop(context); // Close on apply
@@ -122,7 +148,8 @@ class _FilterBarState extends State<FilterBar> {
                     children: [
                       // Header with title and close icon
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 12),
                         child: Row(
                           children: [
                             const Text(
@@ -205,6 +232,24 @@ class _FilterBarState extends State<FilterBar> {
                                       tempYearTo = to;
                                     });
                                   },
+                                  selectedStates,
+                                  (states) {
+                                    setSheetState(() {
+                                      selectedStates = states;
+                                    });
+                                  },
+                                  selectedCategories,
+                                  (categories) {
+                                    setSheetState(() {
+                                      selectedCategories = categories;
+                                    });
+                                  },
+                                  selectedSubCategories,
+                                  (subCategories) {
+                                    setSheetState(() {
+                                      selectedSubCategories = subCategories;
+                                    });
+                                  },
                                 ),
                               ),
                             ),
@@ -251,8 +296,13 @@ class _FilterBarState extends State<FilterBar> {
       int? tempYearFrom,
       void Function(int)? onYearFromChanged,
       int? tempYearTo,
-      void Function(int)? onYearToChanged]) {
-
+      void Function(int)? onYearToChanged,
+      List<String>? selectedStates,
+      void Function(List<String>)? onStatesChanged,
+      List<String>? selectedCategories,
+      void Function(List<String>)? onCategoriesChanged,
+      List<String>? selectedSubCategories,
+      void Function(List<String>)? onSubCategoriesChanged]) {
     AppLogger.d("filterName $filterName");
     if (tempValues.containsKey(filterName)) {
       final RangeValues values = tempValues[filterName]!;
@@ -283,6 +333,49 @@ class _FilterBarState extends State<FilterBar> {
       );
     }
 
+    if (selectedCategory.contains(filterName.trim())) {
+      AppLogger.d("selectedCategory  $filterName");
+      return CheckboxFilterWidget(
+        displayList: getAllPopCategoryNames(),
+        selectedItems: selectedCategories ?? [],
+        key: ValueKey(selectedCategories?.join(',')),
+        onSelectionChanged: (updatedSet) {
+          if (onCategoriesChanged != null) {
+            onCategoriesChanged(List<String>.from(updatedSet));
+          }
+        },
+      );
+    }
+
+    if (selectedState.contains(filterName.trim())) {
+      AppLogger.d("selectedState  $filterName");
+      return CheckboxFilterWidget(
+        displayList: stateNames, // You need to define statesList somewhere
+        selectedItems: selectedStates ?? [],
+        key: ValueKey(selectedStates?.join(',')),
+        onSelectionChanged: (updatedSet) {
+          if (onStatesChanged != null) {
+            onStatesChanged(List<String>.from(updatedSet));
+          }
+        },
+      );
+    }
+
+    if (selectedSubCategory.contains(filterName.trim())) {
+      AppLogger.d("selectedSubCategory  $filterName");
+      return CheckboxFilterWidget(
+        displayList: getAllPopSubCategoryNames(),
+        // You need to define subCategoryList somewhere
+        selectedItems: selectedSubCategories ?? [],
+        key: ValueKey(selectedSubCategories?.join(',')),
+        onSelectionChanged: (updatedSet) {
+          if (onSubCategoriesChanged != null) {
+            onSubCategoriesChanged(List<String>.from(updatedSet));
+          }
+        },
+      );
+    }
+
     if (selectedYear.contains(filterName.trim())) {
       AppLogger.d("selectedYear  $filterName");
       return _yearFilterWidget(
@@ -300,6 +393,12 @@ class _FilterBarState extends State<FilterBar> {
     int count = 0;
     if (filterName == 'Brand / Model') {
       count = _selectedBrands.length;
+    } else if (filterName == 'By State') {
+      count = _selectedStates.length;
+    } else if (filterName == 'By Category') {
+      count = _selectedCategories.length;
+    } else if (filterName == 'By SubCategory') {
+      count = _selectedSubCategories.length;
     } else if (rangeFilterValues.containsKey(filterName)) {
       final RangeValues values = rangeFilterValues[filterName]!;
       // Count as selected if not default

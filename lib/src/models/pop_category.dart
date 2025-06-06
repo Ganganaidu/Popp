@@ -88,3 +88,19 @@ final List<PopCategory> catList = [
     subcategories: [],
   ),
 ];
+
+/// Returns all category names from catList
+List<String> getAllPopCategoryNames() {
+  return catList.map((cat) => cat.name).toList();
+}
+
+/// Returns all unique subcategory names from catList
+List<String> getAllPopSubCategoryNames() {
+  final subCats = <String>{};
+  for (final cat in catList) {
+    if (cat.subcategories != null) {
+      subCats.addAll(cat.subcategories!);
+    }
+  }
+  return subCats.toList();
+}

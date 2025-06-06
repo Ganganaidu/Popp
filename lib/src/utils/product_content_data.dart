@@ -26,18 +26,18 @@ const List<String> bikeBrands = [
 ];
 
 const bikeFilters = [
-  'By Year',
   'Budget',
   'Brand / Model',
   'By KM Driven',
   'By State',
+  'By Year',
   'Sort By'
 ];
 
 const categoryFilters = [
   'Budget',
-  'Category',
-  'Sub Category',
+  'By Category',
+  'By SubCategory',
   'By State',
   'By Year',
   'Sort By'
@@ -92,3 +92,5 @@ const List<String> stateNames = [
   'Uttarakhand',
   'West Bengal',
 ];
+
+

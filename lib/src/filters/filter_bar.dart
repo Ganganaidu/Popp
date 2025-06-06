@@ -113,7 +113,7 @@ class _FilterBarState extends State<FilterBar> {
                       'By State': [],
                       'By Category': [],
                       'By SubCategory': [],
-                      'By Year': [DateTime.now().year - 1, DateTime.now().year],
+                      // Do not include 'By Year' on reset
                     }
                   });
                   Navigator.pop(context); // Close on clear all
@@ -126,19 +126,23 @@ class _FilterBarState extends State<FilterBar> {
                     _selectedBrands = List<String>.from(selectedBrands);
                     _selectedStates = List<String>.from(selectedStates);
                     _selectedCategories = List<String>.from(selectedCategories);
-                    _selectedSubCategories =
-                        List<String>.from(selectedSubCategories);
+                    _selectedSubCategories = List<String>.from(selectedSubCategories);
                     _yearFrom = tempYearFrom;
                     _yearTo = tempYearTo;
                   });
-                  widget.onFiltersChanged({
+                  final int defaultFrom = DateTime.now().year - 1;
+                  final int defaultTo = DateTime.now().year;
+                  final Map<String, dynamic> filterMap = {
                     ...tempValues,
                     'Brand / Model': selectedBrands,
                     'By State': selectedStates,
                     'By Category': selectedCategories,
                     'By SubCategory': selectedSubCategories,
-                    'By Year': [tempYearFrom, tempYearTo],
-                  });
+                  };
+                  if (tempYearFrom != defaultFrom || tempYearTo != defaultTo) {
+                    filterMap['By Year'] = [tempYearFrom, tempYearTo];
+                  }
+                  widget.onFiltersChanged(filterMap);
                   Navigator.pop(context); // Close on apply
                 }
 

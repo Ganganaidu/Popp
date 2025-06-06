@@ -3,7 +3,7 @@ import 'package:poppflutter/src/settings/settings_screen.dart';
 
 import '../login/forgot_password_screen.dart';
 import '../models/product.dart';
-import '../products/product_details_screen.dart';
+import '../products/product_detail_screen.dart';
 
 // Define routes for each tab
 final Map<String, WidgetBuilder> routes = {

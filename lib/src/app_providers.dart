@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:poppflutter/src/subscription/subscription_provider.dart';
 import 'package:provider/provider.dart';
 
 import 'adbanner/repository/ad_carousel_viewmodel.dart';
@@ -19,7 +20,7 @@ class AppProviders extends StatelessWidget {
             create: (_) => DashboardViewModel(ProductRepository())),
         ChangeNotifierProvider(
             create: (_) => AdCarouselViewModel(AdRepository())),
-        // Add other global ViewModels here
+        ChangeNotifierProvider(create: (_) => SubscriptionProvider()),
       ],
       child: child,
     );

@@ -434,10 +434,40 @@
       "languageVersion": "2.19"
     },
     {
+      "name": "in_app_purchase",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/in_app_purchase-3.2.3",
+      "packageUri": "lib/",
+      "languageVersion": "3.5"
+    },
+    {
+      "name": "in_app_purchase_android",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/in_app_purchase_android-0.4.0+2",
+      "packageUri": "lib/",
+      "languageVersion": "3.6"
+    },
+    {
+      "name": "in_app_purchase_platform_interface",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/in_app_purchase_platform_interface-1.4.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.1"
+    },
+    {
+      "name": "in_app_purchase_storekit",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/in_app_purchase_storekit-0.4.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.6"
+    },
+    {
       "name": "js",
       "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/js-0.6.7",
       "packageUri": "lib/",
       "languageVersion": "2.19"
+    },
+    {
+      "name": "json_annotation",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/json_annotation-4.9.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
     },
     {
       "name": "leak_tracker",
@@ -764,7 +794,7 @@
       "languageVersion": "3.4"
     }
   ],
-  "generated": "2025-06-01T15:33:20.525535Z",
+  "generated": "2025-06-07T15:18:02.040721Z",
   "generator": "pub",
   "generatorVersion": "3.7.2",
   "flutterRoot": "file:///Users/gangadharkondati/development/flutter",

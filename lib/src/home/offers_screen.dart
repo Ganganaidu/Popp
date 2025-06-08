@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:poppflutter/src/home/dashboard_screen.dart';
+import 'package:popp/src/home/dashboard_screen.dart';
 
 // TODO example screen with top viewpage sliding.
 class OffersScreen extends StatefulWidget {

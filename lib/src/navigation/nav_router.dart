@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:poppflutter/src/settings/settings_screen.dart';
+import 'package:popp/src/settings/settings_screen.dart';
 
 import '../login/forgot_password_screen.dart';
 import '../models/product.dart';

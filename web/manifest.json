@@ -1,6 +1,6 @@
 {
-    "name": "poppflutter",
-    "short_name": "poppflutter",
+    "name": "popp",
+    "short_name": "popp",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

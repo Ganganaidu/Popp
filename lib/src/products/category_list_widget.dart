@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:poppflutter/src/products/product_card.dart';
+import 'package:popp/src/products/product_card.dart';
 import '../models/product.dart';
 import '../utils/product_content_data.dart';
 import 'category_detail_screen.dart';

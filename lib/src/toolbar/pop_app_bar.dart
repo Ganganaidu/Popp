@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:poppflutter/src/navigation/nav_router.dart';
+import 'package:popp/src/navigation/nav_router.dart';
 
 class PopAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;

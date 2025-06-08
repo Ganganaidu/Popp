@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:poppflutter/src/services/accessories/sell_your_accessories.dart';
+import 'package:popp/src/services/accessories/sell_your_accessories.dart';
 import '../../models/pop_service_item.dart';
 import '../../services/bikes/sell_your_bike.dart';
 import '../../widgets/app_dialogs.dart';

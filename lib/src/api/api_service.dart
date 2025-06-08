@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
-import 'package:poppflutter/src/api/api_url.dart';
+import 'package:popp/src/api/api_url.dart';
 import 'package:http/http.dart' as http;
 
 // https://medium.com/codex/simplifying-api-calls-in-flutter-c39311172b6f

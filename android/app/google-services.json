@@ -7,12 +7,33 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:255413402478:android:2d7f4278e963ba22b75f7f",
+        "mobilesdk_app_id": "1:255413402478:android:76753981aa161607b75f7f",
         "android_client_info": {
-          "package_name": "com.popp.poppflutter"
+          "package_name": "com.popp.abike"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "255413402478-045msv2n4vnkjtacsml9vg9ieu33kt5m.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.popp.abike",
+            "certificate_hash": "56aa0143d4386ad4039337f9507c64aea54c7cde"
+          }
+        },
+        {
+          "client_id": "255413402478-uberrbnv5uh7s14pkqt8g92phqqt9aga.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.popp.abike",
+            "certificate_hash": "83e5b7a60844837f0345133c39b58d493116b077"
+          }
+        },
+        {
+          "client_id": "255413402478-p9tn9kcfu9u9r1pvncfsv483g4h4mcp2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyAoogLT6QUfVICvPJe0Rj1ttccLXz-Rm70"
@@ -20,7 +41,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "255413402478-p9tn9kcfu9u9r1pvncfsv483g4h4mcp2.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "255413402478-41d2jo678e3c8e1v9oec83ue5a7pphla.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.popp.abike"
+              }
+            }
+          ]
         }
       }
     }

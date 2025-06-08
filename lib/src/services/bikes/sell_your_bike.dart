@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:poppflutter/src/utils/build_extensions.dart';
-import 'package:poppflutter/src/widgets/loading_overlay.dart';
+import 'package:popp/src/utils/build_extensions.dart';
+import 'package:popp/src/widgets/loading_overlay.dart';
 
 import '../../firebase/firebase_save_prodcuts_api.dart';
 import '../../models/pop_category.dart';

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:poppflutter/src/products/product_card.dart';
-import 'package:poppflutter/src/utils/app_loger.dart';
+import 'package:popp/src/products/product_card.dart';
+import 'package:popp/src/utils/app_loger.dart';
 import '../filters/filter_bar.dart';
 import '../models/product.dart';
 

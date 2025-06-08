@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:poppflutter/src/utils/app_loger.dart';
+import 'package:popp/src/utils/app_loger.dart';
 
 import '../gallery/pic_image_gallery.dart';
 import '../models/product.dart';

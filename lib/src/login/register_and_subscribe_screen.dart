@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:poppflutter/src/utils/app_loger.dart';
+import 'package:popp/src/utils/app_loger.dart';
 
 import '../firebase/auth_service.dart';
 import '../widgets/app_dialogs.dart';

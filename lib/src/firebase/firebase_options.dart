@@ -66,10 +66,10 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyDm-S_RtYjVSS2zMwFlfS_jodKixQhJSlc',
-    appId: '1:255413402478:ios:0718986b0c64bb24b75f7f',
+    appId: '1:255413402478:android:76753981aa161607b75f7f',
     messagingSenderId: '255413402478',
     projectId: 'popp-71efb',
     storageBucket: 'popp-71efb.firebasestorage.app',
-    iosBundleId: 'com.popp.poppflutter',
+    iosBundleId: 'com.popp.abike',
   );
 }

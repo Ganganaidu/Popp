@@ -2,10 +2,10 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:poppflutter/src/utils/app_loger.dart';
-import 'package:poppflutter/src/utils/build_extensions.dart';
-import 'package:poppflutter/src/widgets/category_selector.dart';
-import 'package:poppflutter/src/widgets/loading_overlay.dart';
+import 'package:popp/src/utils/app_loger.dart';
+import 'package:popp/src/utils/build_extensions.dart';
+import 'package:popp/src/widgets/category_selector.dart';
+import 'package:popp/src/widgets/loading_overlay.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../firebase/firebase_save_prodcuts_api.dart';

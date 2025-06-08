@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:poppflutter/src/utils/build_extensions.dart';
+import 'package:popp/src/utils/build_extensions.dart';
 
 class MonthYearPicker extends StatelessWidget {
   final String label;

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:poppflutter/src/adbanner/model/ad_banner.dart';
-import 'package:poppflutter/src/adbanner/repository/ad_carousel_viewmodel.dart';
+import 'package:popp/src/adbanner/model/ad_banner.dart';
+import 'package:popp/src/adbanner/repository/ad_carousel_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:carousel_slider/carousel_slider.dart';

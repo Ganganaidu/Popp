@@ -1,4 +1,4 @@
-import 'package:poppflutter/src/models/product.dart';
+import 'package:popp/src/models/product.dart';
 
 class PopCategory {
   final String categoryId;

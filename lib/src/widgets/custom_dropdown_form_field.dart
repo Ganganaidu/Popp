@@ -1,6 +1,6 @@
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
-import 'package:poppflutter/src/utils/build_extensions.dart';
+import 'package:popp/src/utils/build_extensions.dart';
 
 class CustomDropdownFormField<T> extends StatelessWidget {
   final String label;

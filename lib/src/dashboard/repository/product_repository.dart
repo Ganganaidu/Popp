@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:poppflutter/src/utils/app_loger.dart';
+import 'package:popp/src/utils/app_loger.dart';
 import '../../models/product.dart';
-import 'package:poppflutter/src/models/pop_category.dart';
+import 'package:popp/src/models/pop_category.dart';
 
 class ProductRepository {
   final FirebaseFirestore _db = FirebaseFirestore.instance;

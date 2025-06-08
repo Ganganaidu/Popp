@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:poppflutter/src/login/model/user_data_model.dart';
-import 'package:poppflutter/src/login/register_and_subscribe_screen.dart';
-import 'package:poppflutter/src/utils/build_extensions.dart';
+import 'package:popp/src/login/model/user_data_model.dart';
+import 'package:popp/src/login/register_and_subscribe_screen.dart';
+import 'package:popp/src/utils/build_extensions.dart';
 
 class SignUpBikeDetailsScreen extends StatefulWidget {
   final UserData userData;

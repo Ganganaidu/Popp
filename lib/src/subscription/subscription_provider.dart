@@ -47,9 +47,13 @@ class SubscriptionProvider with ChangeNotifier {
     });
   }
 
-  void _verifyAndActivate(PurchaseDetails purchase) {
-    // TODO: Add backend receipt/token validation here
-    _isSubscribed = true;
-    notifyListeners();
+  void _verifyAndActivate(PurchaseDetails purchase) async {
+    // Instead of just trusting the client
+    // final isValid = await myBackend.verifyPurchase(purchase);
+    // if (isValid) {
+    //   _isSubscribed = true;
+    //   notifyListeners();
+    // }
   }
+
 }

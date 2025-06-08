@@ -1,11 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:poppflutter/src/login/model/user_data_model.dart';
-import 'package:poppflutter/src/login/sign_up_bike_details_screen.dart';
-import 'package:poppflutter/src/login/validation_requiremen_text.dart';
-import 'package:poppflutter/src/utils/app_utils.dart';
-import 'package:poppflutter/src/utils/build_extensions.dart';
+import 'package:popp/src/login/model/user_data_model.dart';
+import 'package:popp/src/login/sign_up_bike_details_screen.dart';
+import 'package:popp/src/login/validation_requiremen_text.dart';
+import 'package:popp/src/utils/app_utils.dart';
+import 'package:popp/src/utils/build_extensions.dart';
 
 import '../firebase/auth_service.dart';
 import '../utils/product_content_data.dart';

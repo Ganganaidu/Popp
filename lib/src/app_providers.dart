@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:poppflutter/src/subscription/subscription_provider.dart';
+import 'package:popp/src/subscription/subscription_provider.dart';
 import 'package:provider/provider.dart';
 
 import 'adbanner/repository/ad_carousel_viewmodel.dart';

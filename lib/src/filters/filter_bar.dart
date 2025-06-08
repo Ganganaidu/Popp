@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:poppflutter/src/utils/app_loger.dart';
-import 'package:poppflutter/src/utils/build_extensions.dart';
+import 'package:popp/src/utils/app_loger.dart';
+import 'package:popp/src/utils/build_extensions.dart';
 
 import '../models/pop_category.dart';
 import '../utils/product_content_data.dart';

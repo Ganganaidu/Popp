@@ -9,4 +9,6 @@ class Constants {
   static const String routes = 'Routes';
   static const String chat = 'Chat';
   static const String explore = 'Explore';
+
+  static const String privacyLink = 'https://popp-71efb.web.app/privacy-policy.html';
 }

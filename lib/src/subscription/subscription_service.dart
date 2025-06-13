@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:in_app_purchase/in_app_purchase.dart';
 
 class SubscriptionService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -22,13 +23,14 @@ class SubscriptionService {
     return now.isBefore(freeTrialEnd) || isSubscribed;
   }
 
-  Future<void> updateSubscriptionStatus(bool isSubscribed) async {
+  Future<void> updateSubscriptionStatus(bool isSubscribed, PurchaseDetails purchaseDetails) async {
     final uid = _auth.currentUser?.uid;
     if (uid == null) return;
 
     final docRef = _fireStore.collection('userSubscriptions').doc(uid);
     await docRef.set({
       'isSubscribed': isSubscribed,
+      'purchaseDetails' : purchaseDetails,
       'startDate': Timestamp.now(),
     }, SetOptions(merge: true));
   }

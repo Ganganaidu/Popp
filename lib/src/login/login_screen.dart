@@ -1,7 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../navigation/nav_router.dart';
+import '../utils/app_constants.dart';
 import '../utils/app_utils.dart';
 import 'social_login_buttons.dart';
 
@@ -76,12 +78,17 @@ class _LoginScreenState extends State<LoginScreen>
                     if (showSocialLogin) const SocialLoginButtons(),
                     const SizedBox(height: 40),
                     _buildSignupLink(),
+                    const SizedBox(height: 16),
+                    _buildSkipButton(),
                   ],
                 ),
               ),
             ),
-            _buildSkipButton(),
-            const SizedBox(height: 20),
+            // Move skip button below signup and privacy/terms
+            Padding(
+              padding: const EdgeInsets.only(bottom: 24.0),
+              child: _buildPrivacyTermsLink(),
+            ),
           ],
         ),
       ),
@@ -212,14 +219,49 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
+  Widget _buildPrivacyTermsLink() {
+    return Align(
+      alignment: Alignment.center,
+      child: GestureDetector(
+        onTap: () async {
+          final launched = await launchUrl(
+            Uri.parse(Constants.privacyLink),
+            mode: LaunchMode.externalApplication,
+          );
+          if (!launched) {
+            _showError('Could not open Privacy and Terms & Conditions link.');
+          }
+        },
+        child: const Text(
+          'Privacy and Terms & Conditions',
+          style: TextStyle(
+            color: Colors.blue,
+            decoration: TextDecoration.underline,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildSkipButton() {
-    return TextButton(
-      onPressed: () {
-        Navigator.pushReplacementNamed(context, '/home');
-      },
-      child: const Text(
-        "Skip for now",
-        style: TextStyle(color: Colors.grey),
+    return SizedBox(
+      width: 180,
+      height: 44,
+      child: ElevatedButton.icon(
+        onPressed: () {
+          Navigator.pushReplacementNamed(context, '/home');
+        },
+        label: const Text(
+          'Skip for now',
+          style: TextStyle(color: Colors.black54),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
+        ),
       ),
     );
   }

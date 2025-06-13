@@ -17,6 +17,8 @@ class UserData {
   String? city;
   String? pinCode;
   String? stateName; // Assuming from your earlier UI context
+  bool isSubscribed;
+  bool registrationComplete;
 
   UserData({
     required this.uid,
@@ -33,6 +35,8 @@ class UserData {
     this.city,
     this.pinCode,
     this.stateName,
+    this.isSubscribed = false,
+    this.registrationComplete = false,
   })  : createdProductIds = createdProductIds ?? [], // Default to empty list
         savedProductIds = savedProductIds ?? [];   // Default to empty list
 
@@ -52,6 +56,8 @@ class UserData {
       if (city != null) 'city': city,
       if (pinCode != null) 'pinCode': pinCode,
       if (stateName != null) 'stateName': stateName,
+      'isSubscribed': isSubscribed,
+      'registrationComplete': registrationComplete,
     };
   }
 
@@ -71,7 +77,9 @@ class UserData {
       address: data['address'],
       city: data['city'],
       pinCode: data['pinCode'],
-      stateName: data['stateName']
+      stateName: data['stateName'],
+      isSubscribed: data['isSubscribed'],
+      registrationComplete: data['registrationComplete']
     );
   }
 }

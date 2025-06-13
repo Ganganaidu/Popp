@@ -1,8 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'package:popp/src/utils/app_loger.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../firebase/auth_service.dart';
+import '../subscription/subscribe_page_widget.dart';
+import '../utils/app_constants.dart';
 import '../widgets/app_dialogs.dart';
 import 'model/user_data_model.dart';
 
@@ -20,6 +24,23 @@ class _RegisterAndSubscribeScreenState
     extends State<RegisterAndSubscribeScreen> {
   bool termsAccepted = false;
   bool isSubmitting = false;
+  bool hasClickedTermsLink = false;
+
+  void _openTermsLink() async {
+    final launched = await launchUrl(
+      Uri.parse(Constants.privacyLink),
+      mode: LaunchMode.externalApplication,
+    );
+    if (launched) {
+      setState(() => hasClickedTermsLink = true);
+    } else {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Could not open Terms & Conditions link.')),
+      );
+    }
+  }
 
   Future<void> submitToFireStore() async {
     if (!termsAccepted) {
@@ -31,15 +52,35 @@ class _RegisterAndSubscribeScreenState
     setState(() => isSubmitting = true);
 
     try {
-      FirestoreResult saveUserDataResult =
+      FireStoreResult saveUserDataResult =
           await saveUserDataToFireStore(widget.userData);
       if (saveUserDataResult.success) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Profile data saved successfully!")),
         );
-        Navigator.pushReplacementNamed(context, '/finalCongrats');
+        // update registration status
+        await updateRegistrationComplete(
+            uid: widget.userData.uid, registrationComplete: true);
+
+        if (!mounted) return;
+        // Show bottom sheet with SubscribePageWidget instead of navigating to finalCongrats
+        await showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          isDismissible: false,
+          enableDrag: false,
+          builder: (context) => SizedBox(
+            height: MediaQuery.of(context).size.height * 0.75,
+            child: SubscribePageWidget(
+              userUid: widget.userData.uid,
+            ),
+          ),
+        );
       } else {
+        await updateRegistrationComplete(
+            uid: widget.userData.uid, registrationComplete: false);
+
         // More specific error handling
         String userMessage =
             saveUserDataResult.errorMessage ?? "An unknown error occurred.";
@@ -62,6 +103,8 @@ class _RegisterAndSubscribeScreenState
       if (e.code == 'email-already-in-use' ||
           e.code == 'account-exists-with-different-credential' ||
           e.code == 'phone-already-in-use') {
+        if (!mounted) return;
+        // Handle user already exists case
         await AppDialogs.showUserExistsDialog(context, () {
           Navigator.pushReplacementNamed(context, '/login');
         });
@@ -136,11 +179,36 @@ class _RegisterAndSubscribeScreenState
                         style: textTheme.bodyLarge),
                     const SizedBox(height: 20),
                     CheckboxListTile(
-                      title: const Text(
-                          "Check to accept Terms & Conditions of POPP"),
+                      title: RichText(
+                        text: TextSpan(
+                          style: Theme.of(context).textTheme.bodyLarge,
+                          children: [
+                            const TextSpan(text: 'Check to accept '),
+                            TextSpan(
+                              text: 'Terms & Conditions',
+                              style: const TextStyle(
+                                color: Colors.blue,
+                                decoration: TextDecoration.underline,
+                              ),
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = _openTermsLink,
+                            ),
+                            const TextSpan(text: ' of POPP'),
+                          ],
+                        ),
+                      ),
                       value: termsAccepted,
-                      onChanged: (val) =>
-                          setState(() => termsAccepted = val ?? false),
+                      onChanged: (val) {
+                        if (hasClickedTermsLink) {
+                          setState(() => termsAccepted = val ?? false);
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text(
+                                    'Kindly read and accept the Terms & Conditions before continuing...')),
+                          );
+                        }
+                      },
                     ),
                   ],
                 ),

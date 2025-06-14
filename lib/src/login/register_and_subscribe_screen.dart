@@ -74,6 +74,7 @@ class _RegisterAndSubscribeScreenState
             height: MediaQuery.of(context).size.height * 0.75,
             child: SubscribePageWidget(
               userUid: widget.userData.uid,
+              isFromSettings: false,
             ),
           ),
         );

@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../utils/product_content_data.dart';
-
 class CheckboxFilterWidget extends StatefulWidget {
   final List<String> selectedItems;
   final List<String> displayList;

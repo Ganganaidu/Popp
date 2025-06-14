@@ -1,11 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../utils/app_loger.dart';
 import 'subscription_provider.dart';
 
-class SubscribePageWidget extends StatelessWidget {
+class SubscribePageWidget extends StatefulWidget {
   final String userUid;
+  final bool isFromSettings;
 
-  const SubscribePageWidget({super.key, required this.userUid});
+  const SubscribePageWidget({
+    super.key,
+    required this.userUid,
+    required this.isFromSettings,
+  });
+
+  @override
+  State<SubscribePageWidget> createState() => _SubscribePageWidgetState();
+}
+
+class _SubscribePageWidgetState extends State<SubscribePageWidget> {
+  int? _selectedIndex;
 
   @override
   Widget build(BuildContext context) {
@@ -28,29 +41,66 @@ class SubscribePageWidget extends StatelessWidget {
                 Expanded(
                   child: ListView.separated(
                     itemCount: products.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 16),
+                    separatorBuilder: (_, __) => const Divider(height: 1),
                     itemBuilder: (context, index) {
                       final product = products[index];
-                      return Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[100],
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey.shade300),
+                      final isFree = product.price.toLowerCase() == 'free' ||
+                          product.price == '0' ||
+                          product.price == '0.00' ||
+                          product.price == '₹0' ||
+                          product.price == '₹0.00';
+                      final isSelected = _selectedIndex == index;
+                      final bgColor = isSelected
+                          ? Colors.blue.withOpacity(0.15)
+                          : (isFree ? Colors.green[50] : null);
+                      final priceWidget = Text(
+                        product.price,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          color: isFree ? Colors.green[800] : null,
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                      );
+                      final content = Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 12),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(product.description),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Price: ${product.price}  |  ${product.title}',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
+                            priceWidget,
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    product.title,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  Text(
+                                    product.description,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
                               ),
                             ),
                           ],
+                        ),
+                      );
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _selectedIndex = index;
+                          });
+                        },
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          color: bgColor,
+                          child: content,
                         ),
                       );
                     },
@@ -62,14 +112,14 @@ class SubscribePageWidget extends StatelessWidget {
                     children: [
                       Expanded(
                         child: ElevatedButton(
-                          onPressed: products.isEmpty
+                          onPressed: _selectedIndex == null
                               ? null
                               : () async {
-                                  await provider.buy(products.first);
+                                  if (context.mounted) Navigator.pop(context);
+                                  await provider.buy(products[_selectedIndex!]);
                                   await provider.updateUserSubscription(
-                                      uid: userUid, isSubscribed: true);
-                                  if (context.mounted) {
-                                    Navigator.pop(context);
+                                      uid: widget.userUid, isSubscribed: true);
+                                  if (!widget.isFromSettings && context.mounted) {
                                     Navigator.pushReplacementNamed(
                                         context, '/finalCongrats');
                                   }
@@ -84,10 +134,10 @@ class SubscribePageWidget extends StatelessWidget {
                       Expanded(
                         child: OutlinedButton(
                           onPressed: () async {
+                            if (context.mounted) Navigator.pop(context);
                             await provider.updateUserSubscription(
-                                uid: userUid, isSubscribed: false);
-                            if (context.mounted) {
-                              Navigator.pop(context);
+                                uid: widget.userUid, isSubscribed: false);
+                            if (!widget.isFromSettings && context.mounted) {
                               Navigator.pushReplacementNamed(
                                   context, '/finalCongrats');
                             }

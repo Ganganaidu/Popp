@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 
 import '../../main.dart';
 import '../navigation/nav_router.dart';
+import '../subscription/subscribe_page_widget.dart';
+import '../utils/app_loger.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -10,6 +12,7 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
+    AppLogger.d("Current user: $user");
     final bool isLoggedIn = user != null;
     final String userName = user?.displayName ?? 'No Name';
     final String userEmailOrPhone = user?.email ?? user?.phoneNumber ?? '';
@@ -86,6 +89,18 @@ class SettingsScreen extends StatelessWidget {
                     title: "Messages",
                     enabled: isLoggedIn,
                   ),
+                  _buildDisabledCard(
+                    context,
+                    icon: Icons.chat,
+                    title: "Subscriptions",
+                    enabled: isLoggedIn,
+                    // Custom onTap for Subscriptions
+                    onTap: isLoggedIn
+                        ? () {
+                            _showSubscribeBottomSheet(context, user.uid);
+                          }
+                        : null,
+                  ),
                   const SizedBox(height: 24),
                   const Text(
                     "Other Settings",
@@ -156,8 +171,27 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
+  void _showSubscribeBottomSheet(BuildContext context, String userUid) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      isDismissible: false,
+      enableDrag: false,
+      builder: (context) => SizedBox(
+        height: MediaQuery.of(context).size.height * 0.75,
+        child: SubscribePageWidget(
+          userUid: userUid,
+          isFromSettings: true,
+        ),
+      ),
+    );
+  }
+
   Widget _buildDisabledCard(BuildContext context,
-      {required IconData icon, required String title, required bool enabled}) {
+      {required IconData icon,
+      required String title,
+      required bool enabled,
+      VoidCallback? onTap}) {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       elevation: 2,
@@ -166,11 +200,7 @@ class SettingsScreen extends StatelessWidget {
         title: Text(title),
         trailing: const Icon(Icons.arrow_forward_ios, size: 16),
         enabled: enabled,
-        onTap: enabled
-            ? () {
-                // Implement navigation
-              }
-            : null,
+        onTap: onTap ?? (enabled ? () {} : null),
       ),
     );
   }

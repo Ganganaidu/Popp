@@ -1,9 +1,7 @@
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:popp/src/utils/app_loger.dart';
-import '../login/model/user_data_model.dart';
 
 class SubscriptionProvider with ChangeNotifier {
   final InAppPurchase _iap = InAppPurchase.instance;
@@ -31,7 +29,38 @@ class SubscriptionProvider with ChangeNotifier {
     const Set<String> _kIds = {'premium_subscription'};
     final response = await _iap.queryProductDetails(_kIds);
     _products = response.productDetails;
+    sortProductsByPrice();
     notifyListeners();
+  }
+
+  void sortProductsByPrice() {
+    _products.sort((a, b) {
+      bool aIsFree = a.price.toLowerCase() == 'free' || a.price == '0' || a.price == '0.00' || a.price == '₹0' || a.price == '₹0.00';
+      bool bIsFree = b.price.toLowerCase() == 'free' || b.price == '0' || b.price == '0.00' || b.price == '₹0' || b.price == '₹0.00';
+      if (aIsFree && !bIsFree) return -1;
+      if (!aIsFree && bIsFree) return 1;
+      return a.price.compareTo(b.price);
+    });
+    notifyListeners();
+  }
+
+  Future<void> checkSubscriptionStatus(String? uid) async {
+    if (uid == null) {
+      AppLogger.e('No user is currently signed in.');
+      return;
+    }
+    try {
+      final userDoc =
+          await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      if (userDoc.exists) {
+        _isSubscribed = userDoc.data()?['isSubscribed'] ?? false;
+        notifyListeners();
+      } else {
+        AppLogger.e('User document does not exist.');
+      }
+    } catch (e) {
+      AppLogger.e('Failed to check subscription status: $e');
+    }
   }
 
   Future<void> buy(ProductDetails productDetails) async {

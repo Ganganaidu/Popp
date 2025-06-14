@@ -24,6 +24,8 @@ class _SubscribePageWidgetState extends State<SubscribePageWidget> {
   Widget build(BuildContext context) {
     final provider = Provider.of<SubscriptionProvider>(context);
     final products = provider.products;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return SafeArea(
       child: products.isEmpty
@@ -75,16 +77,24 @@ class _SubscribePageWidgetState extends State<SubscribePageWidget> {
                                 children: [
                                   Text(
                                     product.title,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 16,
-                                    ),
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 16,
+                                        color: (isFree && isDark
+                                            ? Colors.black54
+                                            : null)),
                                   ),
                                   Text(
                                     product.description,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                  ),
+                                    style: TextStyle(
+                                      color: isFree && isDark
+                                          ? Colors.black54
+                                          : null,
+                                      fontSize: 14,
+                                    ),
+                                  )
                                 ],
                               ),
                             ),

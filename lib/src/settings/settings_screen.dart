@@ -86,12 +86,6 @@ class SettingsScreen extends StatelessWidget {
                   _buildDisabledCard(
                     context,
                     icon: Icons.chat,
-                    title: "Messages",
-                    enabled: isLoggedIn,
-                  ),
-                  _buildDisabledCard(
-                    context,
-                    icon: Icons.chat,
                     title: "Subscriptions",
                     enabled: isLoggedIn,
                     // Custom onTap for Subscriptions
@@ -128,13 +122,6 @@ class SettingsScreen extends StatelessWidget {
                             onForgotPasswordTap(context);
                           }
                         : null,
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.language),
-                    title: const Text("Language Preference"),
-                    onTap: () {
-                      // Always enabled
-                    },
                   ),
                 ],
               ),

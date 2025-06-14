@@ -11,4 +11,7 @@ class Constants {
   static const String explore = 'Explore';
 
   static const String privacyLink = 'https://popp-71efb.web.app/privacy-policy.html';
+
+  static const bool hideRoutes = true;
+  static const bool hideRides = true;
 }

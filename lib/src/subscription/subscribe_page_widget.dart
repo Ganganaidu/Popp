@@ -119,7 +119,8 @@ class _SubscribePageWidgetState extends State<SubscribePageWidget> {
                                   await provider.buy(products[_selectedIndex!]);
                                   await provider.updateUserSubscription(
                                       uid: widget.userUid, isSubscribed: true);
-                                  if (!widget.isFromSettings && context.mounted) {
+                                  if (!widget.isFromSettings &&
+                                      context.mounted) {
                                     Navigator.pushReplacementNamed(
                                         context, '/finalCongrats');
                                   }
@@ -135,9 +136,10 @@ class _SubscribePageWidgetState extends State<SubscribePageWidget> {
                         child: OutlinedButton(
                           onPressed: () async {
                             if (context.mounted) Navigator.pop(context);
-                            await provider.updateUserSubscription(
-                                uid: widget.userUid, isSubscribed: false);
-                            if (!widget.isFromSettings && context.mounted) {
+                            if (!widget.isFromSettings) {
+                              await provider.updateUserSubscription(
+                                  uid: widget.userUid, isSubscribed: false);
+                              if (!context.mounted) return;
                               Navigator.pushReplacementNamed(
                                   context, '/finalCongrats');
                             }

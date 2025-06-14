@@ -41,13 +41,12 @@ class NavHelper {
   late List<Widget> widgetOptions;
 
   // Method to initialize widgetOptions
-  // Method to initialize widgetOptions
   void initializeWidgetOptions() {
     widgetOptions = <Widget>[
       const DashboardScreen(),
-      const OurServices(),
+      // const OurServices(),
       const ExploreProductsScreen(),
-      const HelpScreen(),
+      // const HelpScreen(),
       const CustomerChatScreen(),
     ];
   }

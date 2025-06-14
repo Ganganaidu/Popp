@@ -44,25 +44,6 @@ class SubscriptionProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> checkSubscriptionStatus(String? uid) async {
-    if (uid == null) {
-      AppLogger.e('No user is currently signed in.');
-      return;
-    }
-    try {
-      final userDoc =
-          await FirebaseFirestore.instance.collection('users').doc(uid).get();
-      if (userDoc.exists) {
-        _isSubscribed = userDoc.data()?['isSubscribed'] ?? false;
-        notifyListeners();
-      } else {
-        AppLogger.e('User document does not exist.');
-      }
-    } catch (e) {
-      AppLogger.e('Failed to check subscription status: $e');
-    }
-  }
-
   Future<void> buy(ProductDetails productDetails) async {
     final purchaseParam = PurchaseParam(productDetails: productDetails);
     await _iap.buyNonConsumable(purchaseParam: purchaseParam); // works for subscriptions
@@ -72,21 +53,13 @@ class SubscriptionProvider with ChangeNotifier {
     _iap.purchaseStream.listen((List<PurchaseDetails> purchases) {
       for (var purchase in purchases) {
         if (purchase.status == PurchaseStatus.purchased || purchase.status == PurchaseStatus.restored) {
-          _verifyAndActivate(purchase);
+          _isSubscribed = true;
+          notifyListeners();
         } else if (purchase.status == PurchaseStatus.error) {
           debugPrint('Purchase failed: ${purchase.error}');
         }
       }
     });
-  }
-
-  void _verifyAndActivate(PurchaseDetails purchase) async {
-   // //  Instead of just trusting the client
-   //  final isValid = await myBackend.verifyPurchase(purchase);
-   //  if (isValid) {
-   //    _isSubscribed = true;
-   //    notifyListeners();
-   //  }
   }
 
   Future<void> updateUserSubscription({
@@ -99,8 +72,7 @@ class SubscriptionProvider with ChangeNotifier {
         return;
       }
       await FirebaseFirestore.instance.collection('users').doc(uid).update({
-        'isSubscribed': isSubscribed,
-        'registrationComplete': true,
+        'isSubscribed': isSubscribed
       });
       _isSubscribed = isSubscribed;
       notifyListeners();
@@ -109,4 +81,22 @@ class SubscriptionProvider with ChangeNotifier {
     }
   }
 
+  Future<void> checkSubscriptionStatus(String? uid) async {
+    if (uid == null) {
+      AppLogger.e('No user is currently signed in.');
+      return;
+    }
+    try {
+      final userDoc =
+      await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      if (userDoc.exists) {
+        _isSubscribed = userDoc.data()?['isSubscribed'] ?? false;
+        notifyListeners();
+      } else {
+        AppLogger.e('User document does not exist.');
+      }
+    } catch (e) {
+      AppLogger.e('Failed to check subscription status: $e');
+    }
+  }
 }

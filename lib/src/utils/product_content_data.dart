@@ -45,7 +45,10 @@ const categoryFilters = [
 
 const List<String> countryCodes = ["+91", "+1"];
 
-const List<String> yesNoNA = ["Yes", "No"];
+const List<String> yesNo = ["Yes", "No"];
+const List<String> yesNoNA = ["Yes", "No", "N/A"];
+const List<String> goodBadList = ["Good", "Need replacement"];
+const List<String> tyreConditionList = ["Good", "Half life", "Need replacement"];
 
 const List<String> productConditionList = [
   "New",

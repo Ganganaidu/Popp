@@ -122,7 +122,7 @@ class MonthYearPicker extends StatelessWidget {
           selectedDate != null
               ? "${selectedDate!.month.toString().padLeft(2, '0')}/${selectedDate!.year}"
               : 'Tap to select',
-          style: TextStyle(fontSize: 16, color: enable ? Colors.black : Colors.grey),
+          style: TextStyle(fontSize: 16, color: enable ? null : Colors.grey),
         ),
       ),
     );

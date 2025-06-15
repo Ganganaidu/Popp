@@ -29,7 +29,7 @@ class CustomDropdownFormField<T> extends StatelessWidget {
       value: value,
       decoration: context.inputDecoration(label, hint, enable: enabled),
       items: items,
-      onChanged: onChanged,
+      onChanged: enabled ? onChanged : null,
       validator: validator,
       dropdownStyleData: DropdownStyleData(
         decoration: BoxDecoration(

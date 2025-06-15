@@ -21,7 +21,7 @@ class Product {
   final String state;
   final String? nocAvailable; // If other states
   final String? insuranceAvailable;
-  final String? insuranceType;
+  final DateTime? insuranceValidTill;
   final String sellerName;
   final String sellerContactNumber;
   final String? kmDriven;
@@ -37,6 +37,8 @@ class Product {
   DateTime? bikeMfgDate; // we choose this filed for accessories
   final FieldValue? createdAt; // For writing to FireStore
   final DateTime? createdAtDate; // For reading from FireStore
+  String? batteryCondition;
+  String? tyreCondition;
 
   Product({
     this.id,
@@ -57,7 +59,7 @@ class Product {
     required this.state,
     this.nocAvailable,
     this.insuranceAvailable,
-    this.insuranceType,
+    this.insuranceValidTill,
     required this.sellerName,
     this.imageUrl,
     this.thumbImageUrls,
@@ -75,12 +77,15 @@ class Product {
     this.bikeBrandName,
     this.bikeModelName,
     this.bikeMfgDate,
-});
+    this.batteryCondition,
+    this.tyreCondition,
+  });
 
   // Factory constructor to create a Product from a JSON map (e.g., from Firestore)
   factory Product.fromJson(Map<String, dynamic> json, String documentId) {
     return Product(
-      id: documentId, // Use the document ID from Firestore
+      id: documentId,
+      // Use the document ID from Firestore
       userId: json['userId'] as String?,
       categoryId: json['categoryId'] as String,
       categoryName: json['categoryName'] as String,
@@ -102,7 +107,7 @@ class Product {
       state: json['state'] as String,
       nocAvailable: json['nocAvailable'] as String?,
       insuranceAvailable: json['insuranceAvailable'] as String?,
-      insuranceType: json['insuranceType'] as String?,
+      insuranceValidTill: (json['insuranceValidTill'] as Timestamp?)?.toDate(),
       sellerName: json['sellerName'] as String,
       sellerContactNumber: json['sellerContactNumber'] as String,
       kmDriven: json['kmDriven'] as String?,
@@ -116,6 +121,8 @@ class Product {
       bikeBrandName: json['bikeBrandName'] as String?,
       bikeModelName: json['bikeModelName'] as String?,
       bikeMfgDate: (json['bikeMfgDate'] as Timestamp?)?.toDate(),
+      batteryCondition: json['batteryCondition'] as String?,
+      tyreCondition: json['tyreCondition'] as String?,
       // `createdAt` is a FieldValue for writing, so we read it as DateTime
       createdAtDate: (json['createdAt'] as Timestamp?)?.toDate(),
       // We don't typically re-initialize `createdAt` (FieldValue) from json
@@ -146,12 +153,13 @@ class Product {
       'state': state,
       if (nocAvailable != null) 'nocAvailable': nocAvailable,
       if (insuranceAvailable != null) 'insuranceAvailable': insuranceAvailable,
-      if (insuranceType != null) 'insuranceType': insuranceType,
+      if (insuranceValidTill != null) 'insuranceValidTill': insuranceValidTill,
       'sellerName': sellerName,
       'sellerContactNumber': sellerContactNumber,
       if (kmDriven != null) 'kmDriven': kmDriven,
       if (isFavorite != null) 'isFavorite': isFavorite,
-      if (isProductBikeSpecific != null) 'isProductBikeSpecific': isProductBikeSpecific,
+      if (isProductBikeSpecific != null)
+        'isProductBikeSpecific': isProductBikeSpecific,
       if (billDate != null) 'billDate': Timestamp.fromDate(billDate!),
       // `createdAt` is usually FieldValue.serverTimestamp() when creating
       if (productSize != null) 'productSize': productSize,
@@ -161,6 +169,8 @@ class Product {
       if (bikeBrandName != null) 'bikeBrandName': bikeBrandName,
       if (bikeModelName != null) 'bikeModelName': bikeModelName,
       if (bikeMfgDate != null) 'bikeMfgDate': Timestamp.fromDate(bikeMfgDate!),
+      if (batteryCondition != null) 'batteryCondition': batteryCondition,
+      if (tyreCondition != null) 'tyreCondition': tyreCondition,
       // If it's null and you're creating, Firestore handles it.
       // If you're updating and don't want to change it, don't include it.
       // If you want to force set a timestamp on update, include it.
@@ -195,7 +205,7 @@ class Product {
     String? state,
     String? nocAvailable,
     String? insuranceAvailable,
-    String? insuranceType,
+    DateTime? insuranceValidTill,
     String? sellerName,
     String? sellerContactNumber,
     String? kmDriven,
@@ -204,15 +214,17 @@ class Product {
     bool? isFavorite,
     DateTime? billDate,
     String? productSize,
-  String? productCondition,
-  String? productAging,
-  String? warrantyLimit,
-  String? bikeBrandName,
-  String? bikeModelName,
-  DateTime? bikeMfgDate,
-  String? engineNo,
-  String? chassisNo,
-  String? rcNumber,
+    String? productCondition,
+    String? productAging,
+    String? warrantyLimit,
+    String? bikeBrandName,
+    String? bikeModelName,
+    DateTime? bikeMfgDate,
+    String? engineNo,
+    String? chassisNo,
+    String? rcNumber,
+    String? batteryCondition,
+    String? tyreCondition,
   }) {
     return Product(
       userId: userId ?? this.userId,
@@ -235,7 +247,7 @@ class Product {
       state: state ?? this.state,
       nocAvailable: nocAvailable ?? this.nocAvailable,
       insuranceAvailable: insuranceAvailable ?? this.insuranceAvailable,
-      insuranceType: insuranceType ?? this.insuranceType,
+      insuranceValidTill: insuranceValidTill ?? this.insuranceValidTill,
       sellerName: sellerName ?? this.sellerName,
       sellerContactNumber: sellerContactNumber ?? this.sellerContactNumber,
       kmDriven: kmDriven ?? this.kmDriven,
@@ -250,112 +262,8 @@ class Product {
       bikeBrandName: bikeBrandName ?? this.bikeBrandName,
       bikeModelName: bikeModelName ?? this.bikeModelName,
       bikeMfgDate: bikeMfgDate ?? this.bikeMfgDate,
+      batteryCondition: batteryCondition ?? this.batteryCondition,
+      tyreCondition: tyreCondition ?? this.tyreCondition,
     );
   }
 }
-
-List<Product> productList = [
-  Product(
-      userId: "uid",
-      id: 'P001',
-      categoryId: 'C001',
-      subCategoryName: '',
-      categoryName: '',
-      expectedPrice: "123,000",
-      brandName: 'Honda',
-      modelName: 'Activa 6G',
-      imageUrl:
-          "https://images.unsplash.com/photo-1622185135505-2d795003994a?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-      thumbImageUrls: [
-        'https://images.unsplash.com/photo-1611429532458-f8bf8f6121fe?q=80&w=3079&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        'https://images.unsplash.com/photo-1622185135825-d34b40aa03ef?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        'https://images.unsplash.com/photo-1643111441058-24775743af1c?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        'https://images.unsplash.com/photo-1638003299152-dd1e3bf81fa5?q=80&w=2242&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        'https://images.unsplash.com/photo-1558981033-0f0309284409?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
-      ],
-      additionalDetails: '',
-      firstOwner: '',
-      kmDriven: '',
-      mfgDate: DateTime(2021, 5, 10),
-      invoiceAvailable: "NO",
-      registrationDate: DateTime(2021, 6, 15),
-      registrationPlace: 'Bangalore, Karnataka',
-      city: 'Bangalore',
-      state: 'Karnataka',
-      nocAvailable: "No",
-      insuranceAvailable: "Yes",
-      insuranceType: 'Comprehensive',
-      sellerName: 'John Doe',
-      sellerContactNumber: '9876543210',
-      isFavorite: true),
-  Product(
-      userId: "userId",
-      id: 'P002',
-      categoryName: '',
-      subCategoryName: '',
-      categoryId: 'C001',
-      brandName: 'Hero',
-      expectedPrice: "120000",
-      modelName: 'Splendor Plus',
-      imageUrl:
-          "https://images.unsplash.com/photo-1622185135505-2d795003994a?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-      thumbImageUrls: [
-        'https://images.unsplash.com/photo-1622185135825-d34b40aa03ef?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        'https://images.unsplash.com/photo-1622185135505-2d795003994a?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        'https://images.unsplash.com/photo-1611429532458-f8bf8f6121fe?q=80&w=3079&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        'https://images.unsplash.com/photo-1643111441058-24775743af1c?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      ],
-      mfgDate: DateTime(2018, 11, 20),
-      invoiceAvailable: 'Yes',
-      registrationDate: DateTime(2019, 1, 5),
-      registrationPlace: 'Mumbai, Maharashtra',
-      city: 'Mumbai',
-      state: 'Maharashtra',
-      nocAvailable: 'Yes',
-      insuranceAvailable: 'Yes',
-      insuranceType: 'Third-party',
-      sellerName: 'Jane Smith',
-      sellerContactNumber: '8765432109',
-      additionalDetails: '',
-      firstOwner: '',
-      kmDriven: '',
-      isFavorite: false),
-  Product(
-      userId: "id",
-      id: 'P003',
-      categoryName: '',
-      subCategoryName: '',
-      categoryId: 'C002',
-      brandName: 'Maruti Suzuki',
-      modelName: 'Swift Dzire',
-      imageUrl:
-          "https://images.unsplash.com/photo-1622185135505-2d795003994a?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-      thumbImageUrls: [
-        'https://images.unsplash.com/photo-1643111441058-24775743af1c?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        'https://images.unsplash.com/photo-1622185135505-2d795003994a?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        'https://images.unsplash.com/photo-1611429532458-f8bf8f6121fe?q=80&w=3079&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        'https://images.unsplash.com/photo-1622185135825-d34b40aa03ef?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      ],
-      mfgDate: DateTime(2020, 5, 10),
-      invoiceAvailable: 'Yes',
-      registrationDate: DateTime(2020, 6, 15),
-      city: 'Mumbai',
-      state: 'Maharashtra',
-      registrationPlace: 'Delhi',
-      nocAvailable: 'Yes',
-      insuranceAvailable: 'Yes',
-      insuranceType: 'Comprehensive',
-      expectedPrice: '700000.00',
-      sellerName: 'Alex',
-      sellerContactNumber: '9876543210',
-      additionalDetails: '',
-      firstOwner: '',
-      kmDriven: '',
-      isFavorite: false)
-];
-
-// Helmet
-// https://images.unsplash.com/photo-1627530980937-b8721b91506a?q=80&w=3165&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D
-// https://images.unsplash.com/photo-1586423702505-b13505519074?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D
-// https://images.unsplash.com/photo-1575396565848-e8031f12ce2a?q=80&w=3125&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D
-// https://images.unsplash.com/photo-1623038868323-7d39ec58eefe?q=80&w=2000&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D

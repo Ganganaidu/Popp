@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:popp/src/login/model/user_data_model.dart';
-import 'package:popp/src/login/sign_up_bike_details_screen.dart';
+import 'package:popp/src/login/register_and_subscribe_screen.dart';
 import 'package:popp/src/login/validation_requiremen_text.dart';
 import 'package:popp/src/utils/app_utils.dart';
 import 'package:popp/src/utils/build_extensions.dart';
@@ -22,21 +22,87 @@ class SignupScreen extends StatefulWidget {
 class _SignupScreenState extends State<SignupScreen> {
   final _formKey = GlobalKey<FormState>();
   String? selectedState;
+
+  // Controllers for user details
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController phoneNumberController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController =
-      TextEditingController();
+  TextEditingController();
   final TextEditingController addressController = TextEditingController();
   final TextEditingController cityController = TextEditingController();
   final TextEditingController pinCodeController = TextEditingController();
+
+  // Controllers for bike details, starts with one entry.
+  final List<Map<String, TextEditingController>> bikes = [
+    {
+      'brand': TextEditingController(),
+      'model': TextEditingController(),
+      'monthYear': TextEditingController(),
+    }
+  ];
+
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
-  bool _isPasswordRequirementsExpanded = false; // Initially collapsed
+  bool _isPasswordRequirementsExpanded = false;
   bool isSubmitting = false;
 
-  Future<void> goToBikeDetailsPage() async {
+  @override
+  void dispose() {
+    // Dispose all user detail controllers
+    usernameController.dispose();
+    emailController.dispose();
+    phoneNumberController.dispose();
+    passwordController.dispose();
+    confirmPasswordController.dispose();
+    addressController.dispose();
+    cityController.dispose();
+    pinCodeController.dispose();
+
+    // Dispose all bike controllers to prevent memory leaks
+    for (final bike in bikes) {
+      bike['brand']!.dispose();
+      bike['model']!.dispose();
+      bike['monthYear']!.dispose();
+    }
+    super.dispose();
+  }
+
+  /// Adds a new set of bike form fields, up to a maximum of 3.
+  void _addBike() {
+    if (bikes.length < 3) {
+      setState(() {
+        bikes.add({
+          'brand': TextEditingController(),
+          'model': TextEditingController(),
+          'monthYear': TextEditingController(),
+        });
+      });
+    }
+  }
+
+  /// Removes a bike form field at a specific index.
+  void _removeBike(int index) {
+    if (bikes.length > 1) {
+      setState(() {
+        // Dispose controllers before removing to avoid memory leaks
+        bikes[index]['brand']!.dispose();
+        bikes[index]['model']!.dispose();
+        bikes[index]['monthYear']!.dispose();
+        bikes.removeAt(index);
+      });
+    } else {
+      // Optionally, clear the fields of the last remaining bike
+      bikes[index]['brand']!.clear();
+      bikes[index]['model']!.clear();
+      bikes[index]['monthYear']!.clear();
+    }
+  }
+
+  /// Handles the entire registration process, including user and bike details,
+  /// and then navigates to the subscribe screen.
+  Future<void> _registerAndContinue() async {
     if (_formKey.currentState!.validate()) {
       setState(() => isSubmitting = true);
 
@@ -44,30 +110,58 @@ class _SignupScreenState extends State<SignupScreen> {
         final userId = await registerUserWithEmail(
             emailController.text, passwordController.text);
 
-        setState(() => isSubmitting = false);
-        if (userId != null) {
-          // Registration successful, navigate to home screen or show success message
-          AppLogger.d("User registered successfully: $userId");
-          UserData userData = UserData(
-            uid: userId,
-            username: usernameController.text,
-            email: emailController.text,
-            phoneNumber: phoneNumberController.text,
-            address: addressController.text,
-            stateName: selectedState ?? "",
-            city: cityController.text,
-            pinCode: pinCodeController.text,
-            createdAt: FieldValue.serverTimestamp(),
-          );
-
+        if (userId == null) {
+          setState(() => isSubmitting = false);
+          AppLogger.e("Registration failed, user ID is null.");
           if (!mounted) return;
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => SignUpBikeDetailsScreen(userData: userData),
-            ),
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Registration failed. Please try again.")),
           );
-        } else {}
+          return;
+        }
+
+        AppLogger.d("User registered successfully: $userId");
+
+        // Collect bike data from controllers
+        final bikeDataList = bikes
+            .map((bikeControllers) => BikeData(
+          brand: bikeControllers['brand']!.text,
+          model: bikeControllers['model']!.text,
+          monthYear: bikeControllers['monthYear']!.text,
+        ))
+            .where((bike) =>
+        bike.brand.isNotEmpty ||
+            bike.model.isNotEmpty ||
+            bike.monthYear.isNotEmpty)
+            .toList();
+
+        // Create the complete UserData object
+        UserData userData = UserData(
+          uid: userId,
+          username: usernameController.text,
+          email: emailController.text,
+          phoneNumber: phoneNumberController.text,
+          address: addressController.text,
+          stateName: selectedState ?? "",
+          city: cityController.text,
+          pinCode: pinCodeController.text,
+          bikeData: bikeDataList, // Assign the collected bike data
+          createdAt: FieldValue.serverTimestamp(),
+        );
+
+        setState(() => isSubmitting = false);
+
+        if (!mounted) return;
+
+        // Navigate to the final screen
+        Navigator.pushReplacement( // Using pushReplacement to prevent going back to signup
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                RegisterAndSubscribeScreen(userData: userData),
+          ),
+        );
+
       } on FirebaseAuthException catch (e) {
         setState(() => isSubmitting = false);
         String errorMessage;
@@ -76,7 +170,7 @@ class _SignupScreenState extends State<SignupScreen> {
             errorMessage = 'The password provided is too weak.';
             break;
           case 'email-already-in-use':
-            errorMessage = 'The account already exists for that email.';
+            errorMessage = 'An account already exists for that email.';
             break;
           case 'invalid-email':
             errorMessage = 'The email address is not valid.';
@@ -84,60 +178,59 @@ class _SignupScreenState extends State<SignupScreen> {
           default:
             errorMessage = 'An undefined error happened.';
         }
-        // Display errorMessage to the user (e.g., in a SnackBar or Dialog)
         AppLogger.e("Error registering user: $errorMessage (Code: ${e.code})");
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(errorMessage)),
         );
-        return;
       } catch (e) {
         setState(() => isSubmitting = false);
-        // Handle other generic errors
         AppLogger.e("An unexpected error occurred: $e");
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-              content: Text("An unexpected error occurred Please try again")),
+              content: Text("An unexpected error occurred. Please try again.")),
         );
-        return;
-        // Display a generic error message to the user
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    ThemeData theme = Theme.of(context);
     return Scaffold(
+      appBar: AppBar(
+        title: const Text("Create Account"),
+        elevation: 0,
+      ),
       body: SafeArea(
         child: Column(
           children: [
             Expanded(
               child: SingleChildScrollView(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+                const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
                 child: Form(
                   key: _formKey,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const SizedBox(height: 30),
                       const Text("Sign up",
                           style: TextStyle(
                               fontSize: 30, fontWeight: FontWeight.bold),
                           textAlign: TextAlign.center),
                       const SizedBox(height: 10),
-                      Text("Create your account",
+                      const Text("Create your account to get started",
                           style:
-                              TextStyle(fontSize: 15, color: Colors.grey[700]),
+                          TextStyle(fontSize: 15, color: Colors.grey),
                           textAlign: TextAlign.center),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 30),
                       _buildTextField("Username", usernameController,
                           icon: Icons.person),
                       _buildTextField("Email", emailController,
                           icon: Icons.email,
                           keyboardType: TextInputType.emailAddress),
-                      _buildTextField("Phone number ", phoneNumberController,
+                      _buildTextField("Phone number", phoneNumberController,
                           icon: Icons.phone_android_sharp,
                           keyboardType: TextInputType.number,
                           isRequired: true),
@@ -146,43 +239,79 @@ class _SignupScreenState extends State<SignupScreen> {
                           isPasswordTextField: true,
                           currentPasswordVisibility: _isPasswordVisible,
                           onTogglePasswordVisibility: () {
-                        setState(
-                            () => _isPasswordVisible = !_isPasswordVisible);
-                      }),
+                            setState(
+                                    () => _isPasswordVisible = !_isPasswordVisible);
+                          }),
                       _buildTextField(
                           "Confirm Password", confirmPasswordController,
                           icon: Icons.lock,
                           isPasswordTextField: true,
                           currentPasswordVisibility: _isConfirmPasswordVisible,
                           onTogglePasswordVisibility: () {
-                        setState(() => _isConfirmPasswordVisible =
+                            setState(() => _isConfirmPasswordVisible =
                             !_isConfirmPasswordVisible);
-                      }),
+                          }),
+                      _buildTextField("Address", addressController,
+                          icon: Icons.home, maxLines: 2),
                       CustomDropdownFormField<String>(
                         value: selectedState,
                         label: "",
                         hint: "Select your state",
                         items: stateNames
                             .map((b) =>
-                                DropdownMenuItem(value: b, child: Text(b)))
+                            DropdownMenuItem(value: b, child: Text(b)))
                             .toList(),
                         onChanged: (val) => setState(() => selectedState = val),
-                        // This should now work
                         validator: (val) =>
-                            val == null ? "Required" : null, // Adjust validator
+                        val == null ? "State is required" : null,
                       ),
                       const SizedBox(height: 20),
-                      _buildTextField("City", cityController),
-                      _buildTextField("Address", addressController,
-                          icon: null, maxLines: 2),
+                      _buildTextField("City", cityController, icon: Icons.location_city),
                       _buildTextField("Pin Code", pinCodeController,
+                          icon: Icons.pin_drop,
                           keyboardType: TextInputType.number),
                       const SizedBox(height: 20),
+
+                      // --- Merged Bike Details Section ---
+                      const Divider(thickness: 1),
+                      const SizedBox(height: 20),
+                      const Text(
+                        'Please enter the details of bikes you own for custom notifications',
+                        style: TextStyle(
+                            color: Colors.red, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 6),
+                      const Text(
+                        '(This step is optional. You can skip if you don’t own a bike.)',
+                        style: TextStyle(
+                            fontStyle: FontStyle.italic, color: Colors.grey),
+                      ),
+                      const SizedBox(height: 10),
+                      ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: bikes.length,
+                        itemBuilder: (context, index) => _buildBikeFields(index),
+                      ),
+                      if (bikes.length < 3)
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton.icon(
+                            onPressed: _addBike,
+                            icon: Icon(Icons.add_circle_outline, color: theme.colorScheme.primary),
+                            label: Text(
+                              "Add Another Bike",
+                              style: TextStyle(color: theme.colorScheme.primary),
+                            ),
+                          ),
+                        ),
+                      // --- End of Merged Section ---
+
+                      const SizedBox(height: 20),
                       _buildPasswordRequirementsDisclosure(),
-                      // Your new disclosure widget
                       const SizedBox(height: 10),
                       _buildGeneralRequirementsDisclosure(),
-                      // Optional: for other fields
+                      const SizedBox(height: 20),
                     ],
                   ),
                 ),
@@ -192,7 +321,7 @@ class _SignupScreenState extends State<SignupScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               child: ElevatedButton(
-                onPressed: isSubmitting ? null : goToBikeDetailsPage,
+                onPressed: isSubmitting ? null : _registerAndContinue,
                 style: ElevatedButton.styleFrom(
                   shape: const StadiumBorder(),
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -200,8 +329,8 @@ class _SignupScreenState extends State<SignupScreen> {
                 ),
                 child: isSubmitting
                     ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text("Next",
-                        style: TextStyle(fontSize: 18, color: Colors.white)),
+                    : const Text("Sign Up & Continue",
+                    style: TextStyle(fontSize: 18, color: Colors.white)),
               ),
             )
           ],
@@ -210,25 +339,67 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
-  // Widget for Password Requirements Disclosure
+  /// Builds the group of fields for a single bike.
+  Widget _buildBikeFields(int index) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Card(
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          side: BorderSide(color: Colors.grey.shade300, width: 1),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Bike ${index + 1} Details (Optional)',
+                      style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green)),
+                  if (bikes.length > 1)
+                    IconButton(
+                      icon: const Icon(Icons.remove_circle_outline, color: Colors.redAccent),
+                      onPressed: () => _removeBike(index),
+                      tooltip: 'Remove Bike',
+                    ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              _buildTextField(
+                  'Brand Name', bikes[index]['brand']!, isRequired: false, icon: Icons.two_wheeler),
+              _buildTextField(
+                  'Model Name', bikes[index]['model']!, isRequired: false, icon: Icons.motorcycle),
+              _buildTextField('MFG Month & Year',
+                  bikes[index]['monthYear']!, isRequired: false, icon: Icons.calendar_today),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildPasswordRequirementsDisclosure() {
     final currentPassword = passwordController.text;
     ThemeData theme = Theme.of(context);
 
     return Card(
-      // Wrap ExpansionTile in a Card for distinct background and elevation
       margin: const EdgeInsets.symmetric(vertical: 8.0),
-      elevation: 1, // Subtle elevation
+      elevation: 1,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       child: ExpansionTile(
         key: const PageStorageKey<String>('passwordRequirements'),
-        // Helps maintain state on scroll
         title: Text(
           "Password Requirements",
           style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w600,
-            color: theme.primaryColor.withOpacity(0.5),
+            color: theme.primaryColor,
           ),
         ),
         initiallyExpanded: _isPasswordRequirementsExpanded,
@@ -238,10 +409,10 @@ class _SignupScreenState extends State<SignupScreen> {
           });
         },
         tilePadding:
-            const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+        const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
         childrenPadding:
-            const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0)
-                .copyWith(top: 0),
+        const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0)
+            .copyWith(top: 0),
         iconColor: theme.colorScheme.primary,
         collapsedIconColor: theme.colorScheme.onSurfaceVariant,
         children: <Widget>[
@@ -261,16 +432,11 @@ class _SignupScreenState extends State<SignupScreen> {
             text: "At least one number (0-9)",
             isValid: RegExp(r'(?=.*\d)').hasMatch(currentPassword),
           ),
-          // ValidationRequirementText(
-          //   text: "At least one special character (!@#\$%^&*...)",
-          //   isValid: RegExp(r'(?=.*[!@#$%^&*(),.?":{}|<>])').hasMatch(currentPassword),
-          // ),
         ],
       ),
     );
   }
 
-  // Optional: Disclosure for other general requirements
   Widget _buildGeneralRequirementsDisclosure() {
     ThemeData theme = Theme.of(context);
     return Card(
@@ -284,21 +450,19 @@ class _SignupScreenState extends State<SignupScreen> {
           style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w600,
-            color: theme.primaryColor.withOpacity(0.5),
+            color: theme.primaryColor,
           ),
         ),
         initiallyExpanded: false,
-        // Collapse by default
         tilePadding:
-            const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+        const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
         childrenPadding:
-            const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0)
-                .copyWith(top: 0),
+        const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0)
+            .copyWith(top: 0),
         iconColor: theme.colorScheme.primary,
         collapsedIconColor: theme.colorScheme.onSurfaceVariant,
         children: const <Widget>[
           ValidationRequirementText(text: "Username", isValid: true),
-          // 'isValid' might be static for these
           ValidationRequirementText(
               text: "Email (must be valid)", isValid: true),
           ValidationRequirementText(text: "State", isValid: true),
@@ -310,19 +474,18 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
-  // Inside _SignupScreenState class
   Widget _buildTextField(
-    String hint,
-    TextEditingController controller, {
-    IconData? icon,
-    bool obscureText = false,
-    int maxLines = 1,
-    bool isRequired = true,
-    TextInputType? keyboardType,
-    bool isPasswordTextField = false,
-    VoidCallback? onTogglePasswordVisibility,
-    bool? currentPasswordVisibility,
-  }) {
+      String hint,
+      TextEditingController controller, {
+        IconData? icon,
+        bool obscureText = false,
+        int maxLines = 1,
+        bool isRequired = true,
+        TextInputType? keyboardType,
+        bool isPasswordTextField = false,
+        VoidCallback? onTogglePasswordVisibility,
+        bool? currentPasswordVisibility,
+      }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 15.0),
       child: TextFormField(
@@ -334,7 +497,7 @@ class _SignupScreenState extends State<SignupScreen> {
         keyboardType: keyboardType,
         validator: (value) {
           if (isRequired && (value == null || value.isEmpty)) {
-            return 'Required';
+            return '$hint is required';
           }
 
           if (hint == "Email") {
@@ -343,11 +506,10 @@ class _SignupScreenState extends State<SignupScreen> {
             }
           }
 
-          // --- Password Validations ---
           if (hint == "Password") {
-            if (value != null) {
-              if (value.length < 6) {
-                return 'Password must be at least 6 characters long';
+            if (value != null && isRequired) {
+              if (value.length < 8) {
+                return 'Password must be at least 8 characters long';
               }
               if (!RegExp(r'(?=.*[A-Z])').hasMatch(value)) {
                 return 'Password must contain an uppercase letter';
@@ -358,29 +520,21 @@ class _SignupScreenState extends State<SignupScreen> {
               if (!RegExp(r'(?=.*\d)').hasMatch(value)) {
                 return 'Password must contain a number';
               }
-              // Optional: Special character validation
-              // if (!RegExp(r'(?=.*[!@#$%^&*(),.?":{}|<>])').hasMatch(value)) {
-              //   return 'Password must contain a special character';
-              // }
             }
           }
-          // --- End Password Validations ---
+
           if (hint == "Confirm Password") {
             if (controller.text != passwordController.text) {
-              // Accessing passwordController directly
               return "Passwords do not match";
             }
           }
 
           if (hint == "Pin Code") {
-            if (value != null) {
-              // Your existing pincode validation
+            if (value != null && value.isNotEmpty) {
               if (value.length != 6) {
-                // Assuming pincode should be 6 digits
                 return 'Pincode must be 6 digits';
               }
               if (!RegExp(r"^[0-9]{6}$").hasMatch(value)) {
-                // Assuming 6 digits
                 return 'Enter a valid pincode (only numbers)';
               }
             }
@@ -388,15 +542,15 @@ class _SignupScreenState extends State<SignupScreen> {
           return null;
         },
         decoration: context.inputDecoration("", hint, icon: icon).copyWith(
-              suffixIcon: isPasswordTextField
-                  ? IconButton(
-                      icon: Icon((currentPasswordVisibility ?? false)
-                          ? Icons.visibility
-                          : Icons.visibility_off),
-                      onPressed: onTogglePasswordVisibility,
-                    )
-                  : null,
-            ),
+          suffixIcon: isPasswordTextField
+              ? IconButton(
+            icon: Icon((currentPasswordVisibility ?? false)
+                ? Icons.visibility
+                : Icons.visibility_off),
+            onPressed: onTogglePasswordVisibility,
+          )
+              : null,
+        ),
       ),
     );
   }

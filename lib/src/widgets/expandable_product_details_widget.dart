@@ -25,8 +25,8 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
       children: [
         // Always Visible Important Fields
         // detailRow("Features", product.additionalDetails, theme),
-        if(product.mfgDate != null)
-        detailRow("Manufacturing Date", _formatDate(product.mfgDate), theme),
+        if (product.mfgDate != null)
+          detailRow("Manufacturing Date", _formatDate(product.mfgDate), theme),
         detailRow("Expected Price", "₹${product.expectedPrice}", theme),
         if (product.registrationPlace?.isNotEmpty ?? false)
           detailRow("Registration Place", product.registrationPlace!, theme)
@@ -67,8 +67,9 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
                 if (product.insuranceAvailable != null)
                   detailRow("Insurance Available",
                       product.insuranceAvailable != null ? "Yes" : "No", theme),
-                if (product.insuranceType?.isNotEmpty ?? false)
-                  detailRow("Insurance Type", product.insuranceType!, theme),
+                if (product.insuranceValidTill != null)
+                  detailRow("Insurance Type",
+                      _formatDate(product.insuranceValidTill), theme),
                 detailRow("Warranty Available",
                     product.warrantyLimit != null ? "Yes" : "No", theme),
                 if (product.warrantyLimit?.isNotEmpty ?? false)

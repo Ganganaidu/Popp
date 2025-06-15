@@ -54,6 +54,21 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
   bool isBillAvailable = false;
   bool isWarrantyAvailable = false;
 
+  void _clearBikeSpecificFields() {
+    selectedBikeBrand = null;
+    modelNameController.clear();
+    _selectedManufactureDate = null;
+  }
+
+  void _clearBillFields() {
+    _selectedBillDate = null;
+    productAgingController.clear();
+  }
+
+  void _clearWarrantyFields() {
+    warrantyLeftController.clear();
+  }
+
   final List<File> _images = [];
   var productId = const Uuid().v4();
   bool _isLoading = false;
@@ -188,7 +203,12 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
                   title: const Text("Is your product bike specific?"),
                   value: isBikeSpecific,
                   activeColor: Colors.orange,
-                  onChanged: (val) => setState(() => isBikeSpecific = val),
+                  onChanged: (val) {
+                    setState(() {
+                      isBikeSpecific = val;
+                      if (!val) _clearBikeSpecificFields();
+                    });
+                  },
                 )),
                 buildPaddedField(CustomDropdownFormField<String>(
                   enabled: isBikeSpecific,
@@ -254,7 +274,12 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
                   title: const Text("Bill available?"),
                   activeColor: Colors.orange,
                   value: isBillAvailable,
-                  onChanged: (val) => setState(() => isBillAvailable = val),
+                  onChanged: (val) {
+                    setState(() {
+                      isBillAvailable = val;
+                      if (!val) _clearBillFields();
+                    });
+                  },
                 )),
                 buildPaddedField(MonthYearPicker(
                   enable: isBillAvailable,
@@ -281,7 +306,12 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
                   title: const Text("Warranty available?"),
                   activeColor: Colors.orange,
                   value: isWarrantyAvailable,
-                  onChanged: (val) => setState(() => isWarrantyAvailable = val),
+                  onChanged: (val) {
+                    setState(() {
+                      isWarrantyAvailable = val;
+                      if (!val) _clearWarrantyFields();
+                    });
+                  },
                 )),
                 buildPaddedField(TextFormField(
                   enabled: isWarrantyAvailable,

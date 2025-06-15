@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import '../../main.dart';
@@ -9,12 +10,20 @@ import '../utils/app_loger.dart';
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
+  Future<String> _fetchUsername(String uid) async {
+    final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+    final data = doc.data();
+    if (data != null && data['username'] != null && data['username'].toString().isNotEmpty) {
+      return data['username'];
+    }
+    return 'No Name';
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
     AppLogger.d("Current user: $user");
     final bool isLoggedIn = user != null;
-    final String userName = user?.displayName ?? 'No Name';
     final String userEmailOrPhone = user?.email ?? user?.phoneNumber ?? '';
     final String? photoURL = user?.photoURL;
 
@@ -57,7 +66,17 @@ class SettingsScreen extends StatelessWidget {
                     elevation: 2,
                     child: ListTile(
                       leading: const Icon(Icons.person),
-                      title: Text(userName),
+                      title: isLoggedIn
+                          ? FutureBuilder<String>(
+                              future: _fetchUsername(user.uid),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState == ConnectionState.waiting) {
+                                  return const Text('Loading...');
+                                }
+                                return Text(snapshot.data ?? 'No Name');
+                              },
+                            )
+                          : const Text('No Name'),
                       subtitle: userEmailOrPhone.isNotEmpty
                           ? Text(userEmailOrPhone)
                           : null,

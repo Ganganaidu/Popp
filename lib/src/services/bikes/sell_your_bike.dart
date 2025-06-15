@@ -43,11 +43,13 @@ class _SellYourBikeState extends State<SellYourBike>
   String? _areYouFirstOwner;
   String? _invoiceAvailable;
   String? _nocAvailable;
-  String? _insuranceAvailable;
-  String? _insuranceType;
+  String? _batteryCondition;
+  String? _tyreCondition;
   DateTime? _selectedManufactureDate;
   DateTime? _selectedRegistrationDate;
   bool _isLoading = false;
+  String? _insuranceAvailable;
+  DateTime? _insuranceValidityTill;
 
   final double _bannerHeight = 40.0;
   final List<File> _images = [];
@@ -101,11 +103,13 @@ class _SellYourBikeState extends State<SellYourBike>
         invoiceAvailable: _invoiceAvailable,
         nocAvailable: _nocAvailable,
         insuranceAvailable: _insuranceAvailable,
-        insuranceType: _insuranceType ?? "",
+        insuranceValidTill: _insuranceValidityTill,
         registrationDate: _selectedRegistrationDate,
         registrationPlace: "",
         mfgDate: _selectedManufactureDate,
         createdAt: FieldValue.serverTimestamp(),
+        batteryCondition: _batteryCondition,
+        tyreCondition: _tyreCondition,
       );
 
       bool success = await _productsService.submitProductForm(
@@ -131,8 +135,9 @@ class _SellYourBikeState extends State<SellYourBike>
           _areYouFirstOwner = null;
           _invoiceAvailable = null;
           _nocAvailable = null;
-          _insuranceAvailable = null;
-          _insuranceType = null;
+          _batteryCondition = null;
+          _tyreCondition = null;
+          _insuranceValidityTill = null;
           _selectedManufactureDate = null;
           _selectedRegistrationDate = null;
         });
@@ -294,11 +299,30 @@ class _SellYourBikeState extends State<SellYourBike>
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          controller: kmDrivenController,
+                          decoration: context.inputDecoration(
+                              "KM Driven", "Enter kilometers driven"),
+                          validator: (val) => val!.isEmpty ? "Required" : null,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          keyboardType: TextInputType.number,
+                          controller: priceController,
+                          decoration: context.inputDecoration(
+                              "Expected Price", "Enter expected price"),
+                          validator: (val) => val!.isEmpty ? "Required" : null,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
                         child: CustomDropdownFormField(
                           label: 'Are you the first owner?',
                           hint: "Tap to select",
                           value: _areYouFirstOwner,
-                          items: yesNoNA
+                          items: yesNo
                               .map((state) => DropdownMenuItem(
                                   value: state, child: Text(state)))
                               .toList(),
@@ -315,7 +339,7 @@ class _SellYourBikeState extends State<SellYourBike>
                           label: 'Invoice available?',
                           hint: "Tap to select",
                           value: _invoiceAvailable,
-                          items: yesNoNA
+                          items: yesNo
                               .map((state) => DropdownMenuItem(
                                   value: state, child: Text(state)))
                               .toList(),
@@ -344,20 +368,68 @@ class _SellYourBikeState extends State<SellYourBike>
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: TextFormField(
-                          controller: kmDrivenController,
-                          decoration: context.inputDecoration(
-                              "KM Driven", "Enter kilometers driven"),
-                          validator: (val) => val!.isEmpty ? "Required" : null,
+                        child: CustomDropdownFormField<String>(
+                          label: 'Insurance available?',
+                          hint: 'Select insurance availability',
+                          value: _insuranceAvailable,
+                          items: yesNo
+                              .map((state) => DropdownMenuItem(
+                                  value: state, child: Text(state)))
+                              .toList(),
+                          onChanged: (val) {
+                            setState(() {
+                              _insuranceAvailable = val;
+                              if (val != 'Yes') _insuranceValidityTill = null;
+                            });
+                          },
+                          validator: (val) => val == null
+                              ? 'Please select insurance availability'
+                              : null,
                         ),
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: TextFormField(
-                          controller: priceController,
-                          decoration: context.inputDecoration(
-                              "Expected Price", "Enter expected price"),
-                          validator: (val) => val!.isEmpty ? "Required" : null,
+                        child: MonthYearPicker(
+                          enable: _insuranceAvailable == 'Yes',
+                          label: "Insurance validity till",
+                          hint: "Select month and year",
+                          selectedDate: _insuranceValidityTill,
+                          onDateSelected: (date) =>
+                              setState(() => _insuranceValidityTill = date),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: CustomDropdownFormField<String>(
+                          label: 'Battery condition',
+                          hint: 'Select battery condition',
+                          value: _batteryCondition,
+                          items: goodBadList
+                              .map((state) => DropdownMenuItem(
+                                  value: state, child: Text(state)))
+                              .toList(),
+                          onChanged: (val) =>
+                              setState(() => _batteryCondition = val),
+                          validator: (val) => val == null
+                              ? 'Please select battery condition'
+                              : null,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: CustomDropdownFormField<String>(
+                          label: 'Tyre condition',
+                          hint: 'Select tyre condition',
+                          value: _tyreCondition,
+                          items: tyreConditionList
+                              .map((state) => DropdownMenuItem(
+                                  value: state, child: Text(state)))
+                              .toList(),
+                          onChanged: (val) =>
+                              setState(() => _tyreCondition = val),
+                          validator: (val) => val == null
+                              ? 'Please select tyre condition'
+                              : null,
                         ),
                       ),
                       Padding(

@@ -1,9 +1,14 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:popp/src/models/product.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
+import '../api/currency_service.dart';
 import '../widgets/expandable_product_details_widget.dart';
-import '../widgets/expandable_text_widget.dart';
+import '../subscription/subscription_provider.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final Product product;
@@ -18,6 +23,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   int selectedImageIndex = 0;
   bool isFavorite = false;
   late final PageController _pageController;
+  final CurrencyService _currencyService = CurrencyService();
 
   @override
   void initState() {
@@ -37,7 +43,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
     } else {
-      throw 'Could not launch $url';
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not place the call.')),
+      );
     }
   }
 
@@ -66,6 +74,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           ),
         );
       },
+      errorBuilder: (context, error, stackTrace) {
+        return Container(
+          color: Colors.grey[200],
+          width: double.infinity,
+          height: 400,
+          child: const Icon(Icons.broken_image, color: Colors.grey, size: 50),
+        );
+      },
     );
 
     return useHero
@@ -76,11 +92,62 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         : imageWidget;
   }
 
+  /// Gets the localized price based on the user's country using the CurrencyService.
+  Future<String> _getLocalizedPrice(String priceStr) async {
+    // 1. Parse the input price string to a double. Assumes base price is in INR.
+    final double? priceInRupees =
+        double.tryParse(priceStr.replaceAll(RegExp(r'[^0-9.]'), ''));
+    if (priceInRupees == null)
+      return priceStr; // Return original string if parsing fails.
+
+    // 2. Get the device's locale to determine the country.
+    if (!mounted) return priceStr;
+    final locale = Localizations.localeOf(context);
+    final String countryCode =
+        locale.countryCode ?? 'US'; // Default to 'US' if null.
+
+    // 3. Check if the country is India.
+    if (countryCode == 'IN') {
+      final format = NumberFormat.currency(
+        locale: 'en_IN',
+        symbol: '₹',
+        decimalDigits: 0,
+      );
+      return format.format(priceInRupees);
+    } else {
+      // For all other countries, fetch the conversion rate via the service.
+      final usdRate = await _currencyService.getInrToUsdRate();
+      double priceInUSD;
+      String suffix = '';
+
+      if (usdRate != null) {
+        // If API call is successful, use the live rate.
+        priceInUSD = priceInRupees * usdRate;
+      } else {
+        // If API call fails, use a hardcoded fallback rate.
+        const double fallbackConversionRate = 1 / 83.0;
+        priceInUSD = priceInRupees * fallbackConversionRate;
+        suffix = ' (est.)'; // Indicate that the price is an estimate
+      }
+
+      final format = NumberFormat.currency(
+        locale: 'en_US',
+        symbol: '\$',
+        decimalDigits: 2,
+      );
+      return format.format(priceInUSD) + suffix;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context).textTheme;
+    final user = FirebaseAuth.instance.currentUser;
+    final isSubscribed = context.watch<SubscriptionProvider>().isSubscribed;
+    final canChat = user != null && isSubscribed;
+
     return Scaffold(
-        appBar: AppBar(title: Text(widget.product.getTitle())),
+        appBar: AppBar(title: Text(widget.product.getBrandAndModelName())),
         body: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -237,22 +304,32 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           color: Colors.blue[700], fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 10),
-                    Text(
-                      widget.product.expectedPrice,
-                      style: theme.titleLarge?.copyWith(
-                          color: Colors.orange[700],
-                          fontWeight: FontWeight.bold),
-                    ),
-
-                    const SizedBox(height: 10),
-                    Text(
-                      "Product Description",
-                      style: theme.titleMedium
-                          ?.copyWith(fontWeight: FontWeight.bold, fontSize: 18),
-                    ),
-                    const SizedBox(height: 8),
-                    ExpandableText(
-                      description: widget.product.additionalDetails,
+                    FutureBuilder<String>(
+                      future: _getLocalizedPrice(widget.product.expectedPrice),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return Shimmer.fromColors(
+                            baseColor: Colors.grey[300]!,
+                            highlightColor: Colors.grey[100]!,
+                            child: Container(
+                              width: 150,
+                              height: 28,
+                              color: Colors.white,
+                            ),
+                          );
+                        }
+                        if (snapshot.hasError) {
+                          return Text('Error loading price',
+                              style: TextStyle(color: Colors.red[700]));
+                        }
+                        return Text(
+                          snapshot.data ?? widget.product.expectedPrice,
+                          style: theme.headlineSmall?.copyWith(
+                              color: Colors.orange[700],
+                              fontWeight: FontWeight.bold),
+                        );
+                      },
                     ),
 
                     const SizedBox(height: 24),
@@ -265,7 +342,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     ExpandableProductDetails(
                       product: widget.product,
                     ),
-
+                    const SizedBox(height: 16),
                     // 🔹 Seller Contact Card
                     Card(
                       elevation: 3,
@@ -291,22 +368,38 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                           fontWeight: FontWeight.bold,
                                           fontSize: 16)),
                                   const SizedBox(height: 4),
-                                  Text(widget.product.sellerContactNumber,
-                                      style:
-                                          const TextStyle(color: Colors.grey)),
-                                  const SizedBox(height: 4),
-                                  Text(widget.product.registrationPlace ?? "",
-                                      style:
-                                          const TextStyle(color: Colors.grey)),
+                                  const Text("Chat with Seller",
+                                      style: TextStyle(color: Colors.grey)),
                                 ],
                               ),
                             ),
                             ElevatedButton.icon(
-                              onPressed: _callSeller,
-                              icon: const Icon(Icons.call),
-                              label: const Text("Call"),
+                              onPressed: canChat
+                                  ? _callSeller
+                                  : () {
+                                      final message = user == null
+                                          ? 'Please login to use chat.'
+                                          : 'Please subscribe to use chat.';
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) => AlertDialog(
+                                          title: const Text('Chat Unavailable'),
+                                          content: Text(message),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () =>
+                                                  Navigator.of(context).pop(),
+                                              child: const Text('OK'),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                              icon: const Icon(Icons.messenger_rounded),
+                              label: const Text("Chat"),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green,
+                                backgroundColor:
+                                    canChat ? Colors.green : Colors.grey,
                                 foregroundColor: Colors.white,
                               ),
                             )

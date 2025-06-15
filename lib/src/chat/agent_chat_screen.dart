@@ -104,7 +104,6 @@ class _AgentChatDetailScreenState extends State<AgentChatDetailScreen> {
   Widget _buildMessageInput() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8),
-      color: Colors.white,
       child: Row(
         children: [
           Expanded(

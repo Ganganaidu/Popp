@@ -25,7 +25,6 @@ class _CustomerChatScreenState extends State<CustomerChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[200],
       body: Column(
         children: [
           Expanded(
@@ -65,7 +64,6 @@ class _CustomerChatScreenState extends State<CustomerChatScreen> {
   Widget _buildMessageInput() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8),
-      color: Colors.white,
       child: Row(
         children: [
           Expanded(

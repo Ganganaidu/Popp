@@ -68,7 +68,7 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
                   detailRow("Insurance Available",
                       product.insuranceAvailable != null ? "Yes" : "No", theme),
                 if (product.insuranceValidTill != null)
-                  detailRow("Insurance Type",
+                  detailRow("Insurance valid till",
                       _formatDate(product.insuranceValidTill), theme),
                 detailRow("Warranty Available",
                     product.warrantyLimit != null ? "Yes" : "No", theme),

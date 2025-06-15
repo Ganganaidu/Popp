@@ -184,6 +184,10 @@ class Product {
     return "$brandName $modelName - $city";
   }
 
+  String getBrandAndModelName() {
+    return "$brandName $modelName";
+  }
+
   Product copyWith({
     String? userId,
     String? id,

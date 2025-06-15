@@ -248,16 +248,18 @@ class _LoginScreenState extends State<LoginScreen>
     return SizedBox(
       width: 180,
       height: 44,
-      child: ElevatedButton.icon(
+      child: OutlinedButton.icon(
         onPressed: () {
           Navigator.pushReplacementNamed(context, '/home');
         },
+        icon: const SizedBox.shrink(), // No icon, but keeping icon param for compatibility
         label: const Text(
           'Skip for now',
           style: TextStyle(color: Colors.black54),
         ),
-        style: ElevatedButton.styleFrom(
+        style: OutlinedButton.styleFrom(
           backgroundColor: Colors.white,
+          side: const BorderSide(color: Colors.blue),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30),
           ),

@@ -225,7 +225,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           TextStyle(fontSize: 15, color: Colors.grey),
                           textAlign: TextAlign.center),
                       const SizedBox(height: 30),
-                      _buildTextField("Username", usernameController,
+                      _buildTextField("Name", usernameController,
                           icon: Icons.person),
                       _buildTextField("Email", emailController,
                           icon: Icons.email,

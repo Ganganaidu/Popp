@@ -22,13 +22,106 @@ class _HomeScreenState extends State<HomeScreen> {
   final ValueNotifier<bool> _canPop = ValueNotifier(false);
   final ValueNotifier<String> _appBarTitle = ValueNotifier(Constants.appName);
 
+  String? _fcmToken;
+
+  // Recommended for foreground notifications on Android
+  late AndroidNotificationChannel _channel;
+  late FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin;
+
   @override
   void initState() {
     super.initState();
+    _setupNotifications();
     _navHelper.navigationChangeListener = _onNavigationChanged;
     _navHelper.updateAppBarTitle = _updateAppBarTitle;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _onNavigationChanged();
+    });
+  }
+
+  Future<void> _setupNotifications() async {
+    await _requestPermissions();
+    await _getFCMToken();
+    _configureForegroundMessageHandler();
+  }
+
+  Future<void> _requestPermissions() async {
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+    NotificationSettings settings = await messaging.requestPermission(
+      alert: true,
+      announcement: false,
+      badge: true,
+      carPlay: false,
+      criticalAlert: false,
+      provisional: false,
+      sound: true,
+    );
+    AppLogger.d('User granted permission: ${settings.authorizationStatus}');
+  }
+
+  Future<void> _getFCMToken() async {
+    String? token = await FirebaseMessaging.instance.getToken();
+    setState(() {
+      _fcmToken = token;
+    });
+    AppLogger.d('FCM Token: $_fcmToken');
+    // You should send this token to your backend server to send targeted notifications.
+  }
+
+  void _configureForegroundMessageHandler() {
+    // Required for foreground notifications on Android
+    _channel = const AndroidNotificationChannel(
+      'high_importance_channel', // id
+      'High Importance Notifications', // title
+      description: 'This channel is used for important notifications.',
+      // description
+      importance: Importance.high,
+    );
+    _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+    // Create the channel on the device
+    _flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(_channel);
+
+    // Listen for foreground messages
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      RemoteNotification? notification = message.notification;
+      AndroidNotification? android = message.notification?.android;
+
+      AppLogger.d('Got a message whilst in the foreground!');
+      AppLogger.d('Message data: ${message.data}');
+
+      if (notification != null) {
+        AppLogger.d(
+            'Message also contained a notification: ${notification.title}');
+
+        // If you're on Android, you need to display the notification manually
+        // using flutter_local_notifications.
+        if (android != null) {
+          _flutterLocalNotificationsPlugin.show(
+            notification.hashCode,
+            notification.title,
+            notification.body,
+            NotificationDetails(
+              android: AndroidNotificationDetails(
+                _channel.id,
+                _channel.name,
+                channelDescription: _channel.description,
+                icon: 'launch_background', // Ensure you have this drawable
+              ),
+            ),
+          );
+        }
+      }
+    });
+
+    // Also handle when a user taps a notification that opened the app from a background state.
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      AppLogger.d('A new onMessageOpenedApp event was published!');
+      // You can add logic here to navigate to a specific page
+      // based on the message data.
     });
   }
 

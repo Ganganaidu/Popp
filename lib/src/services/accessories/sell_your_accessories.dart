@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:popp/src/utils/app_loger.dart';
 import 'package:popp/src/utils/build_extensions.dart';
@@ -85,6 +86,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
     if (_formKey.currentState!.validate()) {
       Product newProduct = Product(
         id: productId,
+        userId: FirebaseAuth.instance.currentUser?.uid,
         categoryId: selectedCategory?.categoryId ?? "",
         categoryName: selectedCategory?.name ?? "",
         sellerContactNumber:

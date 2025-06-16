@@ -38,15 +38,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   void _callSeller() async {
-    final Uri url =
-        Uri(scheme: 'tel', path: widget.product.sellerContactNumber);
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not place the call.')),
-      );
-    }
+
   }
 
   void _toggleFavorite() {

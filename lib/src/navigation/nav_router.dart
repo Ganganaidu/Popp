@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:popp/src/settings/settings_screen.dart';
 
+import '../chat/chat_screen.dart';
 import '../login/forgot_password_screen.dart';
 import '../models/product.dart';
 import '../products/product_detail_screen.dart';
@@ -37,5 +38,18 @@ void onForgotPasswordTap(BuildContext context) {
   Navigator.push(
     context,
     MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
+  );
+}
+
+void onChatTap(
+    BuildContext context, String receiverUserName, String receiverUserID) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => ChatScreen(
+        receiverUserName: receiverUserName,
+        receiverUserID: receiverUserID,
+      ),
+    ),
   );
 }

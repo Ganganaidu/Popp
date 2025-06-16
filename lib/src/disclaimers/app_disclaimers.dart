@@ -40,7 +40,7 @@ class Disclaimers extends StatelessWidget {
           // Phone Number and Email
           const Text('Contact Us:', style: TextStyle(color: Colors.white)),
           InkWell(
-            onTap: () => launchUrl(Uri(scheme: 'tel', path: '+15551234567')),
+            onTap: () => launchUrl(Uri(scheme: 'tel', path: Constants.contactNumber)),
             child: const Row(
               children: [
                 Icon(Icons.call_end_outlined,
@@ -53,7 +53,7 @@ class Disclaimers extends StatelessWidget {
           ),
           InkWell(
             onTap: () => launchUrl(Uri(
-                scheme: 'mailto', path: 'preownedpremiumproducts@gmail.com')),
+                scheme: 'mailto', path: Constants.contactEmail)),
             child: const Row(
               children: [
                 Icon(Icons.email_outlined,

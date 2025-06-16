@@ -1,9 +1,11 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:popp/src/utils/build_extensions.dart';
 import 'package:popp/src/widgets/loading_overlay.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../firebase/firebase_save_prodcuts_api.dart';
 import '../../models/pop_category.dart';
@@ -53,6 +55,7 @@ class _SellYourBikeState extends State<SellYourBike>
 
   final double _bannerHeight = 40.0;
   final List<File> _images = [];
+  var productId = const Uuid().v4();
 
   @override
   void initState() {
@@ -86,6 +89,8 @@ class _SellYourBikeState extends State<SellYourBike>
   void _submitForm() async {
     if (_formKey.currentState!.validate()) {
       Product newProduct = Product(
+        id: productId,
+        userId: FirebaseAuth.instance.currentUser?.uid,
         categoryId: catList[0].categoryId,
         categoryName: catList[0].name,
         subCategoryName: catList[0].name,

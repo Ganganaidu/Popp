@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:popp/src/utils/app_loger.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../navigation/nav_router.dart';
 import '../utils/app_constants.dart';
@@ -42,6 +44,36 @@ class _LoginScreenState extends State<LoginScreen>
       curve: Curves.easeInOut,
     );
     _controller.forward();
+    _loadRememberMe();
+  }
+
+  Future<void> _loadRememberMe() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedRememberMe = prefs.getBool('remember_me') ?? false;
+    final savedUsername = prefs.getString('remembered_username') ?? '';
+    if (savedRememberMe && savedUsername.isNotEmpty) {
+      setState(() {
+        rememberMe = true;
+        _emailController.text = savedUsername;
+      });
+    }
+  }
+
+  Future<void> _onRememberMeChanged(bool? value) async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      rememberMe = value ?? false;
+    });
+    AppLogger.d("_onRememberMeChanged $rememberMe");
+    if (rememberMe) {
+      await prefs.setBool('remember_me', true);
+      await prefs.setString('remembered_username', _emailController.text);
+      AppLogger.d("remember_me saved $rememberMe");
+    } else {
+      await prefs.setBool('remember_me', false);
+      await prefs.remove('remembered_username');
+      AppLogger.d("remember_me not saved $rememberMe");
+    }
   }
 
   @override
@@ -154,7 +186,7 @@ class _LoginScreenState extends State<LoginScreen>
 
   Widget _buildRememberForgot() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+      padding: const EdgeInsets.symmetric(horizontal: 2.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -162,11 +194,7 @@ class _LoginScreenState extends State<LoginScreen>
             children: [
               Checkbox(
                 value: rememberMe,
-                onChanged: (value) {
-                  setState(() {
-                    rememberMe = value ?? false;
-                  });
-                },
+                onChanged: _onRememberMeChanged,
                 activeColor: Colors.orange,
               ),
               const Text('Remember me'),
@@ -177,7 +205,7 @@ class _LoginScreenState extends State<LoginScreen>
               onForgotPasswordTap(context);
             },
             child: const Text('Forgot Password?',
-                style: TextStyle(color: Colors.white70)),
+                style: TextStyle(color: Colors.orange)),
           )
         ],
       ),
@@ -235,7 +263,6 @@ class _LoginScreenState extends State<LoginScreen>
         child: const Text(
           'Privacy and Terms & Conditions',
           style: TextStyle(
-            color: Colors.blue,
             decoration: TextDecoration.underline,
             fontWeight: FontWeight.w500,
           ),
@@ -252,14 +279,12 @@ class _LoginScreenState extends State<LoginScreen>
         onPressed: () {
           Navigator.pushReplacementNamed(context, '/home');
         },
-        icon: const SizedBox.shrink(), // No icon, but keeping icon param for compatibility
         label: const Text(
           'Skip for now',
-          style: TextStyle(color: Colors.black54),
+          style: TextStyle(color: Colors.grey, fontSize: 16),
         ),
         style: OutlinedButton.styleFrom(
-          backgroundColor: Colors.white,
-          side: const BorderSide(color: Colors.blue),
+          side: const BorderSide(color: Colors.orange),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30),
           ),
@@ -320,3 +345,4 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 }
+

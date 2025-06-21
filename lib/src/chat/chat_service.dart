@@ -11,6 +11,21 @@ class ChatService extends ChangeNotifier {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  // Helper function to get user data (name and email) from their profile
+  Future<Map<String, dynamic>?> getUserData(String userId) async {
+    try {
+      DocumentSnapshot userDoc =
+      await _firestore.collection(Constants.userPath).doc(userId).get();
+      if (userDoc.exists) {
+        return userDoc.data() as Map<String, dynamic>;
+      }
+      return null;
+    } catch (e, stack) {
+      AppLogger.e("Failed to get user data for $userId: $e", stack);
+      return null;
+    }
+  }
+
   // --- User-to-User Chat Methods ---
   Future<void> sendUserToUserMessage(String receiverId, String message) async {
     try {
@@ -21,14 +36,16 @@ class ChatService extends ChangeNotifier {
       }
 
       final String currentUserId = currentUser.uid;
-      final String currentUserEmail = currentUser.email ?? "anonymous@example.com";
+      final String currentUserEmail =
+          currentUser.email ?? "anonymous@example.com";
       final Timestamp timestamp = Timestamp.now();
 
       AppLogger.d("Sending U2U from: $currentUserId to: $receiverId");
       ChatMessage newMessage = ChatMessage(
         senderId: currentUserId,
         senderEmail: currentUserEmail,
-        receiverId: receiverId, // The other user's ID
+        receiverId: receiverId,
+        // The other user's ID
         timestamp: timestamp,
         message: message,
       );
@@ -38,14 +55,14 @@ class ChatService extends ChangeNotifier {
       String chatRoomId = ids.join("_"); // Unique ID for user-to-user chat
 
       await _firestore
-          .collection(Constants.userToUserChatPath) // Dedicated collection for U2U
+          .collection(
+          Constants.userToUserChatPath) // Dedicated collection for U2U
           .doc(chatRoomId)
           .collection('messages')
           .add(newMessage.toMap())
           .then((value) {
         AppLogger.d("U2U message sent successfully: ${value.id}");
-      })
-          .catchError((error, stack) {
+      }).catchError((error, stack) {
         AppLogger.e("Failed to send U2U message: $error", stack);
       });
     } catch (e, stack) {
@@ -62,7 +79,8 @@ class ChatService extends ChangeNotifier {
 
       AppLogger.d("Getting U2U messages for chatRoomId: $chatRoomId");
       return _firestore
-          .collection(Constants.userToUserChatPath) // Dedicated collection for U2U
+          .collection(
+          Constants.userToUserChatPath) // Dedicated collection for U2U
           .doc(chatRoomId)
           .collection('messages')
           .orderBy('timestamp', descending: false)
@@ -74,9 +92,10 @@ class ChatService extends ChangeNotifier {
   }
 
   // --- Agent-User Chat Methods ---
-  // A single method for sending messages in agent-user threads, regardless of sender (agent or user)
-  Future<void> sendAgentUserMessage(
-      String agentId, String userId, String message) async {
+  // A single method for sending messages in agent-user threads,
+  // regardless of sender (agent or user)
+  Future<void> sendAgentUserMessage(String agentId, String userId,
+      String message) async {
     try {
       final User? currentUser = _firebaseAuth.currentUser;
       if (currentUser == null) {
@@ -84,15 +103,20 @@ class ChatService extends ChangeNotifier {
         return;
       }
 
-      final String currentUserId = currentUser.uid; // This will be agentId or userId
-      final String currentUserEmail = currentUser.email ?? "anonymous@example.com";
+      // This will be agentId or userId
+      final String currentUserId = currentUser.uid;
+      final String currentUserEmail =
+          currentUser.email ?? "anonymous@example.com";
       final Timestamp timestamp = Timestamp.now();
 
-      AppLogger.d("Sending A-U message from: $currentUserId (agent: $agentId, user: $userId)");
+      AppLogger.d(
+          "Sending A-U message from: $currentUserId (agent: $agentId, user: $userId)");
       ChatMessage newMessage = ChatMessage(
         senderId: currentUserId,
         senderEmail: currentUserEmail,
-        receiverId: currentUserId == agentId ? userId : agentId, // The actual recipient
+        receiverId:
+        currentUserId == agentId ? userId : agentId,
+        // The actual recipient
         timestamp: timestamp,
         message: message,
       );
@@ -102,19 +126,75 @@ class ChatService extends ChangeNotifier {
       ids.sort(); // Sorting ensures consistency
       String chatRoomId = ids.join("_");
 
+      // Send the actual chat message
       await _firestore
-          .collection(Constants.agentToUserChatPath) // Dedicated collection for A-U
+          .collection(
+          Constants.agentToUserChatPath) // Dedicated collection for A-U
           .doc(chatRoomId)
           .collection('messages')
-          .add(newMessage.toMap())
-          .then((value) {
-        AppLogger.d("A-U message sent successfully: ${value.id}");
-      })
-          .catchError((error, stack) {
-        AppLogger.e("Failed to send A-U message: $error", stack);
-      });
+          .add(newMessage.toMap());
+
+      // --- Store chat membership for both the user and the agent ---
+      final bool isSenderAgent = (currentUserId == agentId);
+
+      // Get sender's details for membership record
+      final Map<String, dynamic>? senderData = await getUserData(currentUserId);
+      final String senderName =
+          senderData?['username'] ?? 'User ${currentUserId.substring(0, 4)}...';
+      final String senderEmail = senderData?['email'] ?? currentUserEmail;
+
+      // Get receiver's details for membership record
+      final String receiverUserId = currentUserId == agentId ? userId : agentId;
+      final Map<String, dynamic>? receiverData =
+      await getUserData(receiverUserId);
+      final String receiverName =
+          receiverData?['username'] ?? 'User ${receiverUserId.substring(0, 4)}...';
+      final String receiverEmail = receiverData?['email'] ??
+          (receiverUserId == Constants.agentUserId
+              ? Constants.contactEmail
+              : 'anonymous@example.com');
+
+      // Data for the current sender's chat membership document
+      Map<String, dynamic> senderMembershipData = {
+        'chatRoomId': chatRoomId,
+        'otherUserId': receiverUserId,
+        'otherUserName': receiverName,
+        'otherUserEmail': receiverEmail,
+        'lastMessageTimestamp': timestamp,
+        'lastMessage': message, // Store last message for quick display
+      };
+
+      // Data for the receiver's chat membership document
+      Map<String, dynamic> receiverMembershipData = {
+        'chatRoomId': chatRoomId,
+        'otherUserId': currentUserId,
+        'otherUserName': senderName,
+        'otherUserEmail': senderEmail,
+        'lastMessageTimestamp': timestamp,
+        'lastMessage': message,
+      };
+
+      // Update sender's agentChatMemberships subcollection
+      await _firestore
+          .collection(Constants.userPath)
+          .doc(currentUserId)
+          .collection('agentChatMemberships')
+          .doc(chatRoomId)
+          .set(senderMembershipData, SetOptions(merge: true));
+
+      // Update receiver's agentChatMemberships subcollection
+      await _firestore
+          .collection(Constants.userPath)
+          .doc(receiverUserId)
+          .collection('agentChatMemberships')
+          .doc(chatRoomId)
+          .set(receiverMembershipData, SetOptions(merge: true));
+
+      AppLogger.d(
+          "A-U message sent and memberships updated successfully: $chatRoomId");
     } catch (e, stack) {
-      AppLogger.e("Failed to send A-U message: $e", stack);
+      AppLogger.e(
+          "Failed to send A-U message or update memberships: $e", stack);
       rethrow;
     }
   }
@@ -128,7 +208,8 @@ class ChatService extends ChangeNotifier {
 
       AppLogger.d("Getting A-U messages for chatRoomId: $chatRoomId");
       return _firestore
-          .collection(Constants.agentToUserChatPath) // Dedicated collection for A-U
+          .collection(
+          Constants.agentToUserChatPath) // Dedicated collection for A-U
           .doc(chatRoomId)
           .collection('messages')
           .orderBy('timestamp', descending: false)
@@ -140,38 +221,54 @@ class ChatService extends ChangeNotifier {
   }
 
   // For the agent to get a list of all users who have chatted with them
-  // This will show distinct "chat rooms" from the agent's perspective
+  // This will now stream from the agent's agentChatMemberships sub collection
   Stream<List<Map<String, dynamic>>> getAgentChatUserList(String agentId) {
     try {
-      AppLogger.d("Processing chat room: $agentId");
-      // Listen to the 'agent_user_chats' collection to find all documents
-      // where this agent is involved. Firestore security rules might need to be
-      // set up carefully for this to work efficiently on a larger scale.
-      // For demonstration, we'll just query the parent collection.
-      // A more robust solution might involve a separate 'agent_conversations'
-      // document per agent with a list of user IDs.
+      final currentUid = _firebaseAuth.currentUser?.uid;
+      AppLogger.d("AgentChatUserList - Current UID: $currentUid");
+      AppLogger.d(
+          "AgentChatUserList - Agent UID Match: ${currentUid ==
+              Constants.agentUserId}");
+
+      // Ensure the current user is the agent before querying their specific chat memberships
+      if (currentUid != agentId) {
+        AppLogger.w(
+            "Unauthorized access attempt to getAgentChatUserList for agentId: $agentId by UID: $currentUid");
+        // Return an empty stream if not authorized
+        return Stream.value([]);
+      }
+
       return _firestore
-          .collection(Constants.agentToUserChatPath)
+          .collection(Constants.userPath) // Start from the users collection
+          .doc(agentId) // Get the specific agent's document
+          .collection(
+          'agentChatMemberships') // Access their chat memberships sub collection
+          .orderBy('lastMessageTimestamp',
+          descending: true) // Order by last message to show recent chats
           .snapshots()
           .map((snapshot) {
-        List<Map<String, dynamic>> userChats = [];
-        AppLogger.d("Processing chat room: ${snapshot.docs}");
-        for (var doc in snapshot.docs) {
-          // Extract the two UIDs from the chatRoomId
-          List<String> ids = doc.id.split('_').toList();
-          AppLogger.d("Processing chat room: ${doc.id} with IDs: $ids");
-          if (ids.length == 2 && (ids.contains(agentId))) {
-            String otherUserId = ids.firstWhere((id) => id != agentId);
+        AppLogger.d(
+            "AgentChatListScreen - Memberships snapshot doc count: ${snapshot
+                .docs.length}");
 
-            AppLogger.d("Processing chat room: $otherUserId");
-            // In a real app, you'd fetch user details (name, email) from a 'users' collection
-            // For this demo, we'll just use the ID and a generic name.
-            userChats.add({
-              'id': otherUserId,
-              'name': 'User ${otherUserId.substring(0, 4)}...',
-            });
-          }
+        List<Map<String, dynamic>> userChats = [];
+        for (var doc in snapshot.docs) {
+          final data = doc.data();
+          // 'otherUserId' is the ID of the user chatting with the agent
+          // 'otherUserName' is the name of that user
+          userChats.add({
+            'id': data['otherUserId'],
+            'name': data['otherUserName'],
+            'email': data['otherUserEmail'],
+            'lastMessage': data['lastMessage'],
+            // Display last message if needed
+            'timestamp': data['lastMessageTimestamp'],
+            // For sorting or display
+          });
         }
+        AppLogger.d(
+            "AgentChatListScreen - Final chat users list count: ${userChats
+                .length}");
         return userChats;
       });
     } catch (e, stack) {
@@ -180,26 +277,25 @@ class ChatService extends ChangeNotifier {
     }
   }
 
-  // Fetch all products (e.g., for a public catalog)
+  // Fetch all products (e.g., for a public catalog) - NO CHANGE
   Future<List<Map<String, dynamic>>> getChats() async {
     try {
-      QuerySnapshot snapshot = await _firestore
-          .collection(Constants.agentToUserChatPath)
-          .get();
+      QuerySnapshot snapshot =
+      await _firestore.collection(Constants.agentToUserChatPath).get();
       return snapshot.docs
           .map((doc) => doc.data() as Map<String, dynamic>)
           .toList();
     } catch (e) {
-      // AppLogger.d("Error fetching all products: $e");
       AppLogger.d("Error fetching all products: $e");
       return [];
     }
   }
 
-  // Existing getUsersStream (for user-to-user selection)
+  // Existing getUsersStream (for user-to-user selection) - NO CHANGE
   Stream<List<Map<String, dynamic>>> getUsersStream() {
     try {
-      return _firestore.collection(Constants.userPath).snapshots().map((snapshot) {
+      return _firestore.collection(Constants.userPath).snapshots().map((
+          snapshot) {
         return snapshot.docs.map((doc) {
           final user = doc.data();
           user['id'] = doc.id;

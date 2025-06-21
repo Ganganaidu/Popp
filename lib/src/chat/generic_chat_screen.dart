@@ -19,7 +19,7 @@ class GenericChatScreen extends StatefulWidget {
     required this.chatType,
     this.agentId,
   }) : assert(chatType == 'user_to_user' ||
-            (chatType == 'agent_user' && agentId != null));
+      (chatType == 'agent_user' && agentId != null));
 
   @override
   State<GenericChatScreen> createState() => _GenericChatScreenState();
@@ -72,6 +72,7 @@ class _GenericChatScreenState extends State<GenericChatScreen> {
       );
     }
 
+    // Listen to the stream to automatically scroll to the bottom when new messages arrive
     messageStream.listen((snapshot) {
       if (_scrollController.hasClients) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -132,6 +133,7 @@ class _GenericChatScreenState extends State<GenericChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Check authentication status before rendering the chat UI
     if (_firebaseAuth.currentUser == null) {
       return const Scaffold(
         body: Center(
@@ -161,7 +163,7 @@ class _GenericChatScreenState extends State<GenericChatScreen> {
                     textAlign: TextAlign.center,
                   ),
                 ),
-                const SizedBox(width: 48),
+                const SizedBox(width: 48), // Spacer to balance the back button
               ],
             ),
           ),
@@ -169,7 +171,7 @@ class _GenericChatScreenState extends State<GenericChatScreen> {
             child: _buildMessageList(),
           ),
           _buildMessageInput(),
-          const SizedBox(height: 25),
+          const SizedBox(height: 25), // Padding at the bottom
         ],
       ),
     );
@@ -211,7 +213,7 @@ class _GenericChatScreenState extends State<GenericChatScreen> {
 
         return ListView(
           controller: _scrollController,
-          reverse: false,
+          reverse: false, // Messages are typically displayed bottom-up, so reverse is often true
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           children: snapshot.data!.docs
               .map((document) => _buildMessageItem(document))
@@ -226,17 +228,17 @@ class _GenericChatScreenState extends State<GenericChatScreen> {
     final User? currentUser = _firebaseAuth.currentUser;
 
     bool isCurrentUser =
-        (currentUser != null && data['senderId'] == currentUser.uid);
+    (currentUser != null && data['senderId'] == currentUser.uid);
 
     return Container(
       alignment: isCurrentUser ? Alignment.centerRight : Alignment.centerLeft,
       margin: const EdgeInsets.symmetric(vertical: 4),
       child: Column(
         crossAxisAlignment:
-            isCurrentUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        isCurrentUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
           Text(
-            data['senderEmail'] ?? 'Unknown User',
+            data['senderEmail'] ?? 'Unknown User', // Display sender's email
             style: const TextStyle(
               fontSize: 12,
               color: Colors.grey,
@@ -268,7 +270,6 @@ class _GenericChatScreenState extends State<GenericChatScreen> {
                   borderSide: BorderSide.none,
                 ),
                 filled: true,
-                fillColor: Colors.grey[200],
                 contentPadding: const EdgeInsets.symmetric(
                     horizontal: 20.0, vertical: 10.0),
               ),

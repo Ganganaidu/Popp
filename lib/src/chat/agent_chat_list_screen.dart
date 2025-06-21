@@ -4,6 +4,7 @@ import 'package:popp/src/utils/app_loger.dart';
 
 import 'chat_service.dart';
 import 'generic_chat_screen.dart';
+import '../utils/app_constants.dart'; // Import Constants for agentUserId
 
 // Screen for Agent to view list of users who have chatted with them
 class AgentChatListScreen extends StatefulWidget {
@@ -25,14 +26,26 @@ class _AgentChatListScreenState extends State<AgentChatListScreen> {
   Widget build(BuildContext context) {
     // IMPORTANT: Access control for this screen.
     // Only the actual agent (whose UID matches widget.agentId) should see this dashboard.
+    // Ensure this check remains as the primary access control.
     if (_firebaseAuth.currentUser?.uid != widget.agentId) {
       return Scaffold(
         appBar: AppBar(title: const Text('Access Denied')),
         body: const Center(
             child:
-                Text('You are not authorized to view this page as an Agent.')),
+            Text('You are not authorized to view this page as an Agent.')),
       );
     }
+    // Also, specifically check if the agentId matches the hardcoded agentUserId from Constants.
+    // This provides an extra layer of verification for the "Agent Dashboard" view.
+    if (widget.agentId != Constants.agentUserId) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Invalid Agent ID')),
+        body: const Center(
+            child:
+            Text('This agent dashboard is not configured for this ID.')),
+      );
+    }
+
 
     return Scaffold(
       appBar: AppBar(
@@ -64,7 +77,15 @@ class _AgentChatListScreenState extends State<AgentChatListScreen> {
                 child: ListTile(
                   title: Text(user['name'] ?? 'User ID: ${user['id']}'),
                   // Fallback for name
-                  subtitle: Text('ID: ${user['id']}'),
+                  subtitle: Text(
+                      'Email: ${user['email']}'), // Display user ID, potentially last message
+                  trailing: user['lastMessage'] != null
+                      ? Text(
+                    user['lastMessage'],
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    overflow: TextOverflow.ellipsis,
+                  )
+                      : null,
                   onTap: () {
                     // Agent taps on a user to open chat with them
                     Navigator.push(

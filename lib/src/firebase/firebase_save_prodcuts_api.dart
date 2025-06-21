@@ -7,6 +7,7 @@ import 'package:popp/src/utils/app_loger.dart';
 
 import '../gallery/pic_image_gallery.dart';
 import '../models/product.dart';
+import '../utils/app_constants.dart';
 
 class FirebaseProductsService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -32,7 +33,7 @@ class FirebaseProductsService {
     onLoading(true); // Show loading
 
     // 1. Generate Product ID client-side
-    final newProductRef = _db.collection('products').doc();
+    final newProductRef = _db.collection(Constants.productsPath).doc();
     final String newProductId = newProductRef.id;
 
     // 2. Upload Images using the generated newProductId
@@ -151,12 +152,12 @@ class FirebaseProductsService {
     try {
       AppLogger.d("Batch process started");
       // 1. Set product in the global 'products' collection using the provided productId
-      DocumentReference productRef = _db.collection('products').doc(productId);
+      DocumentReference productRef = _db.collection(Constants.productsPath).doc(productId);
       batch.set(productRef, productData);
 
       AppLogger.d("Batch process productRef $productRef");
       // 2. Add product ID to the user's 'createdProductIds'
-      DocumentReference userRef = _db.collection('users').doc(user.uid);
+      DocumentReference userRef = _db.collection(Constants.userPath).doc(user.uid);
       batch.update(userRef, {
         'createdProductIds': FieldValue.arrayUnion([productId])
       });
@@ -186,14 +187,14 @@ class FirebaseProductsService {
 
     try {
       // Check if product exists (optional, but good practice)
-      final productDoc = await _db.collection('products').doc(productId).get();
+      final productDoc = await _db.collection(Constants.productsPath).doc(productId).get();
       if (!productDoc.exists) {
         // AppLogger.d("Product with ID $productId does not exist.");
         AppLogger.d("Product with ID $productId does not exist.");
         return false;
       }
 
-      await _db.collection('users').doc(user.uid).update({
+      await _db.collection(Constants.userPath).doc(user.uid).update({
         'savedProductIds': FieldValue.arrayUnion([productId])
       });
       // AppLogger.d("Product $productId saved to user ${user.uid}");
@@ -215,7 +216,7 @@ class FirebaseProductsService {
     }
 
     try {
-      await _db.collection('users').doc(user.uid).update({
+      await _db.collection(Constants.userPath).doc(user.uid).update({
         'savedProductIds': FieldValue.arrayRemove([productId])
       });
       // AppLogger.d("Product $productId removed from user ${user.uid}'s saved list");
@@ -240,7 +241,7 @@ class FirebaseProductsService {
 
     try {
       DocumentSnapshot productDoc =
-          await _db.collection('products').doc(productId).get();
+          await _db.collection(Constants.productsPath).doc(productId).get();
       if (!productDoc.exists) {
         AppLogger.d("Product $productId does not exist, cannot update.");
         return false;
@@ -260,7 +261,7 @@ class FirebaseProductsService {
           Map.from(dataToUpdate); // Create a mutable copy
       updatePayload['updatedAt'] = FieldValue.serverTimestamp();
 
-      await _db.collection('products').doc(productId).update(updatePayload);
+      await _db.collection(Constants.productsPath).doc(productId).update(updatePayload);
       AppLogger.d("Product $productId updated successfully.");
       return true;
     } catch (e) {
@@ -275,7 +276,7 @@ class FirebaseProductsService {
   Future<Map<String, dynamic>?> getProductById(String productId) async {
     try {
       DocumentSnapshot doc =
-          await _db.collection('products').doc(productId).get();
+          await _db.collection(Constants.productsPath).doc(productId).get();
       if (doc.exists) {
         return doc.data() as Map<String, dynamic>?;
       }
@@ -293,7 +294,7 @@ class FirebaseProductsService {
     if (user == null) return [];
 
     try {
-      final userDoc = await _db.collection('users').doc(user.uid).get();
+      final userDoc = await _db.collection(Constants.userPath).doc(user.uid).get();
       if (!userDoc.exists || userDoc.data()?['createdProductIds'] == null) {
         return [];
       }
@@ -307,7 +308,7 @@ class FirebaseProductsService {
         List<String> sublist = productIds.sublist(
             i, i + 10 > productIds.length ? productIds.length : i + 10);
         final querySnapshot = await _db
-            .collection('products')
+            .collection(Constants.productsPath)
             .where(FieldPath.documentId, whereIn: sublist)
             .get();
         products.addAll(querySnapshot.docs.map((doc) => doc.data()));
@@ -326,7 +327,7 @@ class FirebaseProductsService {
     if (user == null) return [];
 
     try {
-      final userDoc = await _db.collection('users').doc(user.uid).get();
+      final userDoc = await _db.collection(Constants.userPath).doc(user.uid).get();
       if (!userDoc.exists || userDoc.data()?['savedProductIds'] == null) {
         return [];
       }
@@ -339,7 +340,7 @@ class FirebaseProductsService {
         List<String> sublist = productIds.sublist(
             i, i + 10 > productIds.length ? productIds.length : i + 10);
         final querySnapshot = await _db
-            .collection('products')
+            .collection(Constants.productsPath)
             .where(FieldPath.documentId, whereIn: sublist)
             .get();
         products.addAll(querySnapshot.docs.map((doc) => doc.data()));
@@ -356,7 +357,7 @@ class FirebaseProductsService {
   Future<List<Map<String, dynamic>>> getAllProducts({int limit = 20}) async {
     try {
       QuerySnapshot snapshot = await _db
-          .collection('products')
+          .collection(Constants.productsPath)
           .orderBy('createdAt', descending: true)
           .limit(limit)
           .get();
@@ -375,7 +376,7 @@ class FirebaseProductsService {
       {int limit = 20}) async {
     try {
       QuerySnapshot snapshot = await _db
-          .collection('products')
+          .collection(Constants.productsPath)
           .where('categoryId', isEqualTo: categoryId)
           .orderBy('createdAt', descending: true)
           .limit(limit)
@@ -393,7 +394,7 @@ class FirebaseProductsService {
 // --- User Profile Setup (Call this when a user signs up) ---
   Future<void> createUserProfileDocument(User user, {String? email}) async {
     try {
-      await _db.collection('users').doc(user.uid).set(
+      await _db.collection(Constants.userPath).doc(user.uid).set(
           {
             'uid': user.uid,
             'email':

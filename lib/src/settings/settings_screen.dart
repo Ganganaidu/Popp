@@ -5,13 +5,14 @@ import 'package:flutter/material.dart';
 import '../../main.dart';
 import '../navigation/nav_router.dart';
 import '../subscription/subscribe_page_widget.dart';
+import '../utils/app_constants.dart';
 import '../utils/app_loger.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
   Future<String> _fetchUsername(String uid) async {
-    final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+    final doc = await FirebaseFirestore.instance.collection(Constants.userPath).doc(uid).get();
     final data = doc.data();
     if (data != null && data['username'] != null && data['username'].toString().isNotEmpty) {
       return data['username'];

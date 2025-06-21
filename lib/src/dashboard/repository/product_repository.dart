@@ -3,11 +3,13 @@ import 'package:popp/src/utils/app_loger.dart';
 import '../../models/product.dart';
 import 'package:popp/src/models/pop_category.dart';
 
+import '../../utils/app_constants.dart';
+
 class ProductRepository {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
   Future<List<PopCategory>> fetchProductsGroupedByCategory() async {
-    QuerySnapshot snapshot = await _db.collection('products').get();
+    QuerySnapshot snapshot = await _db.collection(Constants.productsPath).get();
     if (snapshot.docs.isEmpty) return [];
 
     AppLogger.d("snapshot $snapshot");

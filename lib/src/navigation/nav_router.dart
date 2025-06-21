@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:popp/src/settings/settings_screen.dart';
+import 'package:popp/src/utils/app_constants.dart';
 
-import '../chat/chat_screen.dart';
+import '../chat/agent_chat_list_screen.dart';
+import '../chat/generic_chat_screen.dart';
 import '../login/forgot_password_screen.dart';
 import '../models/product.dart';
 import '../products/product_detail_screen.dart';
@@ -46,10 +48,38 @@ void onChatTap(
   Navigator.push(
     context,
     MaterialPageRoute(
-      builder: (context) => ChatScreen(
+      builder: (context) => GenericChatScreen(
         receiverUserName: receiverUserName,
         receiverUserID: receiverUserID,
+        chatType: 'user_to_user',
       ),
+    ),
+  );
+}
+
+// Chat with Agent
+void onAgentToUserChatTap(
+    BuildContext context, String agentUserId, String currentUserId) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => GenericChatScreen(
+        receiverUserName: "Agent (Support)",
+        receiverUserID: currentUserId,
+        // Current user's ID is the 'user' in agent-user chat
+        chatType: 'agent_user',
+        agentId: agentUserId,
+      ),
+    ),
+  );
+}
+
+void onAgentChatTap(BuildContext context) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) =>
+          const AgentChatListScreen(agentId: Constants.agentUserId),
     ),
   );
 }

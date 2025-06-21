@@ -6,6 +6,8 @@ import 'package:flutter/services.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:popp/src/utils/app_loger.dart';
 
+import '../utils/app_constants.dart';
+
 class SubscriptionProvider with ChangeNotifier {
   final InAppPurchase _iap = InAppPurchase.instance;
   late StreamSubscription<List<PurchaseDetails>> _subscription;
@@ -49,7 +51,7 @@ class SubscriptionProvider with ChangeNotifier {
         _subscription.cancel();
       }, onError: (error) {
         // Handle stream errors
-        debugPrint("Error on purchase stream: $error");
+        AppLogger.e("Error on purchase stream: $error");
         _setPurchaseError('An error occurred with the store. Please try again.');
       });
     }
@@ -61,12 +63,12 @@ class SubscriptionProvider with ChangeNotifier {
     try {
       final response = await _iap.queryProductDetails(_kIds);
       if (response.notFoundIDs.isNotEmpty) {
-        debugPrint('Products not found: ${response.notFoundIDs}');
+        AppLogger.w('Products not found: ${response.notFoundIDs}');
       }
       _products = response.productDetails;
       sortProductsByPrice(); // Assuming you want to keep this logic
     } catch (e) {
-      debugPrint('Failed to get products: $e');
+      AppLogger.e('Failed to get products: $e');
       _setPurchaseError('Could not connect to the store. Please check your connection.');
     }
     notifyListeners();
@@ -88,11 +90,11 @@ class SubscriptionProvider with ChangeNotifier {
       final purchaseParam = PurchaseParam(productDetails: productDetails);
       await _iap.buyNonConsumable(purchaseParam: purchaseParam);
     } on PlatformException catch (e) {
-      debugPrint('Failed to initiate purchase: ${e.code} - ${e.message}');
+      AppLogger.w('Failed to initiate purchase: ${e.code} - ${e.message}');
       _setPurchaseError('Failed to start purchase. Please try again.');
       _setPurchasePending(false);
     } catch (e) {
-      debugPrint('An unexpected error occurred during purchase initiation: $e');
+      AppLogger.e('An unexpected error occurred during purchase initiation: $e');
       _setPurchaseError('An unexpected error occurred. Please try again.');
       _setPurchasePending(false);
     }
@@ -154,7 +156,7 @@ class SubscriptionProvider with ChangeNotifier {
   Future<bool> updateUserSubscription({ required String uid, required bool isSubscribed}) async {
     try {
       await FirebaseFirestore.instance
-          .collection('users')
+          .collection(Constants.userPath)
           .doc(uid)
           .update({'isSubscribed': isSubscribed});
       // The local state _isSubscribed will be set in the listener after this succeeds
@@ -168,7 +170,7 @@ class SubscriptionProvider with ChangeNotifier {
   Future<void> checkSubscriptionStatus(String? uid) async {
     if (uid == null) return;
     try {
-      final userDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      final userDoc = await FirebaseFirestore.instance.collection(Constants.userPath).doc(uid).get();
       if (userDoc.exists) {
         _isSubscribed = userDoc.data()?['isSubscribed'] ?? false;
         notifyListeners();

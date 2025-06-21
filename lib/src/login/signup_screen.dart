@@ -251,8 +251,6 @@ class _SignupScreenState extends State<SignupScreen> {
                             setState(() => _isConfirmPasswordVisible =
                             !_isConfirmPasswordVisible);
                           }),
-                      _buildTextField("Address", addressController,
-                          icon: Icons.home, maxLines: 2),
                       CustomDropdownFormField<String>(
                         value: selectedState,
                         label: "",
@@ -266,6 +264,8 @@ class _SignupScreenState extends State<SignupScreen> {
                         val == null ? "State is required" : null,
                       ),
                       const SizedBox(height: 20),
+                      _buildTextField("Address", addressController,
+                          icon: Icons.home, maxLines: 2),
                       _buildTextField("City", cityController, icon: Icons.location_city),
                       _buildTextField("Pin Code", pinCodeController,
                           icon: Icons.pin_drop,

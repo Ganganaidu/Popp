@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:popp/src/login/model/user_data_model.dart';
+import 'package:popp/src/utils/app_constants.dart';
 import 'package:popp/src/utils/app_loger.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'dart:io' show Platform;
@@ -67,7 +68,8 @@ class AuthService {
   Future<void> _saveUserToFireStore(User? user) async {
     if (user == null) return;
 
-    final docRef = FirebaseFirestore.instance.collection('users').doc(user.uid);
+    final docRef =
+        FirebaseFirestore.instance.collection(Constants.userPath).doc(user.uid);
 
     final doc = await docRef.get();
     if (doc.exists) {
@@ -76,7 +78,7 @@ class AuthService {
     }
 
     AppLogger.i("Saving user in firebase ${user.toString()}");
-    await _fireStore.collection('users').doc(user.uid).set({
+    await _fireStore.collection(Constants.userPath).doc(user.uid).set({
       'uid': user.uid,
       'email': user.email,
       'displayName': user.displayName ?? '',
@@ -126,7 +128,10 @@ Future<FireStoreResult> saveUserDataToFireStore(UserData userData) async {
   try {
     AppLogger.d(
         "Attempting to save user data for UID: $uid. Data: ${userData.toMap()}");
-    await fireStore.collection('users').doc(uid).set(userData.toMap());
+    await fireStore
+        .collection(Constants.userPath)
+        .doc(uid)
+        .set(userData.toMap());
     AppLogger.i("User data successfully saved for UID: $uid");
     return FireStoreResult(success: true);
   } on FirebaseException catch (e) {
@@ -154,7 +159,10 @@ Future<void> updateRegistrationComplete({
       AppLogger.e('No user is currently signed in.');
       return;
     }
-    await FirebaseFirestore.instance.collection('users').doc(uid).update({
+    await FirebaseFirestore.instance
+        .collection(Constants.userPath)
+        .doc(uid)
+        .update({
       'registrationComplete': registrationComplete,
     });
   } catch (e) {

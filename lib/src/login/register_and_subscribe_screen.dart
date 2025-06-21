@@ -97,6 +97,7 @@ class _RegisterAndSubscribeScreenState
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Error: $userMessage")),
         );
+        AppLogger.i("widget.userData ${widget.userData}");
         AppLogger.w(
             "Failed to save user data. Error: ${saveUserDataResult.errorMessage}, Code: ${saveUserDataResult.errorCode}");
       }

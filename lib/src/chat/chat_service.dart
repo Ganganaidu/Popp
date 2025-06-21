@@ -6,7 +6,7 @@ import 'package:popp/src/utils/app_loger.dart';
 import '../utils/app_constants.dart';
 import 'chat_message.dart';
 
-// MODIFIED ChatService to handle both types of chats
+// ChatService to handle both types of chats
 class ChatService extends ChangeNotifier {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;

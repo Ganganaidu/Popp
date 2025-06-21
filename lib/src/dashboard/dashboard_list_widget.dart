@@ -78,7 +78,6 @@ class _DashboardListViewWidgetState extends State<DashboardListViewWidget> {
               style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
-                color: Colors.black54,
               ),
               textAlign: TextAlign.center,
             ),
@@ -87,7 +86,6 @@ class _DashboardListViewWidgetState extends State<DashboardListViewWidget> {
               message,
               style: const TextStyle(
                 fontSize: 16,
-                color: Colors.black45,
               ),
               textAlign: TextAlign.center,
             ),

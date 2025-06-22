@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../utils/app_loger.dart';
@@ -41,15 +43,38 @@ Future<List<File>> pickMultipleImages() async {
   }
 }
 
-Future<List<String>> uploadMultipleImages(
-    List<File> imageFiles, String productId) async {
+Future<List<String>> uploadImagesHelper(
+    List<File> images, BuildContext context, Function(bool) onLoading) async {
+  if (images.isEmpty) return [];
+  try {
+    final urls = await uploadMultipleImages(images);
+    if (urls.isEmpty) {
+      onLoading(false);
+      if (!context.mounted) return [];
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Image upload failed. Please try again.')),
+      );
+      return [];
+    }
+    return urls;
+  } catch (e) {
+    onLoading(false);
+    if (!context.mounted) return [];
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Image upload failed. Please try again.')),
+    );
+    return [];
+  }
+}
+
+Future<List<String>> uploadMultipleImages(List<File> imageFiles) async {
   List<String> downloadUrls = [];
 
   for (int i = 0; i < imageFiles.length; i++) {
     try {
-      final storageRef = FirebaseStorage.instance
-          .ref()
-          .child('product_images/${productId}_$i.jpg');
+      String fileName =
+          'product_images/${DateTime.now().millisecondsSinceEpoch}_${imageFiles[i].path.split('/').last}';
+      final storageRef = FirebaseStorage.instance.ref().child(fileName);
 
       final uploadTask = storageRef.putFile(imageFiles[i]);
 

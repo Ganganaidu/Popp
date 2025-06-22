@@ -11,6 +11,7 @@ class Constants {
   static const String agentToUserChatPath = '$basePath/agent_user_chats';
   static const String productsPath = '$basePath/products';
   static const String adsPath = '$basePath/ads';
+  static const String servicePath = '$basePath/services';
 
   static const String home = 'Home';
   static const String rides = 'Rides';

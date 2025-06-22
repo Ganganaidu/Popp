@@ -40,7 +40,7 @@ class FirebaseProductsService {
     List<String> uploadedImageUrls = [];
     try {
       if (images.isNotEmpty) {
-        uploadedImageUrls = await uploadMultipleImages(images, newProductId);
+        uploadedImageUrls = await uploadMultipleImages(images);
 
         // Check if image upload failed (if images were provided but none were uploaded)
         if (uploadedImageUrls.isEmpty) {
@@ -57,8 +57,7 @@ class FirebaseProductsService {
       onLoading(false);
       if (!context.mounted) return false;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Image upload failed. Please try again.')),
+        const SnackBar(content: Text('Image upload failed. Please try again.')),
       );
     }
 
@@ -71,11 +70,13 @@ class FirebaseProductsService {
       createdAt: FieldValue.serverTimestamp(), // Set creation timestamp
     );
 
-    final productDataForCheck = completeProduct.toJson(); // Store it in a variable
+    final productDataForCheck =
+        completeProduct.toJson(); // Store it in a variable
 
     AppLogger.d("newProductId (passed to createProduct): $newProductId");
     AppLogger.d("completeProduct.id (after copyWith): ${completeProduct.id}");
-    AppLogger.d("productDataForCheck['id'] (from toJson): ${productDataForCheck['id']}");
+    AppLogger.d(
+        "productDataForCheck['id'] (from toJson): ${productDataForCheck['id']}");
     AppLogger.d("productDataForCheck (from toJson): $productDataForCheck");
 
     // 4. Create the product in FireStore and update user's created list
@@ -152,12 +153,14 @@ class FirebaseProductsService {
     try {
       AppLogger.d("Batch process started");
       // 1. Set product in the global 'products' collection using the provided productId
-      DocumentReference productRef = _db.collection(Constants.productsPath).doc(productId);
+      DocumentReference productRef =
+          _db.collection(Constants.productsPath).doc(productId);
       batch.set(productRef, productData);
 
       AppLogger.d("Batch process productRef $productRef");
       // 2. Add product ID to the user's 'createdProductIds'
-      DocumentReference userRef = _db.collection(Constants.userPath).doc(user.uid);
+      DocumentReference userRef =
+          _db.collection(Constants.userPath).doc(user.uid);
       batch.update(userRef, {
         'createdProductIds': FieldValue.arrayUnion([productId])
       });
@@ -187,7 +190,8 @@ class FirebaseProductsService {
 
     try {
       // Check if product exists (optional, but good practice)
-      final productDoc = await _db.collection(Constants.productsPath).doc(productId).get();
+      final productDoc =
+          await _db.collection(Constants.productsPath).doc(productId).get();
       if (!productDoc.exists) {
         // AppLogger.d("Product with ID $productId does not exist.");
         AppLogger.d("Product with ID $productId does not exist.");
@@ -261,7 +265,10 @@ class FirebaseProductsService {
           Map.from(dataToUpdate); // Create a mutable copy
       updatePayload['updatedAt'] = FieldValue.serverTimestamp();
 
-      await _db.collection(Constants.productsPath).doc(productId).update(updatePayload);
+      await _db
+          .collection(Constants.productsPath)
+          .doc(productId)
+          .update(updatePayload);
       AppLogger.d("Product $productId updated successfully.");
       return true;
     } catch (e) {
@@ -294,7 +301,8 @@ class FirebaseProductsService {
     if (user == null) return [];
 
     try {
-      final userDoc = await _db.collection(Constants.userPath).doc(user.uid).get();
+      final userDoc =
+          await _db.collection(Constants.userPath).doc(user.uid).get();
       if (!userDoc.exists || userDoc.data()?['createdProductIds'] == null) {
         return [];
       }
@@ -327,7 +335,8 @@ class FirebaseProductsService {
     if (user == null) return [];
 
     try {
-      final userDoc = await _db.collection(Constants.userPath).doc(user.uid).get();
+      final userDoc =
+          await _db.collection(Constants.userPath).doc(user.uid).get();
       if (!userDoc.exists || userDoc.data()?['savedProductIds'] == null) {
         return [];
       }
@@ -410,6 +419,74 @@ class FirebaseProductsService {
     } catch (e) {
       // AppLogger.d("Error creating user profile document: $e");
       AppLogger.d("Error creating user profile document: $e");
+    }
+  }
+
+  Future<bool> submitListServicesForm({
+    required BuildContext context,
+    required Map<String, dynamic> data,
+    required List<File> promoImages,
+    required List<File> shopGarageImages,
+    required Function(bool) onLoading,
+  }) async {
+    onLoading(true);
+    try {
+      AppLogger.d("Submitting service listing with data: $data");
+
+      // Upload promo images
+      final uploadedPromoImageUrls = await uploadImagesHelper(promoImages, context, onLoading);
+      if (promoImages.isNotEmpty && uploadedPromoImageUrls.isEmpty) return false;
+      data['promoImageUrls'] = uploadedPromoImageUrls;
+
+      // AppLogger.d("Uploaded promo images: $uploadedPromoImageUrls");
+      // Upload shop/garage images
+      if (!context.mounted) return false;
+      final uploadedShopImageUrls = await uploadImagesHelper(shopGarageImages, context, onLoading);
+      if (shopGarageImages.isNotEmpty && uploadedShopImageUrls.isEmpty) {
+        // Only return false if images were provided but upload failed
+        return false;
+      }
+      data['shopImageUrls'] = uploadedShopImageUrls;
+
+      AppLogger.d("Uploaded shop/garage images: $uploadedShopImageUrls");
+      // save the service data to FireStore
+      try {
+        AppLogger.d("Attempting to add service to Firestore: $data");
+        await _db.collection(Constants.servicePath).add({
+          ...data,
+          'createdAt': FieldValue.serverTimestamp(),
+          'userId': FirebaseAuth.instance.currentUser?.uid,
+        });
+        AppLogger.d("Service successfully added to Firestore.");
+      } catch (e, stack) {
+        AppLogger.e("Firestore add error: $e\nStack: $stack");
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to list service (Firestore error): $e')),
+          );
+        }
+        return false;
+      }
+
+      if (context.mounted) {
+        AppLogger.d("Service listed successfully: $data");
+         // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Service listed successfully!')),
+        );
+      }
+      return true;
+    } catch (e) {
+      if (context.mounted) {
+        AppLogger.d("Error listing service: $e");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to list service: $e')),
+        );
+      }
+      return false;
+    } finally {
+      AppLogger.d("Finally block executed in submitListServicesForm");
+      onLoading(false);
     }
   }
 }

@@ -1,128 +1,65 @@
 import 'package:flutter/material.dart';
-import 'package:popp/src/utils/build_extensions.dart';
+import 'package:popp/src/utils/build_extensions.dart'; // Import your build_extensions
+import 'package:intl/intl.dart'; // Add this for date formatting
 
 class MonthYearPicker extends StatelessWidget {
   final String label;
   final String hint;
-  final bool enable;
   final DateTime? selectedDate;
-  final void Function(DateTime) onDateSelected;
+  final ValueChanged<DateTime?> onDateSelected;
+  final bool enable;
+  final FormFieldValidator<DateTime?>? validator;
 
   const MonthYearPicker({
     super.key,
     required this.label,
     required this.hint,
-    required this.enable,
     required this.selectedDate,
     required this.onDateSelected,
+    this.enable = true,
+    this.validator,
   });
-
-  Future<void> _selectMonthYear(BuildContext context) async {
-    final now = DateTime.now();
-    int tempSelectedYear = selectedDate?.year ?? now.year;
-    int tempSelectedMonth = selectedDate?.month ?? now.month;
-
-    await showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              title: const Text('Select Month and Year'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  DropdownButton<int>(
-                    value: tempSelectedYear,
-                    items: [for (int y = now.year; y >= 1990; y--) y]
-                        .map((year) => DropdownMenuItem(
-                              value: year,
-                              child: Text(year.toString()),
-                            ))
-                        .toList(),
-                    onChanged: (val) {
-                      if (val != null) {
-                        setState(() {
-                          tempSelectedYear = val;
-                        });
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 10),
-                  DropdownButton<int>(
-                    value: tempSelectedMonth,
-                    items: List.generate(12, (index) => index + 1)
-                        .map((month) => DropdownMenuItem(
-                              value: month,
-                              child: Text(
-                                '${month.toString().padLeft(2, '0')} - ${_monthName(month)}',
-                              ),
-                            ))
-                        .toList(),
-                    onChanged: (val) {
-                      if (val != null) {
-                        setState(() {
-                          tempSelectedMonth = val;
-                        });
-                      }
-                    },
-                  ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancel'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(
-                        context, DateTime(tempSelectedYear, tempSelectedMonth));
-                  },
-                  child: const Text('OK'),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    ).then((result) {
-      if (result != null) {
-        onDateSelected(result);
-      }
-    });
-  }
-
-  static String _monthName(int month) {
-    const monthNames = [
-      'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December'
-    ];
-    return monthNames[month - 1];
-  }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      // Conditionally allow tap
-      onTap: enable ? () => _selectMonthYear(context) : null,
+    // Format the date for display
+    final String formattedDate = selectedDate != null
+        ? DateFormat('MM/dd/yyyy').format(selectedDate!) // Format as desired
+        : hint;
+
+    return InkWell(
+      onTap: enable
+          ? () async {
+              final DateTime? picked = await showDatePicker(
+                context: context,
+                initialDate: selectedDate ?? DateTime.now(),
+                // Use selectedDate if available, else current date
+                firstDate: DateTime(1900),
+                // Adjust as per your requirement
+                lastDate: DateTime(2100), // Adjust as per your requirement
+              );
+              if (picked != null) {
+                onDateSelected(picked);
+              }
+            }
+          : null,
       child: InputDecorator(
-        decoration: context.inputDecoration(label, hint, enable: enable),
+        decoration: context
+            .inputDecoration(
+              label,
+              formattedDate,
+              enable: enable,
+            )
+            .copyWith(
+              errorText: validator != null && validator!(selectedDate) != null
+                  ? validator!(selectedDate)
+                  : null,
+            ),
         child: Text(
-          selectedDate != null
-              ? "${selectedDate!.month.toString().padLeft(2, '0')}/${selectedDate!.year}"
-              : 'Tap to select',
-          style: TextStyle(fontSize: 16, color: enable ? null : Colors.grey),
+          formattedDate,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: enable ? null : Colors.grey[600],
+              ),
         ),
       ),
     );

@@ -97,3 +97,17 @@ const List<String> stateNames = [
 ];
 
 
+const List<String> serviceCategories = [
+  'Book your Bike service',
+  'Bike Rentals',
+  'Track day',
+  'Training day',
+];
+
+const List<String> riderSkillLevels = [
+  'All',
+  'Beginner',
+  'Novice',
+  'Intermediate',
+  'Expert'
+];

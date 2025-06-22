@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:popp/src/services/accessories/sell_your_accessories.dart';
+
 import '../../models/pop_service_item.dart';
-import '../../services/bikes/sell_your_bike.dart';
+import '../../navigation/nav_router.dart';
 import '../../widgets/app_dialogs.dart';
 
 class PopServicesWidgets extends StatelessWidget {
@@ -18,32 +18,32 @@ class PopServicesWidgets extends StatelessWidget {
           }, "sell your bike");
           return;
         }
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const SellYourBike()),
-        );
+        onSelleYourBikeTap(context);
         break;
       case PopServiceAction.sellAccessory:
         if (user == null) {
           AppDialogs.showUserLoginDialog(context, () {
             Navigator.pushReplacementNamed(context, '/login');
-          }, "sell your bike");
+          }, "sell your Accessories");
           return;
         }
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const SellYourAccessories()),
-        );
+        onSellYourAccessoriesTap(context);
         break;
-        case PopServiceAction.bookService:
+      case PopServiceAction.bookService:
       case PopServiceAction.comingSoon:
-      AppDialogs.showComingSoonDialog(context, () {});
+        AppDialogs.showComingSoonDialog(context, () {});
       case PopServiceAction.bookTrackTraining:
         AppDialogs.showComingSoonDialog(context, () {});
       case PopServiceAction.findBikeRentals:
         AppDialogs.showComingSoonDialog(context, () {});
       case PopServiceAction.listYourServices:
-        AppDialogs.showComingSoonDialog(context, () {});
+        if (user == null) {
+          AppDialogs.showUserLoginDialog(context, () {
+            Navigator.pushReplacementNamed(context, '/login');
+          }, "List your service");
+          return;
+        }
+        onListYourServiceTap(context);
       case PopServiceAction.premiumBikeInspection:
         AppDialogs.showComingSoonDialog(context, () {});
     }

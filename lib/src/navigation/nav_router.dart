@@ -7,6 +7,9 @@ import '../chat/generic_chat_screen.dart';
 import '../login/forgot_password_screen.dart';
 import '../models/product.dart';
 import '../products/product_detail_screen.dart';
+import '../services/accessories/sell_your_accessories.dart';
+import '../services/bikes/sell_your_bike.dart';
+import '../services/listservices/list_service_screen.dart';
 
 // Define routes for each tab
 final Map<String, WidgetBuilder> routes = {
@@ -23,6 +26,33 @@ void onProductTap(BuildContext context, Product product) {
     context,
     MaterialPageRoute(
       builder: (context) => ProductDetailScreen(product: product),
+    ),
+  );
+}
+
+void onListYourServiceTap(BuildContext context) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => const ListServiceScreen(),
+    ),
+  );
+}
+
+void onSelleYourBikeTap(BuildContext context) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => const SellYourBike(),
+    ),
+  );
+}
+
+void onSellYourAccessoriesTap(BuildContext context) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => const SellYourAccessories(),
     ),
   );
 }

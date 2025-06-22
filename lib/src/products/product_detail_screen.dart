@@ -89,8 +89,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     // 1. Parse the input price string to a double. Assumes base price is in INR.
     final double? priceInRupees =
         double.tryParse(priceStr.replaceAll(RegExp(r'[^0-9.]'), ''));
-    if (priceInRupees == null)
+    if (priceInRupees == null) {
       return priceStr; // Return original string if parsing fails.
+    }
 
     // 2. Get the device's locale to determine the country.
     if (!mounted) return priceStr;

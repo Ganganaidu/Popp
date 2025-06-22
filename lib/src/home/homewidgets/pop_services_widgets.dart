@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../models/pop_service_item.dart';
 import '../../navigation/nav_router.dart';
+import '../../utils/product_content_data.dart';
 import '../../widgets/app_dialogs.dart';
 
 class PopServicesWidgets extends StatelessWidget {
@@ -30,12 +31,23 @@ class PopServicesWidgets extends StatelessWidget {
         onSellYourAccessoriesTap(context);
         break;
       case PopServiceAction.bookService:
-      case PopServiceAction.comingSoon:
-        AppDialogs.showComingSoonDialog(context, () {});
+        if (user == null) {
+          AppDialogs.showUserLoginDialog(context, () {
+            Navigator.pushReplacementNamed(context, '/login');
+          }, "Book a service");
+          return;
+        }
+        onServiceListingTap(context, serviceCategories[0]);
       case PopServiceAction.bookTrackTraining:
         AppDialogs.showComingSoonDialog(context, () {});
       case PopServiceAction.findBikeRentals:
-        AppDialogs.showComingSoonDialog(context, () {});
+        if (user == null) {
+          AppDialogs.showUserLoginDialog(context, () {
+            Navigator.pushReplacementNamed(context, '/login');
+          }, "Bike Rentals");
+          return;
+        }
+        onServiceListingTap(context, serviceCategories[1]);
       case PopServiceAction.listYourServices:
         if (user == null) {
           AppDialogs.showUserLoginDialog(context, () {

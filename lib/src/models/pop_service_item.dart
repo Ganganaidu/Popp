@@ -6,7 +6,6 @@ enum PopServiceAction {
   findBikeRentals,
   listYourServices,
   premiumBikeInspection,
-  comingSoon,
 }
 
 class PopServiceItem {

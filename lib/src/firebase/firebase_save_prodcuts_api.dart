@@ -489,4 +489,19 @@ class FirebaseProductsService {
       onLoading(false);
     }
   }
+
+  // Method to fetch services based on category
+  Future<List<Map<String, dynamic>>> fetchServicesByCategory(String category) async {
+    try {
+      QuerySnapshot querySnapshot = await _db
+          .collection(Constants.servicePath)
+          .where('category', isEqualTo: category)
+          .get();
+
+      return querySnapshot.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
+    } catch (e) {
+      AppLogger.d("Error fetching services: $e");
+      return [];
+    }
+  }
 }

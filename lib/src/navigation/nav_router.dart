@@ -10,6 +10,7 @@ import '../products/product_detail_screen.dart';
 import '../services/accessories/sell_your_accessories.dart';
 import '../services/bikes/sell_your_bike.dart';
 import '../services/listservices/list_service_screen.dart';
+import '../services/listservices/service_listing_screen.dart';
 
 // Define routes for each tab
 final Map<String, WidgetBuilder> routes = {
@@ -110,6 +111,15 @@ void onAgentChatTap(BuildContext context) {
     MaterialPageRoute(
       builder: (context) =>
           const AgentChatListScreen(agentId: Constants.agentUserId),
+    ),
+  );
+}
+
+void onServiceListingTap(BuildContext context, String category) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => ServiceListingScreen(category: category),
     ),
   );
 }

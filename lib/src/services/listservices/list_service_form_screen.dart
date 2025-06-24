@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:popp/src/navigation/nav_router.dart';
 import 'package:popp/src/utils/build_extensions.dart'; // From build_extensions.dart
 import 'package:popp/src/widgets/custom_dropdown_form_field.dart'; // You might need to create this widget
 import 'package:popp/src/widgets/image_picker_selection.dart'; // You might need to create this widget
@@ -12,14 +13,14 @@ import '../../utils/app_loger.dart';
 import '../../utils/product_content_data.dart';
 import '../../widgets/working_hours_picker.dart'; // You might need to create this widget
 
-class ListServiceScreen extends StatefulWidget {
-  const ListServiceScreen({super.key});
+class ListServiceFormScreen extends StatefulWidget {
+  const ListServiceFormScreen({super.key});
 
   @override
-  State<ListServiceScreen> createState() => _ListServiceScreenState();
+  State<ListServiceFormScreen> createState() => _ListServiceFormScreenState();
 }
 
-class _ListServiceScreenState extends State<ListServiceScreen> {
+class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final FirebaseProductsService _productsService = FirebaseProductsService();
 
@@ -238,7 +239,7 @@ class _ListServiceScreenState extends State<ListServiceScreen> {
         _clearAllFields(); // Clear all fields after successful submission
         if (!mounted) return;
         // Optionally navigate to a success page or home
-        Navigator.pushReplacementNamed(context, '/home');
+        onServiceListingTap(context, _selectedCategory!);
       }
     } else {
       if (!mounted) return;

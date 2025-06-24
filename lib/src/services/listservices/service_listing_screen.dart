@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:popp/src/utils/app_constants.dart';
 import 'package:popp/src/utils/build_extensions.dart';
 
-import '../../firebase/firebase_save_prodcuts_api.dart'; // Import your build_extensions
+import '../../firebase/firebase_save_prodcuts_api.dart';
+import '../../navigation/nav_router.dart';
 
 class ServiceListingScreen extends StatefulWidget {
   final String category;
@@ -21,10 +23,6 @@ class _ServiceListingScreenState extends State<ServiceListingScreen> {
     super.initState();
     _servicesFuture = _productsService.fetchServicesByCategory(widget.category);
   }
-
-  // Default placeholder image
-  static const String _defaultPlaceholderImage =
-      'https://images.unsplash.com/photo-1638003299152-dd1e3bf81fa5?q=80&w=2242&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
 
   @override
   Widget build(BuildContext context) {
@@ -75,20 +73,22 @@ class _ServiceListingScreenState extends State<ServiceListingScreen> {
 
                 // Determine the background image
                 String? imageUrl;
-                List<dynamic>? promoImages =
-                    service['businessPromoPicture'] as List<dynamic>?;
-                List<dynamic>? shopGarageImages =
-                    service['shopGaragePics'] as List<dynamic>?;
-                List<dynamic>? eventPromoPicture =
-                    service['eventPromoPicture'] as List<dynamic>?;
+                List<dynamic>? promoImages;
+                if (service['promoImageUrls'] is List) {
+                  promoImages = service['promoImageUrls'] as List<dynamic>?;
+                } else if (service['promoImageUrls'] is String &&
+                    (service['promoImageUrls'] as String).isNotEmpty) {
+                  promoImages = [(service['promoImageUrls'] as String)];
+                } else {
+                  promoImages = null;
+                }
+                List<dynamic>? shopGarageImages = service['shopImageUrls'] is List
+                    ? service['shopImageUrls'] as List<dynamic>?
+                    : null;
 
                 if (promoImages != null && promoImages.isNotEmpty) {
                   imageUrl = promoImages.first as String;
-                } else if (eventPromoPicture != null &&
-                    eventPromoPicture.isNotEmpty) {
-                  imageUrl = eventPromoPicture.first as String;
-                } else if (shopGarageImages != null &&
-                    shopGarageImages.isNotEmpty) {
+                } else if (shopGarageImages != null && shopGarageImages.isNotEmpty) {
                   imageUrl = shopGarageImages.first as String;
                 }
 
@@ -133,80 +133,86 @@ class _ServiceListingScreenState extends State<ServiceListingScreen> {
                   }
                 }
 
-                return Card(
-                  elevation: 5,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15.0),
-                  ),
-                  margin: const EdgeInsets.only(bottom: 16.0),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(15.0),
-                    child: Stack(
-                      children: [
-                        // Background Image with shadow
-                        ShaderMask(
-                          shaderCallback: (rect) {
-                            return const LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [Colors.transparent, Colors.black87],
-                            ).createShader(
-                                Rect.fromLTRB(0, 0, rect.width, rect.height));
-                          },
-                          blendMode: BlendMode.darken,
-                          child: Image.network(
-                            imageUrl ?? _defaultPlaceholderImage,
-                            width: double.infinity,
-                            height: 200, // Fixed height for consistency
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Image.network(
-                                _defaultPlaceholderImage,
-                                width: double.infinity,
-                                height: 200,
-                                fit: BoxFit.cover,
-                              );
+                return GestureDetector(
+                  onTap: () {
+                    onServiceDetailsScreenTap(
+                        context, service, widget.category);
+                  },
+                  child: Card(
+                    elevation: 5,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15.0),
+                    ),
+                    margin: const EdgeInsets.only(bottom: 16.0),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(15.0),
+                      child: Stack(
+                        children: [
+                          // Background Image with shadow
+                          ShaderMask(
+                            shaderCallback: (rect) {
+                              return const LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [Colors.transparent, Colors.black87],
+                              ).createShader(
+                                  Rect.fromLTRB(0, 0, rect.width, rect.height));
                             },
-                          ),
-                        ),
-                        // Content Overlay
-                        Positioned.fill(
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              // Align content to the bottom
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  title,
-                                  style: context.headlineMedium?.copyWith(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                _buildInfoRow(
-                                  context,
-                                  Icons.calendar_today,
-                                  dateTime,
-                                ),
-                                _buildInfoRow(
-                                  context,
-                                  Icons.location_on,
-                                  location,
-                                ),
-                                if (capacity != 'N/A')
-                                  _buildInfoRow(
-                                    context,
-                                    Icons.people,
-                                    capacity,
-                                  ),
-                              ],
+                            blendMode: BlendMode.darken,
+                            child: Image.network(
+                              imageUrl ?? Constants.defaultPlaceholderImage,
+                              width: double.infinity,
+                              height: 200, // Fixed height for consistency
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Image.network(
+                                  Constants.defaultPlaceholderImage,
+                                  width: double.infinity,
+                                  height: 200,
+                                  fit: BoxFit.cover,
+                                );
+                              },
                             ),
                           ),
-                        ),
-                      ],
+                          // Content Overlay
+                          Positioned.fill(
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                // Align content to the bottom
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    title,
+                                    style: context.headlineMedium?.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  _buildInfoRow(
+                                    context,
+                                    Icons.calendar_today,
+                                    dateTime,
+                                  ),
+                                  _buildInfoRow(
+                                    context,
+                                    Icons.location_on,
+                                    location,
+                                  ),
+                                  if (capacity != 'N/A')
+                                    _buildInfoRow(
+                                      context,
+                                      Icons.people,
+                                      capacity,
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 );

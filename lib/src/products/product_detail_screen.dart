@@ -1,14 +1,12 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:popp/src/models/product.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
+
 import '../api/currency_service.dart';
+import '../navigation/nav_router.dart';
+import '../widgets/chat_with_user_widget.dart';
 import '../widgets/expandable_product_details_widget.dart';
-import '../subscription/subscription_provider.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final Product product;
@@ -37,8 +35,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     super.dispose();
   }
 
-  void _callSeller() async {
-
+  void _openChatWithSeller() async {
+    onUserToUserChatTap(
+        context, widget.product.sellerName, widget.product.userId ?? "");
   }
 
   void _toggleFavorite() {
@@ -135,9 +134,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context).textTheme;
-    final user = FirebaseAuth.instance.currentUser;
-    final isSubscribed = context.watch<SubscriptionProvider>().isSubscribed;
-    final canChat = user != null && isSubscribed;
 
     return Scaffold(
         appBar: AppBar(title: Text(widget.product.getBrandAndModelName())),
@@ -337,70 +333,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     ),
                     const SizedBox(height: 16),
                     // 🔹 Seller Contact Card
-                    Card(
-                      elevation: 3,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Row(
-                          children: [
-                            const CircleAvatar(
-                              radius: 28,
-                              backgroundColor: Colors.blue,
-                              child: Icon(Icons.person,
-                                  color: Colors.white, size: 30),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(widget.product.sellerName,
-                                      style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16)),
-                                  const SizedBox(height: 4),
-                                  const Text("Chat with Seller",
-                                      style: TextStyle(color: Colors.grey)),
-                                ],
-                              ),
-                            ),
-                            ElevatedButton.icon(
-                              onPressed: canChat
-                                  ? _callSeller
-                                  : () {
-                                      final message = user == null
-                                          ? 'Please login to use chat.'
-                                          : 'Please subscribe to use chat.';
-                                      showDialog(
-                                        context: context,
-                                        builder: (context) => AlertDialog(
-                                          title: const Text('Chat Unavailable'),
-                                          content: Text(message),
-                                          actions: [
-                                            TextButton(
-                                              onPressed: () =>
-                                                  Navigator.of(context).pop(),
-                                              child: const Text('OK'),
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                                    },
-                              icon: const Icon(Icons.messenger_rounded),
-                              label: const Text("Chat"),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor:
-                                    canChat ? Colors.green : Colors.grey,
-                                foregroundColor: Colors.white,
-                              ),
-                            )
-                          ],
-                        ),
-                      ),
+                    ChatWithSellerCard(
+                      receiverUserName: widget.product.sellerName,
+                      receiverUserID: widget.product.userId ?? '',
                     ),
-
                     const SizedBox(height: 24),
                   ],
                 ),

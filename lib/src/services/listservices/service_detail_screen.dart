@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:popp/src/utils/build_extensions.dart';
 import 'package:provider/provider.dart';
@@ -75,11 +74,12 @@ class ServiceDetailScreen extends StatelessWidget {
     String description = serviceData['businessDescription'] ??
         serviceData['eventDetailedDescription'] ??
         'No description available.';
-    String contactName = serviceData['contactName'];
+
+    String contactName = (serviceData['contactName'] ?? '') as String;
     if (contactName.isEmpty || contactName == 'N/A') {
-      contactName = serviceData['pointOfContactName'] ?? '';
+      contactName = (serviceData['pointOfContactName'] ?? '') as String;
     }
-    String userId = serviceData['userId'] ?? '';
+    String userId = (serviceData['userId'] ?? '') as String;
 
     Map<String, String> eventDetails = {};
     Map<String, String> bikeRentalDetails = {};
@@ -91,7 +91,8 @@ class ServiceDetailScreen extends StatelessWidget {
 
     if (isBikeRentalCategory) {
       locationInfo =
-          '${serviceData['businessAddress'] ?? ''}, ${serviceData['city'] ?? ''}, ${serviceData['state'] ?? ''}';
+      '${serviceData['businessAddress'] ?? ''}, ${serviceData['city'] ??
+          ''}, ${serviceData['state'] ?? ''}';
       dateTimeInfo = serviceData['businessWorkingDaysHours'] ?? 'N/A';
       final bikeFields = {
         'GST Number': serviceData['gstNumber']?.toString(),
@@ -102,32 +103,35 @@ class ServiceDetailScreen extends StatelessWidget {
         'State': serviceData['state']?.toString(),
         'Pincode': serviceData['pincode']?.toString(),
         'Do You Inspect Premium Bikes':
-            serviceData['doYouInspectPremiumBikes']?.toString(),
+        serviceData['doYouInspectPremiumBikes']?.toString(),
         'Google Map Link': serviceData['googleMapLink']?.toString(),
         'Social Media Link': serviceData['socialMediaLink']?.toString(),
         'Business Working Days/Hours':
-            serviceData['businessWorkingDaysHours']?.toString(),
+        serviceData['businessWorkingDaysHours']?.toString(),
       };
       bikeFields.forEach((key, value) {
-        if (value != null && value.trim().isNotEmpty && value != 'N/A') {
+        if (value != null && value
+            .trim()
+            .isNotEmpty && value != 'N/A') {
           bikeRentalDetails[key] = value;
         }
       });
     } else if (isTrackOrTrainingDay) {
       locationInfo =
-          '${serviceData['locationAddress'] ?? ''}, ${serviceData['city'] ?? ''}, ${serviceData['state'] ?? ''}';
+      '${serviceData['locationAddress'] ?? ''}, ${serviceData['city'] ??
+          ''}, ${serviceData['state'] ?? ''}';
 
       String startDate = serviceData['eventStartDate'] != null
           ? DateTime.parse(serviceData['eventStartDate'])
-              .toLocal()
-              .toIso8601String()
-              .split('T')[0]
+          .toLocal()
+          .toIso8601String()
+          .split('T')[0]
           : 'N/A';
       String endDate = serviceData['eventEndDate'] != null
           ? DateTime.parse(serviceData['eventEndDate'])
-              .toLocal()
-              .toIso8601String()
-              .split('T')[0]
+          .toLocal()
+          .toIso8601String()
+          .split('T')[0]
           : 'N/A';
       String startTime = serviceData['eventStartTime'] ?? 'N/A';
       String endTime = serviceData['eventEndTime'] ?? 'N/A';
@@ -137,7 +141,8 @@ class ServiceDetailScreen extends StatelessWidget {
       if (serviceData['maxSlots'] != null &&
           serviceData['maxSlots'].isNotEmpty) {
         capacityInfo =
-            '${serviceData['currentRiders'] ?? '0'}/${serviceData['maxSlots']} riders';
+        '${serviceData['currentRiders'] ??
+            '0'}/${serviceData['maxSlots']} riders';
       }
 
       eventDetails = {
@@ -148,24 +153,23 @@ class ServiceDetailScreen extends StatelessWidget {
         'Max Slots': serviceData['maxSlots'] ?? 'N/A',
       };
       // Adding other fields from the Track Day screenshot
-      if (serviceData['contact'] != null) {
-        eventDetails['Contact'] = serviceData['contact'];
-      }
       if (serviceData['pointOfContactName'] != null) {
-        eventDetails['Point of Contact Name'] =
-            serviceData['pointOfContactName'];
+        eventDetails['Point of Contact'] =
+        serviceData['pointOfContactName'];
       }
-      if (serviceData['gstNumber'] != null) {
+      if (serviceData['gstNumber'] != null && serviceData['gstNumber'] != '') {
         eventDetails['GST #'] = serviceData['gstNumber'];
       }
-      if (serviceData['panNumber'] != null) {
+      if (serviceData['panNumber'] != null && serviceData['panNumber'] != '') {
         eventDetails['PAN #'] = serviceData['panNumber'];
       }
-      if (serviceData['googleFormLink'] != null) {
+      if (serviceData['googleFormLink'] != null &&
+          serviceData['googleFormLink'] != '') {
         eventDetails['Google Form/Redirect Link'] =
-            serviceData['googleFormLink'];
+        serviceData['googleFormLink'];
       }
-      if (serviceData['socialMediaLink'] != null) {
+      if (serviceData['socialMediaLink'] != null &&
+          serviceData['socialMediaLink'] != '') {
         eventDetails['Social Media Link'] = serviceData['socialMediaLink'];
       }
     }
@@ -222,7 +226,7 @@ class ServiceDetailScreen extends StatelessWidget {
                           String thumbUrl = allImageUrls[index];
                           return Padding(
                             padding:
-                                const EdgeInsets.symmetric(horizontal: 4.0),
+                            const EdgeInsets.symmetric(horizontal: 4.0),
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(8.0),
                               child: Image.network(
@@ -252,7 +256,7 @@ class ServiceDetailScreen extends StatelessWidget {
           ),
           SliverList(
             delegate: SliverChildBuilderDelegate(
-              (BuildContext context, int index) {
+                  (BuildContext context, int index) {
                 if (index == 0) {
                   return Padding(
                     padding: const EdgeInsets.all(16.0),
@@ -301,22 +305,23 @@ class ServiceDetailScreen extends StatelessWidget {
                           const SizedBox(height: 8),
                           ...eventDetails.entries.map((entry) =>
                               _buildDetailRow(context, entry.key, entry.value)),
-                        ] else if (category == 'Bike Rentals' ||
-                            category == 'Book your Bike service') ...[
-                          if (isBikeRentalCategory &&
-                              bikeRentalDetails.isNotEmpty) ...[
-                            Text(
-                              'Bike Rental Details',
-                              style: context.titleLarge?.copyWith(
-                                fontWeight: FontWeight.bold,
+                        ] else
+                          if (category == 'Bike Rentals' ||
+                              category == 'Book your Bike service') ...[
+                            if (isBikeRentalCategory &&
+                                bikeRentalDetails.isNotEmpty) ...[
+                              Text(
+                                'Bike Rental Details',
+                                style: context.titleLarge?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 8),
-                            ...bikeRentalDetails.entries.map((entry) =>
-                                _buildDetailRow(
-                                    context, entry.key, entry.value)),
+                              const SizedBox(height: 8),
+                              ...bikeRentalDetails.entries.map((entry) =>
+                                  _buildDetailRow(
+                                      context, entry.key, entry.value)),
+                            ],
                           ],
-                        ],
                         const SizedBox(height: 20),
                         ChatWithSellerCard(
                           receiverUserName: contactName,

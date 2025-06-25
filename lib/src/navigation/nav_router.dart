@@ -117,7 +117,7 @@ void onAgentChatTap(BuildContext context) {
 }
 
 void onServiceListingTap(BuildContext context, String category) {
-  Navigator.push(
+  Navigator.pushReplacement(
     context,
     MaterialPageRoute(
       builder: (context) => ServiceListingScreen(category: category),

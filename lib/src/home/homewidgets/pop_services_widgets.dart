@@ -34,7 +34,7 @@ class PopServicesWidgets extends StatelessWidget {
         if (user == null) {
           AppDialogs.showUserLoginDialog(context, () {
             Navigator.pushReplacementNamed(context, '/login');
-          }, "Book a service");
+          }, "Find your service");
           return;
         }
         onServiceListingTap(context, serviceCategories[0]);
@@ -44,7 +44,7 @@ class PopServicesWidgets extends StatelessWidget {
         if (user == null) {
           AppDialogs.showUserLoginDialog(context, () {
             Navigator.pushReplacementNamed(context, '/login');
-          }, "Bike Rentals");
+          }, "Find Bike Rentals");
           return;
         }
         onServiceListingTap(context, serviceCategories[1]);
@@ -57,7 +57,13 @@ class PopServicesWidgets extends StatelessWidget {
         }
         onListYourServiceTap(context);
       case PopServiceAction.premiumBikeInspection:
-        AppDialogs.showComingSoonDialog(context, () {});
+        if (user == null) {
+          AppDialogs.showUserLoginDialog(context, () {
+            Navigator.pushReplacementNamed(context, '/login');
+          }, "Premium Bike Inspection");
+          return;
+        }
+        onListYourServiceTap(context);
     }
   }
 
@@ -84,7 +90,6 @@ class PopServicesWidgets extends StatelessWidget {
             itemCount: items.length,
             itemBuilder: (context, index) {
               final popServices = items[index];
-
               return Padding(
                 padding: EdgeInsets.only(
                   left: index == 0 ? 16.0 : 0.0,

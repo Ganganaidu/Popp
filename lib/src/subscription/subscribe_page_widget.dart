@@ -2,8 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:in_app_purchase/in_app_purchase.dart'; // This import should provide everything needed
-import '../utils/app_loger.dart';
+
 import 'subscription_provider.dart'; // Your provider class
 
 class SubscribePageWidget extends StatefulWidget {
@@ -227,13 +226,11 @@ class _SubscribePageWidgetState extends State<SubscribePageWidget> {
                                                       MainAxisSize.min,
                                                   children: [
                                                     Icon(Icons.check_circle,
-                                                        color: Colors.orange,
                                                         size: 18),
                                                     SizedBox(width: 6),
                                                     Text(
                                                       'Active Subscription',
                                                       style: TextStyle(
-                                                        color: Colors.orange,
                                                         fontWeight:
                                                             FontWeight.bold,
                                                         fontSize: 14,

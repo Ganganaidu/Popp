@@ -115,7 +115,6 @@ class _SubscribePageWidgetState extends State<SubscribePageWidget> {
                             final product = products[index];
                             final isSelected = _selectedIndex == index;
                             final isFree = product.rawPrice == 0;
-                            // Now directly using provider.currentSubscriptionId
                             final isCurrentSubscription =
                                 product.id == provider.currentSubscriptionId;
 
@@ -204,48 +203,46 @@ class _SubscribePageWidgetState extends State<SubscribePageWidget> {
                                                   ?.withOpacity(0.7),
                                             ),
                                           ),
-                                          const SizedBox(height: 8),
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              if (isCurrentSubscription)
-                                                Container(
-                                                  padding: const EdgeInsets
-                                                      .symmetric(
-                                                      horizontal: 12,
-                                                      vertical: 5),
-                                                  decoration: BoxDecoration(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            8),
-                                                    border: Border.all(
-                                                        color: Colors
-                                                            .orange.shade300,
-                                                        width: 1.2),
-                                                  ),
-                                                  child: const Row(
-                                                    mainAxisSize:
-                                                        MainAxisSize.min,
-                                                    children: [
-                                                      Icon(Icons.check_circle,
-                                                          color: Colors.orange,
-                                                          size: 18),
-                                                      SizedBox(width: 6),
-                                                      Text(
-                                                        'Active Subscription',
-                                                        style: TextStyle(
-                                                          color: Colors.orange,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 14,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
+                                          // Place the Active Subscription badge below description, right aligned
+                                          if (isCurrentSubscription)
+                                            Container(
+                                              alignment: Alignment.centerRight,
+                                              margin:
+                                                  const EdgeInsets.only(top: 8),
+                                              child: Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 12,
+                                                        vertical: 5),
+                                                decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                  border: Border.all(
+                                                      color: Colors
+                                                          .orange.shade300,
+                                                      width: 1.2),
                                                 ),
-                                            ],
-                                          ),
+                                                child: const Row(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    Icon(Icons.check_circle,
+                                                        color: Colors.orange,
+                                                        size: 18),
+                                                    SizedBox(width: 6),
+                                                    Text(
+                                                      'Active Subscription',
+                                                      style: TextStyle(
+                                                        color: Colors.orange,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 14,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
                                         ],
                                       ),
                                     ),

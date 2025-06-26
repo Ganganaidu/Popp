@@ -71,53 +71,6 @@ class _SubscribePageWidgetState extends State<SubscribePageWidget> {
     );
   }
 
-  // Helper widget for the subscribed banner
-  Widget _buildSubscribedBanner(BuildContext context) {
-    return Positioned(
-      top: 12,
-      right: -40,
-      child: Transform.rotate(
-        angle: pi / 4.5,
-        child: Container(
-          color: Colors.blue[700], // A distinct color for subscribed
-          padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 3),
-          child: const Text(
-            'SUBSCRIBED',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.2,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  // NEW: Helper to infer subscription period from product details (ID/title)
-  String _getSubscriptionPeriod(ProductDetails product) {
-    // Convert ID and title to lowercase for case-insensitive matching
-    final idLower = product.id.toLowerCase();
-    final titleLower = product.title.toLowerCase();
-
-    AppLogger.d('Checking subscription period for idLower: ${idLower}');
-    AppLogger.d('Checking subscription period for titleLower: ${titleLower}');
-
-    if (idLower.contains('monthly') || titleLower.contains('monthly')) {
-      return 'Monthly';
-    }
-    if (idLower.contains('yearly') || titleLower.contains('yearly')) {
-      return 'Yearly';
-    }
-    if (idLower.contains('premium_subscription')) {
-      // Replace with your actual subscription product ID prefix/names
-      return '3 Months';
-    }
-    // Default for non-subscription products or if no period can be inferred
-    return 'One-time Purchase';
-  }
-
   @override
   Widget build(BuildContext context) {
     return Consumer<SubscriptionProvider>(
@@ -128,31 +81,6 @@ class _SubscribePageWidgetState extends State<SubscribePageWidget> {
             _showErrorSnackBar(context, provider.purchaseError!);
             // provider.clearError(); // Optionally clear the error in the provider after showing it
           });
-        }
-
-        // If the user becomes subscribed while on this page, handle it.
-        // Now checks provider.currentSubscriptionId directly.
-        if (provider.isSubscribed && provider.currentSubscriptionId != null) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (!widget.isFromSettings) {
-              Navigator.pushReplacementNamed(context, '/finalCongrats');
-            } else {
-              Navigator.pop(context);
-            }
-          });
-          // Show a success view while navigating
-          return const Scaffold(
-            body: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.check_circle, color: Colors.green, size: 50),
-                  SizedBox(height: 16),
-                  Text('Purchase Successful!', style: TextStyle(fontSize: 18)),
-                ],
-              ),
-            ),
-          );
         }
 
         final products = provider.products;
@@ -190,10 +118,6 @@ class _SubscribePageWidgetState extends State<SubscribePageWidget> {
                             // Now directly using provider.currentSubscriptionId
                             final isCurrentSubscription =
                                 product.id == provider.currentSubscriptionId;
-
-                            // Determine subscription period display using the new helper
-                            final subscriptionPeriod =
-                                _getSubscriptionPeriod(product);
 
                             // Define styles based on state
                             BorderSide border = BorderSide.none;
@@ -254,22 +178,20 @@ class _SubscribePageWidgetState extends State<SubscribePageWidget> {
                                                       TextOverflow.ellipsis,
                                                 ),
                                               ),
-                                              if (subscriptionPeriod.isNotEmpty)
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                          left: 8.0),
-                                                  child: Text(
-                                                    subscriptionPeriod,
-                                                    style: theme
-                                                        .textTheme.bodySmall
-                                                        ?.copyWith(
-                                                      color: Colors.grey[700],
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                    ),
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                    left: 8.0),
+                                                child: Text(
+                                                  product.price,
+                                                  style: TextStyle(
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: isFree
+                                                        ? Colors.green[700]
+                                                        : null,
                                                   ),
                                                 ),
+                                              ),
                                             ],
                                           ),
                                           const SizedBox(height: 4),
@@ -283,25 +205,51 @@ class _SubscribePageWidgetState extends State<SubscribePageWidget> {
                                             ),
                                           ),
                                           const SizedBox(height: 8),
-                                          Align(
-                                            alignment: Alignment.bottomRight,
-                                            child: Text(
-                                              product.price,
-                                              style: TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.w600,
-                                                color: isFree
-                                                    ? Colors.green[700]
-                                                    : null,
-                                              ),
-                                            ),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              if (isCurrentSubscription)
+                                                Container(
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                      horizontal: 12,
+                                                      vertical: 5),
+                                                  decoration: BoxDecoration(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            8),
+                                                    border: Border.all(
+                                                        color: Colors
+                                                            .orange.shade300,
+                                                        width: 1.2),
+                                                  ),
+                                                  child: const Row(
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    children: [
+                                                      Icon(Icons.check_circle,
+                                                          color: Colors.orange,
+                                                          size: 18),
+                                                      SizedBox(width: 6),
+                                                      Text(
+                                                        'Active Subscription',
+                                                        style: TextStyle(
+                                                          color: Colors.orange,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          fontSize: 14,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                            ],
                                           ),
                                         ],
                                       ),
                                     ),
                                     if (isFree) _buildPromoBanner(context),
-                                    if (isCurrentSubscription)
-                                      _buildSubscribedBanner(context),
                                   ],
                                 ),
                               ),

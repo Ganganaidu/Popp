@@ -5,6 +5,7 @@ import 'package:popp/src/utils/app_loger.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../firebase/auth_service.dart';
+import '../navigation/nav_router.dart';
 import '../subscription/subscribe_page_widget.dart';
 import '../utils/app_constants.dart';
 import '../widgets/app_dialogs.dart';
@@ -108,7 +109,9 @@ class _RegisterAndSubscribeScreenState
         if (!mounted) return;
         // Handle user already exists case
         await AppDialogs.showUserExistsDialog(context, () {
-          Navigator.pushReplacementNamed(context, '/login');
+          if (context.mounted) {
+            onLoginTap(context);
+          }
         });
         return;
       }

@@ -127,11 +127,19 @@ class SubscriptionProvider with ChangeNotifier {
           _setPurchaseError(null);
           break;
         case PurchaseStatus.error:
-          AppLogger.d('Purchase failed: ${purchase.error}');
+          AppLogger.d('Purchase failed: \\${purchase.error}');
           _setPurchaseError(purchase.error?.message ?? 'Your purchase failed.');
           _setPurchasePending(false);
           if (purchase.pendingCompletePurchase) {
             await _iap.completePurchase(purchase);
+          }
+          // Update Firestore to mark as not subscribed on error
+          if (uid != null) {
+            await updateUserSubscription(
+              uid: uid,
+              isSubscribed: false,
+              subscribedProductId: null,
+            );
           }
           break;
         case PurchaseStatus.purchased:
@@ -145,15 +153,39 @@ class SubscriptionProvider with ChangeNotifier {
             if (purchase.pendingCompletePurchase) {
               await _iap.completePurchase(purchase);
             }
+            // Update Firestore to mark as subscribed
+            if (uid != null) {
+              await updateUserSubscription(
+                uid: uid,
+                isSubscribed: true,
+                subscribedProductId: purchase.productID,
+              );
+            }
           } else {
             _setPurchaseError(
                 'Failed to verify your purchase. Please contact support.');
             _setPurchasePending(false);
+            // Update Firestore to mark as not subscribed if verification fails
+            if (uid != null) {
+              await updateUserSubscription(
+                uid: uid,
+                isSubscribed: false,
+                subscribedProductId: null,
+              );
+            }
           }
           break;
         case PurchaseStatus.canceled:
           _setPurchasePending(false);
           _setPurchaseError(null); // User cancelled, no error to show
+          // Update Firestore to mark as not subscribed on cancel
+          if (uid != null) {
+            await updateUserSubscription(
+              uid: uid,
+              isSubscribed: false,
+              subscribedProductId: null,
+            );
+          }
           break;
       }
     }
@@ -239,6 +271,19 @@ class SubscriptionProvider with ChangeNotifier {
       }
     } catch (e) {
       AppLogger.d('Failed to check subscription status: $e');
+    }
+  }
+
+  /// Call this method when the app resumes or user returns to the app
+  Future<void> refreshSubscriptionFromStore() async {
+    final String? uid = FirebaseAuth.instance.currentUser?.uid;
+    if (!_available || uid == null) return;
+    try {
+      // This will emit restored purchases on the purchaseStream
+      await _iap.restorePurchases();
+      // No need to process here; restored purchases will be handled in _listenToPurchases
+    } catch (e) {
+      AppLogger.e('Failed to refresh subscription from store: $e');
     }
   }
 

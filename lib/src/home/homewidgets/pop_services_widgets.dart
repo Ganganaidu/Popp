@@ -14,27 +14,21 @@ class PopServicesWidgets extends StatelessWidget {
     switch (action) {
       case PopServiceAction.sellBike:
         if (user == null) {
-          AppDialogs.showUserLoginDialog(context, () {
-            Navigator.pushReplacementNamed(context, '/login');
-          }, "sell your bike");
+          onLoginClicked(context, "Sell your bike");
           return;
         }
         onSelleYourBikeTap(context);
         break;
       case PopServiceAction.sellAccessory:
         if (user == null) {
-          AppDialogs.showUserLoginDialog(context, () {
-            Navigator.pushReplacementNamed(context, '/login');
-          }, "sell your Accessories");
+          onLoginClicked(context, "Sell your accessory");
           return;
         }
         onSellYourAccessoriesTap(context);
         break;
       case PopServiceAction.bookService:
         if (user == null) {
-          AppDialogs.showUserLoginDialog(context, () {
-            Navigator.pushReplacementNamed(context, '/login');
-          }, "Find your service");
+          onLoginClicked(context, "Find Bike Services");
           return;
         }
         onServiceListingTap(context, serviceCategories[0]);
@@ -42,29 +36,31 @@ class PopServicesWidgets extends StatelessWidget {
         AppDialogs.showComingSoonDialog(context, () {});
       case PopServiceAction.findBikeRentals:
         if (user == null) {
-          AppDialogs.showUserLoginDialog(context, () {
-            Navigator.pushReplacementNamed(context, '/login');
-          }, "Find Bike Rentals");
+          onLoginClicked(context, "Find Bike Rentals");
           return;
         }
         onServiceListingTap(context, serviceCategories[1]);
       case PopServiceAction.listYourServices:
         if (user == null) {
-          AppDialogs.showUserLoginDialog(context, () {
-            Navigator.pushReplacementNamed(context, '/login');
-          }, "List your service");
+          onLoginClicked(context, "List your service");
           return;
         }
         onListYourServiceTap(context);
       case PopServiceAction.premiumBikeInspection:
         if (user == null) {
-          AppDialogs.showUserLoginDialog(context, () {
-            Navigator.pushReplacementNamed(context, '/login');
-          }, "Premium Bike Inspection");
+          onLoginClicked(context, "Premium Bike Inspection");
           return;
         }
         onListYourServiceTap(context);
     }
+  }
+
+  onLoginClicked(BuildContext context, String message) {
+    AppDialogs.showUserLoginDialog(context, () {
+      if (context.mounted) {
+        onLoginTap(context);
+      }
+    }, message);
   }
 
   @override

@@ -232,11 +232,9 @@ class SettingsScreen extends StatelessWidget {
                       onPressed: () async {
                         if (isLoggedIn) {
                           await FirebaseAuth.instance.signOut();
-                          if (context.mounted) {
-                            Navigator.pushReplacementNamed(context, '/login');
-                          }
-                        } else {
-                          Navigator.pushNamed(context, '/login');
+                        }
+                        if (context.mounted) {
+                          onLoginTap(context);
                         }
                       },
                       child: Text(isLoggedIn ? "Logout" : "Login"),

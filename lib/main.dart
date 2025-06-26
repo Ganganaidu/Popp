@@ -9,7 +9,9 @@ import 'package:popp/src/login/login_screen.dart';
 import 'package:popp/src/login/sign_up_congrats_screen.dart';
 import 'package:popp/src/login/signup_screen.dart';
 import 'package:popp/src/splash/splash_screen.dart';
+import 'package:popp/src/subscription/subscription_provider.dart';
 import 'package:popp/src/theme/theme_notifier.dart';
+import 'package:provider/provider.dart';
 
 import 'src/firebase/firebase_options.dart';
 import 'src/theme/theme.dart';
@@ -37,8 +39,38 @@ void main() async {
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Call refreshSubscriptionFromStore when app resumes
+      // Use addPostFrameCallback to ensure context is available
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final provider =
+            Provider.of<SubscriptionProvider>(context, listen: false);
+        provider.refreshSubscriptionFromStore();
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

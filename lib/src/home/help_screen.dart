@@ -47,7 +47,9 @@ class HelpScreen extends StatelessWidget {
             onTap: () {
               if (FirebaseAuth.instance.currentUser == null) {
                 AppDialogs.showUserLoginDialog(context, () {
-                  Navigator.pushReplacementNamed(context, '/login');
+                  if (context.mounted) {
+                    onLoginTap(context);
+                  }
                 }, "Chat with us");
                 return;
               } else {

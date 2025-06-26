@@ -137,3 +137,7 @@ void onServiceDetailsScreenTap(
     ),
   );
 }
+
+void onLoginTap(BuildContext context) {
+  Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+}

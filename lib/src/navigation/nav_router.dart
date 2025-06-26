@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:popp/src/settings/settings_screen.dart';
 import 'package:popp/src/utils/app_constants.dart';
 
+import '../admin/admin_dashboard_screen.dart';
 import '../chat/agent_chat_list_screen.dart';
 import '../chat/generic_chat_screen.dart';
 import '../login/forgot_password_screen.dart';
@@ -111,18 +112,28 @@ void onAgentChatTap(BuildContext context) {
     context,
     MaterialPageRoute(
       builder: (context) =>
-          const AgentChatListScreen(agentId: Constants.agentUserId),
+          const AgentChatListScreen(agentId: Constants.adminUserId),
     ),
   );
 }
 
-void onServiceListingTap(BuildContext context, String category) {
-  Navigator.pushReplacement(
-    context,
-    MaterialPageRoute(
-      builder: (context) => ServiceListingScreen(category: category),
-    ),
-  );
+void onServiceListingTap(
+    BuildContext context, String category, bool isReplacement) {
+  if (isReplacement) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ServiceListingScreen(category: category),
+      ),
+    );
+  } else {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ServiceListingScreen(category: category),
+      ),
+    );
+  }
 }
 
 void onServiceDetailsScreenTap(
@@ -134,6 +145,16 @@ void onServiceDetailsScreenTap(
         serviceData: serviceData,
         category: category,
       ),
+    ),
+  );
+}
+
+
+void onAdminDashboardTap(BuildContext context) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => const AdminDashboardScreen(),
     ),
   );
 }

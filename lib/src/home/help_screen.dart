@@ -13,10 +13,10 @@ class HelpScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
-    bool isAdmin = userId == Constants.agentUserId;
+    bool isAdmin = userId == Constants.adminUserId;
 
     AppLogger.d("current user Id is: $userId");
-    AppLogger.d("agentUserId Id is: ${Constants.agentUserId}");
+    AppLogger.d("agentUserId Id is: ${Constants.adminUserId}");
 
     return ListView(
       children: [
@@ -53,7 +53,7 @@ class HelpScreen extends StatelessWidget {
                 }, "Chat with us");
                 return;
               } else {
-                onAgentToUserChatTap(context, Constants.agentUserId,
+                onAgentToUserChatTap(context, Constants.adminUserId,
                     FirebaseAuth.instance.currentUser?.uid ?? '');
               }
             },

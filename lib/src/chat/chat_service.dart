@@ -134,9 +134,6 @@ class ChatService extends ChangeNotifier {
           .collection('messages')
           .add(newMessage.toMap());
 
-      // --- Store chat membership for both the user and the agent ---
-      final bool isSenderAgent = (currentUserId == agentId);
-
       // Get sender's details for membership record
       final Map<String, dynamic>? senderData = await getUserData(currentUserId);
       final String senderName =
@@ -150,7 +147,7 @@ class ChatService extends ChangeNotifier {
       final String receiverName =
           receiverData?['username'] ?? 'User ${receiverUserId.substring(0, 4)}...';
       final String receiverEmail = receiverData?['email'] ??
-          (receiverUserId == Constants.agentUserId
+          (receiverUserId == Constants.adminUserId
               ? Constants.contactEmail
               : 'anonymous@example.com');
 
@@ -228,7 +225,7 @@ class ChatService extends ChangeNotifier {
       AppLogger.d("AgentChatUserList - Current UID: $currentUid");
       AppLogger.d(
           "AgentChatUserList - Agent UID Match: ${currentUid ==
-              Constants.agentUserId}");
+              Constants.adminUserId}");
 
       // Ensure the current user is the agent before querying their specific chat memberships
       if (currentUid != agentId) {

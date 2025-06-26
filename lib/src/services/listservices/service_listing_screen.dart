@@ -21,7 +21,10 @@ class _ServiceListingScreenState extends State<ServiceListingScreen> {
   @override
   void initState() {
     super.initState();
-    _servicesFuture = _productsService.fetchServicesByCategory(widget.category);
+    // Accept a list of categories for multi-category search
+    final List<String> categories =
+        widget.category.split(',').map((e) => e.trim()).toList();
+    _servicesFuture = _productsService.fetchServicesByCategories(categories, true);
   }
 
   @override
@@ -82,13 +85,15 @@ class _ServiceListingScreenState extends State<ServiceListingScreen> {
                 } else {
                   promoImages = null;
                 }
-                List<dynamic>? shopGarageImages = service['shopImageUrls'] is List
-                    ? service['shopImageUrls'] as List<dynamic>?
-                    : null;
+                List<dynamic>? shopGarageImages =
+                    service['shopImageUrls'] is List
+                        ? service['shopImageUrls'] as List<dynamic>?
+                        : null;
 
                 if (promoImages != null && promoImages.isNotEmpty) {
                   imageUrl = promoImages.first as String;
-                } else if (shopGarageImages != null && shopGarageImages.isNotEmpty) {
+                } else if (shopGarageImages != null &&
+                    shopGarageImages.isNotEmpty) {
                   imageUrl = shopGarageImages.first as String;
                 }
 

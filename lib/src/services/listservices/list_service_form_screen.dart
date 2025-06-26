@@ -239,7 +239,7 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
         _clearAllFields(); // Clear all fields after successful submission
         if (!mounted) return;
         // Optionally navigate to a success page or home
-        onServiceListingTap(context, _selectedCategory!);
+        onServiceListingTap(context, _selectedCategory!, true);
       }
     } else {
       if (!mounted) return;
@@ -452,7 +452,8 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                           .map(
                               (s) => DropdownMenuItem(value: s, child: Text(s)))
                           .toList(),
-                      onChanged: (val) => setState(() => _doYouInspectPremiumBikes = val),
+                      onChanged: (val) =>
+                          setState(() => _doYouInspectPremiumBikes = val),
                     ),
                   ),
                   Padding(

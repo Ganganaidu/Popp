@@ -31,15 +31,20 @@ class PopServicesWidgets extends StatelessWidget {
           onLoginClicked(context, "Find Bike Services");
           return;
         }
-        onServiceListingTap(context, serviceCategories[0]);
+        onServiceListingTap(context, serviceCategories[0], false);
       case PopServiceAction.bookTrackTraining:
-        AppDialogs.showComingSoonDialog(context, () {});
+        if (user == null) {
+          onLoginClicked(context, "Track Day or Training Day");
+          return;
+        }
+        onServiceListingTap(context,
+            [serviceCategories[2], serviceCategories[3]].join(','), false);
       case PopServiceAction.findBikeRentals:
         if (user == null) {
           onLoginClicked(context, "Find Bike Rentals");
           return;
         }
-        onServiceListingTap(context, serviceCategories[1]);
+        onServiceListingTap(context, serviceCategories[1], false);
       case PopServiceAction.listYourServices:
         if (user == null) {
           onLoginClicked(context, "List your service");

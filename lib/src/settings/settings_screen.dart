@@ -117,6 +117,31 @@ class SettingsScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 24),
+                        if (isLoggedIn && user.uid == Constants.adminUserId)
+                          Card(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              side: const BorderSide(
+                                  color: Colors.orange, width: 2),
+                            ),
+                            elevation: 4,
+                            child: ListTile(
+                              leading: const Icon(Icons.admin_panel_settings,
+                                  color: Colors.orange),
+                              title: const Text(
+                                "Admin Dashboard",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.orange),
+                              ),
+                              trailing: const Icon(Icons.arrow_forward_ios,
+                                  size: 16, color: Colors.orange),
+                              enabled: true,
+                              onTap: () {
+                                onAdminDashboardTap(context);
+                              },
+                            ),
+                          ),
                         _buildDisabledCard(
                           context,
                           icon: Icons.motorcycle,
@@ -129,6 +154,14 @@ class SettingsScreen extends StatelessWidget {
                           title: "Favorites",
                           enabled: isLoggedIn,
                         ),
+                        if (isLoggedIn && user.uid == Constants.adminUserId)
+                          ListTile(
+                            leading: const Icon(Icons.admin_panel_settings),
+                            title: const Text("Admin Dashboard"),
+                            onTap: () {
+                              onAdminDashboardTap(context);
+                            },
+                          ),
                         // Subscriptions card with status and navigation
                         Card(
                           shape: RoundedRectangleBorder(
@@ -213,6 +246,14 @@ class SettingsScreen extends StatelessWidget {
                                 }
                               : null,
                         ),
+                        if (isLoggedIn && user.uid == Constants.adminUserId)
+                          ListTile(
+                            leading: const Icon(Icons.admin_panel_settings),
+                            title: const Text("Admin Dashboard"),
+                            onTap: () {
+                              onAdminDashboardTap(context);
+                            },
+                          ),
                       ],
                     ),
                   ),

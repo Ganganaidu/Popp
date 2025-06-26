@@ -25,7 +25,7 @@ class Constants {
   static const String contactNumber = '+91 995 9958 899';
   static const String contactEmail = 'preownedpremiumproducts@gmail.com';
   // Keep agentUserId consistent with Firestore rules
-  static const String agentUserId = 'XsKNJMeiR2NuaLslm428EWL6zOv1';
+  static const String adminUserId = 'XsKNJMeiR2NuaLslm428EWL6zOv1';
 
   static const bool hideRoutes = true;
   static const bool hideRides = true;

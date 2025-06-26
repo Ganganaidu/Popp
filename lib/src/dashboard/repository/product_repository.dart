@@ -8,8 +8,11 @@ import '../../utils/app_constants.dart';
 class ProductRepository {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  Future<List<PopCategory>> fetchProductsGroupedByCategory() async {
-    QuerySnapshot snapshot = await _db.collection(Constants.productsPath).get();
+  Future<List<PopCategory>> fetchProductsGroupedByCategory(bool isApproved) async {
+    QuerySnapshot snapshot = await _db
+        .collection(Constants.productsPath)
+        .where('isApproved', isEqualTo: isApproved)
+        .get();
     if (snapshot.docs.isEmpty) return [];
 
     AppLogger.d("snapshot $snapshot");

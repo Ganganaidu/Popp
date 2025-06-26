@@ -134,6 +134,7 @@ class Product {
     return {
       if (userId != null) 'userId': userId,
       'id': id,
+      'isApproved': false, // Assuming default value for new products
       'categoryId': categoryId,
       'categoryName': categoryName,
       if (subCategoryName != null) 'subCategoryName': subCategoryName,

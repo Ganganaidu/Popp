@@ -19,7 +19,7 @@ class _DashboardListViewWidgetState extends State<DashboardListViewWidget> {
     super.initState();
     Future.microtask(() =>
         Provider.of<DashboardViewModel>(context, listen: false)
-            .loadCategories());
+            .loadCategories(true));
   }
 
   @override

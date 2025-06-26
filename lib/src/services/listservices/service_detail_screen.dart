@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:popp/src/utils/build_extensions.dart';
-import 'package:provider/provider.dart';
 
-import '../../subscription/subscription_provider.dart';
 import '../../utils/app_constants.dart'; // Import your build_extensions
 import '../../utils/product_content_data.dart';
 import '../../widgets/chat_with_user_widget.dart'; // Import serviceCategories

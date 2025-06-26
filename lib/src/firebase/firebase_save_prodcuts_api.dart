@@ -70,8 +70,7 @@ class FirebaseProductsService {
       createdAt: FieldValue.serverTimestamp(), // Set creation timestamp
     );
 
-    final productDataForCheck =
-        completeProduct.toJson(); // Store it in a variable
+    final productDataForCheck = completeProduct.toJson();
 
     AppLogger.d("newProductId (passed to createProduct): $newProductId");
     AppLogger.d("completeProduct.id (after copyWith): ${completeProduct.id}");
@@ -400,6 +399,28 @@ class FirebaseProductsService {
     }
   }
 
+// Fetch products grouped by category and approval status
+  Future<Map<String, List<Map<String, dynamic>>>> fetchProductsGroupedByCategory({bool isApproved = false}) async {
+    try {
+      QuerySnapshot snapshot = await _db
+          .collection(Constants.productsPath)
+          .where('isApproved', isEqualTo: isApproved)
+          .get();
+      final List<Map<String, dynamic>> products = snapshot.docs
+          .map((doc) => doc.data() as Map<String, dynamic>)
+          .toList();
+      final Map<String, List<Map<String, dynamic>>> grouped = {};
+      for (final product in products) {
+        final String category = product['category'] ?? 'Uncategorized';
+        grouped.putIfAbsent(category, () => []).add(product);
+      }
+      return grouped;
+    } catch (e) {
+      AppLogger.d("Error fetching grouped products: $e");
+      return {};
+    }
+  }
+
 // --- User Profile Setup (Call this when a user signs up) ---
   Future<void> createUserProfileDocument(User user, {String? email}) async {
     try {
@@ -434,14 +455,17 @@ class FirebaseProductsService {
       AppLogger.d("Submitting service listing with data: $data");
 
       // Upload promo images
-      final uploadedPromoImageUrls = await uploadImagesHelper(promoImages, context, onLoading);
-      if (promoImages.isNotEmpty && uploadedPromoImageUrls.isEmpty) return false;
+      final uploadedPromoImageUrls =
+          await uploadImagesHelper(promoImages, context, onLoading);
+      if (promoImages.isNotEmpty && uploadedPromoImageUrls.isEmpty)
+        return false;
       data['promoImageUrls'] = uploadedPromoImageUrls;
 
       // AppLogger.d("Uploaded promo images: $uploadedPromoImageUrls");
       // Upload shop/garage images
       if (!context.mounted) return false;
-      final uploadedShopImageUrls = await uploadImagesHelper(shopGarageImages, context, onLoading);
+      final uploadedShopImageUrls =
+          await uploadImagesHelper(shopGarageImages, context, onLoading);
       if (shopGarageImages.isNotEmpty && uploadedShopImageUrls.isEmpty) {
         // Only return false if images were provided but upload failed
         return false;
@@ -455,6 +479,8 @@ class FirebaseProductsService {
         await _db.collection(Constants.servicePath).add({
           ...data,
           'createdAt': FieldValue.serverTimestamp(),
+          'isApproved': false, // Default to false
+          'isFavorite': false, // Default to false
           'userId': FirebaseAuth.instance.currentUser?.uid,
         });
         AppLogger.d("Service successfully added to Firestore.");
@@ -462,7 +488,8 @@ class FirebaseProductsService {
         AppLogger.e("Firestore add error: $e\nStack: $stack");
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to list service (Firestore error): $e')),
+            SnackBar(
+                content: Text('Failed to list service (Firestore error): $e')),
           );
         }
         return false;
@@ -470,7 +497,7 @@ class FirebaseProductsService {
 
       if (context.mounted) {
         AppLogger.d("Service listed successfully: $data");
-         // Show success message
+        // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Service listed successfully!')),
         );
@@ -491,14 +518,18 @@ class FirebaseProductsService {
   }
 
   // Method to fetch services based on category
-  Future<List<Map<String, dynamic>>> fetchServicesByCategory(String category) async {
+  Future<List<Map<String, dynamic>>> fetchServicesByCategories(
+      List<String> categories, bool isApproved) async {
     try {
       QuerySnapshot querySnapshot = await _db
           .collection(Constants.servicePath)
-          .where('category', isEqualTo: category)
+          .where('category', whereIn: categories)
+          .where('isApproved', isEqualTo: isApproved)
           .get();
 
-      return querySnapshot.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
+      return querySnapshot.docs
+          .map((doc) => doc.data() as Map<String, dynamic>)
+          .toList();
     } catch (e) {
       AppLogger.d("Error fetching services: $e");
       return [];

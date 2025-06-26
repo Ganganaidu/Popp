@@ -37,7 +37,7 @@ class _AgentChatListScreenState extends State<AgentChatListScreen> {
     }
     // Also, specifically check if the agentId matches the hardcoded agentUserId from Constants.
     // This provides an extra layer of verification for the "Agent Dashboard" view.
-    if (widget.agentId != Constants.agentUserId) {
+    if (widget.agentId != Constants.adminUserId) {
       return Scaffold(
         appBar: AppBar(title: const Text('Invalid Agent ID')),
         body: const Center(

@@ -12,12 +12,12 @@ class DashboardViewModel extends ChangeNotifier {
   bool isLoading = false;
   String? error;
 
-  Future<void> loadCategories() async {
+  Future<void> loadCategories(bool isApproved) async {
     isLoading = true;
     notifyListeners();
 
     try {
-      categories = await repository.fetchProductsGroupedByCategory();
+      categories = await repository.fetchProductsGroupedByCategory(isApproved);
       error = null;
     } catch (e) {
       error = e.toString();

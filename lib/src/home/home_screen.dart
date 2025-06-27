@@ -5,9 +5,11 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:popp/src/toolbar/pop_app_bar.dart';
 import 'package:popp/src/utils/app_constants.dart';
 import 'package:popp/src/utils/app_loger.dart';
-import '../../main.dart';
+import '../../main.dart'; // Ensure this import is correct relative to your project structure
 import '../navigation/custom_bottom_nav_bar.dart';
 import '../navigation/nav_helper.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // NEW: Import Firestore
+import 'package:firebase_auth/firebase_auth.dart'; // NEW: Import FirebaseAuth
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -41,7 +43,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _setupNotifications() async {
     await _requestPermissions();
-    await _getFCMToken();
+    await _getFCMToken(); // This will now also save the token
     _configureForegroundMessageHandler();
   }
 
@@ -65,8 +67,29 @@ class _HomeScreenState extends State<HomeScreen> {
       _fcmToken = token;
     });
     AppLogger.d('FCM Token: $_fcmToken');
-    // You should send this token to your backend server to send targeted notifications.
+    // Send this token to your backend server or save it to Firestore
+    if (token != null && FirebaseAuth.instance.currentUser != null) {
+      await _saveFCMTokenToFirestore(token, FirebaseAuth.instance.currentUser!.uid);
+    }
   }
+
+  // NEW: Method to save FCM token to Firestore
+  Future<void> _saveFCMTokenToFirestore(String token, String uid) async {
+    try {
+      final userRef = FirebaseFirestore.instance.collection(Constants.userPath).doc(uid);
+      await userRef.set(
+        {
+          'fcmTokens': FieldValue.arrayUnion([token]), // Add token to an array
+          'lastTokenUpdate': FieldValue.serverTimestamp(),
+        },
+        SetOptions(merge: true), // Use merge to avoid overwriting existing fields
+      );
+      AppLogger.d('FCM Token saved to Firestore for user: $uid');
+    } catch (e) {
+      AppLogger.e('Error saving FCM Token to Firestore: $e');
+    }
+  }
+
 
   void _configureForegroundMessageHandler() {
     // Required for foreground notifications on Android
@@ -74,7 +97,6 @@ class _HomeScreenState extends State<HomeScreen> {
       'high_importance_channel', // id
       'High Importance Notifications', // title
       description: 'This channel is used for important notifications.',
-      // description
       importance: Importance.high,
     );
     _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
@@ -82,7 +104,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // Create the channel on the device
     _flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
+        AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(_channel);
 
     // Listen for foreground messages
@@ -99,7 +121,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
         // If you're on Android, you need to display the notification manually
         // using flutter_local_notifications.
-        if (android != null) {
+        if (android != null && !kIsWeb) { // Add !kIsWeb check for Android-specific logic
           _flutterLocalNotificationsPlugin.show(
             notification.hashCode,
             notification.title,
@@ -123,7 +145,20 @@ class _HomeScreenState extends State<HomeScreen> {
       // You can add logic here to navigate to a specific page
       // based on the message data.
     });
+
+    // Handle messages when the app is terminated or in the background
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   }
+
+  // Define a top-level function for background messages handler
+  @pragma('vm:entry-point')
+  static Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+    // If you're using Firebase services, make sure to initialize them
+    // For example: await Firebase.initializeApp();
+    AppLogger.d("Handling a background message: ${message.messageId}");
+    // You can process the message here, e.g., save to local storage, show local notification
+  }
+
 
   /// Called whenever the inner Navigator stack changes
   void _onNavigationChanged() {
@@ -222,34 +257,11 @@ class ValueListenableBuilder2<A, B> extends StatelessWidget {
     );
   }
 
-  void setupNotifications() async {
-    FirebaseMessaging messaging = FirebaseMessaging.instance;
-    await messaging.requestPermission(); // ask permission on iOS
-    String? token = await messaging.getToken();
-    AppLogger.d('FCM Token: $token');
-    // Store token inside Firestore user profile if needed
-  }
-
-  // This will show a popup notification when a new message arrives while app is open.
-  // call this on initState() when started implementing the messaging system.
-  void onMessage() {
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      RemoteNotification? notification = message.notification;
-      if (notification != null) {
-        flutterLocalNotificationsPlugin.show(
-          notification.hashCode,
-          notification.title,
-          notification.body,
-          const NotificationDetails(
-            android: AndroidNotificationDetails(
-              'chat_channel', // channel id
-              'Chat Messages', // channel name
-              importance: Importance.max,
-              priority: Priority.high,
-            ),
-          ),
-        );
-      }
-    });
-  }
+// The methods below are remnants from a previous example and are now handled
+// within the _HomeScreenState class's _configureForegroundMessageHandler method.
+// They are commented out or moved to avoid duplication.
+//
+// void setupNotifications() async { /* ... */ }
+// void onMessage() { /* ... */ }
+// final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin(); // Global instance not needed here.
 }

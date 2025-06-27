@@ -4,6 +4,7 @@ import '../home/dashboard_screen.dart';
 import '../home/help_screen.dart';
 import '../products/explore_products_screen.dart';
 import '../toolbar/tab_navigator_observer.dart';
+import '../widgets/coming_soon_screen.dart';
 import 'nav_router.dart';
 
 class NavHelper {
@@ -42,13 +43,13 @@ class NavHelper {
   void initializeWidgetOptions() {
     widgetOptions = <Widget>[
       const DashboardScreen(),
-      // const OurServices(),
+      const ComingSoonScreen(),
       const ExploreProductsScreen(),
-      // const HelpScreen(),
+      const ComingSoonScreen(),
       const HelpScreen(),
     ];
   }
-  
+
   //
   // // Method to initialize widgetOptions
   // void initializeWidgetOptions() {

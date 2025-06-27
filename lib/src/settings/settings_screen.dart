@@ -11,6 +11,7 @@ import '../subscription/subscription_provider.dart';
 import '../subscription/subscription_status_screen.dart';
 import '../utils/app_constants.dart';
 import '../utils/app_loger.dart';
+import '../widgets/app_dialogs.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -111,7 +112,8 @@ class SettingsScreen extends StatelessWidget {
                             enabled: isLoggedIn,
                             onTap: isLoggedIn
                                 ? () {
-                                    // Navigate to profile details
+                                    AppDialogs.showComingSoonDialog(
+                                        context, () {});
                                   }
                                 : null,
                           ),
@@ -147,21 +149,16 @@ class SettingsScreen extends StatelessWidget {
                           icon: Icons.motorcycle,
                           title: "My Listings",
                           enabled: isLoggedIn,
+                          onTap: () {
+                            AppDialogs.showComingSoonDialog(context, () {});
+                          },
                         ),
-                        _buildDisabledCard(
-                          context,
-                          icon: Icons.favorite,
-                          title: "Favorites",
-                          enabled: isLoggedIn,
-                        ),
-                        if (isLoggedIn && user.uid == Constants.adminUserId)
-                          ListTile(
-                            leading: const Icon(Icons.admin_panel_settings),
-                            title: const Text("Admin Dashboard"),
-                            onTap: () {
-                              onAdminDashboardTap(context);
-                            },
-                          ),
+                        _buildDisabledCard(context,
+                            icon: Icons.favorite,
+                            title: "Favorites",
+                            enabled: isLoggedIn, onTap: () {
+                          AppDialogs.showComingSoonDialog(context, () {});
+                        }),
                         // Subscriptions card with status and navigation
                         Card(
                           shape: RoundedRectangleBorder(
@@ -246,14 +243,6 @@ class SettingsScreen extends StatelessWidget {
                                 }
                               : null,
                         ),
-                        if (isLoggedIn && user.uid == Constants.adminUserId)
-                          ListTile(
-                            leading: const Icon(Icons.admin_panel_settings),
-                            title: const Text("Admin Dashboard"),
-                            onTap: () {
-                              onAdminDashboardTap(context);
-                            },
-                          ),
                       ],
                     ),
                   ),

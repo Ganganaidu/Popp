@@ -187,6 +187,11 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
           'businessAddress': businessAddressController.text,
           'area': areaController.text,
           'city': cityController.text,
+          'searchKeywords':
+              '${businessTitleController.text} ${areaController.text} '
+                      '${cityController.text} $_selectedCategory '
+                  .toLowerCase()
+                  .split(' '),
           'state': _selectedState,
           'pincode': pincodeController.text,
           'doYouInspectPremiumBikes': _doYouInspectPremiumBikes,
@@ -200,6 +205,15 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
           'category': _selectedCategory,
           'eventName': eventNameController.text,
           'eventPromoPicture': _promoImages.map((e) => e.path).toList(),
+          'searchKeywords': '${eventNameController.text} $_selectedCategory '
+                  '${locationAddressController.text} '
+                  '${locationNameController.text}'
+                  '${cityController.text}'
+                  '${areaController.text}'
+                  'events'
+                  ' ${businessContactController.text}'
+              .toLowerCase()
+              .split(' '),
           'bikeTypeModel': null,
           // This was a text field, will collect value if needed
           'bikeProvision': _bikeProvision,

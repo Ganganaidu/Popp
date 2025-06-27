@@ -115,6 +115,31 @@ class _SellYourBikeState extends State<SellYourBike>
         createdAt: FieldValue.serverTimestamp(),
         batteryCondition: _batteryCondition,
         tyreCondition: _tyreCondition,
+        searchKeywords: [
+          sellerNameController.text,
+          modelNameController.text,
+          cityController.text,
+          kmDrivenController.text,
+          priceController.text,
+          catList[0].name,
+          selectedBrand ?? "",
+          selectedState ?? "",
+          _batteryCondition ?? "",
+          additionalDetailsController.text,
+          ...sellerNameController.text.toLowerCase().split(' '),
+          ...modelNameController.text.toLowerCase().split(' '),
+          ...cityController.text.toLowerCase().split(' '),
+          ...catList[0].name.toLowerCase().split(' '),
+          ...selectedBrand?.toLowerCase().split(' ') ?? [],
+          ...selectedState?.toLowerCase().split(' ') ?? [],
+          ...additionalDetailsController.text.toLowerCase().split(' '),
+          ...kmDrivenController.text.toLowerCase().split(' '),
+          ..._batteryCondition?.toLowerCase().split(' ') ?? [],
+          if (_batteryCondition != null && _batteryCondition!.isNotEmpty)
+            'batteryCondition${_batteryCondition!.toLowerCase()}',
+          ..."bikes".toLowerCase().split(' '),
+          ...priceController.text.toLowerCase().split(' '),
+        ],
       );
 
       bool success = await _productsService.submitProductForm(

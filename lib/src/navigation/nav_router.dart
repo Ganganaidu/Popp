@@ -24,7 +24,7 @@ final Map<String, WidgetBuilder> routes = {
 };
 
 // call this from Dashboard_list_widget
-void onProductTap(BuildContext context, Map<String, dynamic> product) {
+void onProductDetailsTap(BuildContext context, Map<String, dynamic> product) {
   // NavHelper().updateAppBarTitle?.call(product.getTitle());
   Navigator.push(
     context,

@@ -40,48 +40,49 @@ class Product {
   String? batteryCondition;
   String? tyreCondition;
   bool? isApproved = false; // Default value for new products
+  List<String>? searchKeywords;
 
-  Product({
-    this.id,
-    this.userId,
-    required this.categoryId,
-    required this.category,
-    this.subCategory,
-    required this.brandName,
-    required this.expectedPrice,
-    required this.modelName,
-    required this.additionalDetails,
-    this.firstOwner,
-    this.mfgDate,
-    this.invoiceAvailable,
-    this.registrationDate,
-    this.registrationPlace,
-    required this.city,
-    required this.state,
-    this.nocAvailable,
-    this.insuranceAvailable,
-    this.insuranceValidTill,
-    required this.sellerName,
-    this.imageUrl,
-    this.thumbImageUrls,
-    required this.sellerContactNumber,
-    this.isFavorite,
-    this.kmDriven,
-    this.billDate,
-    this.isProductBikeSpecific = false,
-    this.createdAt, // Used when creating/updating
-    this.createdAtDate, // Used when reading
-    this.productSize,
-    this.productCondition,
-    this.productAging,
-    this.warrantyLimit,
-    this.bikeBrandName,
-    this.bikeModelName,
-    this.bikeMfgDate,
-    this.batteryCondition,
-    this.tyreCondition,
-    this.isApproved
-  });
+  Product(
+      {this.id,
+      this.userId,
+      required this.categoryId,
+      required this.category,
+      this.subCategory,
+      required this.brandName,
+      required this.expectedPrice,
+      required this.modelName,
+      required this.additionalDetails,
+      this.firstOwner,
+      this.mfgDate,
+      this.invoiceAvailable,
+      this.registrationDate,
+      this.registrationPlace,
+      required this.city,
+      required this.state,
+      this.nocAvailable,
+      this.insuranceAvailable,
+      this.insuranceValidTill,
+      required this.sellerName,
+      this.imageUrl,
+      this.thumbImageUrls,
+      required this.sellerContactNumber,
+      this.isFavorite,
+      this.kmDriven,
+      this.billDate,
+      this.isProductBikeSpecific = false,
+      this.createdAt, // Used when creating/updating
+      this.createdAtDate, // Used when reading
+      this.productSize,
+      this.productCondition,
+      this.productAging,
+      this.warrantyLimit,
+      this.bikeBrandName,
+      this.bikeModelName,
+      this.bikeMfgDate,
+      this.batteryCondition,
+      this.tyreCondition,
+      this.isApproved,
+      this.searchKeywords});
 
   // Factory constructor to create a Product from a JSON map (e.g., from Firestore)
   factory Product.fromJson(Map<String, dynamic> json, String documentId) {
@@ -126,6 +127,9 @@ class Product {
       bikeMfgDate: (json['bikeMfgDate'] as Timestamp?)?.toDate(),
       batteryCondition: json['batteryCondition'] as String?,
       tyreCondition: json['tyreCondition'] as String?,
+      searchKeywords: (json['searchKeywords'] as List<dynamic>?)
+          ?.map((item) => item as String)
+          .toList(),
       // `createdAt` is a FieldValue for writing, so we read it as DateTime
       createdAtDate: (json['createdAt'] as Timestamp?)?.toDate(),
       // We don't typically re-initialize `createdAt` (FieldValue) from json
@@ -175,6 +179,7 @@ class Product {
       if (bikeMfgDate != null) 'bikeMfgDate': Timestamp.fromDate(bikeMfgDate!),
       if (batteryCondition != null) 'batteryCondition': batteryCondition,
       if (tyreCondition != null) 'tyreCondition': tyreCondition,
+      if (searchKeywords != null) 'searchKeywords': searchKeywords,
       // If it's null and you're creating, Firestore handles it.
       // If you're updating and don't want to change it, don't include it.
       // If you want to force set a timestamp on update, include it.
@@ -234,6 +239,7 @@ class Product {
     String? batteryCondition,
     String? tyreCondition,
     bool? isApproved,
+    List<String>? searchKeywords,
   }) {
     return Product(
       userId: userId ?? this.userId,
@@ -274,6 +280,7 @@ class Product {
       batteryCondition: batteryCondition ?? this.batteryCondition,
       tyreCondition: tyreCondition ?? this.tyreCondition,
       isApproved: isApproved ?? this.isApproved,
+      searchKeywords: searchKeywords ?? this.searchKeywords,
     );
   }
 }

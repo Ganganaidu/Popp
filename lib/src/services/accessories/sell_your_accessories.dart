@@ -29,7 +29,8 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
   final FirebaseProductsService _productsService = FirebaseProductsService();
 
   final TextEditingController sellerNameController = TextEditingController();
-  final TextEditingController accessoriesNameController = TextEditingController();
+  final TextEditingController accessoriesNameController =
+      TextEditingController();
   final TextEditingController brandNameController = TextEditingController();
   final TextEditingController sellerContactController = TextEditingController();
   final TextEditingController modelNameController = TextEditingController();
@@ -90,7 +91,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
         categoryId: selectedCategory?.categoryId ?? "",
         category: selectedCategory?.name ?? "",
         sellerContactNumber:
-        '$selectedCountryCode ${sellerContactController.text}',
+            '$selectedCountryCode ${sellerContactController.text}',
         sellerName: sellerNameController.text,
         subCategory: selectedSubcategory,
         modelName: accessoriesNameController.text,
@@ -109,6 +110,39 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
         expectedPrice: priceController.text,
         additionalDetails: additionalDetailsController.text,
         createdAt: FieldValue.serverTimestamp(),
+        searchKeywords: [
+          selectedCategory?.name ?? "",
+          selectedSubcategory ?? "",
+          accessoriesNameController.text,
+          brandNameController.text,
+          selectedBikeBrand ?? "",
+          modelNameController.text,
+          _selectedManufactureDate != null
+              ? _selectedManufactureDate!.year.toString()
+              : "",
+          selectedState ?? "",
+          cityController.text,
+          productSizeController.text,
+          _productCondition ?? "",
+          productAgingController.text,
+          warrantyLeftController.text,
+          priceController.text,
+          additionalDetailsController.text,
+          ...selectedCategory?.name.toLowerCase().split(' ') ?? [],
+          ...selectedSubcategory?.toLowerCase().split(' ') ?? [],
+          ...accessoriesNameController.text.toLowerCase().split(' '),
+          ...brandNameController.text.toLowerCase().split(' '),
+          ...selectedBikeBrand?.toLowerCase().split(' ') ?? [],
+          ...modelNameController.text.toLowerCase().split(' '),
+          ...cityController.text.toLowerCase().split(' '),
+          ...productSizeController.text.toLowerCase().split(' '),
+          ..._productCondition?.toLowerCase().split(' ') ?? [],
+          ...productAgingController.text.toLowerCase().split(' '),
+          ...warrantyLeftController.text.toLowerCase().split(' '),
+          ...priceController.text.toLowerCase().split(' '),
+          ...'accessories'.toLowerCase().split(' '),
+          ...additionalDetailsController.text.toLowerCase().split(' '),
+        ],
       );
 
       AppLogger.d("Product data to be submitted: ${newProduct.toJson()}");

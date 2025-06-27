@@ -156,7 +156,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     title: Text(product['modelName'] ?? 'No Title'),
                     subtitle: Text(product['brandName'] ?? ''),
                     onTap: () {
-                      onProductTap(context, product);
+                      onProductDetailsTap(context, product);
                     },
                   ),
                 );

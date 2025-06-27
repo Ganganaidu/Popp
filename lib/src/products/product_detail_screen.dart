@@ -2,16 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:popp/src/models/product.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../api/currency_service.dart';
-import '../navigation/nav_router.dart';
+import '../firebase/firebase_save_prodcuts_api.dart';
+import '../utils/app_constants.dart';
 import '../widgets/chat_with_user_widget.dart';
 import '../widgets/expandable_product_details_widget.dart';
 
 class ProductDetailScreen extends StatefulWidget {
-  final Product product;
+  final Map<String, dynamic> productJson;
 
-  const ProductDetailScreen({super.key, required this.product});
+  const ProductDetailScreen({super.key, required this.productJson});
 
   @override
   State<ProductDetailScreen> createState() => _ProductDetailScreenState();
@@ -22,11 +24,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   bool isFavorite = false;
   late final PageController _pageController;
   final CurrencyService _currencyService = CurrencyService();
+  bool _isApproved = false;
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: selectedImageIndex);
+    _isApproved = widget.productJson['isApproved'] == true;
   }
 
   @override
@@ -35,15 +39,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     super.dispose();
   }
 
-  void _openChatWithSeller() async {
-    onUserToUserChatTap(
-        context, widget.product.sellerName, widget.product.userId ?? "");
-  }
-
   void _toggleFavorite() {
     setState(() {
       isFavorite = !isFavorite;
-      widget.product.isFavorite = isFavorite;
+      widget.productJson['isFavorite'] = isFavorite;
     });
   }
 
@@ -77,7 +76,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
     return useHero
         ? Hero(
-            tag: widget.product.imageUrl ?? '',
+            tag: widget.productJson['imageUrl'] ?? '',
             child: imageWidget,
           )
         : imageWidget;
@@ -131,218 +130,267 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     }
   }
 
+  bool get _isAdmin =>
+      FirebaseAuth.instance.currentUser?.uid == Constants.adminUserId;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context).textTheme;
+    final product =
+        Product.fromJson(widget.productJson, widget.productJson['id']);
 
     return Scaffold(
-        appBar: AppBar(title: Text(widget.product.getBrandAndModelName())),
-        body: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 🔹 Main Image Carousel
-              Stack(
-                children: [
-                  SizedBox(
-                    height: 400,
-                    width: double.infinity,
-                    child: PageView.builder(
-                      controller: _pageController,
-                      itemCount: widget.product.thumbImageUrls?.length,
-                      onPageChanged: (index) {
-                        setState(() {
-                          selectedImageIndex = index;
-                        });
-                      },
-                      itemBuilder: (context, index) {
-                        final url = widget.product.thumbImageUrls?[index] ?? '';
-                        return _buildImage(
-                          url,
-                          useHero: index == 0,
+      appBar: AppBar(title: Text(product.getBrandAndModelName())),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 🔹 Main Image Carousel
+            Stack(
+              children: [
+                SizedBox(
+                  height: 400,
+                  width: double.infinity,
+                  child: PageView.builder(
+                    controller: _pageController,
+                    itemCount: product.thumbImageUrls?.length,
+                    onPageChanged: (index) {
+                      setState(() {
+                        selectedImageIndex = index;
+                      });
+                    },
+                    itemBuilder: (context, index) {
+                      final url = product.thumbImageUrls?[index] ?? '';
+                      return _buildImage(
+                        url,
+                        useHero: index == 0,
+                      );
+                    },
+                  ),
+                ),
+
+                // 🔹 Fav Icon
+                Positioned(
+                  top: 16,
+                  right: 16,
+                  child: GestureDetector(
+                    onTap: _toggleFavorite,
+                    child: CircleAvatar(
+                      backgroundColor: Colors.white,
+                      child: Icon(
+                        isFavorite ? Icons.favorite : Icons.favorite_border,
+                        color: Colors.red,
+                      ),
+                    ),
+                  ),
+                ),
+
+                // 🔹 Bottom Dashes Indicator (overlay on image)
+                Positioned(
+                  bottom: 20,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(
+                          product.thumbImageUrls?.length ?? 0, (index) {
+                        bool isActive = index == selectedImageIndex;
+                        return AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                          width: isActive ? 20 : 12,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: isActive ? Colors.white54 : Colors.black26,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
                         );
-                      },
+                      }),
                     ),
                   ),
+                ),
 
-                  // 🔹 Fav Icon
-                  Positioned(
-                    top: 16,
-                    right: 16,
-                    child: GestureDetector(
-                      onTap: _toggleFavorite,
-                      child: CircleAvatar(
-                        backgroundColor: Colors.white,
-                        child: Icon(
-                          isFavorite ? Icons.favorite : Icons.favorite_border,
-                          color: Colors.red,
-                        ),
+                // 🔹 Thumbnail Indicator
+                Positioned(
+                  bottom: 12,
+                  right: 12,
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.black54,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      '${selectedImageIndex + 1} / ${product.thumbImageUrls?.length}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
+                ),
+              ],
+            ),
 
-                  // 🔹 Bottom Dashes Indicator (overlay on image)
-                  Positioned(
-                    bottom: 20,
-                    left: 0,
-                    right: 0,
-                    child: Center(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: List.generate(
-                            widget.product.thumbImageUrls?.length ?? 0,
-                            (index) {
-                          bool isActive = index == selectedImageIndex;
-                          return AnimatedContainer(
-                            duration: const Duration(milliseconds: 300),
-                            margin: const EdgeInsets.symmetric(horizontal: 4),
-                            width: isActive ? 20 : 12,
-                            height: 4,
-                            decoration: BoxDecoration(
-                              color: isActive ? Colors.white54 : Colors.black26,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                          );
-                        }),
-                      ),
-                    ),
-                  ),
+            const SizedBox(height: 12),
 
-                  // 🔹 Thumbnail Indicator
-                  Positioned(
-                    bottom: 12,
-                    right: 12,
+            // 🔹 Thumbnails
+            SizedBox(
+              height: 100,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: product.thumbImageUrls?.length,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                itemBuilder: (context, index) {
+                  final url = product.thumbImageUrls?[index] ?? '';
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        selectedImageIndex = index;
+                        _pageController.animateToPage(
+                          index,
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                        );
+                      });
+                    },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
+                      margin: const EdgeInsets.only(right: 10),
                       decoration: BoxDecoration(
-                        color: Colors.black54,
+                        border: Border.all(
+                            color: selectedImageIndex == index
+                                ? Colors.blue
+                                : Colors.transparent,
+                            width: 2),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Text(
-                        '${selectedImageIndex + 1} / ${widget.product.thumbImageUrls?.length}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: Image.network(
+                          url,
+                          width: 100,
+                          height: 100,
+                          fit: BoxFit.cover,
                         ),
                       ),
                     ),
+                  );
+                },
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            // 🔹 Title and Price
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    product.getTitle(),
+                    style: theme.titleLarge?.copyWith(
+                        color: Colors.blue[700], fontWeight: FontWeight.bold),
                   ),
+                  const SizedBox(height: 10),
+                  FutureBuilder<String>(
+                    future: _getLocalizedPrice(product.expectedPrice),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Shimmer.fromColors(
+                          baseColor: Colors.grey[300]!,
+                          highlightColor: Colors.grey[100]!,
+                          child: Container(
+                            width: 150,
+                            height: 28,
+                            color: Colors.white,
+                          ),
+                        );
+                      }
+                      if (snapshot.hasError) {
+                        return Text('Error loading price',
+                            style: TextStyle(color: Colors.red[700]));
+                      }
+                      return Text(
+                        snapshot.data ?? product.expectedPrice,
+                        style: theme.headlineSmall?.copyWith(
+                            color: Colors.orange[700],
+                            fontWeight: FontWeight.bold),
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 24),
+                  Text(
+                    "Product Details",
+                    style: theme.titleMedium
+                        ?.copyWith(fontWeight: FontWeight.bold, fontSize: 18),
+                  ),
+                  const SizedBox(height: 8),
+                  ExpandableProductDetails(
+                    product: product,
+                  ),
+                  const SizedBox(height: 16),
+                  // 🔹 Seller Contact Card
+                  ChatWithSellerCard(
+                    receiverUserName: product.sellerName,
+                    receiverUserID: product.userId ?? '',
+                  ),
+                  const SizedBox(height: 24),
                 ],
               ),
-
-              const SizedBox(height: 12),
-
-              // 🔹 Thumbnails
-              SizedBox(
-                height: 100,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: widget.product.thumbImageUrls?.length,
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  itemBuilder: (context, index) {
-                    final url = widget.product.thumbImageUrls?[index] ?? '';
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          selectedImageIndex = index;
-                          _pageController.animateToPage(
-                            index,
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeInOut,
-                          );
-                        });
-                      },
-                      child: Container(
-                        margin: const EdgeInsets.only(right: 10),
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                              color: selectedImageIndex == index
-                                  ? Colors.blue
-                                  : Colors.transparent,
-                              width: 2),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(6),
-                          child: Image.network(
-                            url,
-                            width: 100,
-                            height: 100,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
+            ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: _isAdmin
+          ? SafeArea(
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor:
+                          _isApproved ? Colors.green : Colors.orange,
+                      // Green if approved
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                    );
-                  },
+                    ),
+                    onPressed: _isApproved
+                        ? null
+                        : () async {
+                            if (product.id != null) {
+                              await FirebaseProductsService()
+                                  .updateProductApprovalStatus(
+                                      product.id ?? '', true);
+                              setState(() {
+                                _isApproved = true;
+                              });
+                              if (_isApproved) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Product "${product.getBrandAndModelName()}" approved successfully!',
+                                    ),
+                                    duration: const Duration(seconds: 2),
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                    child: Text(_isApproved ? 'Approved' : 'Approve'),
+                  ),
                 ),
               ),
-
-              const SizedBox(height: 12),
-
-              // 🔹 Title and Price
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.product.getTitle(),
-                      style: theme.titleLarge?.copyWith(
-                          color: Colors.blue[700], fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 10),
-                    FutureBuilder<String>(
-                      future: _getLocalizedPrice(widget.product.expectedPrice),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return Shimmer.fromColors(
-                            baseColor: Colors.grey[300]!,
-                            highlightColor: Colors.grey[100]!,
-                            child: Container(
-                              width: 150,
-                              height: 28,
-                              color: Colors.white,
-                            ),
-                          );
-                        }
-                        if (snapshot.hasError) {
-                          return Text('Error loading price',
-                              style: TextStyle(color: Colors.red[700]));
-                        }
-                        return Text(
-                          snapshot.data ?? widget.product.expectedPrice,
-                          style: theme.headlineSmall?.copyWith(
-                              color: Colors.orange[700],
-                              fontWeight: FontWeight.bold),
-                        );
-                      },
-                    ),
-
-                    const SizedBox(height: 24),
-                    Text(
-                      "Product Details",
-                      style: theme.titleMedium
-                          ?.copyWith(fontWeight: FontWeight.bold, fontSize: 18),
-                    ),
-                    const SizedBox(height: 8),
-                    ExpandableProductDetails(
-                      product: widget.product,
-                    ),
-                    const SizedBox(height: 16),
-                    // 🔹 Seller Contact Card
-                    ChatWithSellerCard(
-                      receiverUserName: widget.product.sellerName,
-                      receiverUserID: widget.product.userId ?? '',
-                    ),
-                    const SizedBox(height: 24),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ));
+            )
+          : null,
+    );
   }
 }

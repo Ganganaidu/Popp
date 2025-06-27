@@ -1,11 +1,13 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:popp/src/utils/build_extensions.dart';
 
+import '../../firebase/firebase_save_prodcuts_api.dart';
 import '../../utils/app_constants.dart'; // Import your build_extensions
 import '../../utils/product_content_data.dart';
 import '../../widgets/chat_with_user_widget.dart'; // Import serviceCategories
 
-class ServiceDetailScreen extends StatelessWidget {
+class ServiceDetailScreen extends StatefulWidget {
   final Map<String, dynamic> serviceData;
   final String category;
 
@@ -16,17 +18,80 @@ class ServiceDetailScreen extends StatelessWidget {
   });
 
   @override
+  State<ServiceDetailScreen> createState() => _ServiceDetailScreenState();
+}
+
+class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
+  late bool _isApproved;
+
+  @override
+  void initState() {
+    super.initState();
+    _isApproved = widget.serviceData['isApproved'] == true;
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final isAdmin =
+        FirebaseAuth.instance.currentUser?.uid == Constants.adminUserId;
     return Scaffold(
       appBar: AppBar(
-        title: Text(category),
+        title: Text(widget.category),
         automaticallyImplyLeading: true, // Show back button only on toolbar
       ),
       body: _buildBody(context),
+      bottomNavigationBar: isAdmin
+          ? SafeArea(
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor:
+                          _isApproved ? Colors.green : Colors.orange,
+                      // Green if approved
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    onPressed: _isApproved
+                        ? null
+                        : () async {
+                            final serviceId = widget.serviceData['id'] ?? '';
+                            if (serviceId != '') {
+                              await FirebaseProductsService()
+                                  .updateServiceApprovalStatus(serviceId, true);
+                              setState(() {
+                                _isApproved = true;
+                              });
+                              if (_isApproved) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Product approved successfully!',
+                                    ),
+                                    duration: Duration(seconds: 2),
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                    child: Text(_isApproved ? 'Approved' : 'Approve'),
+                  ),
+                ),
+              ),
+            )
+          : null,
     );
   }
 
   Widget _buildBody(BuildContext context) {
+    final serviceData = widget.serviceData;
+    final category = widget.category;
+
     // Extract images
     List<String> allImageUrls = [];
     List<dynamic>? promoImages;
@@ -89,8 +154,7 @@ class ServiceDetailScreen extends StatelessWidget {
 
     if (isBikeRentalCategory) {
       locationInfo =
-      '${serviceData['businessAddress'] ?? ''}, ${serviceData['city'] ??
-          ''}, ${serviceData['state'] ?? ''}';
+          '${serviceData['businessAddress'] ?? ''}, ${serviceData['city'] ?? ''}, ${serviceData['state'] ?? ''}';
       dateTimeInfo = serviceData['businessWorkingDaysHours'] ?? 'N/A';
       final bikeFields = {
         'GST Number': serviceData['gstNumber']?.toString(),
@@ -101,35 +165,32 @@ class ServiceDetailScreen extends StatelessWidget {
         'State': serviceData['state']?.toString(),
         'Pincode': serviceData['pincode']?.toString(),
         'Do You Inspect Premium Bikes':
-        serviceData['doYouInspectPremiumBikes']?.toString(),
+            serviceData['doYouInspectPremiumBikes']?.toString(),
         'Google Map Link': serviceData['googleMapLink']?.toString(),
         'Social Media Link': serviceData['socialMediaLink']?.toString(),
         'Business Working Days/Hours':
-        serviceData['businessWorkingDaysHours']?.toString(),
+            serviceData['businessWorkingDaysHours']?.toString(),
       };
       bikeFields.forEach((key, value) {
-        if (value != null && value
-            .trim()
-            .isNotEmpty && value != 'N/A') {
+        if (value != null && value.trim().isNotEmpty && value != 'N/A') {
           bikeRentalDetails[key] = value;
         }
       });
     } else if (isTrackOrTrainingDay) {
       locationInfo =
-      '${serviceData['locationAddress'] ?? ''}, ${serviceData['city'] ??
-          ''}, ${serviceData['state'] ?? ''}';
+          '${serviceData['locationAddress'] ?? ''}, ${serviceData['city'] ?? ''}, ${serviceData['state'] ?? ''}';
 
       String startDate = serviceData['eventStartDate'] != null
           ? DateTime.parse(serviceData['eventStartDate'])
-          .toLocal()
-          .toIso8601String()
-          .split('T')[0]
+              .toLocal()
+              .toIso8601String()
+              .split('T')[0]
           : 'N/A';
       String endDate = serviceData['eventEndDate'] != null
           ? DateTime.parse(serviceData['eventEndDate'])
-          .toLocal()
-          .toIso8601String()
-          .split('T')[0]
+              .toLocal()
+              .toIso8601String()
+              .split('T')[0]
           : 'N/A';
       String startTime = serviceData['eventStartTime'] ?? 'N/A';
       String endTime = serviceData['eventEndTime'] ?? 'N/A';
@@ -139,8 +200,7 @@ class ServiceDetailScreen extends StatelessWidget {
       if (serviceData['maxSlots'] != null &&
           serviceData['maxSlots'].isNotEmpty) {
         capacityInfo =
-        '${serviceData['currentRiders'] ??
-            '0'}/${serviceData['maxSlots']} riders';
+            '${serviceData['currentRiders'] ?? '0'}/${serviceData['maxSlots']} riders';
       }
 
       eventDetails = {
@@ -152,8 +212,7 @@ class ServiceDetailScreen extends StatelessWidget {
       };
       // Adding other fields from the Track Day screenshot
       if (serviceData['pointOfContactName'] != null) {
-        eventDetails['Point of Contact'] =
-        serviceData['pointOfContactName'];
+        eventDetails['Point of Contact'] = serviceData['pointOfContactName'];
       }
       if (serviceData['gstNumber'] != null && serviceData['gstNumber'] != '') {
         eventDetails['GST #'] = serviceData['gstNumber'];
@@ -164,7 +223,7 @@ class ServiceDetailScreen extends StatelessWidget {
       if (serviceData['googleFormLink'] != null &&
           serviceData['googleFormLink'] != '') {
         eventDetails['Google Form/Redirect Link'] =
-        serviceData['googleFormLink'];
+            serviceData['googleFormLink'];
       }
       if (serviceData['socialMediaLink'] != null &&
           serviceData['socialMediaLink'] != '') {
@@ -224,7 +283,7 @@ class ServiceDetailScreen extends StatelessWidget {
                           String thumbUrl = allImageUrls[index];
                           return Padding(
                             padding:
-                            const EdgeInsets.symmetric(horizontal: 4.0),
+                                const EdgeInsets.symmetric(horizontal: 4.0),
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(8.0),
                               child: Image.network(
@@ -254,7 +313,7 @@ class ServiceDetailScreen extends StatelessWidget {
           ),
           SliverList(
             delegate: SliverChildBuilderDelegate(
-                  (BuildContext context, int index) {
+              (BuildContext context, int index) {
                 if (index == 0) {
                   return Padding(
                     padding: const EdgeInsets.all(16.0),
@@ -303,23 +362,22 @@ class ServiceDetailScreen extends StatelessWidget {
                           const SizedBox(height: 8),
                           ...eventDetails.entries.map((entry) =>
                               _buildDetailRow(context, entry.key, entry.value)),
-                        ] else
-                          if (category == 'Bike Rentals' ||
-                              category == 'Book your Bike service') ...[
-                            if (isBikeRentalCategory &&
-                                bikeRentalDetails.isNotEmpty) ...[
-                              Text(
-                                'Bike Rental Details',
-                                style: context.titleLarge?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
+                        ] else if (category == 'Bike Rentals' ||
+                            category == 'Book your Bike service') ...[
+                          if (isBikeRentalCategory &&
+                              bikeRentalDetails.isNotEmpty) ...[
+                            Text(
+                              'Bike Rental Details',
+                              style: context.titleLarge?.copyWith(
+                                fontWeight: FontWeight.bold,
                               ),
-                              const SizedBox(height: 8),
-                              ...bikeRentalDetails.entries.map((entry) =>
-                                  _buildDetailRow(
-                                      context, entry.key, entry.value)),
-                            ],
+                            ),
+                            const SizedBox(height: 8),
+                            ...bikeRentalDetails.entries.map((entry) =>
+                                _buildDetailRow(
+                                    context, entry.key, entry.value)),
                           ],
+                        ],
                         const SizedBox(height: 20),
                         ChatWithSellerCard(
                           receiverUserName: contactName,

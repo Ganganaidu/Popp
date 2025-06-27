@@ -28,7 +28,7 @@ class ProductCard extends StatelessWidget {
               ),
               clipBehavior: Clip.antiAlias,
               child: InkWell(
-                onTap: () => onProductTap(context, product),
+                onTap: () => onProductTap(context, product.toJson()),
                 child: product.imageUrl?.isNotEmpty == true
                     ? Image.network(
                   product.imageUrl!,

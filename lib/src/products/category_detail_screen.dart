@@ -122,7 +122,7 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
         (filters['By Category'] as List).isNotEmpty) {
       final List<String> categories = List<String>.from(filters['By Category']);
       result =
-          result.where((p) => categories.contains(p.categoryName)).toList();
+          result.where((p) => categories.contains(p.category)).toList();
     }
     // By SubCategory filter
     if (filters.containsKey('By SubCategory') &&
@@ -131,7 +131,7 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
       final List<String> subCategories =
           List<String>.from(filters['By SubCategory']);
       result = result
-          .where((p) => subCategories.contains(p.subCategoryName))
+          .where((p) => subCategories.contains(p.subCategory))
           .toList();
     }
     // By Year filter

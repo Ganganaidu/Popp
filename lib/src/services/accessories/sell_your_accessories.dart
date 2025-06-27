@@ -88,11 +88,11 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
         id: productId,
         userId: FirebaseAuth.instance.currentUser?.uid,
         categoryId: selectedCategory?.categoryId ?? "",
-        categoryName: selectedCategory?.name ?? "",
+        category: selectedCategory?.name ?? "",
         sellerContactNumber:
         '$selectedCountryCode ${sellerContactController.text}',
         sellerName: sellerNameController.text,
-        subCategoryName: selectedSubcategory,
+        subCategory: selectedSubcategory,
         modelName: accessoriesNameController.text,
         isProductBikeSpecific: isBikeSpecific,
         brandName: brandNameController.text,

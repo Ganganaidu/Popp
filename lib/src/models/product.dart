@@ -4,8 +4,8 @@ class Product {
   final String? id;
   final String? userId;
   final String categoryId;
-  final String categoryName;
-  final String? subCategoryName;
+  final String category;
+  final String? subCategory;
   final String brandName;
   final String modelName;
   final String expectedPrice;
@@ -44,8 +44,8 @@ class Product {
     this.id,
     this.userId,
     required this.categoryId,
-    required this.categoryName,
-    this.subCategoryName,
+    required this.category,
+    this.subCategory,
     required this.brandName,
     required this.expectedPrice,
     required this.modelName,
@@ -88,8 +88,8 @@ class Product {
       // Use the document ID from Firestore
       userId: json['userId'] as String?,
       categoryId: json['categoryId'] as String,
-      categoryName: json['categoryName'] as String,
-      subCategoryName: json['subCategoryName'] as String?,
+      category: json['category'] as String,
+      subCategory: json['subCategory'] as String?,
       brandName: json['brandName'] as String,
       modelName: json['modelName'] as String,
       expectedPrice: json['expectedPrice'] as String,
@@ -136,8 +136,8 @@ class Product {
       'id': id,
       'isApproved': false, // Assuming default value for new products
       'categoryId': categoryId,
-      'categoryName': categoryName,
-      if (subCategoryName != null) 'subCategoryName': subCategoryName,
+      'category': category,
+      if (subCategory != null) 'subCategoryName': subCategory,
       'brandName': brandName,
       'modelName': modelName,
       'expectedPrice': expectedPrice,
@@ -193,8 +193,8 @@ class Product {
     String? userId,
     String? id,
     String? categoryId,
-    String? categoryName,
-    String? subCategoryName,
+    String? category,
+    String? subCategory,
     String? brandName,
     String? modelName,
     String? expectedPrice,
@@ -235,8 +235,8 @@ class Product {
       userId: userId ?? this.userId,
       id: id ?? this.id,
       categoryId: categoryId ?? this.categoryId,
-      categoryName: categoryName ?? this.categoryName,
-      subCategoryName: subCategoryName ?? this.subCategoryName,
+      category: category ?? this.category,
+      subCategory: subCategory ?? this.subCategory,
       brandName: brandName ?? this.brandName,
       modelName: modelName ?? this.modelName,
       expectedPrice: expectedPrice ?? this.expectedPrice,

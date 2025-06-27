@@ -400,15 +400,18 @@ class FirebaseProductsService {
   }
 
 // Fetch products grouped by category and approval status
-  Future<Map<String, List<Map<String, dynamic>>>> fetchProductsGroupedByCategory({bool isApproved = false}) async {
+  Future<Map<String, List<Map<String, dynamic>>>>
+      fetchProductsGroupedByCategory({bool isApproved = false}) async {
     try {
       QuerySnapshot snapshot = await _db
           .collection(Constants.productsPath)
           .where('isApproved', isEqualTo: isApproved)
           .get();
-      final List<Map<String, dynamic>> products = snapshot.docs
-          .map((doc) => doc.data() as Map<String, dynamic>)
-          .toList();
+      final List<Map<String, dynamic>> products = snapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        data['id'] = doc.id;
+        return data;
+      }).toList();
       final Map<String, List<Map<String, dynamic>>> grouped = {};
       for (final product in products) {
         final String category = product['category'] ?? 'Uncategorized';
@@ -457,8 +460,9 @@ class FirebaseProductsService {
       // Upload promo images
       final uploadedPromoImageUrls =
           await uploadImagesHelper(promoImages, context, onLoading);
-      if (promoImages.isNotEmpty && uploadedPromoImageUrls.isEmpty)
+      if (promoImages.isNotEmpty && uploadedPromoImageUrls.isEmpty) {
         return false;
+      }
       data['promoImageUrls'] = uploadedPromoImageUrls;
 
       // AppLogger.d("Uploaded promo images: $uploadedPromoImageUrls");
@@ -517,6 +521,41 @@ class FirebaseProductsService {
     }
   }
 
+  Future<bool> updateServiceApprovalStatus(
+      String serviceId, bool isApproved) async {
+    try {
+      AppLogger.d(
+          "Service $serviceId requesting approval status updated to $isApproved");
+
+      await _db.collection(Constants.servicePath).doc(serviceId).update({
+        'isApproved': isApproved,
+        'approvedAt': FieldValue.serverTimestamp(),
+        // Optional: track approval time
+      });
+      AppLogger.d("Service $serviceId approval status updated to $isApproved");
+      return true;
+    } catch (e) {
+      AppLogger.d("Error updating approval status for service $serviceId: $e");
+      return false;
+    }
+  }
+
+  Future<bool> updateProductApprovalStatus(
+      String serviceId, bool isApproved) async {
+    try {
+      await _db.collection(Constants.productsPath).doc(serviceId).update({
+        'isApproved': isApproved,
+        'approvedAt': FieldValue.serverTimestamp(),
+        // Optional: track approval time
+      });
+      AppLogger.d("Service $serviceId approval status updated to $isApproved");
+      return true;
+    } catch (e) {
+      AppLogger.d("Error updating approval status for service $serviceId: $e");
+      return false;
+    }
+  }
+
   // Method to fetch services based on category
   Future<List<Map<String, dynamic>>> fetchServicesByCategories(
       List<String> categories, bool isApproved) async {
@@ -527,9 +566,12 @@ class FirebaseProductsService {
           .where('isApproved', isEqualTo: isApproved)
           .get();
 
-      return querySnapshot.docs
-          .map((doc) => doc.data() as Map<String, dynamic>)
-          .toList();
+      // Include document ID as 'id' in each map
+      return querySnapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        data['id'] = doc.id;
+        return data;
+      }).toList();
     } catch (e) {
       AppLogger.d("Error fetching services: $e");
       return [];

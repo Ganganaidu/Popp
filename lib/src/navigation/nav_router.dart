@@ -17,18 +17,19 @@ import '../services/listservices/service_listing_screen.dart';
 // Define routes for each tab
 final Map<String, WidgetBuilder> routes = {
   '/productDetails': (context) {
-    final product = ModalRoute.of(context)!.settings.arguments as Product;
-    return ProductDetailScreen(product: product);
+    final product =
+        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+    return ProductDetailScreen(productJson: product);
   },
 };
 
 // call this from Dashboard_list_widget
-void onProductTap(BuildContext context, Product product) {
+void onProductTap(BuildContext context, Map<String, dynamic> product) {
   // NavHelper().updateAppBarTitle?.call(product.getTitle());
   Navigator.push(
     context,
     MaterialPageRoute(
-      builder: (context) => ProductDetailScreen(product: product),
+      builder: (context) => ProductDetailScreen(productJson: product),
     ),
   );
 }
@@ -148,7 +149,6 @@ void onServiceDetailsScreenTap(
     ),
   );
 }
-
 
 void onAdminDashboardTap(BuildContext context) {
   Navigator.push(

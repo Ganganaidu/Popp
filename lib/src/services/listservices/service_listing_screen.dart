@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:popp/src/utils/app_constants.dart';
+import 'package:popp/src/utils/app_loger.dart';
 import 'package:popp/src/utils/build_extensions.dart';
 
 import '../../firebase/firebase_save_prodcuts_api.dart';
 import '../../navigation/nav_router.dart';
+import '../../utils/product_content_data.dart';
 
 class ServiceListingScreen extends StatefulWidget {
   final String category;
@@ -24,14 +26,21 @@ class _ServiceListingScreenState extends State<ServiceListingScreen> {
     // Accept a list of categories for multi-category search
     final List<String> categories =
         widget.category.split(',').map((e) => e.trim()).toList();
-    _servicesFuture = _productsService.fetchServicesByCategories(categories, true);
+    _servicesFuture =
+        _productsService.fetchServicesByCategories(categories, true);
   }
 
   @override
   Widget build(BuildContext context) {
+    String appBarTitle = widget.category;
+    AppLogger.d('Category: $appBarTitle');
+    AppLogger.d('Category contains Track: ${appBarTitle.contains("Track")}');
+    if (appBarTitle.contains("Track")) {
+      appBarTitle = "Track and Training day";
+    }
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.category} Listings'),
+        title: Text('$appBarTitle Listings'),
       ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: _servicesFuture,
@@ -68,6 +77,7 @@ class _ServiceListingScreenState extends State<ServiceListingScreen> {
             );
           } else {
             final services = snapshot.data!;
+            AppLogger.d('Categories: $services');
             return ListView.builder(
               padding: const EdgeInsets.all(16.0),
               itemCount: services.length,
@@ -104,14 +114,17 @@ class _ServiceListingScreenState extends State<ServiceListingScreen> {
                 String location = 'N/A';
                 String capacity = 'N/A';
 
-                if (widget.category == 'Book your service' ||
-                    widget.category == 'Bike Rentals') {
+                if (widget.category == serviceCategories[0] ||
+                    widget.category == serviceCategories[1]) {
                   // For Book Service / Bike Rentals
                   location =
                       '${service['businessAddress'] ?? ''}, ${service['city'] ?? ''}, ${service['state'] ?? ''}';
                   dateTime = service['businessWorkingDaysHours'] ?? 'N/A';
-                } else if (widget.category == 'Track day' ||
-                    widget.category == 'Training day') {
+                } else if (widget.category == serviceCategories[2] ||
+                    widget.category == serviceCategories[3] ||
+                    widget.category ==
+                        [serviceCategories[2], serviceCategories[3]]
+                            .join(',')) {
                   // For Track Day / Training Day
                   location =
                       '${service['locationAddress'] ?? ''}, ${service['city'] ?? ''}, ${service['state'] ?? ''}';
@@ -182,7 +195,7 @@ class _ServiceListingScreenState extends State<ServiceListingScreen> {
                           // Content Overlay
                           Positioned.fill(
                             child: Padding(
-                              padding: const EdgeInsets.all(16.0),
+                              padding: const EdgeInsets.all(12.0),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.end,
                                 // Align content to the bottom
@@ -190,7 +203,7 @@ class _ServiceListingScreenState extends State<ServiceListingScreen> {
                                 children: [
                                   Text(
                                     title,
-                                    style: context.headlineMedium?.copyWith(
+                                    style: context.titleLarge?.copyWith(
                                       color: Colors.white,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -239,7 +252,7 @@ class _ServiceListingScreenState extends State<ServiceListingScreen> {
           Expanded(
             child: Text(
               text,
-              style: context.bodyLarge?.copyWith(color: Colors.white70),
+              style: context.bodyMedium?.copyWith(color: Colors.white70),
               overflow: TextOverflow.ellipsis,
             ),
           ),

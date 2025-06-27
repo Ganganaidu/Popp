@@ -27,7 +27,7 @@ class ProductRepository {
     for (var product in products) {
       grouped.putIfAbsent(product.categoryId, () => []);
       grouped[product.categoryId]!.add(product);
-      categoryNames[product.categoryId] = product.categoryName;
+      categoryNames[product.categoryId] = product.category;
     }
 
     return grouped.entries.map((entry) {

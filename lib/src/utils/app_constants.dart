@@ -1,4 +1,6 @@
 // constants.dart
+import 'package:firebase_auth/firebase_auth.dart';
+
 class Constants {
   const Constants._();
 
@@ -24,6 +26,7 @@ class Constants {
       'https://popp-71efb.web.app/privacy-policy.html';
   static const String contactNumber = '+91 995 9958 899';
   static const String contactEmail = 'preownedpremiumproducts@gmail.com';
+
   // Keep agentUserId consistent with Firestore rules
   static const String adminUserId = 'XsKNJMeiR2NuaLslm428EWL6zOv1';
 

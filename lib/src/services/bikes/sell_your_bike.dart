@@ -92,8 +92,8 @@ class _SellYourBikeState extends State<SellYourBike>
         id: productId,
         userId: FirebaseAuth.instance.currentUser?.uid,
         categoryId: catList[0].categoryId,
-        categoryName: catList[0].name,
-        subCategoryName: catList[0].name,
+        category: catList[0].name,
+        subCategory: catList[0].name,
         sellerName: sellerNameController.text,
         sellerContactNumber:
             '$selectedCountryCode ${sellerContactController.text}',

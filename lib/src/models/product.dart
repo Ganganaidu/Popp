@@ -39,6 +39,7 @@ class Product {
   final DateTime? createdAtDate; // For reading from FireStore
   String? batteryCondition;
   String? tyreCondition;
+  bool? isApproved = false; // Default value for new products
 
   Product({
     this.id,
@@ -79,6 +80,7 @@ class Product {
     this.bikeMfgDate,
     this.batteryCondition,
     this.tyreCondition,
+    this.isApproved
   });
 
   // Factory constructor to create a Product from a JSON map (e.g., from Firestore)
@@ -98,22 +100,23 @@ class Product {
           ?.map((item) => item as String)
           .toList(),
       additionalDetails: json['additionalDetails'] as String,
-      mfgDate: (json['mfgDate'] as Timestamp?)?.toDate(),
+      mfgDate: _parseDate(json['mfgDate']),
       firstOwner: json['firstOwner'] as String?,
       invoiceAvailable: json['invoiceAvailable'] as String?,
-      registrationDate: (json['registrationDate'] as Timestamp?)?.toDate(),
+      registrationDate: _parseDate(json['registrationDate']),
       registrationPlace: json['registrationPlace'] as String,
       city: json['city'] as String,
       state: json['state'] as String,
       nocAvailable: json['nocAvailable'] as String?,
       insuranceAvailable: json['insuranceAvailable'] as String?,
-      insuranceValidTill: (json['insuranceValidTill'] as Timestamp?)?.toDate(),
+      insuranceValidTill: _parseDate(json['insuranceValidTill']),
       sellerName: json['sellerName'] as String,
       sellerContactNumber: json['sellerContactNumber'] as String,
       kmDriven: json['kmDriven'] as String?,
       isFavorite: json['isFavorite'] as bool?,
       isProductBikeSpecific: json['isProductBikeSpecific'] as bool?,
-      billDate: (json['billDate'] as Timestamp?)?.toDate(),
+      isApproved: json['isApproved'] as bool?,
+      billDate: _parseDate(json['billDate']),
       productSize: json['productSize'] as String?,
       productCondition: json['productCondition'] as String?,
       productAging: json['productAging'] as String?,
@@ -134,7 +137,7 @@ class Product {
     return {
       if (userId != null) 'userId': userId,
       'id': id,
-      'isApproved': false, // Assuming default value for new products
+      'isApproved': isApproved, // Assuming default value for new products
       'categoryId': categoryId,
       'category': category,
       if (subCategory != null) 'subCategoryName': subCategory,
@@ -230,6 +233,7 @@ class Product {
     String? rcNumber,
     String? batteryCondition,
     String? tyreCondition,
+    bool? isApproved,
   }) {
     return Product(
       userId: userId ?? this.userId,
@@ -269,6 +273,15 @@ class Product {
       bikeMfgDate: bikeMfgDate ?? this.bikeMfgDate,
       batteryCondition: batteryCondition ?? this.batteryCondition,
       tyreCondition: tyreCondition ?? this.tyreCondition,
+      isApproved: isApproved ?? this.isApproved,
     );
   }
+}
+
+// Add this helper function at the bottom of the file (outside the class):
+DateTime? _parseDate(dynamic value) {
+  if (value == null) return null;
+  if (value is DateTime) return value;
+  if (value is Timestamp) return value.toDate();
+  return null;
 }

@@ -40,7 +40,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
         automaticallyImplyLeading: true, // Show back button only on toolbar
       ),
       body: _buildBody(context),
-      bottomNavigationBar: isAdmin
+      bottomNavigationBar: isAdmin && !_isApproved
           ? SafeArea(
               child: Container(
                 padding: const EdgeInsets.all(16),

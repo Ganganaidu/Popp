@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:popp/src/models/product.dart';
+import 'package:popp/src/utils/app_loger.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -31,6 +32,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     super.initState();
     _pageController = PageController(initialPage: selectedImageIndex);
     _isApproved = widget.productJson['isApproved'] == true;
+    AppLogger.d("ProductDetailScreen initState: isApproved = $_isApproved");
   }
 
   @override
@@ -346,7 +348,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: _isAdmin
+      bottomNavigationBar: _isAdmin && !_isApproved
           ? SafeArea(
               child: Container(
                 padding: const EdgeInsets.all(16),

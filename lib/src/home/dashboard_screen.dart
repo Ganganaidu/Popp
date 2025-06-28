@@ -21,7 +21,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    AppLogger.d("Dashboard build context: $context");
     return const SingleChildScrollView(
       // Wrap the entire content with SingleChildScrollView
       child: Column(

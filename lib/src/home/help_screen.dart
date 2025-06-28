@@ -15,9 +15,6 @@ class HelpScreen extends StatelessWidget {
     String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
     bool isAdmin = userId == Constants.adminUserId;
 
-    AppLogger.d("current user Id is: $userId");
-    AppLogger.d("agentUserId Id is: ${Constants.adminUserId}");
-
     return ListView(
       children: [
         const SizedBox(height: 32),

@@ -15,12 +15,10 @@ class ProductRepository {
         .get();
     if (snapshot.docs.isEmpty) return [];
 
-    AppLogger.d("snapshot $snapshot");
     List<Product> products = snapshot.docs.map((doc) {
       return Product.fromJson(doc.data() as Map<String, dynamic>, doc.id);
     }).toList();
 
-    AppLogger.d("products ${products.length}");
     Map<String, List<Product>> grouped = {};
     Map<String, String> categoryNames = {};
 

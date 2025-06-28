@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:in_app_purchase_android/in_app_purchase_android.dart';
 import 'package:popp/src/utils/app_loger.dart';
 
 import '../utils/app_constants.dart';
@@ -14,14 +16,15 @@ class SubscriptionProvider with ChangeNotifier {
 
   bool _available = false;
   bool _isSubscribed = false;
-  String?
-      _currentSubscriptionId; // Stores the ID of the currently active subscription
-  bool _purchasePending =
-      false; // Indicates if any purchase/restore/cancel operation is in flight
+  String? _currentSubscriptionId;
+  bool _purchasePending = false;
   String? _purchaseError;
   List<ProductDetails> _products = [];
 
-  // Public getters for the UI to consume.
+  // Temporarily store the selected plan ID during an Android purchase
+  String? _pendingAndroidPurchasePlanId;
+
+  // Public getters
   bool get isSubscribed => _isSubscribed;
 
   bool get isAvailable => _available;
@@ -48,7 +51,6 @@ class SubscriptionProvider with ChangeNotifier {
     _available = await _iap.isAvailable();
     if (_available) {
       await _getProducts();
-      // Start listening to purchase updates
       final Stream<List<PurchaseDetails>> purchaseUpdated = _iap.purchaseStream;
       _subscription = purchaseUpdated.listen((purchaseDetailsList) {
         String? uid = FirebaseAuth.instance.currentUser?.uid;
@@ -60,8 +62,6 @@ class SubscriptionProvider with ChangeNotifier {
         _setPurchaseError(
             'An error occurred with the store. Please try again.');
       });
-
-      // After products are fetched and listener is set up, check current subscription status
       String? uid = FirebaseAuth.instance.currentUser?.uid;
       if (uid != null) {
         await checkSubscriptionStatus(uid);
@@ -71,18 +71,33 @@ class SubscriptionProvider with ChangeNotifier {
   }
 
   Future<void> _getProducts() async {
-    const Set<String> _kIds = {
-      'premium_subscription', // Example product ID
-      'yearly_subscription', // Example product ID
-      'monthly_subscription' // Example product ID
-    };
+    // Platform-specific product IDs
+    Set<String> kIds;
+    if (Platform.isAndroid) {
+      // For Android, query the main Subscription ID
+      kIds = {'premium_membership'};
+    } else if (Platform.isIOS) {
+      // For iOS, query each individual plan ID
+      kIds = {
+        'monthly_subscription',
+        'premium_subscription',
+        'yearly_subscriptions'
+      };
+    } else {
+      kIds = {};
+    }
+
     try {
-      final response = await _iap.queryProductDetails(_kIds);
+      final response = await _iap.queryProductDetails(kIds);
       if (response.notFoundIDs.isNotEmpty) {
         AppLogger.w('Products not found: ${response.notFoundIDs}');
       }
       _products = response.productDetails;
       sortProductsByPrice();
+      // Sorting is more relevant for iOS where multiple products are returned
+      // if (Platform.isIOS) {
+      //   sortProductsByPrice();
+      // }
     } catch (e) {
       AppLogger.e('Failed to get products: $e');
       _setPurchaseError(
@@ -92,27 +107,67 @@ class SubscriptionProvider with ChangeNotifier {
   }
 
   void sortProductsByPrice() {
-    _products.sort((a, b) {
-      return a.rawPrice.compareTo(b.rawPrice);
-    });
+    _products.sort((a, b) => a.rawPrice.compareTo(b.rawPrice));
   }
 
-  Future<void> buy(ProductDetails productDetails) async {
+  /// Cross-platform method to initiate a purchase.
+  Future<void> buy({
+    required ProductDetails productDetails,
+    String? androidOfferToken, // Required for Android
+    String? androidBasePlanId, // Required to track pending Android purchase
+  }) async {
     _setPurchasePending(true);
     _setPurchaseError(null);
 
+
+    late PurchaseParam purchaseParam;
+
+    if (Platform.isAndroid) {
+      // Ensure we have the necessary details for an Android purchase
+      if (androidOfferToken == null || androidBasePlanId == null) {
+        _setPurchaseError('Offer details are missing for this plan.');
+        _setPurchasePending(false);
+        AppLogger.w('Initiating androidOfferToken: $androidOfferToken');
+        return;
+      }
+      final googlePlayProductDetails =
+          productDetails as GooglePlayProductDetails;
+      // Store the specific plan being purchased to correctly update state later
+      _pendingAndroidPurchasePlanId = androidBasePlanId;
+
+      purchaseParam = GooglePlayPurchaseParam(
+        productDetails: googlePlayProductDetails,
+        applicationUserName: null,
+        offerToken: androidOfferToken,
+      );
+    } else if (Platform.isIOS) {
+      purchaseParam = PurchaseParam(
+        productDetails: productDetails,
+        applicationUserName: null,
+      );
+    } else {
+      _setPurchaseError('Unsupported platform for purchases.');
+      _setPurchasePending(false);
+      AppLogger.w('Initiating androidOfferToken: $androidOfferToken');
+      return;
+    }
+
     try {
-      final purchaseParam = PurchaseParam(productDetails: productDetails);
-      // Use buyNonConsumable for one-time purchases, buySubscription for subscriptions
+      AppLogger.d('Initiating androidOfferToken: $androidBasePlanId');
       await _iap.buyNonConsumable(purchaseParam: purchaseParam);
+      // If the user cancels the purchase flow (backs out), reset pending after a short delay
+      Future.delayed(const Duration(seconds: 2), () {
+        if (_purchasePending) {
+          _setPurchasePending(false);
+        }
+      });
     } on PlatformException catch (e) {
       AppLogger.w('Failed to initiate purchase: ${e.code} - ${e.message}');
       _setPurchaseError(
           'Failed to start purchase: ${e.message ?? 'Unknown error'}.');
       _setPurchasePending(false);
     } catch (e) {
-      AppLogger.e(
-          'An unexpected error occurred during purchase initiation: $e');
+      AppLogger.e('An unexpected error occurred: $e');
       _setPurchaseError('An unexpected error occurred. Please try again.');
       _setPurchasePending(false);
     }
@@ -121,78 +176,70 @@ class SubscriptionProvider with ChangeNotifier {
   Future<void> _listenToPurchases(
       List<PurchaseDetails> purchaseDetailsList, String? uid) async {
     for (var purchase in purchaseDetailsList) {
+      String? subscribedProductId;
+
+      // Determine the actual product/plan ID
+      if (Platform.isIOS) {
+        subscribedProductId = purchase.productID;
+      } else if (Platform.isAndroid) {
+        // If an Android purchase was pending and the product ID matches,
+        // use the stored base plan ID.
+        if (_pendingAndroidPurchasePlanId != null &&
+            purchase.productID == 'premium_membership') {
+          subscribedProductId = _pendingAndroidPurchasePlanId;
+          _pendingAndroidPurchasePlanId = null; // Clear after use
+        } else {
+          // Fallback for restores where we might not have a pending ID
+          subscribedProductId =
+              (purchase as GooglePlayPurchaseDetails).productID;
+        }
+      }
+
       switch (purchase.status) {
         case PurchaseStatus.pending:
           _setPurchasePending(true);
           _setPurchaseError(null);
           break;
         case PurchaseStatus.error:
-          AppLogger.d('Purchase failed: \\${purchase.error}');
+          // Handle error...
+          AppLogger.d('Purchase failed: ${purchase.error}');
           _setPurchaseError(purchase.error?.message ?? 'Your purchase failed.');
           _setPurchasePending(false);
           if (purchase.pendingCompletePurchase) {
             await _iap.completePurchase(purchase);
           }
-          // Update Firestore to mark as not subscribed on error
-          if (uid != null) {
-            await updateUserSubscription(
-              uid: uid,
-              isSubscribed: false,
-              subscribedProductId: null,
-            );
-          }
           break;
         case PurchaseStatus.purchased:
         case PurchaseStatus.restored:
-          final bool delivered = await _verifyAndDeliver(purchase, uid);
+          final bool delivered =
+              await _verifyAndDeliver(purchase, uid, subscribedProductId);
           if (delivered) {
             _isSubscribed = true;
-            _currentSubscriptionId = purchase.productID;
+            _currentSubscriptionId = subscribedProductId;
             _setPurchasePending(false);
             _setPurchaseError(null);
             if (purchase.pendingCompletePurchase) {
               await _iap.completePurchase(purchase);
             }
-            // Update Firestore to mark as subscribed
-            if (uid != null) {
-              await updateUserSubscription(
-                uid: uid,
-                isSubscribed: true,
-                subscribedProductId: purchase.productID,
-              );
-            }
           } else {
             _setPurchaseError(
                 'Failed to verify your purchase. Please contact support.');
             _setPurchasePending(false);
-            // Update Firestore to mark as not subscribed if verification fails
-            if (uid != null) {
-              await updateUserSubscription(
-                uid: uid,
-                isSubscribed: false,
-                subscribedProductId: null,
-              );
-            }
           }
           break;
         case PurchaseStatus.canceled:
           _setPurchasePending(false);
-          _setPurchaseError(null); // User cancelled, no error to show
-          // Update Firestore to mark as not subscribed on cancel
+          _setPurchaseError(null);
           if (uid != null) {
-            await updateUserSubscription(
-              uid: uid,
-              isSubscribed: false,
-              subscribedProductId: null,
-            );
+            await updateUserSubscription(uid: uid, isSubscribed: false);
           }
           break;
       }
     }
   }
 
-  Future<bool> _verifyAndDeliver(
-      PurchaseDetails purchaseDetails, String? uid) async {
+  Future<bool> _verifyAndDeliver(PurchaseDetails purchaseDetails, String? uid,
+      String? subscribedProductId) async {
     if (uid == null) {
       AppLogger.d('Cannot deliver purchase without a user ID.');
       return false;
@@ -200,15 +247,14 @@ class SubscriptionProvider with ChangeNotifier {
     return await updateUserSubscription(
       uid: uid,
       isSubscribed: true,
-      subscribedProductId: purchaseDetails.productID,
+      subscribedProductId: subscribedProductId,
     );
   }
 
-  Future<bool> updateUserSubscription({
-    required String uid,
-    required bool isSubscribed,
-    String? subscribedProductId,
-  }) async {
+  Future<bool> updateUserSubscription(
+      {required String uid,
+      required bool isSubscribed,
+      String? subscribedProductId}) async {
     try {
       await FirebaseFirestore.instance
           .collection(Constants.userPath)
@@ -221,38 +267,6 @@ class SubscriptionProvider with ChangeNotifier {
     } catch (e) {
       AppLogger.d('Failed to update subscription in Firestore: $e');
       return false;
-    }
-  }
-
-  // Method to handle subscription cancellation
-  // IMPORTANT: This method simulates cancellation in your app's state and Firestore.
-  // In a real app, direct cancellation usually involves deep-linking to store's subscription management page.
-  Future<void> cancelSubscription(String uid) async {
-    _setPurchasePending(true); // Indicate a pending operation
-    _setPurchaseError(null); // Clear any previous errors
-
-    try {
-      // Update Firestore to mark user as unsubscribed
-      final bool updated = await updateUserSubscription(
-        uid: uid,
-        isSubscribed: false,
-        subscribedProductId: null, // Clear the subscribed product ID
-      );
-
-      if (updated) {
-        _isSubscribed = false; // Update local state
-        _currentSubscriptionId = null; // Clear local subscribed product ID
-        _setPurchasePending(false);
-        AppLogger.d('Subscription cancelled successfully for $uid');
-      } else {
-        _setPurchaseError(
-            'Failed to cancel subscription in database. Please try again.');
-        _setPurchasePending(false);
-      }
-    } catch (e) {
-      AppLogger.e('Error cancelling subscription: $e');
-      _setPurchaseError('An unexpected error occurred during cancellation.');
-      _setPurchasePending(false);
     }
   }
 
@@ -274,20 +288,7 @@ class SubscriptionProvider with ChangeNotifier {
     }
   }
 
-  /// Call this method when the app resumes or user returns to the app
-  Future<void> refreshSubscriptionFromStore() async {
-    final String? uid = FirebaseAuth.instance.currentUser?.uid;
-    if (!_available || uid == null) return;
-    try {
-      // This will emit restored purchases on the purchaseStream
-      await _iap.restorePurchases();
-      // No need to process here; restored purchases will be handled in _listenToPurchases
-    } catch (e) {
-      AppLogger.e('Failed to refresh subscription from store: $e');
-    }
-  }
-
-  // Helper methods to manage state and notify listeners
+  // Helper methods
   void _setPurchasePending(bool pending) {
     _purchasePending = pending;
     notifyListeners();
@@ -296,5 +297,10 @@ class SubscriptionProvider with ChangeNotifier {
   void _setPurchaseError(String? error) {
     _purchaseError = error;
     notifyListeners();
+  }
+
+  void clearPurchaseError() {
+    _setPurchasePending(false);
+    _setPurchaseError(null);
   }
 }

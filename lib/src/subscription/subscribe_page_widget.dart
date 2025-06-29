@@ -43,6 +43,7 @@ class _SubscribePageWidgetState extends State<SubscribePageWidget> {
     if (_provider?.purchaseError != null &&
         _provider!.purchaseError!.isNotEmpty) {
       final error = _provider!.purchaseError!;
+      AppLogger.d("error $error");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(error), backgroundColor: Colors.red),
       );
@@ -115,6 +116,7 @@ class _SubscribePageWidgetState extends State<SubscribePageWidget> {
       final product = playProductList[i];
       final list = playProductList[i].productDetails.subscriptionOfferDetails;
       String? basePlanId = list?[i].basePlanId;
+      AppLogger.d("basePlanId $basePlanId");
       if (product.currencySymbol == 'Free') {
         basePlanId = 'quarterly-trial';
       }

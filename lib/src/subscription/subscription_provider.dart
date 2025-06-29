@@ -37,6 +37,7 @@ class SubscriptionProvider with ChangeNotifier {
 
   String? get currentSubscriptionId => _currentSubscriptionId;
 
+
   SubscriptionProvider() {
     _initialize();
   }
@@ -119,7 +120,6 @@ class SubscriptionProvider with ChangeNotifier {
     _setPurchasePending(true);
     _setPurchaseError(null);
 
-
     late PurchaseParam purchaseParam;
 
     if (Platform.isAndroid) {
@@ -190,8 +190,7 @@ class SubscriptionProvider with ChangeNotifier {
           _pendingAndroidPurchasePlanId = null; // Clear after use
         } else {
           // Fallback for restores where we might not have a pending ID
-          subscribedProductId =
-              (purchase as GooglePlayPurchaseDetails).productID;
+          subscribedProductId = purchase.productID;
         }
       }
 
@@ -256,12 +255,17 @@ class SubscriptionProvider with ChangeNotifier {
       required bool isSubscribed,
       String? subscribedProductId}) async {
     try {
+      AppLogger.d("_pendingPurchasePrice owner ${_pendingAndroidPurchasePlanId ?? subscribedProductId}");
+      AppLogger.d(
+          "_pendingAndroidPurchasePlanId $_pendingAndroidPurchasePlanId");
       await FirebaseFirestore.instance
           .collection(Constants.userPath)
           .doc(uid)
           .update({
         'isSubscribed': isSubscribed,
-        'subscribedProductId': isSubscribed ? subscribedProductId : null,
+        'subscribedProductId': isSubscribed
+            ? _pendingAndroidPurchasePlanId ?? subscribedProductId
+            : null,
       });
       return true;
     } catch (e) {
@@ -296,6 +300,7 @@ class SubscriptionProvider with ChangeNotifier {
 
   void _setPurchaseError(String? error) {
     _purchaseError = error;
+    AppLogger.d("_purchaseError");
     notifyListeners();
   }
 

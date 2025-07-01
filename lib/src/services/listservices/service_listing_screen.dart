@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:popp/src/utils/app_constants.dart';
-import 'package:popp/src/utils/app_loger.dart';
 import 'package:popp/src/utils/build_extensions.dart';
 
 import '../../firebase/firebase_save_prodcuts_api.dart';
@@ -33,14 +32,12 @@ class _ServiceListingScreenState extends State<ServiceListingScreen> {
   @override
   Widget build(BuildContext context) {
     String appBarTitle = widget.category;
-    AppLogger.d('Category: $appBarTitle');
-    AppLogger.d('Category contains Track: ${appBarTitle.contains("Track")}');
     if (appBarTitle.contains("Track")) {
       appBarTitle = "Track and Training day";
     }
     return Scaffold(
       appBar: AppBar(
-        title: Text('$appBarTitle Listings'),
+        title: Text(appBarTitle),
       ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: _servicesFuture,
@@ -77,7 +74,6 @@ class _ServiceListingScreenState extends State<ServiceListingScreen> {
             );
           } else {
             final services = snapshot.data!;
-            AppLogger.d('Categories: $services');
             return ListView.builder(
               padding: const EdgeInsets.all(16.0),
               itemCount: services.length,
@@ -146,8 +142,7 @@ class _ServiceListingScreenState extends State<ServiceListingScreen> {
                       service['maxSlots'].isNotEmpty) {
                     // Assuming 'maxSlots' stores the total capacity
                     // You might need to fetch current registered riders from another collection/field
-                    capacity =
-                        '0/${service['maxSlots']} riders'; // Placeholder for registered riders
+                    capacity = '${service['maxSlots']} riders (Max slots)'; // Placeholder for registered riders
                   }
                 }
 

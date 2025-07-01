@@ -75,6 +75,12 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
   @override
   void initState() {
     super.initState();
+    // Show category selection bottom sheet on first load
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_selectedCategory == null) {
+        _showCategorySelectionSheet();
+      }
+    });
   }
 
   @override
@@ -263,10 +269,87 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
     }
   }
 
+  void _showCategorySelectionSheet() async {
+    final selected = await showModalBottomSheet<String>(
+      context: context,
+      isDismissible: false,
+      enableDrag: false,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.zero,
+          topRight: Radius.zero,
+        ),
+      ),
+      builder: (context) {
+        return SizedBox(
+          width: double.infinity,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Text('Select Service Category',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              ),
+              const Divider(thickness: 1, height: 0),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: serviceCategories
+                      .map((category) => Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                            child: Card(
+                              elevation: 1,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              color: Theme.of(context).colorScheme.surface,
+                              child: ListTile(
+                                title: Center(
+                                  child: Text(
+                                    category,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ),
+                                onTap: () {
+                                  Navigator.of(context).pop(category);
+                                },
+                              ),
+                            ),
+                          ))
+                      .toList(),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    if (selected != null && selected != _selectedCategory) {
+      setState(() {
+        _clearAllFields();
+        _selectedCategory = selected;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('List your service')),
+      appBar: AppBar(
+        title: const Text('List your service'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.category),
+            tooltip: 'Change Service Category',
+            onPressed: _showCategorySelectionSheet,
+          ),
+        ],
+      ),
       body: LoadingOverlay(
         isLoading: _isLoading,
         child: SingleChildScrollView(
@@ -276,30 +359,6 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Always show Category Selection at the top
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: CustomDropdownFormField<String>(
-                    label: 'Service Category',
-                    hint: 'Select a category',
-                    value: _selectedCategory,
-                    items: serviceCategories
-                        .map((category) => DropdownMenuItem(
-                              value: category,
-                              child: Text(category),
-                            ))
-                        .toList(),
-                    onChanged: (val) {
-                      setState(() {
-                        _clearAllFields(); // Clear ALL fields when category changes
-                        _selectedCategory =
-                            val; // Re-set the selected category after clearing
-                      });
-                    },
-                    validator: (val) =>
-                        val == null ? "Please select a category" : null,
-                  ),
-                ),
                 if (_selectedCategory == null)
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 20.0),

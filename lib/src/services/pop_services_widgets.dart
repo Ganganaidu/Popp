@@ -1,10 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import '../../models/pop_service_item.dart';
-import '../../navigation/nav_router.dart';
-import '../../utils/product_content_data.dart';
-import '../../widgets/app_dialogs.dart';
+import '../models/pop_service_item.dart';
+import '../navigation/nav_router.dart';
+import '../utils/product_content_data.dart';
+import '../widgets/app_dialogs.dart';
 
 class PopServicesWidgets extends StatelessWidget {
   const PopServicesWidgets({super.key});
@@ -26,15 +26,15 @@ class PopServicesWidgets extends StatelessWidget {
         }
         onSellYourAccessoriesTap(context);
         break;
-      case PopServiceAction.bookService:
+      case PopServiceAction.findYourMechanic:
         if (user == null) {
-          onLoginClicked(context, "Find Bike Services");
+          onLoginClicked(context, "Find your Mechanic");
           return;
         }
         onServiceListingTap(context, serviceCategories[0], false);
-      case PopServiceAction.bookTrackTraining:
+      case PopServiceAction.findTrackTraining:
         if (user == null) {
-          onLoginClicked(context, "Track Day or Training Day");
+          onLoginClicked(context, "Find Track Day or Training Day");
           return;
         }
         onServiceListingTap(context,
@@ -56,7 +56,7 @@ class PopServicesWidgets extends StatelessWidget {
           onLoginClicked(context, "Premium Bike Inspection");
           return;
         }
-        onListYourServiceTap(context);
+        onServiceListingTap(context, "Premium Inspection", false);
     }
   }
 

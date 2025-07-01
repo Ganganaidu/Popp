@@ -34,9 +34,13 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
   Widget build(BuildContext context) {
     final isAdmin =
         FirebaseAuth.instance.currentUser?.uid == Constants.adminUserId;
+    String appBarTitle = widget.category;
+    if (appBarTitle.contains("Track")) {
+      appBarTitle = "Track and Training day";
+    }
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.category),
+        title: Text(appBarTitle),
         automaticallyImplyLeading: true, // Show back button only on toolbar
       ),
       body: _buildBody(context),
@@ -147,10 +151,11 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     Map<String, String> eventDetails = {};
     Map<String, String> bikeRentalDetails = {};
 
-    final isBikeRentalCategory = serviceCategories.contains(category) &&
-        (category == 'Book your Bike service' || category == 'Bike Rentals');
-    final isTrackOrTrainingDay = serviceCategories.contains(category) &&
-        (category == 'Track day' || category == 'Training day');
+    final isBikeRentalCategory =
+        (category == serviceCategories[0] || category == serviceCategories[1]);
+    final isTrackOrTrainingDay = (category == serviceCategories[2] ||
+        category == serviceCategories[3] ||
+        category == [serviceCategories[2], serviceCategories[3]].join(','));
 
     if (isBikeRentalCategory) {
       locationInfo =
@@ -199,8 +204,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
 
       if (serviceData['maxSlots'] != null &&
           serviceData['maxSlots'].isNotEmpty) {
-        capacityInfo =
-            '${serviceData['currentRiders'] ?? '0'}/${serviceData['maxSlots']} riders';
+        capacityInfo = '${serviceData['maxSlots']} riders(Max slots)';
       }
 
       eventDetails = {

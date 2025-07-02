@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:popp/src/utils/build_extensions.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 import '../../firebase/firebase_save_prodcuts_api.dart';
 import '../../utils/app_constants.dart'; // Import your build_extensions
@@ -23,6 +24,7 @@ class ServiceDetailScreen extends StatefulWidget {
 
 class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
   late bool _isApproved;
+  int _selectedImageIndex = 0;
 
   @override
   void initState() {
@@ -117,16 +119,6 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     }
     if (shopGarageImages != null && shopGarageImages.isNotEmpty) {
       allImageUrls.addAll(shopGarageImages.cast<String>());
-    }
-
-    String heroImageUrl = allImageUrls.isNotEmpty
-        ? allImageUrls.first
-        : Constants.defaultPlaceholderImage;
-
-    // Remove the first image from the list for thumbnails, as it's the hero image
-    List<String> thumbnailUrls = List.from(allImageUrls);
-    if (thumbnailUrls.isNotEmpty) {
-      thumbnailUrls.removeAt(0);
     }
 
     // Determine content based on category
@@ -236,26 +228,27 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
       }
     }
 
-    return Scaffold(
-      body: CustomScrollView(
+    return Container(
+      color: Colors.white, // Set background for the whole scroll area
+      child: CustomScrollView(
         slivers: [
           SliverAppBar(
             expandedHeight: 250.0,
             floating: false,
             pinned: true,
             automaticallyImplyLeading: false,
-            // Remove back button from image area
             flexibleSpace: FlexibleSpaceBar(
               background: Stack(
                 fit: StackFit.expand,
                 children: [
                   Image.network(
-                    heroImageUrl,
+                    allImageUrls.isNotEmpty
+                        ? allImageUrls[_selectedImageIndex]
+                        : Constants.defaultPlaceholderImage,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
                       return Image.network(
                         Constants.defaultPlaceholderImage,
-                        // Fallback to placeholder if hero fails
                         fit: BoxFit.cover,
                       );
                     },
@@ -268,29 +261,47 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                         end: Alignment.bottomCenter,
                         colors: [
                           Colors.transparent,
-                          Colors.black.withOpacity(0.7)
+                          Colors.black.withAlpha((0.7 * 255).toInt())
                         ],
                       ),
                     ),
                   ),
-                  // Thumbnail images overlayed at the bottom
-                  Positioned(
-                    bottom: 10,
-                    left: 10,
-                    right: 10,
-                    child: SizedBox(
-                      height: 80, // Height for the thumbnail scroll view
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: allImageUrls.length,
-                        // Show all images including hero
-                        itemBuilder: (context, index) {
-                          String thumbUrl = allImageUrls[index];
-                          return Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 4.0),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(8.0),
+                ],
+              ),
+            ),
+          ),
+          // Only show thumbnails if there are more than 1 image
+          if (allImageUrls.length > 1)
+            SliverToBoxAdapter(
+              child: Container(
+                color: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: SizedBox(
+                  height: 80,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: allImageUrls.length,
+                    itemBuilder: (context, index) {
+                      String thumbUrl = allImageUrls[index];
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _selectedImageIndex = index;
+                          });
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8.0),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: _selectedImageIndex == index
+                                      ? Colors.orange
+                                      : Colors.transparent,
+                                  width: 3,
+                                ),
+                              ),
                               child: Image.network(
                                 thumbUrl,
                                 width: 80,
@@ -307,15 +318,14 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                                 },
                               ),
                             ),
-                          );
-                        },
-                      ),
-                    ),
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                ],
+                ),
               ),
             ),
-          ),
           SliverList(
             delegate: SliverChildBuilderDelegate(
               (BuildContext context, int index) {
@@ -356,8 +366,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                         const SizedBox(height: 20),
 
                         // Render Event Details or Bike Rental Details based on category
-                        if (category == 'Track day' ||
-                            category == 'Training day') ...[
+                        if (isTrackOrTrainingDay) ...[
                           Text(
                             'Event Details',
                             style: context.titleLarge?.copyWith(
@@ -367,21 +376,17 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                           const SizedBox(height: 8),
                           ...eventDetails.entries.map((entry) =>
                               _buildDetailRow(context, entry.key, entry.value)),
-                        ] else if (category == 'Bike Rentals' ||
-                            category == 'Book your Bike service') ...[
-                          if (isBikeRentalCategory &&
-                              bikeRentalDetails.isNotEmpty) ...[
-                            Text(
-                              'Bike Rental Details',
-                              style: context.titleLarge?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
+                        ] else if (isBikeRentalCategory &&
+                            bikeRentalDetails.isNotEmpty) ...[
+                          Text(
+                            'Bike Rental Details',
+                            style: context.titleLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
                             ),
-                            const SizedBox(height: 8),
-                            ...bikeRentalDetails.entries.map((entry) =>
-                                _buildDetailRow(
-                                    context, entry.key, entry.value)),
-                          ],
+                          ),
+                          const SizedBox(height: 8),
+                          ...bikeRentalDetails.entries.map((entry) =>
+                              _buildDetailRow(context, entry.key, entry.value)),
                         ],
                         const SizedBox(height: 20),
                         ChatWithSellerCard(
@@ -406,6 +411,45 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
 
   Widget _buildInfoRow(BuildContext context, String label, String value,
       [Color? valueColor]) {
+    // Special handling for location row to make it clickable and open Google Maps
+    if (label.toLowerCase().contains('where') &&
+        value.isNotEmpty &&
+        value != 'N/A') {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              width: 80, // Align labels
+              child: Text(
+                label,
+                style: context.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+              ),
+            ),
+            Expanded(
+              child: GestureDetector(
+                onTap: () async {
+                  final encodedLocation = Uri.encodeComponent(value);
+                  final url =
+                      'https://www.google.com/maps/search/?api=1&query=$encodedLocation';
+                  await launchUrlString(url,
+                      mode: LaunchMode.externalApplication);
+                },
+                child: Text(
+                  value,
+                  style: context.bodyLarge?.copyWith(
+                    color: Colors.blue,
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    // Default row
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
@@ -430,6 +474,47 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
   }
 
   Widget _buildDetailRow(BuildContext context, String label, String value) {
+    // Special handling for Google Map Link or Social Media Link
+    if (label.toLowerCase().contains('google map link') ||
+        label.toLowerCase().contains('social media link') &&
+            value.isNotEmpty &&
+            value != 'N/A') {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              flex: 2,
+              child: Text(
+                '$label:',
+                style:
+                    context.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+              ),
+            ),
+            Expanded(
+              flex: 3,
+              child: GestureDetector(
+                onTap: () async {
+                  final url =
+                      value.startsWith('http') ? value : 'https://$value';
+                  await launchUrlString(url,
+                      mode: LaunchMode.externalApplication);
+                },
+                child: Text(
+                  value,
+                  style: context.bodyMedium?.copyWith(
+                    color: Colors.blue,
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    // Default row
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:popp/src/utils/app_constants.dart';
+import 'package:popp/src/utils/app_loger.dart';
 import 'package:popp/src/utils/build_extensions.dart';
 
 import '../../firebase/firebase_save_prodcuts_api.dart';
@@ -22,11 +23,20 @@ class _ServiceListingScreenState extends State<ServiceListingScreen> {
   @override
   void initState() {
     super.initState();
-    // Accept a list of categories for multi-category search
-    final List<String> categories =
-        widget.category.split(',').map((e) => e.trim()).toList();
-    _servicesFuture =
-        _productsService.fetchServicesByCategories(categories, true);
+    String category = widget.category;
+    if (category.contains(Constants.premiumInspection)) {
+      // Only display Premium Inspection, and search for 'Book your Bike service' and filter by doYouInspectPremiumBikes == 'Yes'
+      _servicesFuture = _productsService
+          .fetchServicesByCategories([serviceCategories[0]], true).then(
+              (services) => services
+                  .where((s) => s['doYouInspectPremiumBikes'] == 'Yes')
+                  .toList());
+    } else {
+      final List<String> categories =
+          category.split(',').map((e) => e.trim()).toList();
+      _servicesFuture =
+          _productsService.fetchServicesByCategories(categories, true);
+    }
   }
 
   @override
@@ -110,8 +120,10 @@ class _ServiceListingScreenState extends State<ServiceListingScreen> {
                 String location = 'N/A';
                 String capacity = 'N/A';
 
+                AppLogger.d("category ${widget.category}");
                 if (widget.category == serviceCategories[0] ||
-                    widget.category == serviceCategories[1]) {
+                    widget.category == serviceCategories[1] ||
+                    widget.category == Constants.premiumInspection) {
                   // For Book Service / Bike Rentals
                   location =
                       '${service['businessAddress'] ?? ''}, ${service['city'] ?? ''}, ${service['state'] ?? ''}';
@@ -142,7 +154,8 @@ class _ServiceListingScreenState extends State<ServiceListingScreen> {
                       service['maxSlots'].isNotEmpty) {
                     // Assuming 'maxSlots' stores the total capacity
                     // You might need to fetch current registered riders from another collection/field
-                    capacity = '${service['maxSlots']} riders (Max slots)'; // Placeholder for registered riders
+                    capacity =
+                        '${service['maxSlots']} riders (Max slots)'; // Placeholder for registered riders
                   }
                 }
 

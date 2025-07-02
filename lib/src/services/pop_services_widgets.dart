@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../models/pop_service_item.dart';
 import '../navigation/nav_router.dart';
+import '../utils/app_constants.dart';
 import '../utils/product_content_data.dart';
 import '../widgets/app_dialogs.dart';
 
@@ -56,7 +57,7 @@ class PopServicesWidgets extends StatelessWidget {
           onLoginClicked(context, "Premium Bike Inspection");
           return;
         }
-        onServiceListingTap(context, "Premium Inspection", false);
+        onServiceListingTap(context, Constants.premiumInspection, false);
     }
   }
 

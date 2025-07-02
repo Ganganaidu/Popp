@@ -151,8 +151,9 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     Map<String, String> eventDetails = {};
     Map<String, String> bikeRentalDetails = {};
 
-    final isBikeRentalCategory =
-        (category == serviceCategories[0] || category == serviceCategories[1]);
+    final isBikeRentalCategory = (category == serviceCategories[0] ||
+        category == serviceCategories[1] ||
+        category == Constants.premiumInspection);
     final isTrackOrTrainingDay = (category == serviceCategories[2] ||
         category == serviceCategories[3] ||
         category == [serviceCategories[2], serviceCategories[3]].join(','));

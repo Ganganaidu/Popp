@@ -76,6 +76,27 @@ class _ExploreProductsScreenState extends State<ExploreProductsScreen> {
     super.dispose();
   }
 
+  // Returns a list of all image URLs from the item (product or service)
+  List<String> _extractAllImageUrls(Map<String, dynamic> item) {
+    List<String> allImageUrls = [];
+    List<dynamic>? promoImages;
+    if (item['promoImageUrls'] is List) {
+      promoImages = item['promoImageUrls'] as List<dynamic>?;
+    } else if (item['promoImageUrls'] is String &&
+        (item['promoImageUrls'] as String).isNotEmpty) {
+      promoImages = [(item['promoImageUrls'] as String)];
+    } else if (item['thumbImageUrls'] is List) {
+      promoImages = item['thumbImageUrls'] as List<dynamic>?;
+    } else if (item['shopImageUrls'] is String &&
+        (item['shopImageUrls'] as String).isNotEmpty) {
+      promoImages = [(item['shopImageUrls'] as String)];
+    }
+    if (promoImages != null && promoImages.isNotEmpty) {
+      allImageUrls.addAll(promoImages.cast<String>());
+    }
+    return allImageUrls;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -156,10 +177,33 @@ class _ExploreProductsScreenState extends State<ExploreProductsScreen> {
                   itemCount: _results.length,
                   itemBuilder: (context, index) {
                     final item = _results[index];
-                    return ListTile(
-                      leading: Icon(item['type'] == 'product'
+                    Widget? leadingWidget;
+                    // Try to get image URL from common fields and lists
+                    final allImageUrls = _extractAllImageUrls(item);
+                    final imageUrl = allImageUrls.isNotEmpty
+                        ? allImageUrls.first
+                        : Constants.defaultPlaceholderImage;
+                    if (imageUrl.isNotEmpty) {
+                      leadingWidget = ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(
+                          imageUrl,
+                          width: 100,
+                          height: 100,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Icon(
+                              item['type'] == 'product'
+                                  ? Icons.shopping_bag
+                                  : Icons.miscellaneous_services),
+                        ),
+                      );
+                    } else {
+                      leadingWidget = Icon(item['type'] == 'product'
                           ? Icons.shopping_bag
-                          : Icons.miscellaneous_services),
+                          : Icons.miscellaneous_services);
+                    }
+                    return ListTile(
+                      leading: leadingWidget,
                       title: Text(item['businessTitle'] ??
                           item['eventName'] ??
                           item['brandName'] ??

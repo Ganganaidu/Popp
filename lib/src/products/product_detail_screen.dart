@@ -21,7 +21,7 @@ class ProductDetailScreen extends StatefulWidget {
 }
 
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
-  int selectedImageIndex = 0;
+  late final ValueNotifier<int> selectedImageIndexNotifier;
   bool isFavorite = false;
   late final PageController _pageController;
   final CurrencyService _currencyService = CurrencyService();
@@ -30,7 +30,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(initialPage: selectedImageIndex);
+    selectedImageIndexNotifier = ValueNotifier<int>(0);
+    _pageController = PageController(initialPage: 0);
     _isApproved = widget.productJson['isApproved'] == true;
     AppLogger.d("ProductDetailScreen initState: isApproved = $_isApproved");
   }
@@ -38,6 +39,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   @override
   void dispose() {
     _pageController.dispose();
+    selectedImageIndexNotifier.dispose();
     super.dispose();
   }
 
@@ -140,155 +142,170 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     final theme = Theme.of(context).textTheme;
     final product =
         Product.fromJson(widget.productJson, widget.productJson['id']);
+    final imageUrls = product.thumbImageUrls ?? [];
 
     return Scaffold(
       appBar: AppBar(title: Text(product.getBrandAndModelName())),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 🔹 Main Image Carousel
-            Stack(
-              children: [
-                SizedBox(
-                  height: 400,
-                  width: double.infinity,
-                  child: PageView.builder(
-                    controller: _pageController,
-                    itemCount: product.thumbImageUrls?.length,
-                    onPageChanged: (index) {
-                      setState(() {
-                        selectedImageIndex = index;
-                      });
-                    },
-                    itemBuilder: (context, index) {
-                      final url = product.thumbImageUrls?[index] ?? '';
-                      return _buildImage(
-                        url,
-                        useHero: index == 0,
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 400.0,
+            floating: false,
+            pinned: true,
+            automaticallyImplyLeading: false,
+            flexibleSpace: FlexibleSpaceBar(
+              background: Stack(
+                fit: StackFit.expand,
+                children: [
+                  ValueListenableBuilder<int>(
+                    valueListenable: selectedImageIndexNotifier,
+                    builder: (context, selectedImageIndex, _) {
+                      return PageView.builder(
+                        controller: _pageController,
+                        itemCount: imageUrls.length,
+                        onPageChanged: (index) {
+                          selectedImageIndexNotifier.value = index;
+                        },
+                        itemBuilder: (context, index) {
+                          final url = imageUrls.isNotEmpty ? imageUrls[index] : '';
+                          return _buildImage(
+                            url,
+                            useHero: index == 0,
+                          );
+                        },
                       );
                     },
                   ),
-                ),
-
-                // 🔹 Fav Icon
-                Positioned(
-                  top: 16,
-                  right: 16,
-                  child: GestureDetector(
-                    onTap: _toggleFavorite,
-                    child: CircleAvatar(
-                      backgroundColor: Colors.white,
-                      child: Icon(
-                        isFavorite ? Icons.favorite : Icons.favorite_border,
-                        color: Colors.red,
-                      ),
-                    ),
-                  ),
-                ),
-
-                // 🔹 Bottom Dashes Indicator (overlay on image)
-                Positioned(
-                  bottom: 20,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(
-                          product.thumbImageUrls?.length ?? 0, (index) {
-                        bool isActive = index == selectedImageIndex;
-                        return AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          margin: const EdgeInsets.symmetric(horizontal: 4),
-                          width: isActive ? 20 : 12,
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: isActive ? Colors.white54 : Colors.black26,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        );
-                      }),
-                    ),
-                  ),
-                ),
-
-                // 🔹 Thumbnail Indicator
-                Positioned(
-                  bottom: 12,
-                  right: 12,
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.black54,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      '${selectedImageIndex + 1} / ${product.thumbImageUrls?.length}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 12),
-
-            // 🔹 Thumbnails
-            SizedBox(
-              height: 100,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: product.thumbImageUrls?.length,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                itemBuilder: (context, index) {
-                  final url = product.thumbImageUrls?[index] ?? '';
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        selectedImageIndex = index;
-                        _pageController.animateToPage(
-                          index,
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
-                        );
-                      });
-                    },
-                    child: Container(
-                      margin: const EdgeInsets.only(right: 10),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                            color: selectedImageIndex == index
-                                ? Colors.blue
-                                : Colors.transparent,
-                            width: 2),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(6),
-                        child: Image.network(
-                          url,
-                          width: 100,
-                          height: 100,
-                          fit: BoxFit.cover,
+                  // Fav Icon
+                  Positioned(
+                    top: 32,
+                    right: 16,
+                    child: GestureDetector(
+                      onTap: _toggleFavorite,
+                      child: CircleAvatar(
+                        backgroundColor: Colors.white,
+                        child: Icon(
+                          isFavorite ? Icons.favorite : Icons.favorite_border,
+                          color: Colors.red,
                         ),
                       ),
                     ),
-                  );
-                },
+                  ),
+                  // Bottom Dashes Indicator (overlay on image)
+                  Positioned(
+                    bottom: 32,
+                    left: 0,
+                    right: 0,
+                    child: Center(
+                      child: ValueListenableBuilder<int>(
+                        valueListenable: selectedImageIndexNotifier,
+                        builder: (context, selectedImageIndex, _) {
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: List.generate(
+                                imageUrls.length, (index) {
+                              bool isActive = index == selectedImageIndex;
+                              return AnimatedContainer(
+                                duration: const Duration(milliseconds: 300),
+                                margin: const EdgeInsets.symmetric(horizontal: 4),
+                                width: isActive ? 20 : 12,
+                                height: 4,
+                                decoration: BoxDecoration(
+                                  color: isActive ? Colors.white54 : Colors.black26,
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                              );
+                            }),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                  // Thumbnail Indicator
+                  Positioned(
+                    bottom: 20,
+                    right: 12,
+                    child: ValueListenableBuilder<int>(
+                      valueListenable: selectedImageIndexNotifier,
+                      builder: (context, selectedImageIndex, _) {
+                        return Container(
+                          padding:
+                              const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.black54,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            '${selectedImageIndex + 1} / ${imageUrls.length}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
             ),
-
-            const SizedBox(height: 12),
-
-            // 🔹 Title and Price
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+          ),
+          // Thumbnails
+          if (imageUrls.length > 1)
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 100,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: imageUrls.length,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  itemBuilder: (context, index) {
+                    final url = imageUrls[index];
+                    return ValueListenableBuilder<int>(
+                      valueListenable: selectedImageIndexNotifier,
+                      builder: (context, selectedImageIndex, _) {
+                        return GestureDetector(
+                          onTap: () {
+                            // Only update the main image, do not call setState
+                            selectedImageIndexNotifier.value = index;
+                            _pageController.animateToPage(
+                              index,
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
+                            );
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.only(right: 10),
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                  color: selectedImageIndex == index
+                                      ? Colors.blue
+                                      : Colors.transparent,
+                                  width: 2),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(6),
+                              child: Image.network(
+                                url,
+                                width: 100,
+                                height: 100,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+            ),
+          // Main Content
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -302,51 +319,35 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     future: _getLocalizedPrice(product.expectedPrice),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return Shimmer.fromColors(
-                          baseColor: Colors.grey[300]!,
-                          highlightColor: Colors.grey[100]!,
-                          child: Container(
-                            width: 150,
-                            height: 28,
-                            color: Colors.white,
+                        return const SizedBox(
+                          height: 24,
+                          child: LinearProgressIndicator(
+                            color: Colors.orange,
                           ),
                         );
                       }
-                      if (snapshot.hasError) {
-                        return Text('Error loading price',
-                            style: TextStyle(color: Colors.red[700]));
-                      }
                       return Text(
                         snapshot.data ?? product.expectedPrice,
-                        style: theme.headlineSmall?.copyWith(
-                            color: Colors.orange[700],
-                            fontWeight: FontWeight.bold),
+                        style: theme.titleLarge?.copyWith(
+                          color: Colors.green[700],
+                          fontWeight: FontWeight.bold,
+                        ),
                       );
                     },
                   ),
-
-                  const SizedBox(height: 24),
-                  Text(
-                    "Product Details",
-                    style: theme.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.bold, fontSize: 18),
-                  ),
-                  const SizedBox(height: 8),
-                  ExpandableProductDetails(
-                    product: product,
-                  ),
-                  const SizedBox(height: 16),
-                  // 🔹 Seller Contact Card
+                  const SizedBox(height: 10),
+                  ExpandableProductDetails(product: product),
+                  const SizedBox(height: 20),
                   ChatWithSellerCard(
-                    receiverUserName: product.sellerName,
-                    receiverUserID: product.userId ?? '',
+                    receiverUserName: product.sellerName ?? '',
+                    receiverUserID: product.sellerContactNumber ?? '',
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
       bottomNavigationBar: _isAdmin && !_isApproved
           ? SafeArea(

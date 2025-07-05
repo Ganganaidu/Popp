@@ -6,6 +6,7 @@ import '../admin/admin_dashboard_screen.dart';
 import '../chat/agent_chat_list_screen.dart';
 import '../chat/generic_chat_screen.dart';
 import '../login/forgot_password_screen.dart';
+import '../login/otp_screen.dart';
 import '../models/product.dart';
 import '../products/product_detail_screen.dart';
 import '../services/accessories/sell_your_accessories.dart';
@@ -74,6 +75,14 @@ void onForgotPasswordTap(BuildContext context) {
   Navigator.push(
     context,
     MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
+  );
+}
+
+void onOTPScreen(BuildContext context, String email, String password) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+        builder: (_) => OTPScreen(email: email, password: password)),
   );
 }
 

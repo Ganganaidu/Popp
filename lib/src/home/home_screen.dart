@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart'; // NEW: Import Firestore
+import 'package:firebase_auth/firebase_auth.dart'; // NEW: Import FirebaseAuth
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -5,11 +7,9 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:popp/src/toolbar/pop_app_bar.dart';
 import 'package:popp/src/utils/app_constants.dart';
 import 'package:popp/src/utils/app_loger.dart';
-import '../../main.dart'; // Ensure this import is correct relative to your project structure
+
 import '../navigation/custom_bottom_nav_bar.dart';
 import '../navigation/nav_helper.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; // NEW: Import Firestore
-import 'package:firebase_auth/firebase_auth.dart'; // NEW: Import FirebaseAuth
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});

@@ -7,7 +7,6 @@ import '../chat/agent_chat_list_screen.dart';
 import '../chat/generic_chat_screen.dart';
 import '../login/forgot_password_screen.dart';
 import '../login/otp_screen.dart';
-import '../models/product.dart';
 import '../products/product_detail_screen.dart';
 import '../services/accessories/sell_your_accessories.dart';
 import '../services/bikes/sell_your_bike.dart';

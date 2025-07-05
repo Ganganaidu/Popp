@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:popp/src/utils/app_constants.dart';
-import 'package:popp/src/utils/app_loger.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../navigation/nav_router.dart';

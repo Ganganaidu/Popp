@@ -96,7 +96,7 @@ class _RegisterAndSubscribeScreenState
           SnackBar(content: Text("Error: $userMessage")),
         );
       }
-    } on FirebaseAuthException catch (e) {
+    } on FirebaseAuthException catch (_) {
       if (!mounted) return;
       await AppDialogs.showUserExistsDialog(context, () {
         if (context.mounted) {

@@ -1,8 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:popp/src/utils/app_loger.dart';
-import '../../models/product.dart';
 import 'package:popp/src/models/pop_category.dart';
 
+import '../../models/product.dart';
 import '../../utils/app_constants.dart';
 
 class ProductRepository {

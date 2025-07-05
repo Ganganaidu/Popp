@@ -15,7 +15,6 @@ class _ExploreProductsScreenState extends State<ExploreProductsScreen> {
   final TextEditingController _searchController = TextEditingController();
   bool _isLoading = false;
   List<Map<String, dynamic>> _results = [];
-  String _lastQuery = '';
 
   // Shortcuts for default suggestions
   final List<String> _shortcuts = [
@@ -37,12 +36,11 @@ class _ExploreProductsScreenState extends State<ExploreProductsScreen> {
     }
     setState(() {
       _isLoading = true;
-      _lastQuery = query;
     });
-    final firestore = FirebaseFirestore.instance;
+    final fireStore = FirebaseFirestore.instance;
     final List<Map<String, dynamic>> results = [];
     // Search products
-    final productsSnap = await firestore
+    final productsSnap = await fireStore
         .collection(Constants.productsPath)
         .where('searchKeywords', arrayContainsAny: [query.toLowerCase()]).get();
     results.addAll(productsSnap.docs.map((doc) => {
@@ -51,7 +49,7 @@ class _ExploreProductsScreenState extends State<ExploreProductsScreen> {
           'id': doc.id,
         }));
     // Search services
-    final servicesSnap = await firestore
+    final servicesSnap = await fireStore
         .collection(Constants.servicePath)
         .where('searchKeywords', arrayContainsAny: [query.toLowerCase()]).get();
     results.addAll(servicesSnap.docs.map((doc) => {

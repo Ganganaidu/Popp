@@ -110,7 +110,7 @@ extension BuildContextEntension<T> on BuildContext {
   }
 
   InputDecoration inputDecoration(String label, String hint,
-          {bool enable = true, IconData? icon}) =>
+          {bool enable = true, IconData? icon, double borderRadius = 8.0}) =>
       InputDecoration(
         enabled: enable,
         labelText: label,
@@ -122,17 +122,21 @@ extension BuildContextEntension<T> on BuildContext {
         labelStyle: const TextStyle(fontWeight: FontWeight.w500),
         // Change fill color when disabled
         enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: primaryColor),
+          borderRadius: BorderRadius.circular(borderRadius),
+          borderSide: BorderSide(color: primaryColor.withOpacity(0.4)),
         ),
         focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: primaryColor, width: 1.5),
+          borderRadius: BorderRadius.circular(borderRadius),
+          borderSide: BorderSide(color: primaryColor.withOpacity(0.8), width: 1.5),
         ),
         disabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(borderRadius),
           // Add this for when InputDecorator is disabled
           borderSide: BorderSide(color: Colors.grey.shade400),
         ),
-        border: const OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.grey),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(borderRadius),
+          borderSide: const BorderSide(color: Colors.grey),
         ),
       );
 }

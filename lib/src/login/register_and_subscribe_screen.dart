@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
-import 'package:popp/src/utils/app_loger.dart';
+import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../firebase/auth_service.dart';
@@ -60,22 +59,29 @@ class _RegisterAndSubscribeScreenState
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Profile data saved successfully!")),
         );
-        // update registration status
         await updateRegistrationComplete(
             uid: widget.userData.uid, registrationComplete: true);
 
         if (!mounted) return;
-        // Show bottom sheet with SubscribePageWidget instead of navigating to finalCongrats
         await showModalBottomSheet(
           context: context,
           isScrollControlled: true,
           isDismissible: false,
           enableDrag: false,
-          builder: (context) => SizedBox(
-            height: MediaQuery.of(context).size.height * 0.75,
-            child: SubscribePageWidget(
-              userUid: widget.userData.uid,
-              isFromSettings: false,
+          backgroundColor: Colors.transparent,
+          builder: (context) => DraggableScrollableSheet(
+            initialChildSize: 0.8,
+            maxChildSize: 0.9,
+            minChildSize: 0.7,
+            builder: (_, scrollController) => Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              child: SubscribePageWidget(
+                userUid: widget.userData.uid,
+                isFromSettings: false,
+              ),
             ),
           ),
         );
@@ -83,46 +89,20 @@ class _RegisterAndSubscribeScreenState
         await updateRegistrationComplete(
             uid: widget.userData.uid, registrationComplete: false);
 
-        // More specific error handling
         String userMessage =
             saveUserDataResult.errorMessage ?? "An unknown error occurred.";
-        if (saveUserDataResult.errorCode == 'permission-denied') {
-          userMessage =
-              "You do not have permission to save this data. Please contact support.";
-          // You might also log out the user or take other specific actions
-        } else if (saveUserDataResult.errorCode == 'unavailable') {
-          userMessage =
-              "Could not connect to the server. Please check your internet connection and try again.";
-        }
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Error: $userMessage")),
         );
-        AppLogger.i("widget.userData ${widget.userData}");
-        AppLogger.w(
-            "Failed to save user data. Error: ${saveUserDataResult.errorMessage}, Code: ${saveUserDataResult.errorCode}");
       }
     } on FirebaseAuthException catch (e) {
-      if (e.code == 'email-already-in-use' ||
-          e.code == 'account-exists-with-different-credential' ||
-          e.code == 'phone-already-in-use') {
-        if (!mounted) return;
-        // Handle user already exists case
-        await AppDialogs.showUserExistsDialog(context, () {
-          if (context.mounted) {
-            onLoginTap(context);
-          }
-        });
-        return;
-      }
-      // Handle other FirebaseAuthExceptions
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text('An authentication error occurred: ${e.message}')),
-      );
-      // Log the error for more detailed analysis
-      AppLogger.e("Unhandled FirebaseAuthException: ${e.code} - ${e.message}");
+      await AppDialogs.showUserExistsDialog(context, () {
+        if (context.mounted) {
+          onLoginTap(context);
+        }
+      });
     } finally {
       setState(() => isSubmitting = false);
     }
@@ -131,113 +111,254 @@ class _RegisterAndSubscribeScreenState
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Register & Subscribe")),
+      // A subtle background color to make the cards pop
+      backgroundColor: isDarkMode ? Colors.black : const Color(0xFFF4F6F8),
       body: SafeArea(
         child: Column(
           children: [
+            // Header
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("One Last Step...",
+                      style: textTheme.headlineMedium
+                          ?.copyWith(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  Text(
+                    "Review the details and subscribe to unlock the full power of the community.",
+                    style: textTheme.titleSmall?.copyWith(
+                        color:
+                            isDarkMode ? Colors.grey[400] : Colors.grey[600]),
+                  ),
+                ],
+              ),
+            ),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("🏍️ Welcome, Riders!",
-                        style: textTheme.headlineSmall
-                            ?.copyWith(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 16),
-                    Text(
-                      "You're now part of a passionate community built by riders, for riders. Whether you're cruising the highways or hitting the track, this app is your ultimate companion on two wheels.",
-                      style: textTheme.bodyLarge,
+                    // Welcome Card
+                    _buildInfoCard(
+                      icon: Icons.celebration_rounded,
+                      iconColor: Colors.amber,
+                      title: "Welcome to the Crew!",
+                      content:
+                          "You're now part of a passionate community built by riders, for riders. Explore all features for free during the trial period!",
                     ),
-                    const SizedBox(height: 24),
-                    Text("🚀 Enjoy the Free Ride",
-                        style: textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
-                    Text(
-                        "Right now, you're in the free access period. Explore all the features without spending a dime!",
-                        style: textTheme.bodyLarge),
-                    const SizedBox(height: 24),
-                    Text("🔥 What You Can Do:",
-                        style: textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
-                    ...[
-                      "Create and Join Rides: Plan epic journeys and invite fellow bikers.",
-                      "Discover Top Routes: Get access to handpicked routes.",
-                      "Nearby Services: Find trusted bike service centers.",
-                      "Train & Ride Harder: Join training sessions and track days.",
-                      "Need a Ride? Rent bikes effortlessly."
-                    ].map((item) => Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: Text("• $item", style: textTheme.bodyLarge),
-                        )),
-                    const SizedBox(height: 24),
-                    Text(" Subscription? Practically Free",
-                        style: textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
-                    Text(
-                        "After trial ends, keep riding with us for a yearly subscription fee so low, it's almost unbelievable.",
-                        style: textTheme.bodyLarge),
-                    const SizedBox(height: 20),
-                    CheckboxListTile(
-                      title: RichText(
-                        text: TextSpan(
-                          style: Theme.of(context).textTheme.bodyLarge,
-                          children: [
-                            const TextSpan(text: 'Check to accept '),
-                            TextSpan(
-                              text: 'Terms & Conditions',
-                              style: const TextStyle(
-                                color: Colors.blue,
-                                decoration: TextDecoration.underline,
-                              ),
-                              recognizer: TapGestureRecognizer()
-                                ..onTap = _openTermsLink,
-                            ),
-                            const TextSpan(text: ' of POPP'),
-                          ],
-                        ),
+
+                    // Features Card
+                    _buildInfoCard(
+                      icon: Icons.stars_rounded,
+                      iconColor: Colors.blueAccent,
+                      title: "What You Can Do",
+                      contentWidget: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildFeatureRow(Icons.build_circle_outlined,
+                              "Find Nearby Services"),
+                          _buildFeatureRow(
+                              Icons.directions_bike, "Discover Top Routes"),
+                          _buildFeatureRow(Icons.speed_outlined,
+                              "Join Training & Track Days"),
+                          _buildFeatureRow(
+                              Icons.map_outlined, "Create and Join Rides"),
+                        ],
                       ),
-                      value: termsAccepted,
-                      onChanged: (val) {
-                        if (hasClickedTermsLink) {
-                          setState(() => termsAccepted = val ?? false);
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text(
-                                    'Kindly read and accept the Terms & Conditions before continuing...')),
-                          );
-                        }
-                      },
                     ),
+
+                    // Subscription Card
+                    _buildInfoCard(
+                      icon: Icons.workspace_premium_rounded,
+                      iconColor: Colors.deepOrangeAccent,
+                      title: "Subscription required?",
+                      content:
+                          "Practically Free, After the trial ends, keep riding with us for a yearly subscription fee so low, it's almost unbelievable.",
+                    ),
+
+                    const SizedBox(height: 20),
                   ],
                 ),
               ),
             ),
-            Container(
-              padding: const EdgeInsets.all(20),
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: isSubmitting ? null : submitToFireStore,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30)),
-                ),
-                child: isSubmitting
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text("Register & Subscribe",
-                        style: TextStyle(fontSize: 18, color: Colors.white)),
-              ),
-            ),
+            // Bottom Action Area
+            _buildBottomActionArea(context),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildFeatureRow(IconData icon, String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        children: [
+          Icon(icon, size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+              child: Text(text, style: Theme.of(context).textTheme.bodyMedium)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoCard({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    String? content,
+    Widget? contentWidget,
+  }) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    return Card(
+      elevation: 2,
+      shadowColor: Colors.black.withOpacity(0.1),
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      color: isDarkMode ? Colors.grey[850] : Colors.white,
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 20,
+                  backgroundColor: iconColor.withOpacity(0.15),
+                  child: Icon(icon, color: iconColor, size: 24),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleLarge
+                        ?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            if (content != null)
+              Text(
+                content,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
+                    height: 1.5),
+              ),
+            if (contentWidget != null) contentWidget,
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBottomActionArea(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+      decoration: BoxDecoration(
+        color: isDarkMode ? Colors.grey[900] : Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -5),
+          )
+        ],
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          GestureDetector(
+            onTap: () {
+              if (hasClickedTermsLink) {
+                setState(() => termsAccepted = !termsAccepted);
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                      content: Text(
+                          'Please read the Terms & Conditions before accepting.')),
+                );
+              }
+            },
+            child: Row(
+              children: [
+                Checkbox(
+                  value: termsAccepted,
+                  onChanged: (val) {
+                    if (hasClickedTermsLink) {
+                      setState(() => termsAccepted = val ?? false);
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text(
+                                'Please read the Terms & Conditions before accepting.')),
+                      );
+                    }
+                  },
+                  activeColor: Colors.orange,
+                ),
+                Expanded(
+                  child: RichText(
+                    text: TextSpan(
+                      style: Theme.of(context).textTheme.bodyMedium,
+                      children: [
+                        const TextSpan(text: 'I have read and agree to the '),
+                        TextSpan(
+                          text: 'Terms & Conditions',
+                          style: const TextStyle(
+                            color: Colors.blue,
+                            decoration: TextDecoration.underline,
+                          ),
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = _openTermsLink,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: isSubmitting ? null : submitToFireStore,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30)),
+                elevation: termsAccepted ? 5 : 0,
+              ).copyWith(
+                  backgroundColor: MaterialStateProperty.resolveWith<Color>(
+                (Set<MaterialState> states) {
+                  if (states.contains(MaterialState.disabled)) {
+                    return Colors.grey;
+                  }
+                  return Colors.orange; // Use the component's default.
+                },
+              )),
+              child: isSubmitting
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text("Register & Subscribe",
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            ),
+          ),
+        ],
       ),
     );
   }

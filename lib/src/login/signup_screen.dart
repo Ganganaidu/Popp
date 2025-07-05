@@ -278,7 +278,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       const Text(
                         'Please enter the details of bikes you own for custom notifications',
                         style: TextStyle(
-                            color: Colors.red, fontWeight: FontWeight.bold),
+                            color: Colors.orange, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 6),
                       const Text(

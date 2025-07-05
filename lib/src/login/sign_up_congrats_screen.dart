@@ -7,80 +7,125 @@ class SignUpCongratsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const SizedBox(height: 40),
-            Column(
-              children: [
-                Lottie.asset('assets/congrats.json', height: 180),
-                const SizedBox(height: 20),
-                Text("🎉 Congratulations!",
-                    style: textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.green[800],
-                    )),
-                const SizedBox(height: 12),
-                Text("You're officially on board.",
-                    style: textTheme.bodyLarge, textAlign: TextAlign.center),
-                const SizedBox(height: 24),
-                Text("🏍️ Welcome to POPP!",
-                    style: textTheme.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 10),
-                Text(
-                  "Your registration was successful, and your journey with us begins now.",
-                  style: textTheme.bodyMedium,
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                Text("🌟 Ride On",
-                    style: textTheme.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 10),
-                Padding(
+      body: Container(
+        // A beautiful gradient background to add depth and a celebratory feel
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: isDarkMode
+                ? [Colors.grey[850]!, Colors.grey[900]!]
+                : [const Color(0xFFFDFBFB), const Color(0xFFEBEDEE)],
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                  child: Text(
-                    "We wish you happy miles and unforgettable moments on your motorbike adventures.",
-                    style: textTheme.bodyMedium,
-                    textAlign: TextAlign.center,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 40), // Top spacing
+                      // The Lottie animation is now larger and more central
+                      Lottie.asset('assets/congrats.json', height: 220),
+                      const SizedBox(height: 20),
+                      Text(
+                        "Congratulations!",
+                        style: textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green[600],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        "You're officially on board.",
+                        style: textTheme.titleMedium?.copyWith(
+                          color:
+                              isDarkMode ? Colors.grey[300] : Colors.grey[700],
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 40),
+
+                      // Info card for a cleaner, more organized look
+                      Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: isDarkMode
+                              ? Colors.grey[800]!.withOpacity(0.5)
+                              : Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 15,
+                              offset: const Offset(0, 5),
+                            )
+                          ],
+                        ),
+                        child: Column(
+                          children: [
+                            Text(
+                              "🏍️ Welcome to POPP!",
+                              style: textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              "Your journey with our community begins now. We wish you happy miles and unforgettable moments on your adventures.",
+                              style: textTheme.bodyMedium?.copyWith(
+                                height: 1.5,
+                                color: isDarkMode
+                                    ? Colors.grey[300]
+                                    : Colors.grey[600],
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 40),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 24),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                  child: Text(
-                    "Together, let's build a strong and united motorbike community — one ride at a time.",
-                    style: textTheme.bodyMedium
-                        ?.copyWith(fontWeight: FontWeight.w500),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ],
-            ),
-            Padding(
-              padding: const EdgeInsets.all(24),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () =>
-                      Navigator.pushReplacementNamed(context, '/home'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                  ),
-                  child: const Text("Go to Home",
-                      style: TextStyle(fontSize: 18, color: Colors.white)),
                 ),
               ),
-            ),
-          ],
+              // The button is now in a consistent bottom bar
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () =>
+                        Navigator.pushReplacementNamed(context, '/home'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      elevation: 5,
+                      shadowColor: Colors.orange.withOpacity(0.4),
+                    ),
+                    child: const Text(
+                      "Let's Ride!",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

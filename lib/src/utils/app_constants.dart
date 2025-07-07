@@ -13,6 +13,8 @@ class Constants {
   static const String adsPath = '$basePath/ads';
   static const String servicePath = '$basePath/services';
 
+  //artifacts/popp-71efb/public/data/services
+
   static const String home = 'Home';
   static const String rides = 'Rides';
   static const String routes = 'Routes';

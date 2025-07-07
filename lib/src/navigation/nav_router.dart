@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:popp/src/favorites/favorites_screen.dart';
 import 'package:popp/src/login/model/user_data_model.dart';
 import 'package:popp/src/settings/settings_screen.dart';
 import 'package:popp/src/utils/app_constants.dart';
@@ -68,6 +69,15 @@ void onSettingsTap(BuildContext context) {
     context,
     MaterialPageRoute(
       builder: (context) => const SettingsScreen(),
+    ),
+  );
+}
+
+void onFavScreenTap(BuildContext context) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => const FavoritesScreen(),
     ),
   );
 }

@@ -60,6 +60,12 @@ class PopAppBar extends StatelessWidget implements PreferredSizeWidget {
              onSettingsTap(context);
             },
           ),
+          IconButton(
+            icon: const Icon(Icons.favorite_border_outlined),
+            onPressed: () {
+              onFavScreenTap(context);
+            },
+          )
         ],
       ),
     );

@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:popp/src/utils/app_loger.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../firebase/auth_service.dart';
@@ -27,17 +28,20 @@ class _RegisterAndSubscribeScreenState
   bool hasClickedTermsLink = false;
 
   void _openTermsLink() async {
-    final launched = await launchUrl(
-      Uri.parse(Constants.privacyLink),
-      mode: LaunchMode.externalApplication,
-    );
-    if (launched) {
-      setState(() => hasClickedTermsLink = true);
+    AppLogger.w("Terms link clicked");
+    final uri = Uri.parse(Constants.privacyLink);
+    if (await canLaunchUrl(uri)) {
+      final launched = await launchUrl(uri);
+      if (launched) {
+        setState(() => hasClickedTermsLink = true);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Could not open Terms & Conditions link.")),
+        );
+      }
     } else {
-      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Could not open Terms & Conditions link.')),
+        const SnackBar(content: Text("Invalid Terms & Conditions link.")),
       );
     }
   }

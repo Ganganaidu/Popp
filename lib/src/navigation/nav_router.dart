@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:popp/src/login/model/user_data_model.dart';
 import 'package:popp/src/settings/settings_screen.dart';
 import 'package:popp/src/utils/app_constants.dart';
 
@@ -7,6 +8,7 @@ import '../chat/agent_chat_list_screen.dart';
 import '../chat/generic_chat_screen.dart';
 import '../login/forgot_password_screen.dart';
 import '../login/otp_screen.dart';
+import '../login/register_and_subscribe_screen.dart';
 import '../products/product_detail_screen.dart';
 import '../services/accessories/sell_your_accessories.dart';
 import '../services/bikes/sell_your_bike.dart';
@@ -143,6 +145,15 @@ void onServiceListingTap(
       ),
     );
   }
+}
+
+void onRegisterAndSubscribeTap(BuildContext context, UserData userData) {
+  Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(
+      builder: (context) => RegisterAndSubscribeScreen(userData: userData),
+    ),
+  );
 }
 
 void onServiceDetailsScreenTap(

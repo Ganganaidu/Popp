@@ -108,10 +108,9 @@ class SettingsScreen extends StatelessWidget {
         background: Stack(
           fit: StackFit.expand,
           children: [
-            // Animated background
-            Lottie.asset(
-              'assets/settings_background.json',
-              // Replace with your Lottie file
+            // Animated background (now using GIF instead of Lottie)
+            Image.asset(
+              'assets/popp_animated_background.gif',
               fit: BoxFit.cover,
             ),
             // Gradient overlay for better text visibility

@@ -26,6 +26,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   late final PageController _pageController;
   final CurrencyService _currencyService = CurrencyService();
   bool _isApproved = false;
+  bool _favButtonDisabled = false;
 
   @override
   void initState() {
@@ -34,6 +35,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     _pageController = PageController(initialPage: 0);
     _isApproved = widget.productJson['isApproved'] == true;
     AppLogger.d("ProductDetailScreen initState: isApproved = $_isApproved");
+    // Set initial favorite state based on favoritedBy
+    final favoritedBy = widget.productJson['favoritedBy'] as List<dynamic>?;
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (favoritedBy != null && currentUser != null) {
+      isFavorite = favoritedBy.contains(currentUser.uid);
+    } else {
+      isFavorite = false;
+    }
   }
 
   @override
@@ -43,10 +52,20 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     super.dispose();
   }
 
-  void _toggleFavorite() {
+  void _toggleFavorite() async {
     setState(() {
       isFavorite = !isFavorite;
-      widget.productJson['isFavorite'] = isFavorite;
+    });
+    final prev = isFavorite;
+    setState(() {
+      _favButtonDisabled = true;
+    });
+    final result = await toggleFavoriteProduct(Constants.productsPath, widget.productJson['id']);
+    setState(() {
+      _favButtonDisabled = false;
+      if (!result) {
+        isFavorite = !prev; // revert if failed
+      }
     });
   }
 
@@ -167,7 +186,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           selectedImageIndexNotifier.value = index;
                         },
                         itemBuilder: (context, index) {
-                          final url = imageUrls.isNotEmpty ? imageUrls[index] : '';
+                          final url =
+                              imageUrls.isNotEmpty ? imageUrls[index] : '';
                           return _buildImage(
                             url,
                             useHero: index == 0,
@@ -181,9 +201,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     top: 32,
                     right: 16,
                     child: GestureDetector(
-                      onTap: _toggleFavorite,
+                      onTap: _favButtonDisabled ? null : _toggleFavorite,
                       child: CircleAvatar(
-                        backgroundColor: Colors.white,
+                        backgroundColor: Colors.white70,
                         child: Icon(
                           isFavorite ? Icons.favorite : Icons.favorite_border,
                           color: Colors.red,
@@ -202,16 +222,18 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         builder: (context, selectedImageIndex, _) {
                           return Row(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children: List.generate(
-                                imageUrls.length, (index) {
+                            children: List.generate(imageUrls.length, (index) {
                               bool isActive = index == selectedImageIndex;
                               return AnimatedContainer(
                                 duration: const Duration(milliseconds: 300),
-                                margin: const EdgeInsets.symmetric(horizontal: 4),
+                                margin:
+                                    const EdgeInsets.symmetric(horizontal: 4),
                                 width: isActive ? 20 : 12,
                                 height: 4,
                                 decoration: BoxDecoration(
-                                  color: isActive ? Colors.white54 : Colors.black26,
+                                  color: isActive
+                                      ? Colors.white54
+                                      : Colors.black26,
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                               );
@@ -229,8 +251,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       valueListenable: selectedImageIndexNotifier,
                       builder: (context, selectedImageIndex, _) {
                         return Container(
-                          padding:
-                              const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: Colors.black54,
                             borderRadius: BorderRadius.circular(8),
@@ -315,17 +337,17 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         color: Colors.blue[700], fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 10),
+                  Text(
+                    'Expected Price:',
+                    style: theme.titleMedium?.copyWith(
+                      color: Colors.grey[700],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
                   FutureBuilder<String>(
                     future: _getLocalizedPrice(product.expectedPrice),
                     builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const SizedBox(
-                          height: 24,
-                          child: LinearProgressIndicator(
-                            color: Colors.orange,
-                          ),
-                        );
-                      }
                       return Text(
                         snapshot.data ?? product.expectedPrice,
                         style: theme.titleLarge?.copyWith(

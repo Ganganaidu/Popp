@@ -3,8 +3,10 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:popp/src/utils/app_loger.dart';
 
+import '../api/currency_service.dart';
 import '../gallery/pic_image_gallery.dart';
 import '../models/product.dart';
 import '../utils/app_constants.dart';
@@ -576,5 +578,90 @@ class FirebaseProductsService {
       AppLogger.d("Error fetching services: $e");
       return [];
     }
+  }
+}
+
+/// Adds or removes a product from the user's favorites.
+Future<bool> toggleFavoriteProduct(
+    String collectionPath, String productId) async {
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null) {
+    return false;
+  }
+
+  final productRef =
+      FirebaseFirestore.instance.collection(collectionPath).doc(productId);
+
+  try {
+    await FirebaseFirestore.instance.runTransaction((transaction) async {
+      AppLogger.d("productRef $productRef");
+      final snapshot = await transaction.get(productRef);
+      if (!snapshot.exists) {
+        throw Exception("Product does not exist!");
+      }
+      final List<String> favoritedBy =
+          List<String>.from(snapshot.data()?['favoritedBy'] ?? []);
+      AppLogger.d("favoritedBy $favoritedBy");
+      if (favoritedBy.contains(user.uid)) {
+        transaction.update(productRef, {
+          'favoritedBy': FieldValue.arrayRemove([user.uid])
+        });
+      } else {
+        transaction.update(productRef, {
+          'favoritedBy': FieldValue.arrayUnion([user.uid])
+        });
+      }
+    });
+    return true;
+  } catch (e) {
+    AppLogger.d('toggleFavoriteProduct error: $e');
+    return false;
+  }
+}
+
+Future<String> getLocalizedPrice(BuildContext context,
+    CurrencyService currencyService, String priceStr) async {
+  // 1. Parse the input price string to a double. Assumes base price is in INR.
+  final double? priceInRupees =
+      double.tryParse(priceStr.replaceAll(RegExp(r'[^0-9.]'), ''));
+  if (priceInRupees == null) {
+    return priceStr; // Return original string if parsing fails.
+  }
+
+  // 2. Get the device's locale to determine the country.
+  final locale = Localizations.localeOf(context);
+  final String countryCode =
+      locale.countryCode ?? 'US'; // Default to 'US' if null.
+
+  // 3. Check if the country is India.
+  if (countryCode == 'IN') {
+    final format = NumberFormat.currency(
+      locale: 'en_IN',
+      symbol: '₹',
+      decimalDigits: 0,
+    );
+    return format.format(priceInRupees);
+  } else {
+    // For all other countries, fetch the conversion rate via the service.
+    final usdRate = await currencyService.getInrToUsdRate();
+    double priceInUSD;
+    String suffix = '';
+
+    if (usdRate != null) {
+      // If API call is successful, use the live rate.
+      priceInUSD = priceInRupees * usdRate;
+    } else {
+      // If API call fails, use a hardcoded fallback rate.
+      const double fallbackConversionRate = 1 / 83.0;
+      priceInUSD = priceInRupees * fallbackConversionRate;
+      suffix = ' (est.)'; // Indicate that the price is an estimate
+    }
+
+    final format = NumberFormat.currency(
+      locale: 'en_US',
+      symbol: '\$',
+      decimalDigits: 2,
+    );
+    return format.format(priceInUSD) + suffix;
   }
 }

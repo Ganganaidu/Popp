@@ -40,32 +40,32 @@ class PopAppBar extends StatelessWidget implements PreferredSizeWidget {
           },
           child: canPopOverride
               ? Hero(
-            tag: 'backButtonHero',
-            child: IconButton(
-              key: const ValueKey('backButton'),
-              icon: const Icon(Icons.arrow_back),
-              onPressed: () {
-                navigatorKeys[selectedIndex].currentState?.pop();
-              },
-            ),
-          )
+                  tag: 'backButtonHero',
+                  child: IconButton(
+                    key: const ValueKey('backButton'),
+                    icon: const Icon(Icons.arrow_back),
+                    onPressed: () {
+                      navigatorKeys[selectedIndex].currentState?.pop();
+                    },
+                  ),
+                )
               : const SizedBox(key: ValueKey('emptySpace')),
         ),
         title: Text(title),
         centerTitle: true,
         actions: <Widget>[
           IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-             onSettingsTap(context);
-            },
-          ),
-          IconButton(
             icon: const Icon(Icons.favorite_border_outlined),
             onPressed: () {
               onFavScreenTap(context);
             },
-          )
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              onSettingsTap(context);
+            },
+          ),
         ],
       ),
     );

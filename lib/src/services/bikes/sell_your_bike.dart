@@ -7,6 +7,7 @@ import 'package:popp/src/utils/build_extensions.dart';
 import 'package:popp/src/widgets/loading_overlay.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../api/currency_service.dart';
 import '../../firebase/firebase_save_prodcuts_api.dart';
 import '../../models/pop_category.dart';
 import '../../models/product.dart';
@@ -26,6 +27,7 @@ class _SellYourBikeState extends State<SellYourBike>
     with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final FirebaseProductsService _productsService = FirebaseProductsService();
+  final CurrencyService _currencyService = CurrencyService();
 
   final ScrollController _scrollController = ScrollController();
   late final ValueNotifier<bool> _isCollapsedNotifier;
@@ -88,6 +90,8 @@ class _SellYourBikeState extends State<SellYourBike>
 
   void _submitForm() async {
     if (_formKey.currentState!.validate()) {
+      String formatedPrice = await getLocalizedPrice(
+          context, _currencyService, priceController.text);
       Product newProduct = Product(
         id: productId,
         userId: FirebaseAuth.instance.currentUser?.uid,
@@ -102,7 +106,8 @@ class _SellYourBikeState extends State<SellYourBike>
         state: selectedState ?? "",
         city: cityController.text,
         kmDriven: kmDrivenController.text,
-        expectedPrice: priceController.text,
+        expectedPrice: formatedPrice,
+        price: priceController.text,
         additionalDetails: additionalDetailsController.text,
         firstOwner: _areYouFirstOwner,
         invoiceAvailable: _invoiceAvailable,

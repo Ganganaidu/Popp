@@ -22,8 +22,8 @@ final ThemeData poppLightTheme = ThemeData(
     ),
   ),
   switchTheme: SwitchThemeData(
-    thumbColor: MaterialStateProperty.all(Colors.orange),
-    trackColor: MaterialStateProperty.all(Colors.orange.shade200),
+    thumbColor: WidgetStateProperty.all(Colors.orange),
+    trackColor: WidgetStateProperty.all(Colors.orange.shade200),
   ),
   iconTheme: const IconThemeData(color: Colors.orange),
   inputDecorationTheme: InputDecorationTheme(
@@ -60,8 +60,8 @@ final ThemeData poppDarkTheme = ThemeData(
     ),
   ),
   switchTheme: SwitchThemeData(
-    thumbColor: MaterialStateProperty.all(Colors.orange),
-    trackColor: MaterialStateProperty.all(Colors.orange.shade300),
+    thumbColor: WidgetStateProperty.all(Colors.orange),
+    trackColor: WidgetStateProperty.all(Colors.orange.shade300),
   ),
   iconTheme: const IconThemeData(color: Colors.orange),
   inputDecorationTheme: InputDecorationTheme(

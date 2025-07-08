@@ -30,18 +30,13 @@ class _RegisterAndSubscribeScreenState
   void _openTermsLink() async {
     AppLogger.w("Terms link clicked");
     final uri = Uri.parse(Constants.privacyLink);
-    if (await canLaunchUrl(uri)) {
-      final launched = await launchUrl(uri);
-      if (launched) {
-        setState(() => hasClickedTermsLink = true);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Could not open Terms & Conditions link.")),
-        );
-      }
+    final launched = await launchUrl(uri);
+    if (launched) {
+      setState(() => hasClickedTermsLink = true);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Invalid Terms & Conditions link.")),
+        const SnackBar(
+            content: Text("Could not open Terms & Conditions link.")),
       );
     }
   }
@@ -347,9 +342,9 @@ class _RegisterAndSubscribeScreenState
                     borderRadius: BorderRadius.circular(30)),
                 elevation: termsAccepted ? 5 : 0,
               ).copyWith(
-                  backgroundColor: MaterialStateProperty.resolveWith<Color>(
-                (Set<MaterialState> states) {
-                  if (states.contains(MaterialState.disabled)) {
+                  backgroundColor: WidgetStateProperty.resolveWith<Color>(
+                (Set<WidgetState> states) {
+                  if (states.contains(WidgetState.disabled)) {
                     return Colors.grey;
                   }
                   return Colors.orange; // Use the component's default.

@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:month_year_picker/month_year_picker.dart';
 import 'package:popp/src/app_providers.dart';
-import 'package:popp/src/firebase/auth_state.dart';
 import 'package:popp/src/home/home_screen.dart';
 import 'package:popp/src/login/login_screen.dart';
 import 'package:popp/src/login/sign_up_congrats_screen.dart';

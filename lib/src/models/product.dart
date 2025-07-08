@@ -9,6 +9,7 @@ class Product {
   final String brandName;
   final String modelName;
   final String expectedPrice;
+  final String price;
   final String? imageUrl;
   final List<String>? thumbImageUrls;
   final String additionalDetails;
@@ -41,6 +42,7 @@ class Product {
   String? tyreCondition;
   bool? isApproved = false; // Default value for new products
   List<String>? searchKeywords;
+  List<String>? favoritedBy;
 
   Product(
       {this.id,
@@ -50,6 +52,7 @@ class Product {
       this.subCategory,
       required this.brandName,
       required this.expectedPrice,
+      required this.price,
       required this.modelName,
       required this.additionalDetails,
       this.firstOwner,
@@ -82,7 +85,8 @@ class Product {
       this.batteryCondition,
       this.tyreCondition,
       this.isApproved,
-      this.searchKeywords});
+      this.searchKeywords,
+      this.favoritedBy});
 
   // Factory constructor to create a Product from a JSON map (e.g., from Firestore)
   factory Product.fromJson(Map<String, dynamic> json, String documentId) {
@@ -95,10 +99,12 @@ class Product {
       brandName: json['brandName'] as String? ?? '',
       modelName: json['modelName'] as String? ?? '',
       expectedPrice: json['expectedPrice'] as String? ?? '',
+      price: json['price'] as String? ?? '',
       imageUrl: json['imageUrl'] as String?,
       thumbImageUrls: (json['thumbImageUrls'] as List<dynamic>?)
-          ?.map((item) => item as String)
-          .toList() ?? [],
+              ?.map((item) => item as String)
+              .toList() ??
+          [],
       additionalDetails: json['additionalDetails'] as String? ?? '',
       mfgDate: _parseDate(json['mfgDate']),
       firstOwner: json['firstOwner'] as String?,
@@ -129,6 +135,9 @@ class Product {
       searchKeywords: (json['searchKeywords'] as List<dynamic>?)
           ?.map((item) => item as String)
           .toList(),
+      favoritedBy: (json['favoritedBy'] as List<dynamic>?)
+          ?.map((item) => item as String)
+          .toList(),
       // `createdAt` is a FieldValue for writing, so we read it as DateTime
       createdAtDate: (json['createdAt'] as Timestamp?)?.toDate(),
       // We don't typically re-initialize `createdAt` (FieldValue) from json
@@ -147,6 +156,7 @@ class Product {
       'brandName': brandName,
       'modelName': modelName,
       'expectedPrice': expectedPrice,
+      'price': price,
       if (imageUrl != null) 'imageUrl': imageUrl,
       if (thumbImageUrls != null) 'thumbImageUrls': thumbImageUrls,
       'additionalDetails': additionalDetails,
@@ -179,6 +189,7 @@ class Product {
       if (batteryCondition != null) 'batteryCondition': batteryCondition,
       if (tyreCondition != null) 'tyreCondition': tyreCondition,
       if (searchKeywords != null) 'searchKeywords': searchKeywords,
+      if (favoritedBy != null) 'favoritedBy': favoritedBy,
       // If it's null and you're creating, Firestore handles it.
       // If you're updating and don't want to change it, don't include it.
       // If you want to force set a timestamp on update, include it.
@@ -205,6 +216,7 @@ class Product {
     String? brandName,
     String? modelName,
     String? expectedPrice,
+    String? price,
     String? imageUrl,
     List<String>? thumbImageUrls,
     String? additionalDetails,
@@ -239,6 +251,7 @@ class Product {
     String? tyreCondition,
     bool? isApproved,
     List<String>? searchKeywords,
+    List<String>? favoritedBy,
   }) {
     return Product(
       userId: userId ?? this.userId,
@@ -249,6 +262,7 @@ class Product {
       brandName: brandName ?? this.brandName,
       modelName: modelName ?? this.modelName,
       expectedPrice: expectedPrice ?? this.expectedPrice,
+      price: price ?? this.price,
       imageUrl: imageUrl ?? this.imageUrl,
       thumbImageUrls: thumbImageUrls ?? this.thumbImageUrls,
       additionalDetails: additionalDetails ?? this.additionalDetails,
@@ -280,6 +294,7 @@ class Product {
       tyreCondition: tyreCondition ?? this.tyreCondition,
       isApproved: isApproved ?? this.isApproved,
       searchKeywords: searchKeywords ?? this.searchKeywords,
+      favoritedBy: favoritedBy ?? this.favoritedBy,
     );
   }
 }

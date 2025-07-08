@@ -9,6 +9,7 @@ import 'package:popp/src/widgets/category_selector.dart';
 import 'package:popp/src/widgets/loading_overlay.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../api/currency_service.dart';
 import '../../firebase/firebase_save_prodcuts_api.dart';
 import '../../models/pop_category.dart';
 import '../../models/product.dart';
@@ -27,6 +28,7 @@ class SellYourAccessories extends StatefulWidget {
 class _SellYourAccessoriesState extends State<SellYourAccessories> {
   final _formKey = GlobalKey<FormState>();
   final FirebaseProductsService _productsService = FirebaseProductsService();
+  final CurrencyService _currencyService = CurrencyService();
 
   final TextEditingController sellerNameController = TextEditingController();
   final TextEditingController accessoriesNameController =
@@ -85,6 +87,8 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
 
   void submitForm() async {
     if (_formKey.currentState!.validate()) {
+      String formatedPrice = await getLocalizedPrice(
+          context, _currencyService, priceController.text);
       Product newProduct = Product(
         id: productId,
         userId: FirebaseAuth.instance.currentUser?.uid,
@@ -107,7 +111,8 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
         billDate: _selectedBillDate,
         productAging: productAgingController.text,
         warrantyLimit: warrantyLeftController.text,
-        expectedPrice: priceController.text,
+        expectedPrice: formatedPrice,
+        price: priceController.text,
         additionalDetails: additionalDetailsController.text,
         createdAt: FieldValue.serverTimestamp(),
         searchKeywords: [

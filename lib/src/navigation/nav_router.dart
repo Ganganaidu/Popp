@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:popp/src/favorites/favorites_screen.dart';
+import 'package:popp/src/settings/favorites_screen.dart';
 import 'package:popp/src/login/model/user_data_model.dart';
 import 'package:popp/src/settings/settings_screen.dart';
 import 'package:popp/src/utils/app_constants.dart';
@@ -16,6 +16,7 @@ import '../services/bikes/sell_your_bike.dart';
 import '../services/listservices/list_service_form_screen.dart';
 import '../services/listservices/service_detail_screen.dart';
 import '../services/listservices/service_listing_screen.dart';
+import '../settings/my_listings_screen.dart';
 
 // Define routes for each tab
 final Map<String, WidgetBuilder> routes = {
@@ -78,6 +79,15 @@ void onFavScreenTap(BuildContext context) {
     context,
     MaterialPageRoute(
       builder: (context) => const FavoritesScreen(),
+    ),
+  );
+}
+
+void onMyListingScreenTap(BuildContext context) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => const MyListingsScreen(),
     ),
   );
 }

@@ -4,9 +4,9 @@ import 'package:popp/src/utils/build_extensions.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 import '../../firebase/firebase_save_prodcuts_api.dart';
-import '../../utils/app_constants.dart'; // Import your build_extensions
+import '../../utils/app_constants.dart';
 import '../../utils/product_content_data.dart';
-import '../../widgets/chat_with_user_widget.dart'; // Import serviceCategories
+import '../../widgets/chat_with_user_widget.dart';
 
 class ServiceDetailScreen extends StatefulWidget {
   final Map<String, dynamic> serviceData;
@@ -25,11 +25,37 @@ class ServiceDetailScreen extends StatefulWidget {
 class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
   late bool _isApproved;
   int _selectedImageIndex = 0;
+  bool _isFav = false; // Track favorite state
+  bool _favButtonDisabled = false;
 
   @override
   void initState() {
     super.initState();
     _isApproved = widget.serviceData['isApproved'] == true;
+    // Set initial favorite state based on favoritedBy
+    final favoritedBy = widget.serviceData['favoritedBy'] as List<dynamic>?;
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (favoritedBy != null && currentUser != null) {
+      _isFav = favoritedBy.contains(currentUser.uid);
+    } else {
+      _isFav = false;
+    }
+  }
+
+  void _toggleFavorite() async {
+    setState(() {
+      _isFav = !_isFav;
+      _favButtonDisabled = true;
+    });
+    final prev = _isFav;
+    final result = await toggleFavoriteProduct(
+        Constants.servicePath, widget.serviceData['id']);
+    setState(() {
+      _favButtonDisabled = false;
+      if (!result) {
+        _isFav = !prev; // revert if failed
+      }
+    });
   }
 
   @override
@@ -241,6 +267,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
               background: Stack(
                 fit: StackFit.expand,
                 children: [
+                  // Remove GestureDetector, use only Image.network
                   Image.network(
                     allImageUrls.isNotEmpty
                         ? allImageUrls[_selectedImageIndex]
@@ -263,6 +290,23 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                           Colors.transparent,
                           Colors.black.withAlpha((0.7 * 255).toInt())
                         ],
+                      ),
+                    ),
+                  ),
+                  // Fav icon at top right (move to last in Stack)
+                  Positioned(
+                    top: 16,
+                    right: 16,
+                    child: CircleAvatar(
+                      radius: 20,
+                      backgroundColor: Colors.white70,
+                      child: IconButton(
+                        iconSize: 25,
+                        icon: Icon(
+                          _isFav ? Icons.favorite : Icons.favorite_border,
+                          color: _isFav ? Colors.red : Colors.red,
+                        ),
+                        onPressed: _favButtonDisabled ? null : _toggleFavorite,
                       ),
                     ),
                   ),

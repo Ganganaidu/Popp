@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 import '../models/product.dart';
 
 class ExpandableProductDetails extends StatefulWidget {
@@ -27,7 +28,6 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
         // detailRow("Features", product.additionalDetails, theme),
         if (product.mfgDate != null)
           detailRow("Manufacturing Date", _formatDate(product.mfgDate), theme),
-        detailRow("Expected Price", "₹${product.expectedPrice}", theme),
         if (product.registrationPlace?.isNotEmpty ?? false)
           detailRow("Registration Place", product.registrationPlace!, theme)
         else
@@ -108,6 +108,8 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
   }
 
   Widget detailRow(String title, String value, TextTheme theme) {
+    final isRegistrationPlace =
+        title.toLowerCase().contains('registration place');
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6.0),
       child: Row(
@@ -118,7 +120,27 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
               child: Text("$title:",
                   style:
                       theme.titleSmall?.copyWith(fontWeight: FontWeight.w600))),
-          Expanded(flex: 5, child: Text(value)),
+          Expanded(
+            flex: 5,
+            child: isRegistrationPlace && value.isNotEmpty
+                ? GestureDetector(
+                    onTap: () async {
+                      final encoded = Uri.encodeComponent(value);
+                      final url =
+                          'https://www.google.com/maps/search/?api=1&query=$encoded';
+                      await launchUrlString(url,
+                          mode: LaunchMode.externalApplication);
+                    },
+                    child: Text(
+                      value,
+                      style: theme.bodyMedium?.copyWith(
+                        color: Colors.blue,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  )
+                : Text(value),
+          ),
         ],
       ),
     );

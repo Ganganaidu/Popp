@@ -177,8 +177,8 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
       // Collect data based on category
       Map<String, dynamic> formData = {};
 
-      if (_selectedCategory == 'Book your Bike service' ||
-          _selectedCategory == 'Bike Rentals') {
+      if (_selectedCategory == serviceCategories[0] ||
+          _selectedCategory == serviceCategories[1]) {
         formData.addAll({
           'category': _selectedCategory,
           'businessTitle': businessTitleController.text,
@@ -205,8 +205,8 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
           'socialMediaLink': socialMediaLinkController.text,
           'businessWorkingDaysHours': businessWorkingDaysHoursController.text,
         });
-      } else if (_selectedCategory == 'Track day' ||
-          _selectedCategory == 'Training day') {
+      } else if (_selectedCategory == serviceCategories[2]  ||
+          _selectedCategory == serviceCategories[3] ) {
         formData.addAll({
           'category': _selectedCategory,
           'eventName': eventNameController.text,

@@ -110,7 +110,8 @@ class SettingsScreen extends StatelessWidget {
           children: [
             // Animated background (now using GIF instead of Lottie)
             Lottie.asset(
-              'assets/popp_animated_background.json', // Add a Lottie file for empty state
+              'assets/popp_animated_background.json',
+              // Add a Lottie file for empty state
               width: 200,
               height: 200,
             ),
@@ -214,14 +215,7 @@ class SettingsScreen extends StatelessWidget {
           icon: Icons.motorcycle_outlined,
           title: "My Listings",
           enabled: isLoggedIn,
-          onTap: () => AppDialogs.showComingSoonDialog(context, () {}),
-        ),
-        _buildListTile(
-          context,
-          icon: Icons.favorite_border,
-          title: "Favorites",
-          enabled: isLoggedIn,
-          onTap: () => AppDialogs.showComingSoonDialog(context, () {}),
+          onTap: () => onMyListingScreenTap(context),
         ),
         _buildListTile(
           context,

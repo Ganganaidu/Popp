@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:popp/src/utils/build_extensions.dart';
+import 'package:popp/src/widgets/app_dialogs.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../navigation/nav_router.dart';
@@ -101,10 +102,16 @@ class _LoginScreenState extends State<LoginScreen>
     setState(() => _isLoading = true);
 
     try {
-      await FirebaseAuth.instance
+      final userCred = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
-      if (!mounted) return;
-      Navigator.pushReplacementNamed(context, '/home');
+      if (userCred.user?.emailVerified == false) {
+        await FirebaseAuth.instance.signOut();
+        if (!mounted) return;
+        showVerificationDialog(email, password);
+      } else {
+        if (!mounted) return;
+        Navigator.pushReplacementNamed(context, '/home');
+      }
     } on FirebaseAuthException catch (e) {
       _showError(e.message ?? "Authentication failed");
     } catch (e) {
@@ -114,6 +121,19 @@ class _LoginScreenState extends State<LoginScreen>
         setState(() => _isLoading = false);
       }
     }
+  }
+
+  Future<void> showVerificationDialog(String email, String password) async {
+    AppDialogs.showConfirmationDialog(
+      context: context,
+      title: "Email not verified",
+      content:
+          "To keep your account secure, please verify your email address. Click 'Verify Now' to continue",
+      onConfirm: () {
+        onVerificationScreenTap(context, null, email, password, false);
+      },
+      confirmText: "Verify Now",
+    );
   }
 
   @override

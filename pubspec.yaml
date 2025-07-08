@@ -64,6 +64,8 @@ dependencies:
   shared_preferences: ^2.5.3
   month_year_picker: ^0.5.0+1
   firebase_app_check: ^0.3.2+9
+  share_plus: ^11.0.0
+  app_links: ^6.4.0
 
 dev_dependencies:
   flutter_test:

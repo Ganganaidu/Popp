@@ -1,18 +1,24 @@
 import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:popp/src/login/model/user_data_model.dart';
 import 'package:popp/src/navigation/nav_router.dart';
+
 import '../utils/app_loger.dart';
 
 class VerificationScreen extends StatefulWidget {
-  final UserData userData;
+  final UserData? userData;
+  final String email;
   final String password;
+  final bool isFromSignUp;
 
   const VerificationScreen({
     super.key,
-    required this.userData,
+    this.userData,
+    required this.email,
     required this.password,
+    required this.isFromSignUp,
   });
 
   @override
@@ -60,36 +66,17 @@ class _VerificationScreenState extends State<VerificationScreen> {
     try {
       // Sign in again to ensure the auth state is current
       await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: widget.userData.email,
+        email: widget.userData?.email ?? widget.email,
         password: widget.password,
       );
       if (mounted) {
-        onRegisterAndSubscribeTap(context, widget.userData);
+        if (widget.isFromSignUp) {
+          onRegisterAndSubscribeTap(context, widget.userData!);
+        } else {
+          // If not from sign up, just navigate to home
+          Navigator.pushReplacementNamed(context, '/home');
+        }
       }
-      // // Save the user data to Firestore
-      // FireStoreResult saveResult =
-      //     await saveUserDataToFireStore(widget.userData);
-      //
-      // if (saveResult.success) {
-      //   // Update registration status
-      //   await updateRegistrationComplete(
-      //       uid: widget.userData.uid, registrationComplete: true);
-      //
-      //   if (mounted) {
-      //     // Navigate to the congratulations screen
-      //     Navigator.pushNamedAndRemoveUntil(
-      //         context, '/finalCongrats', (route) => false);
-      //   }
-      // } else {
-      //   // Handle Firestore save error
-      //   if (mounted) {
-      //     ScaffoldMessenger.of(context).showSnackBar(
-      //       SnackBar(
-      //           content:
-      //               Text('Could not save profile: ${saveResult.errorMessage}')),
-      //     );
-      //   }
-      // }
     } catch (e) {
       AppLogger.e("Error finalizing account: $e");
       if (mounted) {
@@ -162,7 +149,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                widget.userData.email,
+                widget.userData?.email ?? widget.email,
                 style: Theme.of(context)
                     .textTheme
                     .bodyLarge

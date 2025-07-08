@@ -7,6 +7,7 @@ import 'package:popp/src/utils/app_utils.dart';
 import 'package:popp/src/utils/build_extensions.dart';
 import 'dart:async';
 
+import '../navigation/nav_router.dart';
 import '../utils/product_content_data.dart';
 import '../widgets/custom_dropdown_form_field.dart';
 import 'verification_screen.dart'; // Import the new screen
@@ -143,15 +144,8 @@ class _SignupScreenState extends State<SignupScreen> {
       if (!mounted) return;
 
       // Navigate to the dedicated verification screen
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => VerificationScreen(
-            userData: userData,
-            password: passwordController.text,
-          ),
-        ),
-      );
+      onVerificationScreenTap(
+          context, userData, userData.email, passwordController.text, true);
     } on FirebaseAuthException catch (e) {
       String errorMessage;
       switch (e.code) {

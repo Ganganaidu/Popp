@@ -14,6 +14,30 @@
       "languageVersion": "3.0"
     },
     {
+      "name": "app_links",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/app_links-6.4.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.3"
+    },
+    {
+      "name": "app_links_linux",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/app_links_linux-1.0.3",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
+    },
+    {
+      "name": "app_links_platform_interface",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/app_links_platform_interface-2.0.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
+    },
+    {
+      "name": "app_links_web",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/app_links_web-1.0.4",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
+    },
+    {
       "name": "archive",
       "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/archive-4.0.7",
       "packageUri": "lib/",
@@ -440,6 +464,12 @@
       "languageVersion": "3.4"
     },
     {
+      "name": "gtk",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/gtk-2.1.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
       "name": "html",
       "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/html-0.15.6",
       "packageUri": "lib/",
@@ -696,6 +726,18 @@
       "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/provider-6.1.5",
       "packageUri": "lib/",
       "languageVersion": "2.12"
+    },
+    {
+      "name": "share_plus",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/share_plus-11.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
+      "name": "share_plus_platform_interface",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/share_plus_platform_interface-6.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.18"
     },
     {
       "name": "shared_preferences",

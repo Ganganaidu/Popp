@@ -53,6 +53,9 @@
                 <data
                     android:host="popp-71efb.web.app"
                     android:scheme="https" />
+                <!-- Add pathPrefix to handle specific routes -->
+                <data android:pathPrefix="/service" />
+                <data android:pathPrefix="/product" />
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.

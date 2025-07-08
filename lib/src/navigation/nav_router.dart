@@ -10,6 +10,7 @@ import '../chat/generic_chat_screen.dart';
 import '../login/forgot_password_screen.dart';
 import '../login/otp_screen.dart';
 import '../login/register_and_subscribe_screen.dart';
+import '../login/verification_screen.dart';
 import '../products/product_detail_screen.dart';
 import '../services/accessories/sell_your_accessories.dart';
 import '../services/bikes/sell_your_bike.dart';
@@ -200,4 +201,19 @@ void onAdminDashboardTap(BuildContext context) {
 
 void onLoginTap(BuildContext context) {
   Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+}
+
+void onVerificationScreenTap(BuildContext context, UserData? userData,
+    String email, String password, bool isFromSignUp) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => VerificationScreen(
+        userData: userData,
+        email: email,
+        password: password,
+        isFromSignUp: isFromSignUp,
+      ),
+    ),
+  );
 }

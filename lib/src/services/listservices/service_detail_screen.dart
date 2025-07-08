@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:popp/src/utils/app_loger.dart';
 import 'package:popp/src/utils/build_extensions.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 import '../../firebase/firebase_save_prodcuts_api.dart';
@@ -32,7 +34,6 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
   void initState() {
     super.initState();
     _isApproved = widget.serviceData['isApproved'] == true;
-    // Set initial favorite state based on favoritedBy
     final favoritedBy = widget.serviceData['favoritedBy'] as List<dynamic>?;
     final currentUser = FirebaseAuth.instance.currentUser;
     if (favoritedBy != null && currentUser != null) {
@@ -58,6 +59,21 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     });
   }
 
+  // --- NEW: Function to handle sharing ---
+  void _shareService() {
+    final serviceId = widget.serviceData['id'];
+    final serviceName = widget.serviceData['businessTitle'] ??
+        widget.serviceData['eventName'] ??
+        'an amazing service';
+
+    // This is your deep link. Ensure your domain is correct.
+    final String deepLink = "https://popp-71efb.web.app/service/$serviceId";
+
+    final String shareText = "Check out $serviceName on POPP! $deepLink";
+    AppLogger.i("shareText $shareText");
+    Share.share(shareText, subject: 'Check out this service!');
+  }
+
   @override
   Widget build(BuildContext context) {
     final isAdmin =
@@ -69,7 +85,15 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(appBarTitle),
-        automaticallyImplyLeading: true, // Show back button only on toolbar
+        automaticallyImplyLeading: true,
+        // --- NEW: Share action button ---
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.share),
+            onPressed: _shareService,
+            tooltip: 'Share Service',
+          ),
+        ],
       ),
       body: _buildBody(context),
       bottomNavigationBar: isAdmin && !_isApproved
@@ -83,7 +107,6 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor:
                           _isApproved ? Colors.green : Colors.orange,
-                      // Green if approved
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
@@ -124,7 +147,6 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     final serviceData = widget.serviceData;
     final category = widget.category;
 
-    // Extract images
     List<String> allImageUrls = [];
     List<dynamic>? promoImages;
 
@@ -147,12 +169,10 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
       allImageUrls.addAll(shopGarageImages.cast<String>());
     }
 
-    // Determine content based on category
     String title = serviceData['businessTitle'] ??
         serviceData['eventName'] ??
         'Service Details';
-    String status =
-        serviceData['status'] ?? 'N/A'; // Assuming a 'status' field might exist
+    String status = serviceData['status'] ?? 'N/A';
     String dateTimeInfo = 'N/A';
     String locationInfo = 'N/A';
     String capacityInfo = 'N/A';
@@ -233,7 +253,6 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
         'Rider Skill Level': serviceData['riderSkillLevel'] ?? 'N/A',
         'Max Slots': serviceData['maxSlots'] ?? 'N/A',
       };
-      // Adding other fields from the Track Day screenshot
       if (serviceData['pointOfContactName'] != null) {
         eventDetails['Point of Contact'] = serviceData['pointOfContactName'];
       }
@@ -255,7 +274,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     }
 
     return Container(
-      color: Colors.white, // Set background for the whole scroll area
+      color: Colors.white,
       child: CustomScrollView(
         slivers: [
           SliverAppBar(
@@ -267,7 +286,6 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  // Remove GestureDetector, use only Image.network
                   Image.network(
                     allImageUrls.isNotEmpty
                         ? allImageUrls[_selectedImageIndex]
@@ -280,7 +298,6 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                       );
                     },
                   ),
-                  // Gradient Overlay for text readability
                   Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
@@ -293,7 +310,6 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                       ),
                     ),
                   ),
-                  // Fav icon at top right (move to last in Stack)
                   Positioned(
                     top: 16,
                     right: 16,
@@ -314,7 +330,6 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
               ),
             ),
           ),
-          // Only show thumbnails if there are more than 1 image
           if (allImageUrls.length > 1)
             SliverToBoxAdapter(
               child: Container(
@@ -389,12 +404,10 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                         if (status != 'N/A')
                           _buildInfoRow(
                               context, 'Status:', status, Colors.green),
-                        // Example status color
                         _buildInfoRow(context, 'When:', dateTimeInfo),
                         _buildInfoRow(context, 'Where:', locationInfo),
                         if (capacityInfo != 'N/A')
                           _buildInfoRow(context, 'Capacity:', capacityInfo),
-
                         const SizedBox(height: 20),
                         Text(
                           'Description',
@@ -408,8 +421,6 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                           style: context.bodyLarge,
                         ),
                         const SizedBox(height: 20),
-
-                        // Render Event Details or Bike Rental Details based on category
                         if (isTrackOrTrainingDay) ...[
                           Text(
                             'Event Details',
@@ -437,15 +448,13 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                           receiverUserName: contactName,
                           receiverUserID: userId,
                         ),
-                        const SizedBox(height: 20),
-                        // Extra space at the bottom
                       ],
                     ),
                   );
                 }
                 return null;
               },
-              childCount: 1, // Only one main content item in this sliver
+              childCount: 1,
             ),
           ),
         ],
@@ -455,7 +464,6 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
 
   Widget _buildInfoRow(BuildContext context, String label, String value,
       [Color? valueColor]) {
-    // Special handling for location row to make it clickable and open Google Maps
     if (label.toLowerCase().contains('where') &&
         value.isNotEmpty &&
         value != 'N/A') {
@@ -465,7 +473,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(
-              width: 80, // Align labels
+              width: 80,
               child: Text(
                 label,
                 style: context.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
@@ -493,14 +501,13 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
         ),
       );
     }
-    // Default row
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 80, // Align labels
+            width: 80,
             child: Text(
               label,
               style: context.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
@@ -518,7 +525,6 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
   }
 
   Widget _buildDetailRow(BuildContext context, String label, String value) {
-    // Special handling for Google Map Link or Social Media Link
     if (label.toLowerCase().contains('google map link') ||
         label.toLowerCase().contains('social media link') &&
             value.isNotEmpty &&
@@ -558,7 +564,6 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
         ),
       );
     }
-    // Default row
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(

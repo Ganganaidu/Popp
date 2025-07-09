@@ -274,235 +274,231 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
       }
     }
 
-    return Container(
-      color: Colors.white,
-      child: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            expandedHeight: 250.0,
-            floating: false,
-            pinned: true,
-            automaticallyImplyLeading: false,
-            flexibleSpace: FlexibleSpaceBar(
-              background: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Shimmer.fromColors(
-                    baseColor: Colors.grey[300]!,
-                    highlightColor: Colors.grey[100]!,
-                    child: Container(
-                      color: Colors.grey[300],
-                    ),
+    return CustomScrollView(
+      slivers: [
+        SliverAppBar(
+          expandedHeight: 250.0,
+          floating: false,
+          pinned: true,
+          automaticallyImplyLeading: false,
+          flexibleSpace: FlexibleSpaceBar(
+            background: Stack(
+              fit: StackFit.expand,
+              children: [
+                Shimmer.fromColors(
+                  baseColor: Colors.grey[300]!,
+                  highlightColor: Colors.grey[100]!,
+                  child: Container(
+                    color: Colors.grey[300],
                   ),
-                  Image.network(
-                    allImageUrls.isNotEmpty
-                        ? allImageUrls[_selectedImageIndex]
-                        : Constants.defaultPlaceholderImage,
-                    fit: BoxFit.cover,
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return Shimmer.fromColors(
-                        baseColor: Colors.grey[300]!,
-                        highlightColor: Colors.grey[100]!,
-                        child: Container(
-                          color: Colors.grey[300],
-                        ),
-                      );
-                    },
-                    errorBuilder: (context, error, stackTrace) {
-                      return Image.network(
-                        Constants.defaultPlaceholderImage,
-                        fit: BoxFit.cover,
-                      );
-                    },
-                  ),
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.transparent,
-                          Colors.black.withAlpha((0.7 * 255).toInt())
-                        ],
+                ),
+                Image.network(
+                  allImageUrls.isNotEmpty
+                      ? allImageUrls[_selectedImageIndex]
+                      : Constants.defaultPlaceholderImage,
+                  fit: BoxFit.cover,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Shimmer.fromColors(
+                      baseColor: Colors.grey[300]!,
+                      highlightColor: Colors.grey[100]!,
+                      child: Container(
+                        color: Colors.grey[300],
                       ),
+                    );
+                  },
+                  errorBuilder: (context, error, stackTrace) {
+                    return Image.network(
+                      Constants.defaultPlaceholderImage,
+                      fit: BoxFit.cover,
+                    );
+                  },
+                ),
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withAlpha((0.7 * 255).toInt())
+                      ],
                     ),
                   ),
-                  Positioned(
-                    top: 16,
-                    right: 16,
-                    child: CircleAvatar(
-                      radius: 20,
-                      backgroundColor: Colors.white70,
-                      child: IconButton(
-                        iconSize: 25,
-                        icon: Icon(
-                          _isFav ? Icons.favorite : Icons.favorite_border,
-                          color: _isFav ? Colors.red : Colors.red,
-                        ),
-                        onPressed: _favButtonDisabled ? null : _toggleFavorite,
+                ),
+                Positioned(
+                  top: 16,
+                  right: 16,
+                  child: CircleAvatar(
+                    radius: 20,
+                    backgroundColor: Colors.white70,
+                    child: IconButton(
+                      iconSize: 25,
+                      icon: Icon(
+                        _isFav ? Icons.favorite : Icons.favorite_border,
+                        color: _isFav ? Colors.red : Colors.red,
                       ),
+                      onPressed: _favButtonDisabled ? null : _toggleFavorite,
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-          if (allImageUrls.length > 1)
-            SliverToBoxAdapter(
-              child: Container(
-                color: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                child: SizedBox(
-                  height: 80,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: allImageUrls.length,
-                    itemBuilder: (context, index) {
-                      String thumbUrl = allImageUrls[index];
-                      return GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _selectedImageIndex = index;
-                          });
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8.0),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                  color: _selectedImageIndex == index
-                                      ? Colors.orange
-                                      : Colors.transparent,
-                                  width: 3,
-                                ),
+        ),
+        if (allImageUrls.length > 1)
+          SliverToBoxAdapter(
+            child: Container(
+              color: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: SizedBox(
+                height: 80,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: allImageUrls.length,
+                  itemBuilder: (context, index) {
+                    String thumbUrl = allImageUrls[index];
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedImageIndex = index;
+                        });
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8.0),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: _selectedImageIndex == index
+                                    ? Colors.orange
+                                    : Colors.transparent,
+                                width: 3,
                               ),
-                              child: Stack(
-                                children: [
-                                  Shimmer.fromColors(
-                                    baseColor: Colors.grey[300]!,
-                                    highlightColor: Colors.grey[100]!,
-                                    child: Container(
-                                      width: 80,
-                                      height: 80,
-                                      color: Colors.grey[300],
-                                    ),
-                                  ),
-                                  Image.network(
-                                    thumbUrl,
+                            ),
+                            child: Stack(
+                              children: [
+                                Shimmer.fromColors(
+                                  baseColor: Colors.grey[300]!,
+                                  highlightColor: Colors.grey[100]!,
+                                  child: Container(
                                     width: 80,
                                     height: 80,
-                                    fit: BoxFit.cover,
-                                    loadingBuilder:
-                                        (context, child, loadingProgress) {
-                                      if (loadingProgress == null) return child;
-                                      return Shimmer.fromColors(
-                                        baseColor: Colors.grey[300]!,
-                                        highlightColor: Colors.grey[100]!,
-                                        child: Container(
-                                          width: 80,
-                                          height: 80,
-                                          color: Colors.grey[300],
-                                        ),
-                                      );
-                                    },
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return Container(
+                                    color: Colors.grey[300],
+                                  ),
+                                ),
+                                Image.network(
+                                  thumbUrl,
+                                  width: 80,
+                                  height: 80,
+                                  fit: BoxFit.cover,
+                                  loadingBuilder:
+                                      (context, child, loadingProgress) {
+                                    if (loadingProgress == null) return child;
+                                    return Shimmer.fromColors(
+                                      baseColor: Colors.grey[300]!,
+                                      highlightColor: Colors.grey[100]!,
+                                      child: Container(
                                         width: 80,
                                         height: 80,
                                         color: Colors.grey[300],
-                                        child: Icon(Icons.broken_image,
-                                            color: Colors.grey[600]),
-                                      );
-                                    },
-                                  ),
-                                ],
-                              ),
+                                      ),
+                                    );
+                                  },
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      width: 80,
+                                      height: 80,
+                                      color: Colors.grey[300],
+                                      child: Icon(Icons.broken_image,
+                                          color: Colors.grey[600]),
+                                    );
+                                  },
+                                ),
+                              ],
                             ),
                           ),
                         ),
-                      );
-                    },
-                  ),
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (BuildContext context, int index) {
-                if (index == 0) {
-                  return Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          title,
-                          style: context.headlineLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+          ),
+        SliverList(
+          delegate: SliverChildBuilderDelegate(
+            (BuildContext context, int index) {
+              if (index == 0) {
+                return Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: context.headlineLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
                         ),
-                        const SizedBox(height: 8),
-                        if (status != 'N/A')
-                          _buildInfoRow(
-                              context, 'Status:', status, Colors.green),
-                        _buildInfoRow(context, 'When:', dateTimeInfo),
-                        _buildInfoRow(context, 'Where:', locationInfo),
-                        if (capacityInfo != 'N/A')
-                          _buildInfoRow(context, 'Capacity:', capacityInfo),
-                        const SizedBox(height: 20),
+                      ),
+                      const SizedBox(height: 8),
+                      if (status != 'N/A')
+                        _buildInfoRow(context, 'Status:', status, Colors.green),
+                      _buildInfoRow(context, 'When:', dateTimeInfo),
+                      _buildInfoRow(context, 'Where:', locationInfo),
+                      if (capacityInfo != 'N/A')
+                        _buildInfoRow(context, 'Capacity:', capacityInfo),
+                      const SizedBox(height: 20),
+                      Text(
+                        'Description',
+                        style: context.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        description,
+                        style: context.bodyLarge,
+                      ),
+                      const SizedBox(height: 20),
+                      if (isTrackOrTrainingDay) ...[
                         Text(
-                          'Description',
+                          'Event Details',
                           style: context.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         const SizedBox(height: 8),
+                        ...eventDetails.entries.map((entry) =>
+                            _buildDetailRow(context, entry.key, entry.value)),
+                      ] else if (isBikeRentalCategory &&
+                          bikeRentalDetails.isNotEmpty) ...[
                         Text(
-                          description,
-                          style: context.bodyLarge,
-                        ),
-                        const SizedBox(height: 20),
-                        if (isTrackOrTrainingDay) ...[
-                          Text(
-                            'Event Details',
-                            style: context.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                          'Bike Rental Details',
+                          style: context.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
                           ),
-                          const SizedBox(height: 8),
-                          ...eventDetails.entries.map((entry) =>
-                              _buildDetailRow(context, entry.key, entry.value)),
-                        ] else if (isBikeRentalCategory &&
-                            bikeRentalDetails.isNotEmpty) ...[
-                          Text(
-                            'Bike Rental Details',
-                            style: context.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          ...bikeRentalDetails.entries.map((entry) =>
-                              _buildDetailRow(context, entry.key, entry.value)),
-                        ],
-                        const SizedBox(height: 20),
-                        ChatWithSellerCard(
-                          receiverUserName: contactName,
-                          receiverUserID: userId,
                         ),
+                        const SizedBox(height: 8),
+                        ...bikeRentalDetails.entries.map((entry) =>
+                            _buildDetailRow(context, entry.key, entry.value)),
                       ],
-                    ),
-                  );
-                }
-                return null;
-              },
-              childCount: 1,
-            ),
+                      const SizedBox(height: 20),
+                      ChatWithSellerCard(
+                        receiverUserName: contactName,
+                        receiverUserID: userId,
+                      ),
+                    ],
+                  ),
+                );
+              }
+              return null;
+            },
+            childCount: 1,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

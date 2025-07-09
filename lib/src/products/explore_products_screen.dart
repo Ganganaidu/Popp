@@ -4,6 +4,19 @@ import 'package:flutter/material.dart';
 import '../navigation/nav_router.dart';
 import '../utils/app_constants.dart';
 
+// A dedicated data class for shortcuts.
+class _ShortcutCategory {
+  final String title;
+  final IconData icon;
+  final Color color;
+
+  const _ShortcutCategory({
+    required this.title,
+    required this.icon,
+    required this.color,
+  });
+}
+
 class ExploreProductsScreen extends StatefulWidget {
   const ExploreProductsScreen({super.key});
 
@@ -16,14 +29,38 @@ class _ExploreProductsScreenState extends State<ExploreProductsScreen> {
   bool _isLoading = false;
   List<Map<String, dynamic>> _results = [];
 
-  // Shortcuts for default suggestions
-  final List<String> _shortcuts = [
-    'Bike Rentals',
-    'Events',
-    'Accessories',
-    'Premium bikes',
-    'Track day',
-    'Training day',
+  // Renamed the variable and made the list type explicit ---
+  final List<_ShortcutCategory> _shortcutCategories = <_ShortcutCategory>[
+    const _ShortcutCategory(
+      title: 'Bike Rentals',
+      icon: Icons.two_wheeler_outlined,
+      color: Colors.blueAccent,
+    ),
+    const _ShortcutCategory(
+      title: 'Events',
+      icon: Icons.event_available_outlined,
+      color: Colors.deepPurpleAccent,
+    ),
+    const _ShortcutCategory(
+      title: 'Services',
+      icon: Icons.miscellaneous_services_outlined,
+      color: Colors.teal,
+    ),
+    const _ShortcutCategory(
+      title: 'Premium bikes',
+      icon: Icons.workspace_premium_outlined,
+      color: Colors.amber,
+    ),
+    const _ShortcutCategory(
+      title: 'Track day',
+      icon: Icons.flag_outlined,
+      color: Colors.redAccent,
+    ),
+    const _ShortcutCategory(
+      title: 'Training day',
+      icon: Icons.school_outlined,
+      color: Colors.green,
+    ),
   ];
 
   Future<void> _search(String query) async {
@@ -74,7 +111,6 @@ class _ExploreProductsScreenState extends State<ExploreProductsScreen> {
     super.dispose();
   }
 
-  // Returns a list of all image URLs from the item (product or service)
   List<String> _extractAllImageUrls(Map<String, dynamic> item) {
     List<String> allImageUrls = [];
     List<dynamic>? promoImages;
@@ -99,7 +135,7 @@ class _ExploreProductsScreenState extends State<ExploreProductsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
-        padding: const EdgeInsets.fromLTRB(2, 2, 2, 2),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
         child: Column(
           children: [
             TextField(
@@ -132,76 +168,72 @@ class _ExploreProductsScreenState extends State<ExploreProductsScreen> {
               onSubmitted: _search,
             ),
             const SizedBox(height: 16),
-            if (_isLoading) const Center(child: CircularProgressIndicator()),
-            if (!_isLoading &&
-                _results.isEmpty &&
-                _searchController.text.isNotEmpty)
-              const Center(child: Text('No results found.')),
-            // Default details/shortcuts when no search is active
-            if (!_isLoading &&
-                _results.isEmpty &&
-                _searchController.text.isEmpty)
+            if (_isLoading)
+              const Expanded(child: Center(child: CircularProgressIndicator()))
+            else if (_results.isEmpty && _searchController.text.isNotEmpty)
+              const Expanded(child: Center(child: Text('No results found.')))
+            else if (_results.isEmpty && _searchController.text.isEmpty)
               Expanded(
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'What can you search?',
+                      'Explore Categories',
                       style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 12),
-                    const Text(
-                      'Try searching for products, services, or use these shortcuts:',
-                      textAlign: TextAlign.center,
+                          TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 16),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: _shortcuts
-                          .map((shortcut) => ActionChip(
-                                label: Text(shortcut),
-                                onPressed: () => _onShortcutTap(shortcut),
-                              ))
-                          .toList(),
+                    Expanded(
+                      child: GridView.builder(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                          childAspectRatio: 1.2, // Adjusted for icon layout
+                        ),
+                        // --- Use the new variable name ---
+                        itemCount: _shortcutCategories.length,
+                        itemBuilder: (context, index) {
+                          final shortcut = _shortcutCategories[index];
+                          return _buildCategoryCard(
+                            title: shortcut.title,
+                            icon: shortcut.icon,
+                            color: shortcut.color,
+                            onTap: () => _onShortcutTap(shortcut.title),
+                          );
+                        },
+                      ),
                     ),
                   ],
                 ),
-              ),
-            if (!_isLoading && _results.isNotEmpty)
+              )
+            else
+              // Display search results
               Expanded(
                 child: ListView.builder(
                   itemCount: _results.length,
                   itemBuilder: (context, index) {
                     final item = _results[index];
-                    Widget? leadingWidget;
-                    // Try to get image URL from common fields and lists
                     final allImageUrls = _extractAllImageUrls(item);
                     final imageUrl = allImageUrls.isNotEmpty
                         ? allImageUrls.first
                         : Constants.defaultPlaceholderImage;
-                    if (imageUrl.isNotEmpty) {
-                      leadingWidget = ClipRRect(
+
+                    return ListTile(
+                      leading: ClipRRect(
                         borderRadius: BorderRadius.circular(8),
                         child: Image.network(
                           imageUrl,
-                          width: 100,
-                          height: 100,
+                          width: 60,
+                          height: 60,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) => Icon(
                               item['type'] == 'product'
                                   ? Icons.shopping_bag
                                   : Icons.miscellaneous_services),
                         ),
-                      );
-                    } else {
-                      leadingWidget = Icon(item['type'] == 'product'
-                          ? Icons.shopping_bag
-                          : Icons.miscellaneous_services);
-                    }
-                    return ListTile(
-                      leading: leadingWidget,
+                      ),
                       title: Text(item['businessTitle'] ??
                           item['eventName'] ??
                           item['brandName'] ??
@@ -226,6 +258,48 @@ class _ExploreProductsScreenState extends State<ExploreProductsScreen> {
                   },
                 ),
               ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategoryCard(
+      {required String title,
+      required IconData icon,
+      required Color color,
+      required VoidCallback onTap}) {
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 4,
+      shadowColor: color.withOpacity(0.3),
+      child: InkWell(
+        onTap: onTap,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircleAvatar(
+              radius: 30,
+              backgroundColor: color.withOpacity(0.15),
+              child: Icon(
+                icon,
+                size: 32,
+                color: color,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Text(
+                title,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+            ),
           ],
         ),
       ),

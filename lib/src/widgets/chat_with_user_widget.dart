@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../navigation/nav_router.dart';
 import '../subscription/subscription_provider.dart';
+import 'app_dialogs.dart';
 
 class ChatWithSellerCard extends StatelessWidget {
   final String receiverUserName;
@@ -63,21 +64,21 @@ class ChatWithSellerCard extends StatelessWidget {
                       } else {
                         message = user == null
                             ? 'Please login to use chat.'
-                            : 'Please subscribe to use chat.';
+                            : 'Chat feature is available for subscribed users only.Please upgrade your plan to start chatting';
                       }
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: const Text('Chat Unavailable'),
-                          content: Text(message),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.of(context).pop(),
-                              child: const Text('OK'),
-                            ),
-                          ],
-                        ),
-                      );
+                      final confirmText = user == null ? 'Login' : 'Subscribe';
+                      AppDialogs.showConfirmationDialog(
+                          context: context,
+                          title: 'Chat Unavailable',
+                          content: message,
+                          confirmText: confirmText,
+                          onConfirm: () {
+                            if (user == null) {
+                              onLoginTap(context);
+                            } else {
+                              onSettingsTap(context);
+                            }
+                          });
                     },
               icon: const Icon(Icons.messenger_rounded),
               label: const Text("Chat"),

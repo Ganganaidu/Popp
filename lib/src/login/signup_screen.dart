@@ -173,6 +173,13 @@ class _SignupScreenState extends State<SignupScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            onLoginTap(context);
+          },
+          tooltip: 'Back',
+        ),
         title: const Text("Create Account"),
         elevation: 0,
       ),

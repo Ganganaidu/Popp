@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:popp/src/utils/app_constants.dart';
 import 'package:popp/src/utils/app_loger.dart';
 import 'package:popp/src/utils/build_extensions.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../../firebase/firebase_save_prodcuts_api.dart';
 import '../../navigation/nav_router.dart';
@@ -185,19 +186,46 @@ class _ServiceListingScreenState extends State<ServiceListingScreen> {
                                   Rect.fromLTRB(0, 0, rect.width, rect.height));
                             },
                             blendMode: BlendMode.darken,
-                            child: Image.network(
-                              imageUrl ?? Constants.defaultPlaceholderImage,
-                              width: double.infinity,
-                              height: 200, // Fixed height for consistency
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Image.network(
-                                  Constants.defaultPlaceholderImage,
+                            child: Stack(
+                              children: [
+                                Shimmer.fromColors(
+                                  baseColor: Colors.grey[300]!,
+                                  highlightColor: Colors.grey[100]!,
+                                  child: Container(
+                                    width: double.infinity,
+                                    height: 200,
+                                    color: Colors.grey[300],
+                                  ),
+                                ),
+                                Image.network(
+                                  imageUrl ?? Constants.defaultPlaceholderImage,
                                   width: double.infinity,
                                   height: 200,
+                                  // Fixed height for consistency
                                   fit: BoxFit.cover,
-                                );
-                              },
+                                  loadingBuilder:
+                                      (context, child, loadingProgress) {
+                                    if (loadingProgress == null) return child;
+                                    return Shimmer.fromColors(
+                                      baseColor: Colors.grey[300]!,
+                                      highlightColor: Colors.grey[100]!,
+                                      child: Container(
+                                        width: double.infinity,
+                                        height: 200,
+                                        color: Colors.grey[300],
+                                      ),
+                                    );
+                                  },
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Image.network(
+                                      Constants.defaultPlaceholderImage,
+                                      width: double.infinity,
+                                      height: 200,
+                                      fit: BoxFit.cover,
+                                    );
+                                  },
+                                ),
+                              ],
                             ),
                           ),
                           // Content Overlay

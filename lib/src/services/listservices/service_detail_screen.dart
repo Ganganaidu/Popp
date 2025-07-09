@@ -4,6 +4,7 @@ import 'package:popp/src/utils/app_loger.dart';
 import 'package:popp/src/utils/build_extensions.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher_string.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../../firebase/firebase_save_prodcuts_api.dart';
 import '../../utils/app_constants.dart';
@@ -286,11 +287,28 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
               background: Stack(
                 fit: StackFit.expand,
                 children: [
+                  Shimmer.fromColors(
+                    baseColor: Colors.grey[300]!,
+                    highlightColor: Colors.grey[100]!,
+                    child: Container(
+                      color: Colors.grey[300],
+                    ),
+                  ),
                   Image.network(
                     allImageUrls.isNotEmpty
                         ? allImageUrls[_selectedImageIndex]
                         : Constants.defaultPlaceholderImage,
                     fit: BoxFit.cover,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Shimmer.fromColors(
+                        baseColor: Colors.grey[300]!,
+                        highlightColor: Colors.grey[100]!,
+                        child: Container(
+                          color: Colors.grey[300],
+                        ),
+                      );
+                    },
                     errorBuilder: (context, error, stackTrace) {
                       return Image.network(
                         Constants.defaultPlaceholderImage,
@@ -361,20 +379,46 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                                   width: 3,
                                 ),
                               ),
-                              child: Image.network(
-                                thumbUrl,
-                                width: 80,
-                                height: 80,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Container(
+                              child: Stack(
+                                children: [
+                                  Shimmer.fromColors(
+                                    baseColor: Colors.grey[300]!,
+                                    highlightColor: Colors.grey[100]!,
+                                    child: Container(
+                                      width: 80,
+                                      height: 80,
+                                      color: Colors.grey[300],
+                                    ),
+                                  ),
+                                  Image.network(
+                                    thumbUrl,
                                     width: 80,
                                     height: 80,
-                                    color: Colors.grey[300],
-                                    child: Icon(Icons.broken_image,
-                                        color: Colors.grey[600]),
-                                  );
-                                },
+                                    fit: BoxFit.cover,
+                                    loadingBuilder:
+                                        (context, child, loadingProgress) {
+                                      if (loadingProgress == null) return child;
+                                      return Shimmer.fromColors(
+                                        baseColor: Colors.grey[300]!,
+                                        highlightColor: Colors.grey[100]!,
+                                        child: Container(
+                                          width: 80,
+                                          height: 80,
+                                          color: Colors.grey[300],
+                                        ),
+                                      );
+                                    },
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Container(
+                                        width: 80,
+                                        height: 80,
+                                        color: Colors.grey[300],
+                                        child: Icon(Icons.broken_image,
+                                            color: Colors.grey[600]),
+                                      );
+                                    },
+                                  ),
+                                ],
                               ),
                             ),
                           ),

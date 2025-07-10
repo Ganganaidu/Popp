@@ -13,6 +13,8 @@ import '../../api/currency_service.dart';
 import '../../firebase/firebase_save_prodcuts_api.dart';
 import '../../models/pop_category.dart';
 import '../../models/product.dart';
+import '../../navigation/nav_router.dart';
+import '../../widgets/app_dialogs.dart';
 import '../../widgets/custom_dropdown_form_field.dart';
 import '../../widgets/image_picker_selection.dart';
 import '../../widgets/month_year_picker.dart';
@@ -174,7 +176,11 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
           _images.clear();
         });
         if (mounted) {
-          Navigator.pushReplacementNamed(context, '/home');
+          AppDialogs.showProductSuccessDialog(context, () {
+            onMyListingScreenTap(context, true);
+          }, () {
+            Navigator.pushReplacementNamed(context, '/home');
+          });
         }
       }
     } else {
@@ -235,7 +241,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
                   validator: (val) => val!.isEmpty ? "Required" : null,
                 )),
                 buildPaddedField(TextFormField(
-                  controller: accessoriesNameController,
+                  controller: brandNameController,
                   decoration: context.inputDecoration(
                       "Brand Name", "Enter your Brand name"),
                   validator: (val) => val!.isEmpty ? "Required" : null,
@@ -275,6 +281,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
                   enable: isBikeSpecific,
                   label: "Bike Manufacture Date",
                   hint: "Select month and year",
+                  selectOnlyMonthYear: true,
                   selectedDate: _selectedManufactureDate,
                   onDateSelected: (date) =>
                       setState(() => _selectedManufactureDate = date),

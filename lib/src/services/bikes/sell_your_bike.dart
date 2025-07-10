@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:popp/src/utils/build_extensions.dart';
+import 'package:popp/src/widgets/app_dialogs.dart';
 import 'package:popp/src/widgets/loading_overlay.dart';
 import 'package:uuid/uuid.dart';
 
@@ -11,6 +12,7 @@ import '../../api/currency_service.dart';
 import '../../firebase/firebase_save_prodcuts_api.dart';
 import '../../models/pop_category.dart';
 import '../../models/product.dart';
+import '../../navigation/nav_router.dart';
 import '../../widgets/custom_dropdown_form_field.dart';
 import '../../widgets/image_picker_selection.dart';
 import '../../widgets/month_year_picker.dart';
@@ -177,7 +179,11 @@ class _SellYourBikeState extends State<SellYourBike>
           _selectedRegistrationDate = null;
         });
         if (!mounted) return;
-        Navigator.pushReplacementNamed(context, '/home');
+        AppDialogs.showProductSuccessDialog(context, () {
+          onMyListingScreenTap(context, true);
+        }, () {
+          Navigator.pushReplacementNamed(context, '/home');
+        });
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(

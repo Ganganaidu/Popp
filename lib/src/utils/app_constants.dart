@@ -28,7 +28,7 @@ class Constants {
   static const String contactEmail = 'preownedpremiumproducts@gmail.com';
 
   // Keep agentUserId consistent with Firestore rules
-  static const String adminUserId = 'XsKNJMeiR2NuaLslm428EWL6zOv1';
+  static const String adminUserId = '3SYkhqmzDKPf2n2j7csaBUI4OzF2';
 
   // Default placeholder image
   static const String defaultPlaceholderImage =

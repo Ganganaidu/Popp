@@ -73,13 +73,6 @@ class FirebaseProductsService {
     );
 
     final productDataForCheck = completeProduct.toJson();
-
-    AppLogger.d("newProductId (passed to createProduct): $newProductId");
-    AppLogger.d("completeProduct.id (after copyWith): ${completeProduct.id}");
-    AppLogger.d(
-        "productDataForCheck['id'] (from toJson): ${productDataForCheck['id']}");
-    AppLogger.d("productDataForCheck (from toJson): $productDataForCheck");
-
     // 4. Create the product in FireStore and update user's created list
     final String? createdProductId =
         await createProduct(newProductId, productDataForCheck);
@@ -100,10 +93,8 @@ class FirebaseProductsService {
       if (!context.mounted) return false;
 
       if (savedToProfile) {
-        // Or just check if createdProductId != null if not auto-saving
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Product listed successfully!')),
-        );
+        AppLogger.d(
+            "Product listed successfully and added to user's saved items: $createdProductId");
         return true;
       } else {
         ScaffoldMessenger.of(context).showSnackBar(

@@ -31,7 +31,10 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
           detailRow(
               "Manufacturing Date", _formatDate(product.mfgDate, true), theme),
         if (product.registrationPlace?.isNotEmpty ?? false)
-          detailRow("Registration Place", product.registrationPlace!, theme)
+          detailRow("Registration Place", product.registrationPlace!, theme),
+        if (product.city.isNotEmpty) detailRow("City", product.city, theme),
+        if (product.state.isNotEmpty)
+          detailRow("State", product.state, theme)
         else
           const SizedBox.shrink(),
 
@@ -48,10 +51,6 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (product.city.isNotEmpty)
-                  detailRow("City", product.city, theme),
-                if (product.state.isNotEmpty)
-                  detailRow("State", product.state, theme),
                 if (product.kmDriven?.isNotEmpty ?? false)
                   detailRow("KM Driven", product.kmDriven!, theme),
                 if (product.registrationDate != null)

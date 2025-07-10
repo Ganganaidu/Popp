@@ -215,7 +215,7 @@ class SettingsScreen extends StatelessWidget {
           icon: Icons.motorcycle_outlined,
           title: "My Listings",
           enabled: isLoggedIn,
-          onTap: () => onMyListingScreenTap(context),
+          onTap: () => onMyListingScreenTap(context, false),
         ),
         _buildListTile(
           context,

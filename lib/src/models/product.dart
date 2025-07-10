@@ -152,7 +152,7 @@ class Product {
       'isApproved': isApproved, // Assuming default value for new products
       'categoryId': categoryId,
       'category': category,
-      if (subCategory != null) 'subCategoryName': subCategory,
+      if (subCategory != null) 'subCategory': subCategory,
       'brandName': brandName,
       'modelName': modelName,
       'expectedPrice': expectedPrice,

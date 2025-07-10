@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:popp/src/widgets/shimmer_image.dart';
+import 'package:popp/src/widgets/shimmer_image.dart'; // Assuming this is your custom image widget
 
 class ListingCard extends StatelessWidget {
   final String title;
   final String? imageUrl;
   final String? price;
+  final String? status;
   final bool showOptionsMenu;
   final VoidCallback? onTap;
   final VoidCallback? onEdit;
@@ -17,11 +18,24 @@ class ListingCard extends StatelessWidget {
     required this.title,
     this.imageUrl,
     this.price,
+    this.status, // Default status is 'Pending'
     this.showOptionsMenu = false,
     this.onTap,
     this.onEdit,
     this.onSold,
   });
+
+  // --- NEW: Helper to determine banner color and icon based on status ---
+  (Color, IconData) _getStatusStyle(String status) {
+    switch (status.toLowerCase()) {
+      case 'Sold':
+        return (Colors.grey.shade700, Icons.money_off_outlined);
+      case 'Approved':
+        return (Colors.green.shade600, Icons.check_circle_outline);
+      default: // 'Pending' or any other status
+        return (Colors.orange.shade700, Icons.hourglass_top_outlined);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,6 +69,9 @@ class ListingCard extends StatelessWidget {
                       right: 4,
                       child: _buildOptionsMenu(context),
                     ),
+                  // --- NEW: Conditionally display the status banner ---
+                  if (status != null && status!.isNotEmpty)
+                    _buildStatusBanner(),
                 ],
               ),
             ),
@@ -83,6 +100,46 @@ class ListingCard extends StatelessWidget {
                     ),
                   ],
                 ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // --- NEW: Widget to build the status banner ---
+  Widget _buildStatusBanner() {
+    final (color, icon) = _getStatusStyle(status!);
+    return Positioned(
+      top: 0,
+      left: 0,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(12),
+            bottomRight: Radius.circular(12),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 4,
+              offset: const Offset(2, 2),
+            )
+          ],
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: Colors.white, size: 14),
+            const SizedBox(width: 4),
+            Text(
+              status!,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
               ),
             ),
           ],

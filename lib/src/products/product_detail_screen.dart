@@ -1,21 +1,24 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:popp/src/models/product.dart';
 import 'package:popp/src/utils/app_loger.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
-import '../api/currency_service.dart';
 import '../firebase/firebase_save_prodcuts_api.dart';
+import '../navigation/nav_router.dart';
 import '../utils/app_constants.dart';
+import '../widgets/app_dialogs.dart';
 import '../widgets/chat_with_user_widget.dart';
 import '../widgets/expandable_product_details_widget.dart';
+import '../widgets/expandable_text_widget.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final Map<String, dynamic> productJson;
+  final bool showStatus;
 
-  const ProductDetailScreen({super.key, required this.productJson});
+  const ProductDetailScreen(
+      {super.key, required this.productJson, this.showStatus = false});
 
   @override
   State<ProductDetailScreen> createState() => _ProductDetailScreenState();
@@ -25,18 +28,29 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   late final ValueNotifier<int> selectedImageIndexNotifier;
   bool isFavorite = false;
   late final PageController _pageController;
-  final CurrencyService _currencyService = CurrencyService();
   bool _isApproved = false;
+  bool _isSold = false;
   bool _favButtonDisabled = false;
+  String _status = '';
 
   @override
   void initState() {
     super.initState();
     selectedImageIndexNotifier = ValueNotifier<int>(0);
     _pageController = PageController(initialPage: 0);
+
     _isApproved = widget.productJson['isApproved'] == true;
-    AppLogger.d("ProductDetailScreen initState: isApproved = $_isApproved");
-    // Set initial favorite state based on favoritedBy
+    _isSold = widget.productJson['isSold'] == true;
+    if (_isSold) {
+      _status = 'Sold';
+    } else if (_isApproved) {
+      _status = 'Approved';
+    } else {
+      _status = 'Pending';
+    }
+
+    AppLogger.d("ProductDetailScreen initState: status = $_status");
+
     final favoritedBy = widget.productJson['favoritedBy'] as List<dynamic>?;
     final currentUser = FirebaseAuth.instance.currentUser;
     if (favoritedBy != null && currentUser != null) {
@@ -56,17 +70,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   void _toggleFavorite() async {
     setState(() {
       isFavorite = !isFavorite;
-    });
-    final prev = isFavorite;
-    setState(() {
       _favButtonDisabled = true;
     });
+    final prev = isFavorite;
     final result = await toggleFavoriteProduct(
         Constants.productsPath, widget.productJson['id']);
     setState(() {
       _favButtonDisabled = false;
       if (!result) {
-        isFavorite = !prev; // revert if failed
+        isFavorite = !prev;
       }
     });
   }
@@ -107,14 +119,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         : imageWidget;
   }
 
-  // Function to handle sharing ---
   void _shareProduct(Product product) {
     final serviceId = widget.productJson['id'];
     final serviceName = product.getTitle();
-
-    // This is your deep link. Ensure your domain is correct.
     final String deepLink = "${Constants.productsPath}/$serviceId";
-
     final String shareText = "Check out $serviceName on POPP! $deepLink";
     AppLogger.i("shareText $shareText");
     Share.share(shareText, subject: 'Check out this product!');
@@ -122,6 +130,18 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   bool get _isAdmin =>
       FirebaseAuth.instance.currentUser?.uid == Constants.adminUserId;
+
+  // Helper to get styling for status (reused from ListingCard) ---
+  (Color, IconData) _getStatusStyle(String status) {
+    switch (status.toLowerCase()) {
+      case 'sold':
+        return (Colors.grey.shade700, Icons.money_off_outlined);
+      case 'approved':
+        return (Colors.green.shade600, Icons.check_circle_outline);
+      default: // 'Pending'
+        return (Colors.orange.shade700, Icons.hourglass_top_outlined);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -132,7 +152,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(product.getBrandAndModelName()),
+        title: Text(product.subCategory != null &&
+                product.subCategory.toString().isNotEmpty
+            ? '${product.category} - ${product.subCategory}'
+            : product.category),
         actions: [
           IconButton(
             icon: const Icon(Icons.share),
@@ -144,7 +167,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            expandedHeight: 400.0,
+            expandedHeight: 300.0,
             floating: false,
             pinned: true,
             automaticallyImplyLeading: false,
@@ -164,15 +187,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         itemBuilder: (context, index) {
                           final url =
                               imageUrls.isNotEmpty ? imageUrls[index] : '';
-                          return _buildImage(
-                            url,
-                            useHero: index == 0,
-                          );
+                          return _buildImage(url, useHero: index == 0);
                         },
                       );
                     },
                   ),
-                  // Fav Icon
+                  // --- NEW: Status Banner on the main image ---
+                  if (widget.showStatus) _buildStatusBanner(),
                   Positioned(
                     top: 32,
                     right: 16,
@@ -187,7 +208,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       ),
                     ),
                   ),
-                  // Bottom Dashes Indicator (overlay on image)
                   Positioned(
                     bottom: 32,
                     left: 0,
@@ -219,7 +239,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       ),
                     ),
                   ),
-                  // Thumbnail Indicator
                   Positioned(
                     bottom: 20,
                     right: 12,
@@ -249,7 +268,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               ),
             ),
           ),
-          // Thumbnails
           if (imageUrls.length > 1)
             SliverToBoxAdapter(
               child: SizedBox(
@@ -265,7 +283,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       builder: (context, selectedImageIndex, _) {
                         return GestureDetector(
                           onTap: () {
-                            // Only update the main image, do not call setState
                             selectedImageIndexNotifier.value = index;
                             _pageController.animateToPage(
                               index,
@@ -300,31 +317,25 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 ),
               ),
             ),
-          // Main Content
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    product.getTitle(),
-                    style: theme.titleLarge?.copyWith(
-                        color: Colors.blue[700], fontWeight: FontWeight.bold),
+                  const SizedBox(height: 12),
+                  // --- Product Title with expandable logic ---
+                  ExpandableText(
+                    text: product.getTitle(),
+                    style: theme.titleMedium
+                        ?.copyWith(fontWeight: FontWeight.bold),
+                    maxLines: 2,
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    'Expected Price:',
-                    style: theme.titleMedium?.copyWith(
-                      color: Colors.grey[700],
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
                     product.expectedPrice,
                     style: theme.titleLarge?.copyWith(
-                      color: Colors.green[700],
+                      color: Theme.of(context).primaryColor,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -353,7 +364,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor:
                           _isApproved ? Colors.green : Colors.orange,
-                      // Green if approved
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
@@ -368,6 +378,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                       product.id ?? '', true);
                               setState(() {
                                 _isApproved = true;
+                                _status = 'Approved';
                               });
                               if (_isApproved) {
                                 ScaffoldMessenger.of(context).showSnackBar(
@@ -387,6 +398,54 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               ),
             )
           : null,
+    );
+  }
+
+  // --- NEW: Widget for the status banner on the image ---
+  Widget _buildStatusBanner() {
+    final (color, icon) = _getStatusStyle(_status);
+    return Positioned(
+      top: 0,
+      left: 0,
+      child: GestureDetector(
+        onTap: () {
+          AppDialogs.showProductSuccessDialog(context, () {}, () {},
+              title: 'Product Status: $_status',
+              cancelText: null,
+              confirmText: 'okay');
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(0), // Aligns with corner
+              bottomRight: Radius.circular(12),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.25),
+                blurRadius: 5,
+                offset: const Offset(2, 2),
+              )
+            ],
+          ),
+          child: Row(
+            children: [
+              Icon(icon, color: Colors.white, size: 16),
+              const SizedBox(width: 6),
+              Text(
+                _status,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

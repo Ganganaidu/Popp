@@ -22,6 +22,7 @@ class SubscribePageWidget extends StatefulWidget {
 }
 
 class _SubscribePageWidgetState extends State<SubscribePageWidget> {
+  late SubscriptionProvider _subscriptionProvider;
   int? _selectedIndex;
 
   String _getUniqueId(ProductDetails productDetails) {
@@ -70,17 +71,16 @@ class _SubscribePageWidgetState extends State<SubscribePageWidget> {
   @override
   void initState() {
     super.initState();
-    // Use a post-frame callback for showing SnackBars to avoid build errors.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<SubscriptionProvider>(context, listen: false)
-          .addListener(_handleProviderChanges);
+      _subscriptionProvider =
+          Provider.of<SubscriptionProvider>(context, listen: false);
+      _subscriptionProvider.addListener(_handleProviderChanges);
     });
   }
 
   @override
   void dispose() {
-    Provider.of<SubscriptionProvider>(context, listen: false)
-        .removeListener(_handleProviderChanges);
+    _subscriptionProvider.removeListener(_handleProviderChanges);
     super.dispose();
   }
 
@@ -173,8 +173,8 @@ class _SubscribePageWidgetState extends State<SubscribePageWidget> {
         ? _getPlanTitle(uniqueId)
         : productDetails.title; // iOS title is correct from the store.
 
-    final bool isTrialOffer = productDetails.price == '0.00' ||
-        productDetails.price.contains('Free');
+    final bool isTrialOffer =
+        productDetails.price == '0.00' || productDetails.price.contains('Free');
 
     // Styling logic...
     BorderSide border = BorderSide.none;

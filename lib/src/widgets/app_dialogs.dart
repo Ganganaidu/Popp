@@ -9,8 +9,9 @@ class AppDialogs {
     required String title,
     required String content,
     required VoidCallback onConfirm,
+    VoidCallback? cancelCallback,
     String confirmText = "OK",
-    String cancelText = "Cancel",
+    String? cancelText = "Cancel",
   }) {
     return showDialog<void>(
       context: context,
@@ -20,12 +21,16 @@ class AppDialogs {
           title: Text(title),
           content: Text(content),
           actions: <Widget>[
-            TextButton(
-              child: Text(cancelText),
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-              },
-            ),
+            if (cancelText != null)
+              TextButton(
+                child: Text(cancelText),
+                onPressed: () {
+                  Navigator.of(dialogContext).pop();
+                  if (cancelCallback != null) {
+                    cancelCallback();
+                  }
+                },
+              ),
             ElevatedButton(
               child: Text(confirmText),
               onPressed: () {
@@ -36,6 +41,28 @@ class AppDialogs {
           ],
         );
       },
+    );
+  }
+
+  static Future<void> showProductSuccessDialog(
+    BuildContext context,
+    VoidCallback callBack,
+    VoidCallback homeCallBack, {
+    String title = "Product listed successfully",
+    String confirmText = "My Listing",
+    String? cancelText = "Home",
+  }) {
+    return showConfirmationDialog(
+      context: context,
+      title: title,
+      content: "Your product has been sent for approval. Once it's approved, "
+          "it will go live and be visible to the public. "
+          "Meanwhile, check the current status under My Listings in Settings. "
+          "Thanks for listing with us!",
+      onConfirm: callBack,
+      cancelCallback: homeCallBack,
+      confirmText: confirmText,
+      cancelText: cancelText,
     );
   }
 

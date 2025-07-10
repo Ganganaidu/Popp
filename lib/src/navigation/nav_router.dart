@@ -29,12 +29,15 @@ final Map<String, WidgetBuilder> routes = {
 };
 
 // call this from Dashboard_list_widget
-void onProductDetailsTap(BuildContext context, Map<String, dynamic> product) {
-  // NavHelper().updateAppBarTitle?.call(product.getTitle());
+void onProductDetailsTap(BuildContext context, Map<String, dynamic> product,
+    [bool showStatus = false]) {
   Navigator.push(
     context,
     MaterialPageRoute(
-      builder: (context) => ProductDetailScreen(productJson: product),
+      builder: (context) => ProductDetailScreen(
+        productJson: product,
+        showStatus: showStatus,
+      ),
     ),
   );
 }
@@ -84,7 +87,16 @@ void onFavScreenTap(BuildContext context) {
   );
 }
 
-void onMyListingScreenTap(BuildContext context) {
+void onMyListingScreenTap(BuildContext context, bool isReplacement) {
+  if (isReplacement) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const MyListingsScreen(),
+      ),
+    );
+    return;
+  }
   Navigator.push(
     context,
     MaterialPageRoute(

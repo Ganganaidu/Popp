@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:popp/src/navigation/nav_router.dart';
 import 'package:popp/src/utils/build_extensions.dart'; // From build_extensions.dart
@@ -7,8 +8,10 @@ import 'package:popp/src/widgets/custom_dropdown_form_field.dart'; // You might 
 import 'package:popp/src/widgets/image_picker_selection.dart'; // You might need to create this widget
 import 'package:popp/src/widgets/loading_overlay.dart'; // You might need to create this widget
 import 'package:popp/src/widgets/month_year_picker.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../firebase/firebase_api_service.dart';
+import '../../utils/app_constants.dart';
 import '../../utils/app_loger.dart';
 import '../../utils/product_content_data.dart';
 import '../../widgets/working_hours_picker.dart'; // You might need to create this widget
@@ -108,6 +111,20 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
     super.dispose();
   }
 
+  void _openTermsLink() async {
+    AppLogger.w("Terms link clicked");
+    final uri = Uri.parse(Constants.privacyLink);
+    final launched = await launchUrl(uri);
+    if (launched) {
+      setState(() => _termsAccepted = true);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text("Could not open Terms & Conditions link.")),
+      );
+    }
+  }
+
   Future<void> _handleLoading(bool isLoading) async {
     if (mounted) {
       setState(() {
@@ -205,8 +222,8 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
           'socialMediaLink': socialMediaLinkController.text,
           'businessWorkingDaysHours': businessWorkingDaysHoursController.text,
         });
-      } else if (_selectedCategory == serviceCategories[2]  ||
-          _selectedCategory == serviceCategories[3] ) {
+      } else if (_selectedCategory == serviceCategories[2] ||
+          _selectedCategory == serviceCategories[3]) {
         formData.addAll({
           'category': _selectedCategory,
           'eventName': eventNameController.text,
@@ -289,7 +306,8 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
               const Padding(
                 padding: EdgeInsets.all(16.0),
                 child: Text('Select Service Category',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    style:
+                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               ),
               const Divider(thickness: 1, height: 0),
               Align(
@@ -298,7 +316,8 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: serviceCategories
                       .map((category) => Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 6),
                             child: Card(
                               elevation: 1,
                               shape: RoundedRectangleBorder(
@@ -933,11 +952,26 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                               _termsAccepted = newValue ?? false;
                             });
                           },
+                          activeColor: Colors.orange,
                         ),
-                        const Expanded(
-                          child: Text(
-                            "I accept the Terms & Conditions",
-                            style: TextStyle(fontSize: 16),
+                        Expanded(
+                          child: RichText(
+                            text: TextSpan(
+                              style: Theme.of(context).textTheme.bodyMedium,
+                              children: [
+                                const TextSpan(
+                                    text: 'I have read and agree to the '),
+                                TextSpan(
+                                  text: 'Terms & Conditions',
+                                  style: const TextStyle(
+                                    color: Colors.blue,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                  recognizer: TapGestureRecognizer()
+                                    ..onTap = _openTermsLink,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ],

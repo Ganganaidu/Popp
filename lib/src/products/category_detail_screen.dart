@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:popp/src/products/product_card.dart';
 import 'package:popp/src/utils/app_loger.dart';
+
 import '../filters/filter_bar.dart';
 import '../models/product.dart';
+import '../navigation/nav_router.dart';
+import '../widgets/listing_card.dart';
 
 class CategoryDetailScreen extends StatefulWidget {
   final String categoryName;
@@ -179,8 +181,16 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
                       ),
                       itemBuilder: (context, index) {
                         final product = filteredProducts[index];
-                        return ProductCard(
-                            product: product, width: double.infinity);
+                        return ListingCard(
+                            title: product.getTitle(),
+                            imageUrl: product.imageUrl,
+                            price: product.expectedPrice,
+                            width: double.infinity,
+                            showOptionsMenu: false,
+                            onTap: () {
+                              onProductDetailsTap(context, product.toJson());
+                              // Navigate to detail screen
+                            });
                       },
                     ),
                   ),

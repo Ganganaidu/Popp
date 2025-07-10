@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:popp/src/products/product_card.dart';
 import '../models/product.dart';
+import '../navigation/nav_router.dart';
 import '../utils/product_content_data.dart';
+import '../widgets/listing_card.dart';
 import 'category_detail_screen.dart';
 
 class CategoryListWidget extends StatelessWidget {
@@ -33,7 +34,7 @@ class CategoryListWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context).textTheme;
     final screenWidth = MediaQuery.of(context).size.width;
-    final itemWidth = screenWidth * 0.4;
+    final itemWidth = screenWidth * 0.5;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
@@ -70,7 +71,16 @@ class CategoryListWidget extends StatelessWidget {
               separatorBuilder: (_, __) => const SizedBox(width: 12),
               itemBuilder: (context, index) {
                 final product = products[index];
-                return ProductCard(product: product, width: itemWidth);
+                return ListingCard(
+                    title: product.getTitle(),
+                    imageUrl: product.imageUrl,
+                    price: product.expectedPrice,
+                    width: itemWidth,
+                    showOptionsMenu: false,
+                    onTap: () {
+                      onProductDetailsTap(context, product.toJson());
+                      // Navigate to detail screen
+                    });
               },
             ),
           ),

@@ -68,7 +68,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
         'an amazing service';
 
     // This is your deep link. Ensure your domain is correct.
-    final String deepLink = "https://popp-71efb.web.app/service/$serviceId";
+    final String deepLink = "${Constants.servicePath}/$serviceId";
 
     final String shareText = "Check out $serviceName on POPP! $deepLink";
     AppLogger.i("shareText $shareText");
@@ -87,7 +87,6 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
       appBar: AppBar(
         title: Text(appBarTitle),
         automaticallyImplyLeading: true,
-        // --- NEW: Share action button ---
         actions: [
           IconButton(
             icon: const Icon(Icons.share),
@@ -349,7 +348,6 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
         if (allImageUrls.length > 1)
           SliverToBoxAdapter(
             child: Container(
-              color: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 10),
               child: SizedBox(
                 height: 80,

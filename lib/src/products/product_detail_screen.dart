@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:popp/src/models/product.dart';
 import 'package:popp/src/utils/app_loger.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -60,7 +61,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     setState(() {
       _favButtonDisabled = true;
     });
-    final result = await toggleFavoriteProduct(Constants.productsPath, widget.productJson['id']);
+    final result = await toggleFavoriteProduct(
+        Constants.productsPath, widget.productJson['id']);
     setState(() {
       _favButtonDisabled = false;
       if (!result) {
@@ -103,6 +105,19 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             child: imageWidget,
           )
         : imageWidget;
+  }
+
+  // Function to handle sharing ---
+  void _shareProduct(Product product) {
+    final serviceId = widget.productJson['id'];
+    final serviceName = product.getTitle();
+
+    // This is your deep link. Ensure your domain is correct.
+    final String deepLink = "${Constants.productsPath}/$serviceId";
+
+    final String shareText = "Check out $serviceName on POPP! $deepLink";
+    AppLogger.i("shareText $shareText");
+    Share.share(shareText, subject: 'Check out this product!');
   }
 
   /// Gets the localized price based on the user's country using the CurrencyService.
@@ -164,7 +179,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     final imageUrls = product.thumbImageUrls ?? [];
 
     return Scaffold(
-      appBar: AppBar(title: Text(product.getBrandAndModelName())),
+      appBar: AppBar(
+        title: Text(product.getBrandAndModelName()),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.share),
+            onPressed: () => _shareProduct(product),
+            tooltip: 'Share Product',
+          ),
+        ],
+      ),
       body: CustomScrollView(
         slivers: [
           SliverAppBar(

@@ -196,8 +196,6 @@ class _HomeScreenState extends State<HomeScreen> {
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
-        AppLogger.d("onPopInvokedWithResult didPop: $didPop");
-        AppLogger.d("onPopInvokedWithResult result: $result");
         if (didPop) return;
         _navHelper.onWillPop(_selectedIndex);
       },
@@ -256,12 +254,4 @@ class ValueListenableBuilder2<A, B> extends StatelessWidget {
       },
     );
   }
-
-// The methods below are remnants from a previous example and are now handled
-// within the _HomeScreenState class's _configureForegroundMessageHandler method.
-// They are commented out or moved to avoid duplication.
-//
-// void setupNotifications() async { /* ... */ }
-// void onMessage() { /* ... */ }
-// final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin(); // Global instance not needed here.
 }

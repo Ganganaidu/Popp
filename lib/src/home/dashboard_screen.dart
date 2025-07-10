@@ -21,14 +21,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return const SingleChildScrollView(
-      // Wrap the entire content with SingleChildScrollView
       child: Column(
         children: [
           AdCarouselWidget(),
           PopServicesWidgets(),
           SizedBox(height: 20.0),
           DashboardListViewWidget(),
-          Disclaimers(),
+          // Disclaimers(),
         ],
       ),
     );

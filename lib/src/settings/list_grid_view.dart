@@ -4,6 +4,7 @@ import 'package:lottie/lottie.dart';
 import 'package:popp/src/navigation/nav_router.dart';
 import 'package:popp/src/utils/product_content_data.dart';
 
+import '../widgets/listing_card.dart';
 import '../widgets/shimmer_image.dart';
 
 class ListingsGridView extends StatelessWidget {
@@ -89,134 +90,149 @@ class ListingsGridView extends StatelessWidget {
 
             final price = data['expectedPrice']?.toString();
 
-            return _buildListingCard(
-              context,
+            return ListingCard(
               title: title,
               imageUrl: imageUrl,
               price: price,
               showOptionsMenu: showOptionsMenu,
               onTap: () {
-                final category = data['category'] as String?;
-                if (serviceCategories.contains(category)) {
-                  onServiceDetailsScreenTap(context, data, category!);
-                } else {
-                  onProductDetailsTap(context, data);
-                }
+                // Navigate to detail screen
               },
               onEdit: () {
-                /* TODO: Implement Edit */
+                // Handle edit action
               },
               onSold: () {
-                /* TODO: Implement Delete */
+                // Handle mark as sold action
               },
             );
+            // return _buildListingCard(
+            //   context,
+            //   title: title,
+            //   imageUrl: imageUrl,
+            //   price: price,
+            //   showOptionsMenu: showOptionsMenu,
+            //   onTap: () {
+            //     final category = data['category'] as String?;
+            //     if (serviceCategories.contains(category)) {
+            //       onServiceDetailsScreenTap(context, data, category!);
+            //     } else {
+            //       onProductDetailsTap(context, data);
+            //     }
+            //   },
+            //   onEdit: () {
+            //     /* TODO: Implement Edit */
+            //   },
+            //   onSold: () {
+            //     /* TODO: Implement Delete */
+            //   },
+            // );
           },
         );
       },
     );
   }
 
-  Widget _buildListingCard(BuildContext context,
-      {required String title,
-      String? imageUrl,
-      String? price,
-      bool showOptionsMenu = false,
-      VoidCallback? onTap,
-      VoidCallback? onEdit,
-      VoidCallback? onSold}) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Expanded(
-              child: Stack(
-                children: [
-                  SizedBox.expand(
-                    child: imageUrl != null && imageUrl.isNotEmpty
-                        ? ShimmerImage(imageUrl: imageUrl)
-                        : _buildPlaceholderImage(),
-                  ),
-                  if (showOptionsMenu)
-                    Positioned(
-                      top: 4,
-                      right: 4,
-                      child: _buildOptionsMenu(context, onEdit!, onSold!),
-                    ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(
-                    title,
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                  ),
-                  if (price != null && price.isNotEmpty) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      price,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: Colors.orange,
-                            fontWeight: FontWeight.bold,
-                          ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildOptionsMenu(
-      BuildContext context, VoidCallback onEdit, VoidCallback onSold) {
-    return PopupMenuButton<String>(
-      onSelected: (value) {
-        if (value == 'edit') {
-          onEdit();
-        } else if (value == 'delete') onSold();
-      },
-      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-        const PopupMenuItem<String>(
-            value: 'edit',
-            child: ListTile(
-                leading: Icon(Icons.edit_outlined), title: Text('Edit'))),
-        const PopupMenuItem<String>(
-            value: 'sold',
-            child: ListTile(
-                leading: Icon(Icons.delete_outline, color: Colors.orange),
-                title: Text('Sold',
-                    style: TextStyle(color: Colors.orange)))),
-      ],
-      icon: Container(
-        decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.4), shape: BoxShape.circle),
-        child: const Icon(Icons.more_vert, color: Colors.white),
-      ),
-    );
-  }
-
-  Widget _buildPlaceholderImage() {
-    return Container(
-      color: Colors.grey.shade200,
-      child: Icon(Icons.two_wheeler, color: Colors.grey.shade400, size: 40),
-    );
-  }
+  // Widget _buildListingCard(BuildContext context,
+  //     {required String title,
+  //     String? imageUrl,
+  //     String? price,
+  //     bool showOptionsMenu = false,
+  //     VoidCallback? onTap,
+  //     VoidCallback? onEdit,
+  //     VoidCallback? onSold}) {
+  //   return Card(
+  //     elevation: 2,
+  //     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+  //     clipBehavior: Clip.antiAlias,
+  //     child: InkWell(
+  //       onTap: onTap,
+  //       child: Column(
+  //         crossAxisAlignment: CrossAxisAlignment.center,
+  //         children: [
+  //           Expanded(
+  //             child: Stack(
+  //               children: [
+  //                 SizedBox.expand(
+  //                   child: imageUrl != null && imageUrl.isNotEmpty
+  //                       ? ShimmerImage(imageUrl: imageUrl)
+  //                       : _buildPlaceholderImage(),
+  //                 ),
+  //                 if (showOptionsMenu)
+  //                   Positioned(
+  //                     top: 4,
+  //                     right: 4,
+  //                     child: _buildOptionsMenu(context, onEdit!, onSold!),
+  //                   ),
+  //               ],
+  //             ),
+  //           ),
+  //           Padding(
+  //             padding: const EdgeInsets.all(12.0),
+  //             child: Column(
+  //               crossAxisAlignment: CrossAxisAlignment.center,
+  //               children: [
+  //                 Text(
+  //                   title,
+  //                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
+  //                         fontWeight: FontWeight.bold,
+  //                       ),
+  //                   maxLines: 3,
+  //                   overflow: TextOverflow.ellipsis,
+  //                   textAlign: TextAlign.center,
+  //                 ),
+  //                 if (price != null && price.isNotEmpty) ...[
+  //                   const SizedBox(height: 8),
+  //                   Text(
+  //                     price,
+  //                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
+  //                           color: Colors.orange,
+  //                           fontWeight: FontWeight.bold,
+  //                         ),
+  //                   ),
+  //                 ],
+  //               ],
+  //             ),
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
+  //
+  // Widget _buildOptionsMenu(
+  //     BuildContext context, VoidCallback onEdit, VoidCallback onSold) {
+  //   return PopupMenuButton<String>(
+  //     onSelected: (value) {
+  //       if (value == 'edit') {
+  //         onEdit();
+  //       } else if (value == 'delete') onSold();
+  //     },
+  //     itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+  //       const PopupMenuItem<String>(
+  //           value: 'edit',
+  //           child: ListTile(
+  //               leading: Icon(Icons.edit_outlined), title: Text('Edit'))),
+  //       const PopupMenuItem<String>(
+  //           value: 'sold',
+  //           child: ListTile(
+  //               leading: Icon(Icons.delete_outline, color: Colors.orange),
+  //               title: Text('Sold',
+  //                   style: TextStyle(color: Colors.orange)))),
+  //     ],
+  //     icon: Container(
+  //       decoration: BoxDecoration(
+  //           color: Colors.black.withOpacity(0.4), shape: BoxShape.circle),
+  //       child: const Icon(Icons.more_vert, color: Colors.white),
+  //     ),
+  //   );
+  // }
+  //
+  // Widget _buildPlaceholderImage() {
+  //   return Container(
+  //     color: Colors.grey.shade200,
+  //     child: Icon(Icons.two_wheeler, color: Colors.grey.shade400, size: 40),
+  //   );
+  // }
 
   Widget _buildEmptyState(BuildContext context) {
     return Center(

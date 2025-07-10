@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:popp/src/utils/build_extensions.dart'; // Import your build_extensions
-import 'package:intl/intl.dart'; // Add this for date formatting
+import 'package:intl/intl.dart';
+import 'package:month_year_picker/month_year_picker.dart';
+import 'package:popp/src/utils/app_loger.dart';
+import 'package:popp/src/utils/build_extensions.dart';
 
 class MonthYearPicker extends StatelessWidget {
   final String label;
@@ -9,6 +11,7 @@ class MonthYearPicker extends StatelessWidget {
   final ValueChanged<DateTime?> onDateSelected;
   final bool enable;
   final FormFieldValidator<DateTime?>? validator;
+  final bool selectOnlyMonthYear;
 
   const MonthYearPicker({
     super.key,
@@ -18,50 +21,77 @@ class MonthYearPicker extends StatelessWidget {
     required this.onDateSelected,
     this.enable = true,
     this.validator,
+    this.selectOnlyMonthYear = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Format the date for display
+    // --- UPDATED: Conditional date formatting ---
+    final String displayFormat =
+        selectOnlyMonthYear ? 'MMMM yyyy' : 'MM/dd/yyyy';
     final String formattedDate = selectedDate != null
-        ? DateFormat('MM/dd/yyyy').format(selectedDate!) // Format as desired
-        : hint;
+        ? DateFormat(displayFormat).format(selectedDate!)
+        : ""; // Show nothing if no date is selected, hint will be in the label
 
-    return InkWell(
-      onTap: enable
-          ? () async {
-              final DateTime? picked = await showDatePicker(
-                context: context,
-                initialDate: selectedDate ?? DateTime.now(),
-                // Use selectedDate if available, else current date
-                firstDate: DateTime(1900),
-                // Adjust as per your requirement
-                lastDate: DateTime(2100), // Adjust as per your requirement
-              );
-              if (picked != null) {
-                onDateSelected(picked);
-              }
-            }
-          : null,
-      child: InputDecorator(
-        decoration: context
-            .inputDecoration(
-              label,
-              formattedDate,
-              enable: enable,
-            )
-            .copyWith(
-              errorText: validator != null && validator!(selectedDate) != null
-                  ? validator!(selectedDate)
-                  : null,
+    return FormField<DateTime>(
+      validator: validator,
+      initialValue: selectedDate,
+      builder: (FormFieldState<DateTime> field) {
+        return InkWell(
+          onTap: enable
+              ? () async {
+                  // --- UPDATED: Conditional picker logic ---
+                  if (selectOnlyMonthYear) {
+                    // Show Month/Year Picker
+                    final DateTime? picked = await showMonthYearPicker(
+                      context: context,
+                      initialDate: selectedDate ?? DateTime.now(),
+                      firstDate: DateTime(1900),
+                      lastDate: DateTime(2100),
+                    );
+                    if (picked != null) {
+                      AppLogger.d("picked $picked");
+                      onDateSelected(picked);
+                      field.didChange(picked); // Update FormField state
+                    }
+                  } else {
+                    // Show standard Date Picker
+                    final DateTime? picked = await showDatePicker(
+                      context: context,
+                      initialDate: selectedDate ?? DateTime.now(),
+                      firstDate: DateTime(1900),
+                      lastDate: DateTime(2100),
+                    );
+                    if (picked != null) {
+                      AppLogger.d("picked $picked");
+                      onDateSelected(picked);
+                      field.didChange(picked); // Update FormField state
+                    }
+                  }
+                }
+              : null,
+          child: InputDecorator(
+            decoration: context
+                .inputDecoration(
+                  label,
+                  hint, // Use the hint text in the decoration
+                  enable: enable,
+                  icon: Icons.calendar_today_outlined,
+                )
+                .copyWith(
+                  errorText: field.errorText,
+                ),
+            child: Text(
+              formattedDate.isEmpty ? hint : formattedDate,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: formattedDate.isEmpty
+                        ? Colors.grey[600]
+                        : (enable ? null : Colors.grey[600]),
+                  ),
             ),
-        child: Text(
-          formattedDate,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: enable ? null : Colors.grey[600],
-              ),
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

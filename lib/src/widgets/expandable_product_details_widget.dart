@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import '../models/product.dart';
 
@@ -27,7 +28,8 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
         // Always Visible Important Fields
         // detailRow("Features", product.additionalDetails, theme),
         if (product.mfgDate != null)
-          detailRow("Manufacturing Date", _formatDate(product.mfgDate), theme),
+          detailRow(
+              "Manufacturing Date", _formatDate(product.mfgDate, true), theme),
         if (product.registrationPlace?.isNotEmpty ?? false)
           detailRow("Registration Place", product.registrationPlace!, theme)
         else
@@ -54,9 +56,10 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
                   detailRow("KM Driven", product.kmDriven!, theme),
                 if (product.registrationDate != null)
                   detailRow("Registration Date",
-                      _formatDate(product.registrationDate), theme),
+                      _formatDate(product.registrationDate, true), theme),
                 if (product.registrationDate != null)
-                  detailRow("Bill Date", _formatDate(product.billDate), theme),
+                  detailRow(
+                      "Bill Date", _formatDate(product.billDate, false), theme),
                 if (product.productAging?.isNotEmpty ?? false)
                   detailRow("Product Aging", product.productAging!, theme),
                 if (product.productSize?.isNotEmpty ?? false)
@@ -69,7 +72,7 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
                       product.insuranceAvailable != null ? "Yes" : "No", theme),
                 if (product.insuranceValidTill != null)
                   detailRow("Insurance valid till",
-                      _formatDate(product.insuranceValidTill), theme),
+                      _formatDate(product.insuranceValidTill, false), theme),
                 detailRow("Warranty Available",
                     product.warrantyLimit != null ? "Yes" : "No", theme),
                 if (product.warrantyLimit?.isNotEmpty ?? false)
@@ -146,9 +149,11 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
     );
   }
 
-  String _formatDate(DateTime? date) {
+  String _formatDate(DateTime? date, bool selectOnlyMonthYear) {
     if (date == null) return "-";
-    return "${date.day}/${date.month}/${date.year}";
+    final String displayFormat =
+        selectOnlyMonthYear ? 'MMMM yyyy' : 'MMMM dd yyyy';
+    return DateFormat(displayFormat).format(date);
   }
 }
 

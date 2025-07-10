@@ -292,6 +292,7 @@ class _SellYourBikeState extends State<SellYourBike>
                           enable: true,
                           label: "Manufacture Date",
                           hint: "Select month and year",
+                          selectOnlyMonthYear: true,
                           selectedDate: _selectedManufactureDate,
                           onDateSelected: (date) =>
                               setState(() => _selectedManufactureDate = date),
@@ -303,6 +304,7 @@ class _SellYourBikeState extends State<SellYourBike>
                           enable: true,
                           label: "Registration Date",
                           hint: "Select month and year",
+                          selectOnlyMonthYear: true,
                           selectedDate: _selectedRegistrationDate,
                           onDateSelected: (date) =>
                               setState(() => _selectedRegistrationDate = date),

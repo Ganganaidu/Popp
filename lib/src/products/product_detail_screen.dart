@@ -120,54 +120,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     Share.share(shareText, subject: 'Check out this product!');
   }
 
-  /// Gets the localized price based on the user's country using the CurrencyService.
-  Future<String> _getLocalizedPrice(String priceStr) async {
-    // 1. Parse the input price string to a double. Assumes base price is in INR.
-    final double? priceInRupees =
-        double.tryParse(priceStr.replaceAll(RegExp(r'[^0-9.]'), ''));
-    if (priceInRupees == null) {
-      return priceStr; // Return original string if parsing fails.
-    }
-
-    // 2. Get the device's locale to determine the country.
-    if (!mounted) return priceStr;
-    final locale = Localizations.localeOf(context);
-    final String countryCode =
-        locale.countryCode ?? 'US'; // Default to 'US' if null.
-
-    // 3. Check if the country is India.
-    if (countryCode == 'IN') {
-      final format = NumberFormat.currency(
-        locale: 'en_IN',
-        symbol: '₹',
-        decimalDigits: 0,
-      );
-      return format.format(priceInRupees);
-    } else {
-      // For all other countries, fetch the conversion rate via the service.
-      final usdRate = await _currencyService.getInrToUsdRate();
-      double priceInUSD;
-      String suffix = '';
-
-      if (usdRate != null) {
-        // If API call is successful, use the live rate.
-        priceInUSD = priceInRupees * usdRate;
-      } else {
-        // If API call fails, use a hardcoded fallback rate.
-        const double fallbackConversionRate = 1 / 83.0;
-        priceInUSD = priceInRupees * fallbackConversionRate;
-        suffix = ' (est.)'; // Indicate that the price is an estimate
-      }
-
-      final format = NumberFormat.currency(
-        locale: 'en_US',
-        symbol: '\$',
-        decimalDigits: 2,
-      );
-      return format.format(priceInUSD) + suffix;
-    }
-  }
-
   bool get _isAdmin =>
       FirebaseAuth.instance.currentUser?.uid == Constants.adminUserId;
 
@@ -369,17 +321,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  FutureBuilder<String>(
-                    future: _getLocalizedPrice(product.expectedPrice),
-                    builder: (context, snapshot) {
-                      return Text(
-                        snapshot.data ?? product.expectedPrice,
-                        style: theme.titleLarge?.copyWith(
-                          color: Colors.green[700],
-                          fontWeight: FontWeight.bold,
-                        ),
-                      );
-                    },
+                  Text(
+                    product.expectedPrice,
+                    style: theme.titleLarge?.copyWith(
+                      color: Colors.green[700],
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 10),
                   ExpandableProductDetails(product: product),

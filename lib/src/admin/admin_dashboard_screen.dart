@@ -1,11 +1,13 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:popp/src/firebase/firebase_save_prodcuts_api.dart';
+import 'package:popp/src/firebase/firebase_api_service.dart';
 import 'package:popp/src/utils/app_constants.dart';
 import 'package:popp/src/utils/build_extensions.dart';
 
 import '../navigation/nav_router.dart';
-import '../utils/product_content_data.dart'; // Import your build_extensions
+import '../settings/list_grid_view.dart';
+import '../utils/product_content_data.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -14,11 +16,25 @@ class AdminDashboardScreen extends StatefulWidget {
   State<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
 }
 
-class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
-  final FirebaseProductsService _productsService = FirebaseProductsService();
+class _AdminDashboardScreenState extends State<AdminDashboardScreen>
+    with SingleTickerProviderStateMixin {
+  final FirebaseApiService _firebaseApiService = FirebaseApiService();
+  late TabController _tabController;
 
   bool get _isAdmin =>
       FirebaseAuth.instance.currentUser?.uid == Constants.adminUserId;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,125 +62,39 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         ),
       );
     }
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Admin Approval Dashboard'),
-          bottom: const TabBar(
-            tabs: [
-              Tab(
-                  text: 'Unapproved Services',
-                  icon: Icon(Icons.miscellaneous_services)),
-              Tab(text: 'Unapproved Products', icon: Icon(Icons.shopping_bag)),
-            ],
-          ),
-        ),
-        body: TabBarView(
-          children: [
-            _buildUnapprovedServices(),
-            _buildUnapprovedProducts(),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Admin Dashboard"),
+        bottom: TabBar(
+          controller: _tabController,
+          indicatorColor: Colors.orange,
+          labelColor: Colors.orange,
+          unselectedLabelColor: Colors.grey,
+          tabs: const [
+            Tab(icon: Icon(Icons.storefront), text: "Products"),
+            Tab(icon: Icon(Icons.miscellaneous_services), text: "Services"),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildUnapprovedServices() {
-    return FutureBuilder<List<Map<String, dynamic>>>(
-      future: _productsService.fetchServicesByCategories(serviceCategories, false),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (snapshot.hasError) {
-          return Center(child: Text('Error: \\${snapshot.error}'));
-        }
-        final services = snapshot.data ?? [];
-        if (services.isEmpty) {
-          return const Center(child: Text('All services approved!'));
-        }
-        // Group by category
-        final Map<String, List<Map<String, dynamic>>> grouped = {};
-        for (final service in services) {
-          final String category =
-              service['category'] ?? service['categoryName'] ?? 'Uncategorized';
-          grouped.putIfAbsent(category, () => []).add(service);
-        }
-        return ListView(
-          padding: const EdgeInsets.all(16.0),
-          children: grouped.entries.map((entry) {
-            final category = entry.key;
-            final items = entry.value;
-            return ExpansionTile(
-              title: Text('$category (\\${items.length})',
-                  style: context.titleLarge),
-              children: items.map((service) {
-                return Card(
-                  margin: const EdgeInsets.symmetric(
-                      vertical: 8.0, horizontal: 4.0),
-                  elevation: 2,
-                  child: ListTile(
-                    title: Text(service['businessTitle'] ??
-                        service['eventName'] ??
-                        'No Title'),
-                    subtitle: Text(service['businessDescription'] ??
-                        service['eventDetailedDescription'] ??
-                        ''),
-                    onTap: () {
-                      onServiceDetailsScreenTap(context, service, category);
-                    },
-                  ),
-                );
-              }).toList(),
-            );
-          }).toList(),
-        );
-      },
-    );
-  }
-
-  Widget _buildUnapprovedProducts() {
-    return FutureBuilder<Map<String, List<Map<String, dynamic>>>>(
-      future:
-          _productsService.fetchProductsGroupedByCategory(isApproved: false),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (snapshot.hasError) {
-          return Center(child: Text('Error: \\${snapshot.error}'));
-        }
-        final grouped = snapshot.data ?? {};
-        if (grouped.isEmpty) {
-          return const Center(child: Text('All products approved!'));
-        }
-        return ListView(
-          padding: const EdgeInsets.all(16.0),
-          children: grouped.entries.map((entry) {
-            final category = entry.key;
-            final items = entry.value;
-            return ExpansionTile(
-              title: Text('$category (\\${items.length})',
-                  style: context.titleLarge),
-              children: items.map((product) {
-                return Card(
-                  margin: const EdgeInsets.symmetric(
-                      vertical: 8.0, horizontal: 4.0),
-                  elevation: 2,
-                  child: ListTile(
-                    title: Text(product['modelName'] ?? 'No Title'),
-                    subtitle: Text(product['brandName'] ?? ''),
-                    onTap: () {
-                      onProductDetailsTap(context, product);
-                    },
-                  ),
-                );
-              }).toList(),
-            );
-          }).toList(),
-        );
-      },
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          // Using the reusable widget for Products
+          ListingsGridView(
+            query: FirebaseFirestore.instance
+                .collection(Constants.productsPath)
+                .where('isApproved', isEqualTo: false),
+            showOptionsMenu: false, // Show edit/delete options
+          ),
+          // Using the reusable widget for Services
+          ListingsGridView(
+            query: FirebaseFirestore.instance
+                .collection(Constants.servicePath)
+                .where('isApproved', isEqualTo: false),
+            showOptionsMenu: false, // Show edit/delete options
+          ),
+        ],
+      ),
     );
   }
 }

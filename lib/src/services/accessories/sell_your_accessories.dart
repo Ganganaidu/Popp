@@ -10,7 +10,7 @@ import 'package:popp/src/widgets/loading_overlay.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../api/currency_service.dart';
-import '../../firebase/firebase_save_prodcuts_api.dart';
+import '../../firebase/firebase_api_service.dart';
 import '../../models/pop_category.dart';
 import '../../models/product.dart';
 import '../../navigation/nav_router.dart';
@@ -29,7 +29,7 @@ class SellYourAccessories extends StatefulWidget {
 
 class _SellYourAccessoriesState extends State<SellYourAccessories> {
   final _formKey = GlobalKey<FormState>();
-  final FirebaseProductsService _productsService = FirebaseProductsService();
+  final FirebaseApiService _firebaseApiService = FirebaseApiService();
   final CurrencyService _currencyService = CurrencyService();
 
   final TextEditingController sellerNameController = TextEditingController();
@@ -89,10 +89,11 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
 
   void submitForm() async {
     if (_formKey.currentState!.validate()) {
-      String formatedPrice = await getLocalizedPrice(
+      String formatedPrice = await _firebaseApiService.getLocalizedPrice(
           context, _currencyService, priceController.text);
       Product newProduct = Product(
         id: productId,
+        isApproved: false,
         userId: FirebaseAuth.instance.currentUser?.uid,
         categoryId: selectedCategory?.categoryId ?? "",
         category: selectedCategory?.name ?? "",
@@ -154,7 +155,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
 
       AppLogger.d("Product data to be submitted: ${newProduct.toJson()}");
 
-      bool success = await _productsService.submitProductForm(
+      bool success = await _firebaseApiService.submitProductForm(
         context: context,
         product: newProduct,
         images: _images,

@@ -9,7 +9,7 @@ import 'package:popp/src/widgets/loading_overlay.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../api/currency_service.dart';
-import '../../firebase/firebase_save_prodcuts_api.dart';
+import '../../firebase/firebase_api_service.dart';
 import '../../models/pop_category.dart';
 import '../../models/product.dart';
 import '../../navigation/nav_router.dart';
@@ -28,7 +28,7 @@ class SellYourBike extends StatefulWidget {
 class _SellYourBikeState extends State<SellYourBike>
     with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
-  final FirebaseProductsService _productsService = FirebaseProductsService();
+  final FirebaseApiService _firebaseService = FirebaseApiService();
   final CurrencyService _currencyService = CurrencyService();
 
   final ScrollController _scrollController = ScrollController();
@@ -92,10 +92,11 @@ class _SellYourBikeState extends State<SellYourBike>
 
   void _submitForm() async {
     if (_formKey.currentState!.validate()) {
-      String formatedPrice = await getLocalizedPrice(
+      String formatedPrice = await _firebaseService.getLocalizedPrice(
           context, _currencyService, priceController.text);
       Product newProduct = Product(
         id: productId,
+        isApproved: false,
         userId: FirebaseAuth.instance.currentUser?.uid,
         categoryId: catList[0].categoryId,
         category: catList[0].name,
@@ -149,7 +150,7 @@ class _SellYourBikeState extends State<SellYourBike>
         ],
       );
 
-      bool success = await _productsService.submitProductForm(
+      bool success = await _firebaseService.submitProductForm(
         context: context,
         product: newProduct,
         images: _images,

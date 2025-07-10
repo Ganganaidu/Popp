@@ -6,7 +6,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:shimmer/shimmer.dart';
 
-import '../../firebase/firebase_save_prodcuts_api.dart';
+import '../../firebase/firebase_api_service.dart';
 import '../../utils/app_constants.dart';
 import '../../utils/product_content_data.dart';
 import '../../widgets/chat_with_user_widget.dart';
@@ -30,6 +30,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
   int _selectedImageIndex = 0;
   bool _isFav = false; // Track favorite state
   bool _favButtonDisabled = false;
+  final FirebaseApiService _firebaseApiService = FirebaseApiService();
 
   @override
   void initState() {
@@ -50,7 +51,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
       _favButtonDisabled = true;
     });
     final prev = _isFav;
-    final result = await toggleFavoriteProduct(
+    final result = await _firebaseApiService.toggleFavoriteProduct(
         Constants.servicePath, widget.serviceData['id']);
     setState(() {
       _favButtonDisabled = false;
@@ -117,7 +118,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                         : () async {
                             final serviceId = widget.serviceData['id'] ?? '';
                             if (serviceId != '') {
-                              await FirebaseProductsService()
+                              await FirebaseApiService()
                                   .updateServiceApprovalStatus(serviceId, true);
                               setState(() {
                                 _isApproved = true;

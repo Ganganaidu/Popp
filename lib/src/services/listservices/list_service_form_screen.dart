@@ -8,7 +8,7 @@ import 'package:popp/src/widgets/image_picker_selection.dart'; // You might need
 import 'package:popp/src/widgets/loading_overlay.dart'; // You might need to create this widget
 import 'package:popp/src/widgets/month_year_picker.dart';
 
-import '../../firebase/firebase_save_prodcuts_api.dart';
+import '../../firebase/firebase_api_service.dart';
 import '../../utils/app_loger.dart';
 import '../../utils/product_content_data.dart';
 import '../../widgets/working_hours_picker.dart'; // You might need to create this widget
@@ -22,7 +22,7 @@ class ListServiceFormScreen extends StatefulWidget {
 
 class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
   final _formKey = GlobalKey<FormState>();
-  final FirebaseProductsService _productsService = FirebaseProductsService();
+  final FirebaseApiService _productsService = FirebaseApiService();
 
   // --- Common controllers, now potentially used in multiple sections based on category ---
   final TextEditingController businessTitleController = TextEditingController();

@@ -40,7 +40,7 @@ class Product {
   final DateTime? createdAtDate; // For reading from FireStore
   String? batteryCondition;
   String? tyreCondition;
-  bool? isApproved = false; // Default value for new products
+  bool isApproved = false; // Default value for new products
   List<String>? searchKeywords;
   List<String>? favoritedBy;
 
@@ -84,7 +84,7 @@ class Product {
       this.bikeMfgDate,
       this.batteryCondition,
       this.tyreCondition,
-      this.isApproved,
+      required this.isApproved,
       this.searchKeywords,
       this.favoritedBy});
 
@@ -121,7 +121,7 @@ class Product {
       kmDriven: json['kmDriven'] as String?,
       isFavorite: json['isFavorite'] as bool?,
       isProductBikeSpecific: json['isProductBikeSpecific'] as bool?,
-      isApproved: json['isApproved'] as bool?,
+      isApproved: json['isApproved'] as bool,
       billDate: _parseDate(json['billDate']),
       productSize: json['productSize'] as String?,
       productCondition: json['productCondition'] as String?,
@@ -249,7 +249,7 @@ class Product {
     String? rcNumber,
     String? batteryCondition,
     String? tyreCondition,
-    bool? isApproved,
+    bool isApproved = false, // Default value for new products
     List<String>? searchKeywords,
     List<String>? favoritedBy,
   }) {
@@ -292,7 +292,7 @@ class Product {
       bikeMfgDate: bikeMfgDate ?? this.bikeMfgDate,
       batteryCondition: batteryCondition ?? this.batteryCondition,
       tyreCondition: tyreCondition ?? this.tyreCondition,
-      isApproved: isApproved ?? this.isApproved,
+      isApproved: isApproved,
       searchKeywords: searchKeywords ?? this.searchKeywords,
       favoritedBy: favoritedBy ?? this.favoritedBy,
     );

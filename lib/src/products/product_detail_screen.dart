@@ -5,7 +5,7 @@ import 'package:popp/src/utils/app_loger.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shimmer/shimmer.dart';
 
-import '../firebase/firebase_save_prodcuts_api.dart';
+import '../firebase/firebase_api_service.dart';
 import '../utils/app_constants.dart';
 import '../widgets/app_dialogs.dart';
 import '../widgets/chat_with_user_widget.dart';
@@ -24,6 +24,7 @@ class ProductDetailScreen extends StatefulWidget {
 }
 
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
+  final FirebaseApiService _firebaseApiService = FirebaseApiService();
   late final ValueNotifier<int> selectedImageIndexNotifier;
   bool isFavorite = false;
   late final PageController _pageController;
@@ -72,7 +73,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       _favButtonDisabled = true;
     });
     final prev = isFavorite;
-    final result = await toggleFavoriteProduct(
+    final result = await _firebaseApiService.toggleFavoriteProduct(
         Constants.productsPath, widget.productJson['id']);
     setState(() {
       _favButtonDisabled = false;
@@ -372,7 +373,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         ? null
                         : () async {
                             if (product.id != null) {
-                              await FirebaseProductsService()
+                              await FirebaseApiService()
                                   .updateProductApprovalStatus(
                                       product.id ?? '', true);
                               setState(() {

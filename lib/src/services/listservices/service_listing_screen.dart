@@ -4,7 +4,7 @@ import 'package:popp/src/utils/app_loger.dart';
 import 'package:popp/src/utils/build_extensions.dart';
 import 'package:shimmer/shimmer.dart';
 
-import '../../firebase/firebase_save_prodcuts_api.dart';
+import '../../firebase/firebase_api_service.dart';
 import '../../navigation/nav_router.dart';
 import '../../utils/product_content_data.dart';
 
@@ -18,7 +18,7 @@ class ServiceListingScreen extends StatefulWidget {
 }
 
 class _ServiceListingScreenState extends State<ServiceListingScreen> {
-  final FirebaseProductsService _productsService = FirebaseProductsService();
+  final FirebaseApiService _productsService = FirebaseApiService();
   late Future<List<Map<String, dynamic>>> _servicesFuture;
 
   @override

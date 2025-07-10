@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -5,12 +7,10 @@ import 'package:popp/src/login/model/user_data_model.dart';
 import 'package:popp/src/login/validation_requiremen_text.dart';
 import 'package:popp/src/utils/app_utils.dart';
 import 'package:popp/src/utils/build_extensions.dart';
-import 'dart:async';
 
 import '../navigation/nav_router.dart';
 import '../utils/product_content_data.dart';
 import '../widgets/custom_dropdown_form_field.dart';
-import 'verification_screen.dart'; // Import the new screen
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});

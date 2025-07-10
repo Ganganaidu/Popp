@@ -6,7 +6,6 @@ import 'package:share_plus/share_plus.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../firebase/firebase_save_prodcuts_api.dart';
-import '../navigation/nav_router.dart';
 import '../utils/app_constants.dart';
 import '../widgets/app_dialogs.dart';
 import '../widgets/chat_with_user_widget.dart';

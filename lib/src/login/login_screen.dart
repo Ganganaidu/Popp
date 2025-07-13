@@ -192,10 +192,16 @@ class _LoginScreenState extends State<LoginScreen>
     return Column(
       children: [
         // You can replace this with an Image.asset for your logo
-        Icon(Icons.two_wheeler_rounded, size: 60, color: context.primaryColor),
-        const SizedBox(height: 16),
-        Text(_welcomeMessage,
-            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+        // Icon(Icons.two_wheeler_rounded, size: 60, color: context.primaryColor),
+        Image.asset(
+          'assets/app_icon.png',
+          width: 80,
+          height: 80,
+          fit: BoxFit.contain,
+        ),
+        // const SizedBox(height: 16),
+        // Text(_welcomeMessage,
+        //     style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         Text(_welcomeSubtitle,
             style: TextStyle(fontSize: 16, color: Colors.grey[600])),

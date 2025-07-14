@@ -1,3 +1,8 @@
+import 'package:flutter/cupertino.dart';
+import 'package:intl/intl.dart';
+
+import '../api/currency_service.dart';
+
 class AppUtils {
   // Private constructor to prevent instantiation
   AppUtils._();
@@ -8,10 +13,4 @@ class AppUtils {
   static bool isEmailValid(String email) {
     return emailRegExp.hasMatch(email);
   }
-
-// Add other common utility functions here
-// For example:
-// static String formatDate(DateTime date) {
-//   // ... formatting logic ...
-// }
 }

@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:popp/src/utils/app_loger.dart';
+import 'package:popp/src/utils/app_utils.dart';
 import 'package:popp/src/utils/build_extensions.dart';
 import 'package:popp/src/widgets/category_selector.dart';
 import 'package:popp/src/widgets/loading_overlay.dart';
@@ -89,11 +90,11 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
 
   void submitForm() async {
     if (_formKey.currentState!.validate()) {
-      String formatedPrice = await _firebaseApiService.getLocalizedPrice(
-          context, _currencyService, priceController.text);
+      String countryCode = Localizations.localeOf(context).countryCode ?? "IN";
       Product newProduct = Product(
         id: productId,
         isApproved: false,
+        countryCode: countryCode,
         userId: FirebaseAuth.instance.currentUser?.uid,
         categoryId: selectedCategory?.categoryId ?? "",
         category: selectedCategory?.name ?? "",
@@ -114,7 +115,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
         billDate: _selectedBillDate,
         productAging: productAgingController.text,
         warrantyLimit: warrantyLeftController.text,
-        expectedPrice: formatedPrice,
+        expectedPrice: priceController.text,
         price: priceController.text,
         additionalDetails: additionalDetailsController.text,
         createdAt: FieldValue.serverTimestamp(),

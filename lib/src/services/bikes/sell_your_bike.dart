@@ -13,6 +13,7 @@ import '../../firebase/firebase_api_service.dart';
 import '../../models/pop_category.dart';
 import '../../models/product.dart';
 import '../../navigation/nav_router.dart';
+import '../../utils/app_utils.dart';
 import '../../widgets/custom_dropdown_form_field.dart';
 import '../../widgets/image_picker_selection.dart';
 import '../../widgets/month_year_picker.dart';
@@ -92,11 +93,11 @@ class _SellYourBikeState extends State<SellYourBike>
 
   void _submitForm() async {
     if (_formKey.currentState!.validate()) {
-      String formatedPrice = await _firebaseService.getLocalizedPrice(
-          context, _currencyService, priceController.text);
+      String countryCode = Localizations.localeOf(context).countryCode ?? "IN";
       Product newProduct = Product(
         id: productId,
         isApproved: false,
+        countryCode: countryCode,
         userId: FirebaseAuth.instance.currentUser?.uid,
         categoryId: catList[0].categoryId,
         category: catList[0].name,
@@ -109,7 +110,7 @@ class _SellYourBikeState extends State<SellYourBike>
         state: selectedState ?? "",
         city: cityController.text,
         kmDriven: kmDrivenController.text,
-        expectedPrice: formatedPrice,
+        expectedPrice: priceController.text,
         price: priceController.text,
         additionalDetails: additionalDetailsController.text,
         firstOwner: _areYouFirstOwner,

@@ -193,10 +193,12 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
 
       // Collect data based on category
       Map<String, dynamic> formData = {};
+      String countryCode = Localizations.localeOf(context).countryCode ?? "IN";
 
       if (_selectedCategory == serviceCategories[0] ||
           _selectedCategory == serviceCategories[1]) {
         formData.addAll({
+          'countryCode': countryCode,
           'category': _selectedCategory,
           'businessTitle': businessTitleController.text,
           'businessPromoPicture': _promoImages.map((e) => e.path).toList(),
@@ -225,6 +227,7 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
       } else if (_selectedCategory == serviceCategories[2] ||
           _selectedCategory == serviceCategories[3]) {
         formData.addAll({
+          'countryCode': countryCode,
           'category': _selectedCategory,
           'eventName': eventNameController.text,
           'eventPromoPicture': _promoImages.map((e) => e.path).toList(),

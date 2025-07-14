@@ -31,8 +31,8 @@ class _LoginScreenState extends State<LoginScreen>
   late Animation<double> _fadeAnimation;
 
   // State variables for dynamic welcome messages
-  String _welcomeMessage = "POPP";
-  String _welcomeSubtitle = "Pre owned Premium Products";
+  // String _welcomeMessage = "POPP";
+  final String _welcomeSubtitle = "Pre owned Premium Products";
 
   @override
   void initState() {
@@ -58,8 +58,8 @@ class _LoginScreenState extends State<LoginScreen>
         rememberMe = true;
         _emailController.text = savedUsername;
         // Update messages for returning user
-        _welcomeMessage = "Welcome Back!";
-        _welcomeSubtitle = "Sign in to continue your journey";
+        // _welcomeMessage = "Welcome Back!";
+        // _welcomeSubtitle = "Sign in to continue your journey";
       });
     }
   }
@@ -194,7 +194,7 @@ class _LoginScreenState extends State<LoginScreen>
         // You can replace this with an Image.asset for your logo
         // Icon(Icons.two_wheeler_rounded, size: 60, color: context.primaryColor),
         Image.asset(
-          'assets/app_icon.png',
+          'assets/app_icon_trans.png',
           width: 80,
           height: 80,
           fit: BoxFit.contain,
@@ -204,7 +204,7 @@ class _LoginScreenState extends State<LoginScreen>
         //     style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         Text(_welcomeSubtitle,
-            style: TextStyle(fontSize: 16, color: Colors.grey[600])),
+            style: const TextStyle(fontSize: 16)),
       ],
     );
   }

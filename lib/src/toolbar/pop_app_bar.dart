@@ -52,7 +52,7 @@ class PopAppBar extends StatelessWidget implements PreferredSizeWidget {
               : const SizedBox(key: ValueKey('emptySpace')),
         ),
         title: Image.asset(
-          'assets/app_icon.png',
+          'assets/app_icon_trans.png',
           height: 32,
         ),
         centerTitle: true,

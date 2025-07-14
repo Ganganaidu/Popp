@@ -3,14 +3,16 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:popp/src/login/model/user_data_model.dart';
 import 'package:popp/src/login/validation_requiremen_text.dart';
-import 'package:popp/src/utils/app_utils.dart';
 import 'package:popp/src/utils/build_extensions.dart';
 
 import '../navigation/nav_router.dart';
+import '../utils/app_utils.dart';
 import '../utils/product_content_data.dart';
 import '../widgets/custom_dropdown_form_field.dart';
+import '../widgets/month_year_picker.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -33,17 +35,19 @@ class _SignupScreenState extends State<SignupScreen> {
   final TextEditingController cityController = TextEditingController();
   final TextEditingController pinCodeController = TextEditingController();
 
-  final List<Map<String, TextEditingController>> bikes = [
-    {
-      'brand': TextEditingController(),
-      'model': TextEditingController(),
-      'monthYear': TextEditingController(),
-    }
-  ];
+  final List<Map<String, dynamic>> bikes = [];
+  final List<FocusNode> brandFocusNodes = [];
+  final List<FocusNode> modelFocusNodes = [];
 
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
   bool isSubmitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _addBike();
+  }
 
   @override
   void dispose() {
@@ -55,10 +59,16 @@ class _SignupScreenState extends State<SignupScreen> {
     addressController.dispose();
     cityController.dispose();
     pinCodeController.dispose();
+
     for (final bike in bikes) {
-      bike['brand']!.dispose();
-      bike['model']!.dispose();
-      bike['monthYear']!.dispose();
+      (bike['brandController'] as TextEditingController).dispose();
+      (bike['modelController'] as TextEditingController).dispose();
+    }
+    for (final node in brandFocusNodes) {
+      node.dispose();
+    }
+    for (final node in modelFocusNodes) {
+      node.dispose();
     }
     super.dispose();
   }
@@ -67,27 +77,29 @@ class _SignupScreenState extends State<SignupScreen> {
     if (bikes.length < 3) {
       setState(() {
         bikes.add({
-          'brand': TextEditingController(),
-          'model': TextEditingController(),
-          'monthYear': TextEditingController(),
+          'brand': null,
+          'model': null,
+          'monthYear': null,
+          'brandController': TextEditingController(),
+          'modelController': TextEditingController(),
         });
+        brandFocusNodes.add(FocusNode());
+        modelFocusNodes.add(FocusNode());
       });
     }
   }
 
   void _removeBike(int index) {
-    if (bikes.length > 1) {
-      setState(() {
-        bikes[index]['brand']!.dispose();
-        bikes[index]['model']!.dispose();
-        bikes[index]['monthYear']!.dispose();
-        bikes.removeAt(index);
-      });
-    } else {
-      bikes[index]['brand']!.clear();
-      bikes[index]['model']!.clear();
-      bikes[index]['monthYear']!.clear();
-    }
+    (bikes[index]['brandController'] as TextEditingController).dispose();
+    (bikes[index]['modelController'] as TextEditingController).dispose();
+    brandFocusNodes[index].dispose();
+    modelFocusNodes[index].dispose();
+
+    setState(() {
+      bikes.removeAt(index);
+      brandFocusNodes.removeAt(index);
+      modelFocusNodes.removeAt(index);
+    });
   }
 
   Future<void> _createAccountAndContinue() async {
@@ -97,7 +109,6 @@ class _SignupScreenState extends State<SignupScreen> {
     setState(() => isSubmitting = true);
 
     try {
-      // Create the user in Firebase Auth
       final userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(
               email: emailController.text, password: passwordController.text);
@@ -105,7 +116,6 @@ class _SignupScreenState extends State<SignupScreen> {
       final user = userCredential.user;
       if (user == null) throw Exception("User creation failed.");
 
-      // Send the verification email
       var acs = ActionCodeSettings(
           url: 'https://popp-71efb.web.app',
           handleCodeInApp: true,
@@ -115,13 +125,44 @@ class _SignupScreenState extends State<SignupScreen> {
           androidMinimumVersion: '12');
       await user.sendEmailVerification(acs);
 
-      // Package all the data to pass to the next screen
       final bikeDataList = bikes
-          .map((bikeControllers) => BikeData(
-                brand: bikeControllers['brand']!.text,
-                model: bikeControllers['model']!.text,
-                monthYear: bikeControllers['monthYear']!.text,
-              ))
+          .map((bikeData) {
+            final brandController =
+                bikeData['brandController'] as TextEditingController;
+            final modelController =
+                bikeData['modelController'] as TextEditingController;
+            final selectedBrand = bikeData['brand'] as String?;
+            final selectedModel = bikeData['model'] as String?;
+
+            String finalBrand;
+            String finalModel;
+
+            if (selectedBrand == 'Others') {
+              // If brand is "Others", both brand and model are from manual text entry
+              finalBrand = brandController.text;
+              finalModel = modelController.text;
+            } else {
+              // If a specific brand is chosen...
+              finalBrand = selectedBrand ?? '';
+              // ...check if the model is "Others" or a specific selection
+              if (selectedModel == 'Others') {
+                finalModel = modelController.text;
+              } else {
+                finalModel = selectedModel ?? '';
+              }
+            }
+
+            final monthYear = bikeData['monthYear'] as DateTime?;
+            final monthYearString = monthYear != null
+                ? DateFormat('MM/yyyy').format(monthYear)
+                : '';
+
+            return BikeData(
+              brand: finalBrand,
+              model: finalModel,
+              monthYear: monthYearString,
+            );
+          })
           .where((bike) =>
               bike.brand.isNotEmpty ||
               bike.model.isNotEmpty ||
@@ -143,7 +184,6 @@ class _SignupScreenState extends State<SignupScreen> {
 
       if (!mounted) return;
 
-      // Navigate to the dedicated verification screen
       onVerificationScreenTap(
           context, userData, userData.email, passwordController.text, true);
     } on FirebaseAuthException catch (e) {
@@ -175,9 +215,7 @@ class _SignupScreenState extends State<SignupScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            onLoginTap(context);
-          },
+          onPressed: () => onLoginTap(context),
           tooltip: 'Back',
         ),
         title: const Text("Create Account"),
@@ -198,19 +236,23 @@ class _SignupScreenState extends State<SignupScreen> {
                         "Account Details", "Create your login credentials."),
                     _buildTextField("Name", usernameController,
                         icon: Icons.person_outline),
+                    const SizedBox(height: 15),
                     _buildTextField("Email", emailController,
                         icon: Icons.email_outlined,
                         keyboardType: TextInputType.emailAddress),
+                    const SizedBox(height: 15),
                     _buildTextField("Phone number", phoneNumberController,
                         icon: Icons.phone_outlined,
                         keyboardType: TextInputType.number,
                         isRequired: true),
+                    const SizedBox(height: 15),
                     _buildTextField("Password", passwordController,
                         icon: Icons.lock_outline,
                         isPasswordTextField: true,
                         currentPasswordVisibility: _isPasswordVisible,
                         onTogglePasswordVisibility: () => setState(
                             () => _isPasswordVisible = !_isPasswordVisible)),
+                    const SizedBox(height: 15),
                     _buildTextField(
                         "Confirm Password", confirmPasswordController,
                         icon: Icons.lock_person_outlined,
@@ -237,8 +279,10 @@ class _SignupScreenState extends State<SignupScreen> {
                     const SizedBox(height: 15),
                     _buildTextField("Address", addressController,
                         icon: Icons.home_outlined, maxLines: 2),
+                    const SizedBox(height: 15),
                     _buildTextField("City", cityController,
                         icon: Icons.location_city_outlined),
+                    const SizedBox(height: 15),
                     _buildTextField("Pin Code", pinCodeController,
                         icon: Icons.pin_drop_outlined,
                         keyboardType: TextInputType.number),
@@ -306,6 +350,22 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   Widget _buildBikeFields(int index) {
+    final bike = bikes[index];
+    final selectedBrand = bike['brand'] as String?;
+    final brandController = bike['brandController'] as TextEditingController;
+    final selectedModel = bike['model'] as String?;
+    final modelController = bike['modelController'] as TextEditingController;
+
+    final bool isBrandOthers = selectedBrand == 'Others';
+    final bool isModelOthers = selectedModel == 'Others';
+
+    final modelsForBrand = isBrandOthers
+        ? <String>[] // No models if brand is "Others"
+        : (bikeBrandModels[selectedBrand] ?? []);
+    final brandListWithOthers = [...bikeBrands, 'Others'];
+    final modelListWithOthers =
+        modelsForBrand.isNotEmpty ? [...modelsForBrand, 'Others'] : <String>[];
+
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
@@ -333,12 +393,101 @@ class _SignupScreenState extends State<SignupScreen> {
               ],
             ),
             const SizedBox(height: 16),
-            _buildTextField('Brand Name', bikes[index]['brand']!,
-                isRequired: false, icon: Icons.two_wheeler_outlined),
-            _buildTextField('Model Name', bikes[index]['model']!,
-                isRequired: false, icon: Icons.motorcycle_outlined),
-            _buildTextField('MFG Month & Year', bikes[index]['monthYear']!,
-                isRequired: false, icon: Icons.calendar_today_outlined),
+
+            // --- BRAND DROPDOWN ---
+            DropdownButtonFormField<String>(
+              value: selectedBrand,
+              decoration: context.inputDecoration("", "Choose brand",
+                  icon: Icons.two_wheeler_outlined),
+              items: brandListWithOthers
+                  .map((b) => DropdownMenuItem(value: b, child: Text(b)))
+                  .toList(),
+              onChanged: (val) {
+                setState(() {
+                  bikes[index]['brand'] = val;
+                  // Clear all model-related state when brand changes
+                  bikes[index]['model'] = null;
+                  modelController.clear();
+                  if (val != 'Others') {
+                    brandController.clear();
+                  } else {
+                    brandFocusNodes[index].requestFocus();
+                  }
+                });
+              },
+            ),
+
+            // --- MANUAL BRAND TEXT FIELD ---
+            if (isBrandOthers)
+              Padding(
+                padding: const EdgeInsets.only(top: 15.0),
+                child: _buildTextField('Enter Brand Name', brandController,
+                    focusNode: brandFocusNodes[index],
+                    icon: Icons.edit_outlined,
+                    isRequired: true),
+              ),
+
+            const SizedBox(height: 15),
+
+            // --- CONDITIONAL MODEL FIELDS ---
+
+            // Show Model Dropdown if a specific brand is selected
+            if (!isBrandOthers)
+              Column(
+                children: [
+                  DropdownButtonFormField<String>(
+                    value: selectedModel,
+                    decoration: context.inputDecoration(
+                      "",
+                      selectedBrand != null
+                          ? "Choose model"
+                          : "Select a brand first",
+                      icon: Icons.motorcycle_outlined,
+                    ),
+                    onChanged: selectedBrand != null
+                        ? (val) {
+                            setState(() {
+                              bikes[index]['model'] = val;
+                              if (val != 'Others') {
+                                modelController.clear();
+                              } else {
+                                modelFocusNodes[index].requestFocus();
+                              }
+                            });
+                          }
+                        : null,
+                    items: modelListWithOthers
+                        .map((m) => DropdownMenuItem(value: m, child: Text(m)))
+                        .toList(),
+                  ),
+                  if (isModelOthers)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 15.0),
+                      child: _buildTextField(
+                          'Enter Model Name', modelController,
+                          focusNode: modelFocusNodes[index],
+                          icon: Icons.edit_outlined,
+                          isRequired: true),
+                    ),
+                ],
+              ),
+
+            // Show Manual Model Text Field if brand is "Others"
+            if (isBrandOthers)
+              _buildTextField('Enter Model Name', modelController,
+                  icon: Icons.motorcycle_outlined, isRequired: true),
+
+            const SizedBox(height: 15),
+
+            // --- MFG Month & Year Picker ---
+            MonthYearPicker(
+              label: "",
+              hint: "Manufacture Date",
+              selectOnlyMonthYear: true,
+              selectedDate: bike['monthYear'],
+              onDateSelected: (date) =>
+                  setState(() => bikes[index]['monthYear'] = date),
+            ),
           ],
         ),
       ),
@@ -382,62 +531,58 @@ class _SignupScreenState extends State<SignupScreen> {
       TextInputType? keyboardType,
       bool isPasswordTextField = false,
       VoidCallback? onTogglePasswordVisibility,
-      bool? currentPasswordVisibility}) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 15.0),
-      child: TextFormField(
-        controller: controller,
-        obscureText: isPasswordTextField
-            ? !(currentPasswordVisibility ?? false)
-            : obscureText,
-        maxLines: maxLines,
-        keyboardType: keyboardType,
-        validator: (value) {
-          if (isRequired && (value == null || value.isEmpty)) {
-            return '$hint is required';
+      bool? currentPasswordVisibility,
+      FocusNode? focusNode}) {
+    return TextFormField(
+      controller: controller,
+      focusNode: focusNode,
+      obscureText:
+          isPasswordTextField ? !(currentPasswordVisibility ?? false) : false,
+      maxLines: maxLines,
+      keyboardType: keyboardType,
+      validator: (value) {
+        if (isRequired && (value == null || value.isEmpty)) {
+          return '$hint is required';
+        }
+        if (hint == "Email" && value != null && !AppUtils.isEmailValid(value)) {
+          return 'Enter a valid email address';
+        }
+        if (hint == "Password" && value != null && isRequired) {
+          if (value.length < 8) {
+            return 'Password must be at least 8 characters long';
           }
-          if (hint == "Email" &&
-              value != null &&
-              !AppUtils.isEmailValid(value)) {
-            return 'Enter a valid email address';
+          if (!RegExp(r'(?=.*[A-Z])').hasMatch(value)) {
+            return 'Password must contain an uppercase letter';
           }
-          if (hint == "Password" && value != null && isRequired) {
-            if (value.length < 8) {
-              return 'Password must be at least 8 characters long';
-            }
-            if (!RegExp(r'(?=.*[A-Z])').hasMatch(value)) {
-              return 'Password must contain an uppercase letter';
-            }
-            if (!RegExp(r'(?=.*[a-z])').hasMatch(value)) {
-              return 'Password must contain a lowercase letter';
-            }
-            if (!RegExp(r'(?=.*\d)').hasMatch(value)) {
-              return 'Password must contain a number';
-            }
+          if (!RegExp(r'(?=.*[a-z])').hasMatch(value)) {
+            return 'Password must contain a lowercase letter';
           }
-          if (hint == "Confirm Password" &&
-              controller.text != passwordController.text) {
-            return "Passwords do not match";
+          if (!RegExp(r'(?=.*\d)').hasMatch(value)) {
+            return 'Password must contain a number';
           }
-          if (hint == "Pin Code" && value != null && value.isNotEmpty) {
-            if (value.length != 6) return 'Pincode must be 6 digits';
-            if (!RegExp(r"^[0-9]{6}$").hasMatch(value)) {
-              return 'Enter a valid pincode';
-            }
+        }
+        if (hint == "Confirm Password" &&
+            controller.text != passwordController.text) {
+          return "Passwords do not match";
+        }
+        if (hint == "Pin Code" && value != null && value.isNotEmpty) {
+          if (value.length != 6) return 'Pincode must be 6 digits';
+          if (!RegExp(r"^[0-9]{6}$").hasMatch(value)) {
+            return 'Enter a valid pincode';
           }
-          return null;
-        },
-        decoration: context.inputDecoration("", hint, icon: icon).copyWith(
-              suffixIcon: isPasswordTextField
-                  ? IconButton(
-                      icon: Icon((currentPasswordVisibility ?? false)
-                          ? Icons.visibility
-                          : Icons.visibility_off),
-                      onPressed: onTogglePasswordVisibility,
-                    )
-                  : null,
-            ),
-      ),
+        }
+        return null;
+      },
+      decoration: context.inputDecoration("", hint, icon: icon).copyWith(
+            suffixIcon: isPasswordTextField
+                ? IconButton(
+                    icon: Icon((currentPasswordVisibility ?? false)
+                        ? Icons.visibility
+                        : Icons.visibility_off),
+                    onPressed: onTogglePasswordVisibility,
+                  )
+                : null,
+          ),
     );
   }
 }

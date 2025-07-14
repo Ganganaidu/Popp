@@ -43,7 +43,7 @@ class Product {
   bool isApproved = false; // Default value for new products
   List<String>? searchKeywords;
   List<String>? favoritedBy;
-  final String countryCode;
+  final String? countryCode;
 
   Product(
       {this.id,
@@ -142,7 +142,7 @@ class Product {
             .toList(),
         // `createdAt` is a FieldValue for writing, so we read it as DateTime
         createdAtDate: (json['createdAt'] as Timestamp?)?.toDate(),
-        countryCode: json['countryCode'] as String
+        countryCode: json['countryCode'] as String?
         // We don't typically re-initialize `createdAt` (FieldValue) from json
         );
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 
 import '../../models/pop_category.dart';
+import '../../utils/app_loger.dart';
 import '../repository/product_repository.dart';
 
 class DashboardViewModel extends ChangeNotifier {
@@ -21,6 +22,7 @@ class DashboardViewModel extends ChangeNotifier {
       error = null;
     } catch (e) {
       error = e.toString();
+      AppLogger.e("Error loading categories: $error");
     }
 
     isLoading = false;

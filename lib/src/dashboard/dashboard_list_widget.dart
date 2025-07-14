@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 
-import 'viewmodel/dashboard_viewmodel.dart';
 import '../products/category_list_widget.dart';
+import 'viewmodel/dashboard_viewmodel.dart';
 
 class DashboardListViewWidget extends StatefulWidget {
   const DashboardListViewWidget({super.key});

@@ -37,15 +37,22 @@ class _SellYourBikeState extends State<SellYourBike>
 
   final TextEditingController sellerNameController = TextEditingController();
   final TextEditingController sellerContactController = TextEditingController();
-  final TextEditingController modelNameController = TextEditingController();
+  // New controllers for manual brand/model entry
+  final TextEditingController brandController = TextEditingController();
+  final TextEditingController modelController = TextEditingController();
   final TextEditingController cityController = TextEditingController();
   final TextEditingController kmDrivenController = TextEditingController();
   final TextEditingController priceController = TextEditingController();
   final TextEditingController additionalDetailsController =
-      TextEditingController();
+  TextEditingController();
+
+  // FocusNodes for manual entry fields
+  final FocusNode brandFocusNode = FocusNode();
+  final FocusNode modelFocusNode = FocusNode();
 
   String selectedCountryCode = "+91";
   String? selectedBrand;
+  String? selectedModel; // To hold the selected model from dropdown
   String? selectedState;
   String? _areYouFirstOwner;
   String? _invoiceAvailable;
@@ -80,6 +87,16 @@ class _SellYourBikeState extends State<SellYourBike>
   void dispose() {
     _scrollController.dispose();
     _isCollapsedNotifier.dispose();
+    sellerNameController.dispose();
+    sellerContactController.dispose();
+    brandController.dispose();
+    modelController.dispose();
+    cityController.dispose();
+    kmDrivenController.dispose();
+    priceController.dispose();
+    additionalDetailsController.dispose();
+    brandFocusNode.dispose();
+    modelFocusNode.dispose();
     super.dispose();
   }
 
@@ -94,6 +111,23 @@ class _SellYourBikeState extends State<SellYourBike>
   void _submitForm() async {
     if (_formKey.currentState!.validate()) {
       String countryCode = Localizations.localeOf(context).countryCode ?? "IN";
+
+      // Updated logic to determine final brand and model names
+      String finalBrand;
+      String finalModel;
+
+      if (selectedBrand == 'Others') {
+        finalBrand = brandController.text;
+        finalModel = modelController.text;
+      } else {
+        finalBrand = selectedBrand ?? '';
+        if (selectedModel == 'Others') {
+          finalModel = modelController.text;
+        } else {
+          finalModel = selectedModel ?? '';
+        }
+      }
+
       Product newProduct = Product(
         id: productId,
         isApproved: false,
@@ -104,9 +138,9 @@ class _SellYourBikeState extends State<SellYourBike>
         subCategory: catList[0].name,
         sellerName: sellerNameController.text,
         sellerContactNumber:
-            '$selectedCountryCode ${sellerContactController.text}',
-        brandName: selectedBrand ?? "",
-        modelName: modelNameController.text,
+        '$selectedCountryCode ${sellerContactController.text}',
+        brandName: finalBrand,
+        modelName: finalModel,
         state: selectedState ?? "",
         city: cityController.text,
         kmDriven: kmDrivenController.text,
@@ -126,26 +160,26 @@ class _SellYourBikeState extends State<SellYourBike>
         tyreCondition: _tyreCondition,
         searchKeywords: [
           sellerNameController.text,
-          modelNameController.text,
+          finalModel,
           cityController.text,
           kmDrivenController.text,
           priceController.text,
           catList[0].name,
-          selectedBrand ?? "",
+          finalBrand,
           selectedState ?? "",
           _batteryCondition ?? "",
           additionalDetailsController.text,
           ...sellerNameController.text.toLowerCase().split(' '),
-          ...modelNameController.text.toLowerCase().split(' '),
+          ...finalModel.toLowerCase().split(' '),
           ...cityController.text.toLowerCase().split(' '),
           ...catList[0].name.toLowerCase().split(' '),
-          ...selectedBrand?.toLowerCase().split(' ') ?? [],
+          ...finalBrand.toLowerCase().split(' '),
           ...selectedState?.toLowerCase().split(' ') ?? [],
           ...additionalDetailsController.text.toLowerCase().split(' '),
           ...kmDrivenController.text.toLowerCase().split(' '),
           ..._batteryCondition?.toLowerCase().split(' ') ?? [],
           if (_batteryCondition != null && _batteryCondition!.isNotEmpty)
-            'batteryCondition${_batteryCondition!.toLowerCase()}',
+            'batterycondition${_batteryCondition!.toLowerCase()}',
           ..."bikes".toLowerCase().split(' '),
           ...priceController.text.toLowerCase().split(' '),
         ],
@@ -162,7 +196,8 @@ class _SellYourBikeState extends State<SellYourBike>
         _formKey.currentState?.reset();
         sellerNameController.clear();
         sellerContactController.clear();
-        modelNameController.clear();
+        brandController.clear();
+        modelController.clear();
         cityController.clear();
         kmDrivenController.clear();
         priceController.clear();
@@ -170,6 +205,7 @@ class _SellYourBikeState extends State<SellYourBike>
         setState(() {
           _images.clear();
           selectedBrand = null;
+          selectedModel = null;
           selectedState = null;
           _areYouFirstOwner = null;
           _invoiceAvailable = null;
@@ -207,12 +243,12 @@ class _SellYourBikeState extends State<SellYourBike>
           child: isCollapsed
               ? null
               : const Text(
-                  "Strictly Only 35+ HP/NM Powered Bikes",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+            "Strictly Only 35+ HP/NM Powered Bikes",
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         );
       },
     );
@@ -220,6 +256,18 @@ class _SellYourBikeState extends State<SellYourBike>
 
   @override
   Widget build(BuildContext context) {
+    // --- Dynamic variables for brand/model logic ---
+    final bool isBrandOthers = selectedBrand == 'Others';
+    final bool isModelOthers = selectedModel == 'Others';
+
+    final modelsForBrand = isBrandOthers
+        ? <String>[]
+        : (bikeBrandModels[selectedBrand] ?? []);
+
+    final brandListWithOthers = [...bikeBrands, 'Others'];
+    final modelListWithOthers =
+    modelsForBrand.isNotEmpty ? [...modelsForBrand, 'Others'] : <String>[];
+
     return Scaffold(
       appBar: AppBar(title: const Text('Sell Your Bike')),
       body: LoadingOverlay(
@@ -235,6 +283,7 @@ class _SellYourBikeState extends State<SellYourBike>
                   key: _formKey,
                   child: Column(
                     children: [
+                      // ... (Seller Name and Contact fields remain the same)
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
                         child: TextFormField(
@@ -252,7 +301,7 @@ class _SellYourBikeState extends State<SellYourBike>
                               value: selectedCountryCode,
                               items: countryCodes
                                   .map((code) => DropdownMenuItem(
-                                      value: code, child: Text(code)))
+                                  value: code, child: Text(code)))
                                   .toList(),
                               onChanged: (val) =>
                                   setState(() => selectedCountryCode = val!),
@@ -264,36 +313,107 @@ class _SellYourBikeState extends State<SellYourBike>
                                 decoration: context.inputDecoration(
                                     "Contact Number", "Enter phone number"),
                                 validator: (val) =>
-                                    val!.isEmpty ? "Required" : null,
+                                val!.isEmpty ? "Required" : null,
                               ),
                             ),
                           ],
                         ),
                       ),
+                      // --- DYNAMIC BRAND & MODEL FIELDS ---
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
                         child: DropdownButtonFormField<String>(
                           value: selectedBrand,
                           decoration: context.inputDecoration(
                               "Brand Name", "Choose brand"),
-                          items: bikeBrands
+                          items: brandListWithOthers
                               .map((b) =>
-                                  DropdownMenuItem(value: b, child: Text(b)))
+                              DropdownMenuItem(value: b, child: Text(b)))
                               .toList(),
-                          onChanged: (val) =>
-                              setState(() => selectedBrand = val),
+                          onChanged: (val) {
+                            setState(() {
+                              selectedBrand = val;
+                              // Reset model state when brand changes
+                              selectedModel = null;
+                              modelController.clear();
+                              if (val != 'Others') {
+                                brandController.clear();
+                              } else {
+                                brandFocusNode.requestFocus();
+                              }
+                            });
+                          },
                           validator: (val) => val == null ? "Required" : null,
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: TextFormField(
-                          controller: modelNameController,
-                          decoration: context.inputDecoration(
-                              "Model Name", "e.g. TRIUMPH Tiger 1200"),
-                          validator: (val) => val!.isEmpty ? "Required" : null,
+                      if (isBrandOthers)
+                        Padding(
+                          padding:
+                          const EdgeInsets.only(top: 8.0, bottom: 8.0),
+                          child: TextFormField(
+                            controller: brandController,
+                            focusNode: brandFocusNode,
+                            decoration: context.inputDecoration(
+                                "Enter Brand Name", "e.g., Custom Bikes"),
+                            validator: (val) =>
+                            val!.isEmpty ? "Required" : null,
+                          ),
                         ),
-                      ),
+                      if (!isBrandOthers)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: DropdownButtonFormField<String>(
+                            value: selectedModel,
+                            decoration: context.inputDecoration(
+                                "Model Name",
+                                selectedBrand != null
+                                    ? "Choose model"
+                                    : "Select a brand first"),
+                            items: modelListWithOthers
+                                .map((m) =>
+                                DropdownMenuItem(value: m, child: Text(m)))
+                                .toList(),
+                            onChanged: selectedBrand != null
+                                ? (val) {
+                              setState(() {
+                                selectedModel = val;
+                                if (val != 'Others') {
+                                  modelController.clear();
+                                } else {
+                                  modelFocusNode.requestFocus();
+                                }
+                              });
+                            }
+                                : null,
+                            validator: (val) =>
+                            val == null ? "Required" : null,
+                          ),
+                        ),
+                      if (isModelOthers && !isBrandOthers)
+                        Padding(
+                          padding:
+                          const EdgeInsets.only(top: 8.0, bottom: 8.0),
+                          child: TextFormField(
+                            controller: modelController,
+                            focusNode: modelFocusNode,
+                            decoration: context.inputDecoration(
+                                "Enter Model Name", "e.g., Cafe Racer"),
+                            validator: (val) =>
+                            val!.isEmpty ? "Required" : null,
+                          ),
+                        ),
+                      if (isBrandOthers)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: TextFormField(
+                            controller: modelController,
+                            decoration: context.inputDecoration(
+                                "Model Name", "e.g., Custom Bobber"),
+                            validator: (val) =>
+                            val!.isEmpty ? "Required" : null,
+                          ),
+                        ),
+                      // ... (Rest of the form fields)
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
                         child: MonthYearPicker(
@@ -326,7 +446,7 @@ class _SellYourBikeState extends State<SellYourBike>
                               "State", "Select your state"),
                           items: stateNames
                               .map((state) => DropdownMenuItem(
-                                  value: state, child: Text(state)))
+                              value: state, child: Text(state)))
                               .toList(),
                           onChanged: (val) =>
                               setState(() => selectedState = val),
@@ -369,7 +489,7 @@ class _SellYourBikeState extends State<SellYourBike>
                           value: _areYouFirstOwner,
                           items: yesNo
                               .map((state) => DropdownMenuItem(
-                                  value: state, child: Text(state)))
+                              value: state, child: Text(state)))
                               .toList(),
                           onChanged: (val) =>
                               setState(() => _areYouFirstOwner = val),
@@ -386,7 +506,7 @@ class _SellYourBikeState extends State<SellYourBike>
                           value: _invoiceAvailable,
                           items: yesNo
                               .map((state) => DropdownMenuItem(
-                                  value: state, child: Text(state)))
+                              value: state, child: Text(state)))
                               .toList(),
                           onChanged: (val) =>
                               setState(() => _invoiceAvailable = val),
@@ -403,12 +523,12 @@ class _SellYourBikeState extends State<SellYourBike>
                           value: _nocAvailable,
                           items: yesNoNA
                               .map((state) => DropdownMenuItem(
-                                  value: state, child: Text(state)))
+                              value: state, child: Text(state)))
                               .toList(),
                           onChanged: (val) =>
                               setState(() => _nocAvailable = val),
                           validator: (val) =>
-                              val == null ? 'Please select NOC status' : null,
+                          val == null ? 'Please select NOC status' : null,
                         ),
                       ),
                       Padding(
@@ -419,7 +539,7 @@ class _SellYourBikeState extends State<SellYourBike>
                           value: _insuranceAvailable,
                           items: yesNo
                               .map((state) => DropdownMenuItem(
-                                  value: state, child: Text(state)))
+                              value: state, child: Text(state)))
                               .toList(),
                           onChanged: (val) {
                             setState(() {
@@ -451,7 +571,7 @@ class _SellYourBikeState extends State<SellYourBike>
                           value: _batteryCondition,
                           items: goodBadList
                               .map((state) => DropdownMenuItem(
-                                  value: state, child: Text(state)))
+                              value: state, child: Text(state)))
                               .toList(),
                           onChanged: (val) =>
                               setState(() => _batteryCondition = val),
@@ -468,7 +588,7 @@ class _SellYourBikeState extends State<SellYourBike>
                           value: _tyreCondition,
                           items: tyreConditionList
                               .map((state) => DropdownMenuItem(
-                                  value: state, child: Text(state)))
+                              value: state, child: Text(state)))
                               .toList(),
                           onChanged: (val) =>
                               setState(() => _tyreCondition = val),
@@ -513,34 +633,34 @@ class _SellYourBikeState extends State<SellYourBike>
               onPressed: _isLoading ? null : _submitForm,
               style: ElevatedButton.styleFrom(
                 backgroundColor:
-                    _isLoading ? Colors.grey : Theme.of(context).primaryColor,
+                _isLoading ? Colors.grey : Theme.of(context).primaryColor,
                 disabledBackgroundColor: Colors.grey,
               ),
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
                 child: _isLoading
                     ? const Row(
-                        key: ValueKey('loading'),
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          ),
-                          SizedBox(width: 12),
-                          Text("Submitting...",
-                              style: TextStyle(color: Colors.white)),
-                        ],
-                      )
-                    : const Text(
-                        "Submit",
-                        key: ValueKey('submit'),
-                        style: TextStyle(color: Colors.white),
+                  key: ValueKey('loading'),
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
                       ),
+                    ),
+                    SizedBox(width: 12),
+                    Text("Submitting...",
+                        style: TextStyle(color: Colors.white)),
+                  ],
+                )
+                    : const Text(
+                  "Submit",
+                  key: ValueKey('submit'),
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ),
           ),

@@ -8,6 +8,7 @@ import 'package:popp/src/toolbar/pop_app_bar.dart';
 import 'package:popp/src/utils/app_constants.dart';
 import 'package:popp/src/utils/app_loger.dart';
 
+import '../api/api_url.dart';
 import '../navigation/custom_bottom_nav_bar.dart';
 import '../navigation/nav_helper.dart';
 
@@ -76,7 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
   // NEW: Method to save FCM token to Firestore
   Future<void> _saveFCMTokenToFirestore(String token, String uid) async {
     try {
-      final userRef = FirebaseFirestore.instance.collection(Constants.userPath).doc(uid);
+      final userRef = FirebaseFirestore.instance.collection(ApiUrl.userPath).doc(uid);
       await userRef.set(
         {
           'fcmTokens': FieldValue.arrayUnion([token]), // Add token to an array

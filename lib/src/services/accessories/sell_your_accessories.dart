@@ -339,7 +339,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
                   onDateSelected: (date) {
                     setState(() {
                       _selectedBillDate = date;
-                      final age = calculateAge(_selectedBillDate);
+                      final age = AppUtils.calculateAge(_selectedBillDate);
                       productAgingController.text =
                           "${age['years']} years and ${age['months']} months";
                     });

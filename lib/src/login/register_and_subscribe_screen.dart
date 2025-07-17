@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:popp/src/utils/app_loger.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../api/api_url.dart';
 import '../firebase/auth_service.dart';
 import '../navigation/nav_router.dart';
 import '../subscription/subscribe_page_widget.dart';
-import '../utils/app_constants.dart';
 import '../widgets/app_dialogs.dart';
 import 'model/user_data_model.dart';
 
@@ -29,7 +29,7 @@ class _RegisterAndSubscribeScreenState
 
   void _openTermsLink() async {
     AppLogger.w("Terms link clicked");
-    final uri = Uri.parse(Constants.privacyLink);
+    final uri = Uri.parse(ApiUrl.privacyLink);
     final launched = await launchUrl(uri);
     if (launched) {
       setState(() => hasClickedTermsLink = true);

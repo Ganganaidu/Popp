@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:popp/src/utils/app_constants.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../api/api_url.dart';
 import '../navigation/nav_router.dart';
 import '../widgets/app_dialogs.dart';
 
@@ -75,7 +76,7 @@ class HelpScreen extends StatelessWidget {
           leading: const Icon(Icons.privacy_tip_outlined),
           title: const Text('Privacy Policy'),
           onTap: () async {
-            launchUrl(Uri.parse(Constants.privacyLink));
+            launchUrl(Uri.parse(ApiUrl.privacyLink));
           },
         ),
       ],

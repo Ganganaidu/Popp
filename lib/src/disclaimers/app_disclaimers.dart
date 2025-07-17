@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:popp/src/utils/app_constants.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../api/api_url.dart';
+
 class Disclaimers extends StatelessWidget {
   const Disclaimers({super.key});
 
@@ -29,7 +31,7 @@ class Disclaimers extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           InkWell(
-            onTap: () => launchUrl(Uri.parse(Constants.privacyLink)),
+            onTap: () => launchUrl(Uri.parse(ApiUrl.privacyLink)),
             child: const Text(
               'Terms of Use & Privacy Policy',
               style: TextStyle(

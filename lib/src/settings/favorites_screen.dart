@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:popp/src/utils/app_constants.dart';
 
+import '../api/api_url.dart';
 import 'list_grid_view.dart';
 
 class FavoritesScreen extends StatefulWidget {
@@ -74,14 +74,14 @@ class _FavoritesScreenState extends State<FavoritesScreen>
           // Using the reusable widget for Products
           ListingsGridView(
             query: FirebaseFirestore.instance
-                .collection(Constants.productsPath)
+                .collection(ApiUrl.productsPath)
                 .where('favoritedBy', arrayContains: user.uid),
             showOptionsMenu: false, // Show edit/delete options
           ),
           // Using the reusable widget for Services
           ListingsGridView(
             query: FirebaseFirestore.instance
-                .collection(Constants.servicePath)
+                .collection(ApiUrl.servicePath)
                 .where('favoritedBy', arrayContains: user.uid),
             showOptionsMenu: false, // Show edit/delete options
           ),

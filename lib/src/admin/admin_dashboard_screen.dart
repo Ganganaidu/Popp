@@ -3,11 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:popp/src/firebase/firebase_api_service.dart';
 import 'package:popp/src/utils/app_constants.dart';
-import 'package:popp/src/utils/build_extensions.dart';
 
-import '../navigation/nav_router.dart';
+import '../api/api_url.dart';
 import '../settings/list_grid_view.dart';
-import '../utils/product_content_data.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -82,14 +80,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
           // Using the reusable widget for Products
           ListingsGridView(
             query: FirebaseFirestore.instance
-                .collection(Constants.productsPath)
+                .collection(ApiUrl.productsPath)
                 .where('isApproved', isEqualTo: false),
             showOptionsMenu: false, // Show edit/delete options
           ),
           // Using the reusable widget for Services
           ListingsGridView(
             query: FirebaseFirestore.instance
-                .collection(Constants.servicePath)
+                .collection(ApiUrl.servicePath)
                 .where('isApproved', isEqualTo: false),
             showOptionsMenu: false, // Show edit/delete options
           ),

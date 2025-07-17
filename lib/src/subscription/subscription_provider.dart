@@ -8,7 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:popp/src/utils/app_loger.dart';
 
-import '../utils/app_constants.dart';
+import '../api/api_url.dart';
 
 class SubscriptionProvider with ChangeNotifier {
   final InAppPurchase _iap = InAppPurchase.instance;
@@ -39,7 +39,8 @@ class SubscriptionProvider with ChangeNotifier {
 
   String? get currentSubscriptionId => _currentSubscriptionId;
 
-  String? get currentSubscriptionUniqueId => _currentSubscriptionUniqueId; // <-- new getter
+  String? get currentSubscriptionUniqueId =>
+      _currentSubscriptionUniqueId; // <-- new getter
 
   SubscriptionProvider() {
     _initialize();
@@ -234,12 +235,13 @@ class SubscriptionProvider with ChangeNotifier {
   }) async {
     try {
       await FirebaseFirestore.instance
-          .collection(Constants.userPath)
+          .collection(ApiUrl.userPath)
           .doc(uid)
           .update({
         'isSubscribed': isSubscribed,
         'subscribedProductId': isSubscribed ? subscribedProductId : null,
-        'uniqueProductId': isSubscribed ? uniqueProductId : null, // <-- save unique id
+        'uniqueProductId': isSubscribed ? uniqueProductId : null,
+        // <-- save unique id
       });
       _currentSubscriptionUniqueId = isSubscribed ? uniqueProductId : null;
       return true;
@@ -253,7 +255,7 @@ class SubscriptionProvider with ChangeNotifier {
     if (uid == null) return;
     try {
       final userDoc = await FirebaseFirestore.instance
-          .collection(Constants.userPath)
+          .collection(ApiUrl.userPath)
           .doc(uid)
           .get();
       if (userDoc.exists) {

@@ -1,4 +1,6 @@
 import 'dart:async';
+
+import 'package:app_links/app_links.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -7,6 +9,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:month_year_picker/month_year_picker.dart';
+import 'package:popp/src/api/api_url.dart';
 import 'package:popp/src/app_providers.dart';
 import 'package:popp/src/home/home_screen.dart';
 import 'package:popp/src/login/login_screen.dart';
@@ -15,8 +18,6 @@ import 'package:popp/src/login/signup_screen.dart';
 import 'package:popp/src/products/product_detail_screen.dart';
 import 'package:popp/src/services/listservices/service_detail_screen.dart';
 import 'package:popp/src/theme/theme_notifier.dart';
-import 'package:app_links/app_links.dart';
-import 'package:popp/src/utils/app_constants.dart';
 
 import 'src/firebase/firebase_options.dart';
 import 'src/theme/theme.dart';
@@ -111,9 +112,8 @@ class _MyAppState extends State<MyApp> {
 
     final productType = segments[0];
     final serviceId = segments[1];
-    final servicePath = productType == 'service'
-        ? Constants.servicePath
-        : Constants.productsPath;
+    final servicePath =
+        productType == 'service' ? ApiUrl.servicePath : ApiUrl.productsPath;
 
     try {
       final doc = await FirebaseFirestore.instance
@@ -194,5 +194,4 @@ class AuthGate extends StatelessWidget {
       },
     );
   }
-
 }

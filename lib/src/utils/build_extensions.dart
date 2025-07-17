@@ -141,18 +141,3 @@ extension BuildContextEntension<T> on BuildContext {
       );
 }
 
-// Place the calculateAge function here or in a utility file
-Map<String, int> calculateAge(DateTime? startDate) {
-  if (startDate == null) {
-    return {'years': 0, 'months': 0};
-  }
-  final DateTime currentDate = DateTime.now();
-  int years = currentDate.year - startDate.year;
-  int months = currentDate.month - startDate.month;
-  if (months < 0 || (months == 0 && currentDate.day < startDate.day)) {
-    years--;
-    months += 12;
-  }
-  return {'years': years, 'months': months};
-}
-

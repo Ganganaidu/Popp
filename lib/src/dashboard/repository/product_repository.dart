@@ -1,15 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:popp/src/models/pop_category.dart';
 
+import '../../api/api_url.dart';
 import '../../models/product.dart';
-import '../../utils/app_constants.dart';
 
 class ProductRepository {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
   Future<List<PopCategory>> fetchProductsGroupedByCategory(bool isApproved) async {
     QuerySnapshot snapshot = await _db
-        .collection(Constants.productsPath)
+        .collection(ApiUrl.productsPath)
         .where('isApproved', isEqualTo: isApproved)
         .get();
     if (snapshot.docs.isEmpty) return [];

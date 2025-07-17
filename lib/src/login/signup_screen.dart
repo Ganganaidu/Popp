@@ -4,11 +4,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:popp/src/api/api_url.dart';
 import 'package:popp/src/login/model/user_data_model.dart';
 import 'package:popp/src/login/validation_requiremen_text.dart';
 import 'package:popp/src/utils/build_extensions.dart';
 
 import '../navigation/nav_router.dart';
+import '../search/autocomplete_search_field.dart';
+import '../utils/app_constants.dart';
 import '../utils/app_utils.dart';
 import '../utils/product_content_data.dart';
 import '../widgets/custom_dropdown_form_field.dart';
@@ -117,10 +120,10 @@ class _SignupScreenState extends State<SignupScreen> {
       if (user == null) throw Exception("User creation failed.");
 
       var acs = ActionCodeSettings(
-          url: 'https://popp-71efb.web.app',
+          url: ApiUrl.baseUrl,
           handleCodeInApp: true,
-          iOSBundleId: 'com.popp.abike',
-          androidPackageName: 'com.popp.abike',
+          iOSBundleId: Constants.appBundleId,
+          androidPackageName: Constants.appBundleId,
           androidInstallApp: true,
           androidMinimumVersion: '12');
       await user.sendEmailVerification(acs);
@@ -138,13 +141,10 @@ class _SignupScreenState extends State<SignupScreen> {
             String finalModel;
 
             if (selectedBrand == 'Others') {
-              // If brand is "Others", both brand and model are from manual text entry
               finalBrand = brandController.text;
               finalModel = modelController.text;
             } else {
-              // If a specific brand is chosen...
               finalBrand = selectedBrand ?? '';
-              // ...check if the model is "Others" or a specific selection
               if (selectedModel == 'Others') {
                 finalModel = modelController.text;
               } else {
@@ -277,12 +277,28 @@ class _SignupScreenState extends State<SignupScreen> {
                         validator: (val) =>
                             val == null ? "State is required" : null),
                     const SizedBox(height: 15),
-                    _buildTextField("Address", addressController,
-                        icon: Icons.home_outlined, maxLines: 2),
+                    AutocompleteSearchField(
+                      label: "Address",
+                      hint: "Start typing your address...",
+                      controller: addressController,
+                      icon: Icons.home_outlined,
+                      lat: stateCoordinates[selectedState]?['lat'] ?? 0.0,
+                      lon: stateCoordinates[selectedState]?['lon'] ?? 0.0,
+                      onPlaceSelected: (suggestion) {
+                        // Update all location controllers when a place is selected
+                        setState(() {
+                          addressController.text = suggestion.text;
+                          cityController.text = suggestion.municipality ?? '';
+                          pinCodeController.text = suggestion.postalCode ?? '';
+                        });
+                      },
+                    ),
                     const SizedBox(height: 15),
+                    // --- UPDATED: CITY FIELD (NOW AUTO-POPULATED) ---
                     _buildTextField("City", cityController,
                         icon: Icons.location_city_outlined),
                     const SizedBox(height: 15),
+                    // --- UPDATED: PIN CODE FIELD (NOW AUTO-POPULATED) ---
                     _buildTextField("Pin Code", pinCodeController,
                         icon: Icons.pin_drop_outlined,
                         keyboardType: TextInputType.number),
@@ -332,6 +348,7 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   Widget _buildSectionHeader(String title, String subtitle) {
+    // ... (This method remains unchanged)
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
       child: Column(
@@ -350,6 +367,7 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   Widget _buildBikeFields(int index) {
+    // ... (This method remains unchanged)
     final bike = bikes[index];
     final selectedBrand = bike['brand'] as String?;
     final brandController = bike['brandController'] as TextEditingController;
@@ -393,8 +411,6 @@ class _SignupScreenState extends State<SignupScreen> {
               ],
             ),
             const SizedBox(height: 16),
-
-            // --- BRAND DROPDOWN ---
             DropdownButtonFormField<String>(
               value: selectedBrand,
               decoration: context.inputDecoration("", "Choose brand",
@@ -405,7 +421,6 @@ class _SignupScreenState extends State<SignupScreen> {
               onChanged: (val) {
                 setState(() {
                   bikes[index]['brand'] = val;
-                  // Clear all model-related state when brand changes
                   bikes[index]['model'] = null;
                   modelController.clear();
                   if (val != 'Others') {
@@ -416,8 +431,6 @@ class _SignupScreenState extends State<SignupScreen> {
                 });
               },
             ),
-
-            // --- MANUAL BRAND TEXT FIELD ---
             if (isBrandOthers)
               Padding(
                 padding: const EdgeInsets.only(top: 15.0),
@@ -426,12 +439,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     icon: Icons.edit_outlined,
                     isRequired: true),
               ),
-
             const SizedBox(height: 15),
-
-            // --- CONDITIONAL MODEL FIELDS ---
-
-            // Show Model Dropdown if a specific brand is selected
             if (!isBrandOthers)
               Column(
                 children: [
@@ -471,15 +479,10 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
                 ],
               ),
-
-            // Show Manual Model Text Field if brand is "Others"
             if (isBrandOthers)
               _buildTextField('Enter Model Name', modelController,
                   icon: Icons.motorcycle_outlined, isRequired: true),
-
             const SizedBox(height: 15),
-
-            // --- MFG Month & Year Picker ---
             MonthYearPicker(
               label: "",
               hint: "Manufacture Date",
@@ -495,6 +498,7 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   Widget _buildPasswordRequirementsDisclosure() {
+    // ... (This method remains unchanged)
     return ValueListenableBuilder<TextEditingValue>(
       valueListenable: passwordController,
       builder: (context, value, child) {
@@ -533,6 +537,7 @@ class _SignupScreenState extends State<SignupScreen> {
       VoidCallback? onTogglePasswordVisibility,
       bool? currentPasswordVisibility,
       FocusNode? focusNode}) {
+    // ... (This method remains unchanged)
     return TextFormField(
       controller: controller,
       focusNode: focusNode,

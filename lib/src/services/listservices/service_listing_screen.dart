@@ -4,6 +4,7 @@ import 'package:popp/src/utils/app_loger.dart';
 import 'package:popp/src/utils/build_extensions.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../../api/api_url.dart';
 import '../../firebase/firebase_api_service.dart';
 import '../../navigation/nav_router.dart';
 import '../../utils/product_content_data.dart';
@@ -198,7 +199,7 @@ class _ServiceListingScreenState extends State<ServiceListingScreen> {
                                   ),
                                 ),
                                 Image.network(
-                                  imageUrl ?? Constants.defaultPlaceholderImage,
+                                  imageUrl ?? ApiUrl.defaultPlaceholderImage,
                                   width: double.infinity,
                                   height: 200,
                                   // Fixed height for consistency
@@ -218,7 +219,7 @@ class _ServiceListingScreenState extends State<ServiceListingScreen> {
                                   },
                                   errorBuilder: (context, error, stackTrace) {
                                     return Image.network(
-                                      Constants.defaultPlaceholderImage,
+                                      ApiUrl.defaultPlaceholderImage,
                                       width: double.infinity,
                                       height: 200,
                                       fit: BoxFit.cover,

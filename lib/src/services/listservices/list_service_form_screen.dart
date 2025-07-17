@@ -10,8 +10,8 @@ import 'package:popp/src/widgets/loading_overlay.dart'; // You might need to cre
 import 'package:popp/src/widgets/month_year_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../api/api_url.dart';
 import '../../firebase/firebase_api_service.dart';
-import '../../utils/app_constants.dart';
 import '../../utils/app_loger.dart';
 import '../../utils/product_content_data.dart';
 import '../../widgets/working_hours_picker.dart'; // You might need to create this widget
@@ -113,7 +113,7 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
 
   void _openTermsLink() async {
     AppLogger.w("Terms link clicked");
-    final uri = Uri.parse(Constants.privacyLink);
+    final uri = Uri.parse(ApiUrl.privacyLink);
     final launched = await launchUrl(uri);
     if (launched) {
       setState(() => _termsAccepted = true);

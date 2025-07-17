@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
+import '../api/api_url.dart';
 import '../navigation/nav_router.dart';
-import '../utils/app_constants.dart';
 
 // A dedicated data class for shortcuts.
 class _ShortcutCategory {
@@ -78,7 +78,7 @@ class _ExploreProductsScreenState extends State<ExploreProductsScreen> {
     final List<Map<String, dynamic>> results = [];
     // Search products
     final productsSnap = await fireStore
-        .collection(Constants.productsPath)
+        .collection(ApiUrl.productsPath)
         .where('searchKeywords', arrayContainsAny: [query.toLowerCase()]).get();
     results.addAll(productsSnap.docs.map((doc) => {
           ...doc.data(),
@@ -87,7 +87,7 @@ class _ExploreProductsScreenState extends State<ExploreProductsScreen> {
         }));
     // Search services
     final servicesSnap = await fireStore
-        .collection(Constants.servicePath)
+        .collection(ApiUrl.servicePath)
         .where('searchKeywords', arrayContainsAny: [query.toLowerCase()]).get();
     results.addAll(servicesSnap.docs.map((doc) => {
           ...doc.data(),
@@ -218,7 +218,7 @@ class _ExploreProductsScreenState extends State<ExploreProductsScreen> {
                     final allImageUrls = _extractAllImageUrls(item);
                     final imageUrl = allImageUrls.isNotEmpty
                         ? allImageUrls.first
-                        : Constants.defaultPlaceholderImage;
+                        : ApiUrl.defaultPlaceholderImage;
 
                     return ListTile(
                       leading: ClipRRect(

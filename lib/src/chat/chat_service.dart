@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:popp/src/utils/app_loger.dart';
 
+import '../api/api_url.dart';
 import '../utils/app_constants.dart';
 import 'chat_message.dart';
 
@@ -15,7 +16,7 @@ class ChatService extends ChangeNotifier {
   Future<Map<String, dynamic>?> getUserData(String userId) async {
     try {
       DocumentSnapshot userDoc =
-      await _firestore.collection(Constants.userPath).doc(userId).get();
+      await _firestore.collection(ApiUrl.userPath).doc(userId).get();
       if (userDoc.exists) {
         return userDoc.data() as Map<String, dynamic>;
       }
@@ -56,7 +57,7 @@ class ChatService extends ChangeNotifier {
 
       await _firestore
           .collection(
-          Constants.userToUserChatPath) // Dedicated collection for U2U
+          ApiUrl.userToUserChatPath) // Dedicated collection for U2U
           .doc(chatRoomId)
           .collection('messages')
           .add(newMessage.toMap())
@@ -80,7 +81,7 @@ class ChatService extends ChangeNotifier {
       AppLogger.d("Getting U2U messages for chatRoomId: $chatRoomId");
       return _firestore
           .collection(
-          Constants.userToUserChatPath) // Dedicated collection for U2U
+          ApiUrl.userToUserChatPath) // Dedicated collection for U2U
           .doc(chatRoomId)
           .collection('messages')
           .orderBy('timestamp', descending: false)
@@ -129,7 +130,7 @@ class ChatService extends ChangeNotifier {
       // Send the actual chat message
       await _firestore
           .collection(
-          Constants.agentToUserChatPath) // Dedicated collection for A-U
+          ApiUrl.agentToUserChatPath) // Dedicated collection for A-U
           .doc(chatRoomId)
           .collection('messages')
           .add(newMessage.toMap());
@@ -173,7 +174,7 @@ class ChatService extends ChangeNotifier {
 
       // Update sender's agentChatMemberships subcollection
       await _firestore
-          .collection(Constants.userPath)
+          .collection(ApiUrl.userPath)
           .doc(currentUserId)
           .collection('agentChatMemberships')
           .doc(chatRoomId)
@@ -181,7 +182,7 @@ class ChatService extends ChangeNotifier {
 
       // Update receiver's agentChatMemberships subcollection
       await _firestore
-          .collection(Constants.userPath)
+          .collection(ApiUrl.userPath)
           .doc(receiverUserId)
           .collection('agentChatMemberships')
           .doc(chatRoomId)
@@ -206,7 +207,7 @@ class ChatService extends ChangeNotifier {
       AppLogger.d("Getting A-U messages for chatRoomId: $chatRoomId");
       return _firestore
           .collection(
-          Constants.agentToUserChatPath) // Dedicated collection for A-U
+          ApiUrl.agentToUserChatPath) // Dedicated collection for A-U
           .doc(chatRoomId)
           .collection('messages')
           .orderBy('timestamp', descending: false)
@@ -236,7 +237,7 @@ class ChatService extends ChangeNotifier {
       }
 
       return _firestore
-          .collection(Constants.userPath) // Start from the users collection
+          .collection(ApiUrl.userPath) // Start from the users collection
           .doc(agentId) // Get the specific agent's document
           .collection(
           'agentChatMemberships') // Access their chat memberships sub collection
@@ -278,7 +279,7 @@ class ChatService extends ChangeNotifier {
   Future<List<Map<String, dynamic>>> getChats() async {
     try {
       QuerySnapshot snapshot =
-      await _firestore.collection(Constants.agentToUserChatPath).get();
+      await _firestore.collection(ApiUrl.agentToUserChatPath).get();
       return snapshot.docs
           .map((doc) => doc.data() as Map<String, dynamic>)
           .toList();
@@ -291,7 +292,7 @@ class ChatService extends ChangeNotifier {
   // Existing getUsersStream (for user-to-user selection) - NO CHANGE
   Stream<List<Map<String, dynamic>>> getUsersStream() {
     try {
-      return _firestore.collection(Constants.userPath).snapshots().map((
+      return _firestore.collection(ApiUrl.userPath).snapshots().map((
           snapshot) {
         return snapshot.docs.map((doc) {
           final user = doc.data();

@@ -1,12 +1,13 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:popp/src/utils/build_extensions.dart';
-import 'package:provider/provider.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:lottie/lottie.dart'; // Added for animations
+import 'package:popp/src/utils/build_extensions.dart';
+import 'package:provider/provider.dart';
 
 import '../../main.dart';
+import '../api/api_url.dart';
 import '../navigation/nav_router.dart';
 import '../subscription/subscribe_page_widget.dart';
 import '../subscription/subscription_provider.dart';
@@ -21,7 +22,7 @@ class SettingsScreen extends StatelessWidget {
   Future<String> _fetchUsername(String uid) async {
     try {
       final doc = await FirebaseFirestore.instance
-          .collection(Constants.userPath)
+          .collection(ApiUrl.userPath)
           .doc(uid)
           .get();
       final data = doc.data();

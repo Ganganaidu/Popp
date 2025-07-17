@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:popp/src/utils/app_loger.dart';
 import 'package:popp/src/utils/build_extensions.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:url_launcher/url_launcher_string.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
+import '../../api/api_url.dart';
 import '../../firebase/firebase_api_service.dart';
 import '../../utils/app_constants.dart';
 import '../../utils/product_content_data.dart';
@@ -52,7 +53,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     });
     final prev = _isFav;
     final result = await _firebaseApiService.toggleFavoriteProduct(
-        Constants.servicePath, widget.serviceData['id']);
+        ApiUrl.servicePath, widget.serviceData['id']);
     setState(() {
       _favButtonDisabled = false;
       if (!result) {
@@ -69,7 +70,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
         'an amazing service';
 
     // This is your deep link. Ensure your domain is correct.
-    final String deepLink = "${Constants.servicePath}/$serviceId";
+    final String deepLink = "${ApiUrl.servicePath}/$serviceId";
 
     final String shareText = "Check out $serviceName on POPP! $deepLink";
     AppLogger.i("shareText $shareText");
@@ -295,7 +296,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                 Image.network(
                   allImageUrls.isNotEmpty
                       ? allImageUrls[_selectedImageIndex]
-                      : Constants.defaultPlaceholderImage,
+                      : ApiUrl.defaultPlaceholderImage,
                   fit: BoxFit.cover,
                   loadingBuilder: (context, child, loadingProgress) {
                     if (loadingProgress == null) return child;
@@ -309,7 +310,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                   },
                   errorBuilder: (context, error, stackTrace) {
                     return Image.network(
-                      Constants.defaultPlaceholderImage,
+                      ApiUrl.defaultPlaceholderImage,
                       fit: BoxFit.cover,
                     );
                   },

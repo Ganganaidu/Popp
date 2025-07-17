@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:popp/src/utils/app_loger.dart';
 
+import '../api/api_url.dart';
 import '../gallery/pic_image_gallery.dart';
 import '../models/product.dart';
 import '../utils/app_constants.dart';
@@ -33,7 +34,7 @@ class FirebaseApiService {
     onLoading(true); // Show loading
 
     // 1. Generate Product ID client-side
-    final newProductRef = _db.collection(Constants.productsPath).doc();
+    final newProductRef = _db.collection(ApiUrl.productsPath).doc();
     final String newProductId = newProductRef.id;
 
     // 2. Upload Images using the generated newProductId
@@ -144,13 +145,13 @@ class FirebaseApiService {
       AppLogger.d("Batch process started");
       // 1. Set product in the global 'products' collection using the provided productId
       DocumentReference productRef =
-          _db.collection(Constants.productsPath).doc(productId);
+          _db.collection(ApiUrl.productsPath).doc(productId);
       batch.set(productRef, productData);
 
       AppLogger.d("Batch process productRef $productRef");
       // 2. Add product ID to the user's 'createdProductIds'
       DocumentReference userRef =
-          _db.collection(Constants.userPath).doc(user.uid);
+          _db.collection(ApiUrl.userPath).doc(user.uid);
       batch.update(userRef, {
         'createdProductIds': FieldValue.arrayUnion([productId])
       });
@@ -181,14 +182,14 @@ class FirebaseApiService {
     try {
       // Check if product exists (optional, but good practice)
       final productDoc =
-          await _db.collection(Constants.productsPath).doc(productId).get();
+          await _db.collection(ApiUrl.productsPath).doc(productId).get();
       if (!productDoc.exists) {
         // AppLogger.d("Product with ID $productId does not exist.");
         AppLogger.d("Product with ID $productId does not exist.");
         return false;
       }
 
-      await _db.collection(Constants.userPath).doc(user.uid).update({
+      await _db.collection(ApiUrl.userPath).doc(user.uid).update({
         'savedProductIds': FieldValue.arrayUnion([productId])
       });
       // AppLogger.d("Product $productId saved to user ${user.uid}");
@@ -210,7 +211,7 @@ class FirebaseApiService {
     }
 
     try {
-      await _db.collection(Constants.userPath).doc(user.uid).update({
+      await _db.collection(ApiUrl.userPath).doc(user.uid).update({
         'savedProductIds': FieldValue.arrayRemove([productId])
       });
       // AppLogger.d("Product $productId removed from user ${user.uid}'s saved list");
@@ -235,7 +236,7 @@ class FirebaseApiService {
 
     try {
       DocumentSnapshot productDoc =
-          await _db.collection(Constants.productsPath).doc(productId).get();
+          await _db.collection(ApiUrl.productsPath).doc(productId).get();
       if (!productDoc.exists) {
         AppLogger.d("Product $productId does not exist, cannot update.");
         return false;
@@ -256,7 +257,7 @@ class FirebaseApiService {
       updatePayload['updatedAt'] = FieldValue.serverTimestamp();
 
       await _db
-          .collection(Constants.productsPath)
+          .collection(ApiUrl.productsPath)
           .doc(productId)
           .update(updatePayload);
       AppLogger.d("Product $productId updated successfully.");
@@ -273,7 +274,7 @@ class FirebaseApiService {
   Future<Map<String, dynamic>?> getProductById(String productId) async {
     try {
       DocumentSnapshot doc =
-          await _db.collection(Constants.productsPath).doc(productId).get();
+          await _db.collection(ApiUrl.productsPath).doc(productId).get();
       if (doc.exists) {
         return doc.data() as Map<String, dynamic>?;
       }
@@ -292,7 +293,7 @@ class FirebaseApiService {
 
     try {
       final userDoc =
-          await _db.collection(Constants.userPath).doc(user.uid).get();
+          await _db.collection(ApiUrl.userPath).doc(user.uid).get();
       if (!userDoc.exists || userDoc.data()?['createdProductIds'] == null) {
         return [];
       }
@@ -306,7 +307,7 @@ class FirebaseApiService {
         List<String> sublist = productIds.sublist(
             i, i + 10 > productIds.length ? productIds.length : i + 10);
         final querySnapshot = await _db
-            .collection(Constants.productsPath)
+            .collection(ApiUrl.productsPath)
             .where(FieldPath.documentId, whereIn: sublist)
             .get();
         products.addAll(querySnapshot.docs.map((doc) => doc.data()));
@@ -326,7 +327,7 @@ class FirebaseApiService {
 
     try {
       final userDoc =
-          await _db.collection(Constants.userPath).doc(user.uid).get();
+          await _db.collection(ApiUrl.userPath).doc(user.uid).get();
       if (!userDoc.exists || userDoc.data()?['savedProductIds'] == null) {
         return [];
       }
@@ -339,7 +340,7 @@ class FirebaseApiService {
         List<String> sublist = productIds.sublist(
             i, i + 10 > productIds.length ? productIds.length : i + 10);
         final querySnapshot = await _db
-            .collection(Constants.productsPath)
+            .collection(ApiUrl.productsPath)
             .where(FieldPath.documentId, whereIn: sublist)
             .get();
         products.addAll(querySnapshot.docs.map((doc) => doc.data()));
@@ -356,7 +357,7 @@ class FirebaseApiService {
   Future<List<Map<String, dynamic>>> getAllProducts({int limit = 20}) async {
     try {
       QuerySnapshot snapshot = await _db
-          .collection(Constants.productsPath)
+          .collection(ApiUrl.productsPath)
           .orderBy('createdAt', descending: true)
           .limit(limit)
           .get();
@@ -375,7 +376,7 @@ class FirebaseApiService {
       {int limit = 20}) async {
     try {
       QuerySnapshot snapshot = await _db
-          .collection(Constants.productsPath)
+          .collection(ApiUrl.productsPath)
           .where('categoryId', isEqualTo: categoryId)
           .orderBy('createdAt', descending: true)
           .limit(limit)
@@ -393,7 +394,7 @@ class FirebaseApiService {
 // --- User Profile Setup (Call this when a user signs up) ---
   Future<void> createUserProfileDocument(User user, {String? email}) async {
     try {
-      await _db.collection(Constants.userPath).doc(user.uid).set(
+      await _db.collection(ApiUrl.userPath).doc(user.uid).set(
           {
             'uid': user.uid,
             'email':
@@ -446,7 +447,7 @@ class FirebaseApiService {
       // save the service data to FireStore
       try {
         AppLogger.d("Attempting to add service to Firestore: $data");
-        await _db.collection(Constants.servicePath).add({
+        await _db.collection(ApiUrl.servicePath).add({
           ...data,
           'createdAt': FieldValue.serverTimestamp(),
           'isApproved': false, // Default to false
@@ -493,7 +494,7 @@ class FirebaseApiService {
       AppLogger.d(
           "Service $serviceId requesting approval status updated to $isApproved");
 
-      await _db.collection(Constants.servicePath).doc(serviceId).update({
+      await _db.collection(ApiUrl.servicePath).doc(serviceId).update({
         'isApproved': isApproved,
         'approvedAt': FieldValue.serverTimestamp(),
         // Optional: track approval time
@@ -509,7 +510,7 @@ class FirebaseApiService {
   Future<bool> updateProductApprovalStatus(
       String serviceId, bool isApproved) async {
     try {
-      await _db.collection(Constants.productsPath).doc(serviceId).update({
+      await _db.collection(ApiUrl.productsPath).doc(serviceId).update({
         'isApproved': isApproved,
         'approvedAt': FieldValue.serverTimestamp(),
         // Optional: track approval time
@@ -527,7 +528,7 @@ class FirebaseApiService {
       List<String> categories, bool isApproved) async {
     try {
       QuerySnapshot querySnapshot = await _db
-          .collection(Constants.servicePath)
+          .collection(ApiUrl.servicePath)
           .where('category', whereIn: categories)
           .where('isApproved', isEqualTo: isApproved)
           .get();

@@ -5,6 +5,7 @@ import 'package:popp/src/utils/app_loger.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../api/api_url.dart';
 import '../firebase/firebase_api_service.dart';
 import '../utils/app_constants.dart';
 import '../widgets/app_dialogs.dart';
@@ -74,7 +75,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     });
     final prev = isFavorite;
     final result = await _firebaseApiService.toggleFavoriteProduct(
-        Constants.productsPath, widget.productJson['id']);
+        ApiUrl.productsPath, widget.productJson['id']);
     setState(() {
       _favButtonDisabled = false;
       if (!result) {
@@ -122,7 +123,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   void _shareProduct(Product product) {
     final serviceId = widget.productJson['id'];
     final serviceName = product.getTitle();
-    final String deepLink = "${Constants.productsPath}/$serviceId";
+    final String deepLink = "${ApiUrl.productsPath}/$serviceId";
     final String shareText = "Check out $serviceName on POPP! $deepLink";
     AppLogger.i("shareText $shareText");
     Share.share(shareText, subject: 'Check out this product!');

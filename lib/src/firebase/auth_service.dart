@@ -1,12 +1,14 @@
-import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:io' show Platform;
+
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:google_sign_in/google_sign_in.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:popp/src/login/model/user_data_model.dart';
-import 'package:popp/src/utils/app_constants.dart';
 import 'package:popp/src/utils/app_loger.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
-import 'dart:io' show Platform;
+
+import '../api/api_url.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -69,7 +71,7 @@ class AuthService {
     if (user == null) return;
 
     final docRef =
-        FirebaseFirestore.instance.collection(Constants.userPath).doc(user.uid);
+        FirebaseFirestore.instance.collection(ApiUrl.userPath).doc(user.uid);
 
     final doc = await docRef.get();
     if (doc.exists) {
@@ -78,7 +80,7 @@ class AuthService {
     }
 
     AppLogger.i("Saving user in firebase ${user.toString()}");
-    await _fireStore.collection(Constants.userPath).doc(user.uid).set({
+    await _fireStore.collection(ApiUrl.userPath).doc(user.uid).set({
       'uid': user.uid,
       'email': user.email,
       'displayName': user.displayName ?? '',
@@ -129,7 +131,7 @@ Future<FireStoreResult> saveUserDataToFireStore(UserData userData) async {
     AppLogger.d(
         "Attempting to save user data for UID: $uid. Data: ${userData.toMap()}");
     await fireStore
-        .collection(Constants.userPath)
+        .collection(ApiUrl.userPath)
         .doc(uid)
         .set(userData.toMap());
     AppLogger.i("User data successfully saved for UID: $uid");
@@ -160,7 +162,7 @@ Future<void> updateRegistrationComplete({
       return;
     }
     await FirebaseFirestore.instance
-        .collection(Constants.userPath)
+        .collection(ApiUrl.userPath)
         .doc(uid)
         .update({
       'registrationComplete': registrationComplete,

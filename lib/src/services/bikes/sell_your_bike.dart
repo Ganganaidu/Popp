@@ -8,16 +8,14 @@ import 'package:popp/src/widgets/app_dialogs.dart';
 import 'package:popp/src/widgets/loading_overlay.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../api/currency_service.dart';
 import '../../firebase/firebase_api_service.dart';
 import '../../models/pop_category.dart';
 import '../../models/product.dart';
 import '../../navigation/nav_router.dart';
-import '../../utils/app_utils.dart';
+import '../../utils/product_content_data.dart';
 import '../../widgets/custom_dropdown_form_field.dart';
 import '../../widgets/image_picker_selection.dart';
 import '../../widgets/month_year_picker.dart';
-import '../../utils/product_content_data.dart';
 
 class SellYourBike extends StatefulWidget {
   const SellYourBike({super.key});
@@ -30,7 +28,6 @@ class _SellYourBikeState extends State<SellYourBike>
     with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final FirebaseApiService _firebaseService = FirebaseApiService();
-  final CurrencyService _currencyService = CurrencyService();
 
   final ScrollController _scrollController = ScrollController();
   late final ValueNotifier<bool> _isCollapsedNotifier;

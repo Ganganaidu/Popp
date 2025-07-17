@@ -18,7 +18,7 @@ class ExpandableText extends StatefulWidget {
 
 class _ExpandableTextState extends State<ExpandableText> {
   bool _expanded = false;
-  bool _showMore = false;
+  // bool _showMore = false;
 
   @override
   void didChangeDependencies() {
@@ -37,7 +37,7 @@ class _ExpandableTextState extends State<ExpandableText> {
         maxWidth:
             MediaQuery.of(context).size.width - 32); // 16 padding each side
     setState(() {
-      _showMore = tp.didExceedMaxLines;
+      // _showMore = tp.didExceedMaxLines;
     });
   }
 

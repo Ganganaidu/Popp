@@ -1,12 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:popp/src/utils/app_loger.dart';
 import 'package:popp/src/utils/build_extensions.dart';
-import 'dart:convert';
 
 import '../utils/app_constants.dart';
-import '../utils/product_content_data.dart';
 
 // A model to represent a single search result from the TomTom API.
 class PlaceSuggestion {

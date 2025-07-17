@@ -529,7 +529,6 @@ class _SignupScreenState extends State<SignupScreen> {
 
   Widget _buildTextField(String hint, TextEditingController controller,
       {IconData? icon,
-      bool obscureText = false,
       int maxLines = 1,
       bool isRequired = true,
       TextInputType? keyboardType,

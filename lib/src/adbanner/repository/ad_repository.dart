@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:popp/src/api/api_url.dart';
-import 'package:popp/src/utils/app_constants.dart';
 
 import '../model/ad_banner.dart';
 

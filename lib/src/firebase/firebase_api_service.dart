@@ -8,7 +8,6 @@ import 'package:popp/src/utils/app_loger.dart';
 import '../api/api_url.dart';
 import '../gallery/pic_image_gallery.dart';
 import '../models/product.dart';
-import '../utils/app_constants.dart';
 
 class FirebaseApiService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;

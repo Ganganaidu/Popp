@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:popp/src/firebase/firebase_api_service.dart';
 import 'package:popp/src/utils/app_constants.dart';
 
 import '../api/api_url.dart';
@@ -16,7 +15,7 @@ class AdminDashboardScreen extends StatefulWidget {
 
 class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     with SingleTickerProviderStateMixin {
-  final FirebaseApiService _firebaseApiService = FirebaseApiService();
+  // final FirebaseApiService _firebaseApiService = FirebaseApiService();
   late TabController _tabController;
 
   bool get _isAdmin =>

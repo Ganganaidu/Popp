@@ -26,11 +26,11 @@ class ListingCard extends StatelessWidget {
   });
 
   // --- NEW: Helper to determine banner color and icon based on status ---
-  (Color, IconData) _getStatusStyle(String status) {
+  (Color, IconData?) _getStatusStyle(String status) {
     switch (status.toLowerCase()) {
-      case 'Sold':
+      case 'sold':
         return (Colors.grey.shade700, Icons.money_off_outlined);
-      case 'Approved':
+      case 'approved':
         return (Colors.green.shade600, Icons.check_circle_outline);
       default: // 'Pending' or any other status
         return (Colors.orange.shade700, Icons.hourglass_top_outlined);
@@ -70,7 +70,7 @@ class ListingCard extends StatelessWidget {
                       child: _buildOptionsMenu(context),
                     ),
                   // --- NEW: Conditionally display the status banner ---
-                  if (status != null && status!.isNotEmpty)
+                  if (status != null && status!.isNotEmpty && showOptionsMenu)
                     _buildStatusBanner(),
                 ],
               ),

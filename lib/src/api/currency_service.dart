@@ -61,7 +61,7 @@ class CurrencyService {
   Future<String> getLocalizedPrice(
     BuildContext context,
     String priceValueStr,
-    String sourceCuntryCode,
+    String? sourceCuntryCode,
   ) async {
     double priceValue;
     try {

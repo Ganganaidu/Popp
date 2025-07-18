@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:popp/src/api/currency_service.dart';
 import 'package:popp/src/models/product.dart';
 import 'package:popp/src/utils/app_loger.dart';
 import 'package:share_plus/share_plus.dart';
@@ -13,19 +14,9 @@ import '../widgets/chat_with_user_widget.dart';
 import '../widgets/expandable_product_details_widget.dart';
 import '../widgets/expandable_text_widget.dart';
 
-class ProductDetailScreen extends StatefulWidget {
-  final Map<String, dynamic> productJson;
-  final bool showStatus;
-
-  const ProductDetailScreen(
-      {super.key, required this.productJson, this.showStatus = false});
-
-  @override
-  State<ProductDetailScreen> createState() => _ProductDetailScreenState();
-}
-
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
   final FirebaseApiService _firebaseApiService = FirebaseApiService();
+  final CurrencyService _currencyService = CurrencyService();
   late final ValueNotifier<int> selectedImageIndexNotifier;
   bool isFavorite = false;
   late final PageController _pageController;
@@ -33,6 +24,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   bool _isSold = false;
   bool _favButtonDisabled = false;
   String _status = '';
+  String localizedPrice = '';
+  bool _didInitPrice = false;
 
   @override
   void initState() {
@@ -62,6 +55,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_didInitPrice) {
+      convertPriceToLocal();
+      _didInitPrice = true;
+    }
+  }
+
+  @override
   void dispose() {
     _pageController.dispose();
     selectedImageIndexNotifier.dispose();
@@ -82,6 +84,20 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         isFavorite = !prev;
       }
     });
+  }
+
+  void convertPriceToLocal() async {
+    // Example usage of CurrencyService
+    final price = await _currencyService.getLocalizedPrice(
+      context,
+      widget.productJson['expectedPrice'],
+      widget.productJson['countryCode'],
+    );
+    setState(() {
+      localizedPrice =
+          price.isEmpty ? widget.productJson['expectedPrice'] : price;
+    });
+    AppLogger.d("ProductDetailScreen convertPriceToLocal: $localizedPrice");
   }
 
   Widget _buildImage(String url, {bool useHero = false}) {
@@ -194,7 +210,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     },
                   ),
                   // --- NEW: Status Banner on the main image ---
-                  if (widget.showStatus) _buildStatusBanner(),
+                  // if (widget.showStatus) _buildStatusBanner(),
                   Positioned(
                     top: 32,
                     right: 16,
@@ -334,7 +350,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    product.expectedPrice,
+                    localizedPrice,
                     style: theme.titleLarge?.copyWith(
                       color: Theme.of(context).primaryColor,
                       fontWeight: FontWeight.bold,
@@ -449,4 +465,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       ),
     );
   }
+}
+
+class ProductDetailScreen extends StatefulWidget {
+  final Map<String, dynamic> productJson;
+  final bool showStatus;
+
+  const ProductDetailScreen(
+      {super.key, required this.productJson, this.showStatus = false});
+
+  @override
+  State<ProductDetailScreen> createState() => _ProductDetailScreenState();
 }

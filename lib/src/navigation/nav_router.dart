@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:popp/src/settings/about_us.dart';
 import 'package:popp/src/settings/favorites_screen.dart';
 import 'package:popp/src/login/model/user_data_model.dart';
 import 'package:popp/src/settings/settings_screen.dart';
@@ -229,6 +230,15 @@ void onVerificationScreenTap(BuildContext context, UserData? userData,
         password: password,
         isFromSignUp: isFromSignUp,
       ),
+    ),
+  );
+}
+
+void onAboutUsTap(BuildContext context) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => const AboutUsScreen(),
     ),
   );
 }

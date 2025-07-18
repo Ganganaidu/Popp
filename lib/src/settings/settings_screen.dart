@@ -266,6 +266,12 @@ class SettingsScreen extends StatelessWidget {
         const SizedBox(height: 24),
         _buildSettingsSectionTitle("App Settings"),
         _buildDarkModeSwitch(),
+        _buildListTile(
+          context,
+          icon: Icons.info_outline,
+          title: "About Us",
+          onTap: () => onAboutUsTap(context),
+        ),
         const SizedBox(height: 20), // Space for the bottom button
       ],
     );

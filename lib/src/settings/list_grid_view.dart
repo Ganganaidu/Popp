@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:popp/src/api/currency_service.dart';
 import 'package:popp/src/navigation/nav_router.dart';
 import 'package:popp/src/utils/product_content_data.dart';
 
@@ -32,6 +33,7 @@ class ListingsGridView extends StatelessWidget {
         }
 
         final docs = snapshot.data!.docs;
+        final countryCode = Localizations.localeOf(context).countryCode ?? 'US';
 
         return GridView.builder(
           padding: const EdgeInsets.all(16.0),
@@ -95,25 +97,34 @@ class ListingsGridView extends StatelessWidget {
                 : isApproved
                     ? 'Approved'
                     : 'Pending';
-            return ListingCard(
-              title: title,
-              imageUrl: imageUrl,
-              price: price,
-              status: status,
-              showOptionsMenu: showOptionsMenu,
-              onTap: () {
-                final category = data['category'] as String?;
-                if (serviceCategories.contains(category)) {
-                  onServiceDetailsScreenTap(context, data, category!);
-                } else {
-                  onProductDetailsTap(context, data, true);
-                }
-              },
-              onEdit: () {
-                // Handle edit action
-              },
-              onSold: () {
-                // Handle mark as sold action
+
+            return FutureBuilder<String>(
+              future: CurrencyService.getLocalizedPrice(
+                  price ?? '', data['countryCode'], countryCode),
+              builder: (context, priceSnapshot) {
+                final localizedPrice = priceSnapshot.data ?? price ?? '';
+
+                return ListingCard(
+                  title: title,
+                  imageUrl: imageUrl,
+                  price: localizedPrice,
+                  status: status,
+                  showOptionsMenu: showOptionsMenu,
+                  onTap: () {
+                    final category = data['category'] as String?;
+                    if (serviceCategories.contains(category)) {
+                      onServiceDetailsScreenTap(context, data, category!);
+                    } else {
+                      onProductDetailsTap(context, data, true);
+                    }
+                  },
+                  onEdit: () {
+                    // Handle edit action
+                  },
+                  onSold: () {
+                    // Handle mark as sold action
+                  },
+                );
               },
             );
           },

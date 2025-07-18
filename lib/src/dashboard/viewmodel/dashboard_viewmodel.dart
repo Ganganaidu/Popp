@@ -13,12 +13,14 @@ class DashboardViewModel extends ChangeNotifier {
   bool isLoading = false;
   String? error;
 
-  Future<void> loadCategories(bool isApproved) async {
+  Future<void> loadCategories(BuildContext context, bool isApproved) async {
     isLoading = true;
     notifyListeners();
 
     try {
-      categories = await repository.fetchProductsGroupedByCategory(isApproved);
+      var countryCode = Localizations.localeOf(context).countryCode ?? 'US';
+      categories = await repository.fetchProductsGroupedByCategory(
+          isApproved, countryCode);
       error = null;
     } catch (e) {
       error = e.toString();

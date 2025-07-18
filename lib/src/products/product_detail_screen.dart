@@ -16,7 +16,7 @@ import '../widgets/expandable_text_widget.dart';
 
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
   final FirebaseApiService _firebaseApiService = FirebaseApiService();
-  final CurrencyService _currencyService = CurrencyService();
+
   late final ValueNotifier<int> selectedImageIndexNotifier;
   bool isFavorite = false;
   late final PageController _pageController;
@@ -87,15 +87,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   void convertPriceToLocal() async {
-    // Example usage of CurrencyService
-    final price = await _currencyService.getLocalizedPrice(
-      context,
-      widget.productJson['expectedPrice'],
-      widget.productJson['countryCode'],
-    );
+    final price = await CurrencyService.getLocalizedPrice(
+        widget.productJson['expectedPrice'],
+        widget.productJson['countryCode'],
+        Localizations.localeOf(context).countryCode ?? 'US');
     setState(() {
-      localizedPrice =
-          price.isEmpty ? widget.productJson['expectedPrice'] : price;
+      localizedPrice = price;
     });
     AppLogger.d("ProductDetailScreen convertPriceToLocal: $localizedPrice");
   }
@@ -418,7 +415,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     );
   }
 
-  // --- NEW: Widget for the status banner on the image ---
+  // Widget for the status banner on the image ---
   Widget _buildStatusBanner() {
     final (color, icon) = _getStatusStyle(_status);
     return Positioned(

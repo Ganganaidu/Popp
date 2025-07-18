@@ -14,7 +14,6 @@ import '../subscription/subscription_provider.dart';
 import '../subscription/subscription_status_screen.dart';
 import '../utils/app_constants.dart';
 import '../utils/app_loger.dart';
-import '../widgets/app_dialogs.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});

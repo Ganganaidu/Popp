@@ -2,7 +2,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
-  const ForgotPasswordScreen({super.key});
+  final bool isChangePassword;
+
+  const ForgotPasswordScreen({super.key, required this.isChangePassword});
 
   @override
   State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
@@ -35,7 +37,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           androidPackageName: 'com.popp.abike',
           androidInstallApp: true,
           androidMinimumVersion: '12');
-
 
       try {
         await FirebaseAuth.instance.sendPasswordResetEmail(
@@ -79,7 +80,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Forgot Password"),
+        title: Text(
+            widget.isChangePassword ? "Change Password" : "Forgot Password"),
       ),
       body: SafeArea(
         child: Padding(
@@ -89,9 +91,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  "Forgot your password?",
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                Text(
+                  widget.isChangePassword
+                      ? "Reset Password"
+                      : "Forgot your password?",
+                  style: const TextStyle(
+                      fontSize: 24, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
                 const Text(

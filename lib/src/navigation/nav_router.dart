@@ -105,10 +105,13 @@ void onMyListingScreenTap(BuildContext context, bool isReplacement) {
   );
 }
 
-void onForgotPasswordTap(BuildContext context) {
+void onForgotPasswordTap(BuildContext context, bool isChangePassword) {
   Navigator.push(
     context,
-    MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
+    MaterialPageRoute(
+        builder: (_) => ForgotPasswordScreen(
+              isChangePassword: isChangePassword,
+            )),
   );
 }
 

@@ -259,7 +259,7 @@ class _LoginScreenState extends State<LoginScreen>
           ],
         ),
         TextButton(
-          onPressed: () => onForgotPasswordTap(context),
+          onPressed: () => onForgotPasswordTap(context, false),
           child: Text('Forgot Password?',
               style: TextStyle(color: context.primaryColor)),
         )

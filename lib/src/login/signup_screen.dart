@@ -292,6 +292,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           pinCodeController.text = suggestion.postalCode ?? '';
                         });
                       },
+                      validator: (val) => val!.isEmpty ? "Required" : null,
                     ),
                     const SizedBox(height: 15),
                     // --- UPDATED: CITY FIELD (NOW AUTO-POPULATED) ---

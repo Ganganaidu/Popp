@@ -196,10 +196,18 @@ class SettingsScreen extends StatelessWidget {
         _buildListTile(
           context,
           icon: Icons.person_outline,
-          title: "Profile Details",
+          title: "Profile Identifier",
           subtitle: user?.email ?? user?.phoneNumber,
           enabled: isLoggedIn,
-          onTap: () => AppDialogs.showComingSoonDialog(context, () {}),
+          disableArrow: false,
+          onTap: () => {},
+        ),
+        _buildListTile(
+          context,
+          icon: Icons.lock_outline,
+          title: "Change Password",
+          enabled: isLoggedIn,
+          onTap: () => onForgotPasswordTap(context, true),
         ),
         if (isLoggedIn && user.uid == Constants.adminUserId)
           _buildListTile(
@@ -259,13 +267,6 @@ class SettingsScreen extends StatelessWidget {
         const SizedBox(height: 24),
         _buildSettingsSectionTitle("App Settings"),
         _buildDarkModeSwitch(),
-        _buildListTile(
-          context,
-          icon: Icons.lock_outline,
-          title: "Change Password",
-          enabled: isLoggedIn,
-          onTap: () => onForgotPasswordTap(context),
-        ),
         const SizedBox(height: 20), // Space for the bottom button
       ],
     );
@@ -292,6 +293,7 @@ class SettingsScreen extends StatelessWidget {
     required String title,
     String? subtitle,
     bool enabled = true,
+    bool disableArrow = true,
     bool isHighlight = false,
     Widget? trailing,
     VoidCallback? onTap,
@@ -314,7 +316,9 @@ class SettingsScreen extends StatelessWidget {
         ),
         subtitle: subtitle != null ? Text(subtitle) : null,
         trailing: trailing ??
-            (enabled ? const Icon(Icons.arrow_forward_ios, size: 16) : null),
+            (disableArrow && enabled
+                ? const Icon(Icons.arrow_forward_ios, size: 16)
+                : null),
         enabled: enabled,
         onTap: enabled ? onTap : null,
       ),

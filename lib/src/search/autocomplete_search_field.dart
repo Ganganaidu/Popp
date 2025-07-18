@@ -42,6 +42,7 @@ class AutocompleteSearchField extends StatefulWidget {
   final void Function(PlaceSuggestion suggestion) onPlaceSelected;
   final double? lat;
   final double? lon;
+  final FormFieldValidator<String>? validator;
 
   const AutocompleteSearchField({
     super.key,
@@ -52,6 +53,7 @@ class AutocompleteSearchField extends StatefulWidget {
     this.icon,
     this.lat,
     this.lon,
+    this.validator,
   });
 
   @override
@@ -166,27 +168,15 @@ class _AutocompleteSearchFieldState extends State<AutocompleteSearchField> {
                 final suggestion = _suggestions[index];
                 return ListTile(
                   title: Text(suggestion.text),
-                  // 🔽 3. UPDATE THE ONTAP HANDLER
                   onTap: () {
                     setState(() {
-                      // Set the flag to true to temporarily disable the listener
                       _isHandlingSelection = true;
-
-                      // Update the controller with the full address text
                       widget.controller.text = suggestion.text;
-
-                      // Call the parent widget's callback
                       widget.onPlaceSelected(suggestion);
-
-                      // Clean up UI
                       _suggestions = [];
                       _removeOverlay();
-
-                      // IMPORTANT: Reset the flag to false after updates
                       _isHandlingSelection = false;
                     });
-
-                    // Unfocus the text field
                     FocusScope.of(context).unfocus();
                   },
                 );
@@ -200,7 +190,6 @@ class _AutocompleteSearchFieldState extends State<AutocompleteSearchField> {
 
   @override
   Widget build(BuildContext context) {
-    // The build method remains unchanged
     return CompositedTransformTarget(
       link: _layerLink,
       child: TextFormField(
@@ -225,12 +214,7 @@ class _AutocompleteSearchFieldState extends State<AutocompleteSearchField> {
                     )
                   : null,
             ),
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return '${widget.label} is required';
-          }
-          return null;
-        },
+        validator: widget.validator,
       ),
     );
   }

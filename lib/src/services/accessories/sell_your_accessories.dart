@@ -14,6 +14,7 @@ import '../../firebase/firebase_api_service.dart';
 import '../../models/pop_category.dart';
 import '../../models/product.dart';
 import '../../navigation/nav_router.dart';
+import '../../search/autocomplete_search_field.dart';
 import '../../utils/product_content_data.dart';
 import '../../widgets/app_dialogs.dart';
 import '../../widgets/custom_dropdown_form_field.dart';
@@ -296,12 +297,23 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
                   onChanged: (val) => setState(() => selectedState = val),
                   validator: (val) => val == null ? "Required" : null,
                 )),
-                buildPaddedField(TextFormField(
+                const SizedBox(height: 10),
+                AutocompleteSearchField(
+                  label: "City",
+                  hint: "Enter city name",
                   controller: cityController,
-                  decoration:
-                      context.inputDecoration("City", "Enter city name"),
+                  icon: null,
+                  lat: stateCoordinates[selectedState]?['lat'] ?? 0.0,
+                  lon: stateCoordinates[selectedState]?['lon'] ?? 0.0,
+                  onPlaceSelected: (suggestion) {
+                    // Update all location controllers when a place is selected
+                    setState(() {
+                      cityController.text = suggestion.municipality ?? '';
+                    });
+                  },
                   validator: (val) => val!.isEmpty ? "Required" : null,
-                )),
+                ),
+                const SizedBox(height: 10),
                 buildPaddedField(TextFormField(
                   controller: productSizeController,
                   decoration:

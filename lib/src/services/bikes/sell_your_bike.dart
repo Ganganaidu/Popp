@@ -452,7 +452,7 @@ class _SellYourBikeState extends State<SellYourBike>
                         label: "City",
                         hint: "Enter city name",
                         controller: cityController,
-                        icon: Icons.home_outlined,
+                        icon: null,
                         lat: stateCoordinates[selectedState]?['lat'] ?? 0.0,
                         lon: stateCoordinates[selectedState]?['lon'] ?? 0.0,
                         onPlaceSelected: (suggestion) {
@@ -463,15 +463,6 @@ class _SellYourBikeState extends State<SellYourBike>
                         },
                         validator: (val) => val!.isEmpty ? "Required" : null,
                       ),
-                      // Padding(
-                      //   padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      //   child: TextFormField(
-                      //     controller: cityController,
-                      //     decoration: context.inputDecoration(
-                      //         "City", "Enter city name"),
-                      //     validator: (val) => val!.isEmpty ? "Required" : null,
-                      //   ),
-                      // ),
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
                         child: TextFormField(

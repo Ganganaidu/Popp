@@ -4,10 +4,11 @@ import 'package:lottie/lottie.dart';
 import 'package:popp/src/api/currency_service.dart';
 import 'package:popp/src/navigation/nav_router.dart';
 import 'package:popp/src/utils/product_content_data.dart';
+import 'package:popp/src/widgets/app_dialogs.dart';
 
 import '../widgets/listing_card.dart';
 
-class ListingsGridView extends StatelessWidget {
+class ListingsGridView extends StatefulWidget {
   final Query query;
   final bool showOptionsMenu;
 
@@ -18,9 +19,14 @@ class ListingsGridView extends StatelessWidget {
   });
 
   @override
+  State<ListingsGridView> createState() => _ListingsGridViewState();
+}
+
+class _ListingsGridViewState extends State<ListingsGridView> {
+  @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
-      stream: query.snapshots(),
+      stream: widget.query.snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -109,7 +115,7 @@ class ListingsGridView extends StatelessWidget {
                   imageUrl: imageUrl,
                   price: localizedPrice,
                   status: status,
-                  showOptionsMenu: showOptionsMenu,
+                  showOptionsMenu: widget.showOptionsMenu,
                   onTap: () {
                     final category = data['category'] as String?;
                     if (serviceCategories.contains(category)) {
@@ -122,7 +128,45 @@ class ListingsGridView extends StatelessWidget {
                     // Handle edit action
                   },
                   onSold: () {
-                    // Handle mark as sold action
+                    AppDialogs.showConfirmationDialog(
+                      context: context,
+                      title: "Mark as Sold",
+                      content:
+                          "Marking as sold will update your product status to 'Sold' and it will be automatically removed from the database after 15 days.",
+                      onConfirm: () async {
+                        try {
+                          await FirebaseFirestore.instance
+                              .doc(doc.reference.path)
+                              .update({
+                            'isSold': true,
+                            'soldDate': FieldValue.serverTimestamp(),
+                          });
+
+                          // Show success message
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content:
+                                    Text('Product marked as sold successfully'),
+                                backgroundColor: Colors.green,
+                              ),
+                            );
+                            // Force a rebuild of the widget
+                            setState(() {});
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                    'Failed to mark as sold. Please try again.'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        }
+                      },
+                    );
                   },
                 );
               },
@@ -142,11 +186,14 @@ class ListingsGridView extends StatelessWidget {
           children: [
             Lottie.asset('assets/empty_state.json', width: 200, height: 200),
             const SizedBox(height: 20),
-            Text(showOptionsMenu ? "No Listings Found" : "No Favorites Yet",
+            Text(
+                widget.showOptionsMenu
+                    ? "No Listings Found"
+                    : "No Favorites Yet",
                 style: Theme.of(context).textTheme.headlineSmall),
             const SizedBox(height: 8),
             Text(
-                showOptionsMenu
+                widget.showOptionsMenu
                     ? "You haven't listed any products or services yet."
                     : "Tap the heart on any item to save it here.",
                 style: Theme.of(context).textTheme.bodyLarge,
@@ -158,8 +205,9 @@ class ListingsGridView extends StatelessWidget {
                     context, '/home', (route) => false);
               },
               icon: const Icon(Icons.add_circle),
-              label: Text(
-                  showOptionsMenu ? "Create a Listing" : "Start Exploring"),
+              label: Text(widget.showOptionsMenu
+                  ? "Create a Listing"
+                  : "Start Exploring"),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.orange,
                 foregroundColor: Colors.white,

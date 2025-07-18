@@ -194,7 +194,6 @@ class _AutocompleteSearchFieldState extends State<AutocompleteSearchField> {
       link: _layerLink,
       child: TextFormField(
         maxLines: 2,
-        minLines: 1,
         controller: widget.controller,
         decoration: context
             .inputDecoration(

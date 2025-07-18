@@ -38,13 +38,16 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
   final TextEditingController brandNameController = TextEditingController();
   final TextEditingController sellerContactController = TextEditingController();
   final TextEditingController modelNameController = TextEditingController();
-  final TextEditingController cityController = TextEditingController();
   final TextEditingController priceController = TextEditingController();
   final TextEditingController additionalDetailsController =
       TextEditingController();
   final TextEditingController productSizeController = TextEditingController();
   final TextEditingController productAgingController = TextEditingController();
   final TextEditingController warrantyLeftController = TextEditingController();
+
+  final TextEditingController addressController = TextEditingController();
+  final TextEditingController cityController = TextEditingController();
+  final TextEditingController pinCodeController = TextEditingController();
 
   String selectedCountryCode = "+91";
   String? selectedState;
@@ -109,6 +112,8 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
         bikeMfgDate: _selectedManufactureDate,
         state: selectedState ?? "",
         city: cityController.text,
+        address: addressController.text,
+        pinCode: pinCodeController.text,
         productSize: productSizeController.text,
         productCondition: _productCondition,
         billDate: _selectedBillDate,
@@ -129,7 +134,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
               ? _selectedManufactureDate!.year.toString()
               : "",
           selectedState ?? "",
-          cityController.text,
+          addressController.text,
           productSizeController.text,
           _productCondition ?? "",
           productAgingController.text,
@@ -142,7 +147,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
           ...brandNameController.text.toLowerCase().split(' '),
           ...selectedBikeBrand?.toLowerCase().split(' ') ?? [],
           ...modelNameController.text.toLowerCase().split(' '),
-          ...cityController.text.toLowerCase().split(' '),
+          ...addressController.text.toLowerCase().split(' '),
           ...productSizeController.text.toLowerCase().split(' '),
           ..._productCondition?.toLowerCase().split(' ') ?? [],
           ...productAgingController.text.toLowerCase().split(' '),
@@ -168,6 +173,8 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
         sellerContactController.clear();
         modelNameController.clear();
         cityController.clear();
+        addressController.clear();
+        pinCodeController.clear();
         priceController.clear();
         additionalDetailsController.clear();
         productAgingController.clear();
@@ -189,6 +196,18 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
         const SnackBar(content: Text('Please fill all required fields.')),
       );
     }
+  }
+
+  @override
+  void dispose() {
+    sellerNameController.dispose();
+    sellerContactController.dispose();
+    cityController.dispose();
+    addressController.dispose();
+    pinCodeController.dispose();
+    priceController.dispose();
+    additionalDetailsController.dispose();
+    super.dispose();
   }
 
   @override
@@ -299,21 +318,40 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
                 )),
                 const SizedBox(height: 10),
                 AutocompleteSearchField(
-                  label: "City",
-                  hint: "Enter city name",
-                  controller: cityController,
+                  label: "Address",
+                  hint: "Enter address or locality",
+                  controller: addressController,
                   icon: null,
                   lat: stateCoordinates[selectedState]?['lat'] ?? 0.0,
                   lon: stateCoordinates[selectedState]?['lon'] ?? 0.0,
                   onPlaceSelected: (suggestion) {
                     // Update all location controllers when a place is selected
                     setState(() {
+                      addressController.text = suggestion.text;
                       cityController.text = suggestion.municipality ?? '';
+                      pinCodeController.text = suggestion.postalCode ?? '';
                     });
                   },
                   validator: (val) => val!.isEmpty ? "Required" : null,
                 ),
                 const SizedBox(height: 10),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10.0),
+                  child: TextFormField(
+                    controller: cityController,
+                    decoration:
+                        context.inputDecoration("City", "Enter city name"),
+                    validator: (val) => val!.isEmpty ? "Required" : null,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10.0),
+                  child: TextFormField(
+                    controller: pinCodeController,
+                    decoration:
+                        context.inputDecoration("Pin Code", "Enter Pin code"),
+                  ),
+                ),
                 buildPaddedField(TextFormField(
                   controller: productSizeController,
                   decoration:

@@ -39,11 +39,14 @@ class _SellYourBikeState extends State<SellYourBike>
   // New controllers for manual brand/model entry
   final TextEditingController brandController = TextEditingController();
   final TextEditingController modelController = TextEditingController();
-  final TextEditingController cityController = TextEditingController();
   final TextEditingController kmDrivenController = TextEditingController();
   final TextEditingController priceController = TextEditingController();
   final TextEditingController additionalDetailsController =
       TextEditingController();
+
+  final TextEditingController addressController = TextEditingController();
+  final TextEditingController cityController = TextEditingController();
+  final TextEditingController pinCodeController = TextEditingController();
 
   // FocusNodes for manual entry fields
   final FocusNode brandFocusNode = FocusNode();
@@ -91,6 +94,8 @@ class _SellYourBikeState extends State<SellYourBike>
     brandController.dispose();
     modelController.dispose();
     cityController.dispose();
+    addressController.dispose();
+    pinCodeController.dispose();
     kmDrivenController.dispose();
     priceController.dispose();
     additionalDetailsController.dispose();
@@ -142,6 +147,8 @@ class _SellYourBikeState extends State<SellYourBike>
         modelName: finalModel,
         state: selectedState ?? "",
         city: cityController.text,
+        address: addressController.text,
+        pinCode: pinCodeController.text,
         kmDriven: kmDrivenController.text,
         expectedPrice: priceController.text,
         price: priceController.text,
@@ -160,7 +167,7 @@ class _SellYourBikeState extends State<SellYourBike>
         searchKeywords: [
           sellerNameController.text,
           finalModel,
-          cityController.text,
+          addressController.text,
           kmDrivenController.text,
           priceController.text,
           catList[0].name,
@@ -170,7 +177,7 @@ class _SellYourBikeState extends State<SellYourBike>
           additionalDetailsController.text,
           ...sellerNameController.text.toLowerCase().split(' '),
           ...finalModel.toLowerCase().split(' '),
-          ...cityController.text.toLowerCase().split(' '),
+          ...addressController.text.toLowerCase().split(' '),
           ...catList[0].name.toLowerCase().split(' '),
           ...finalBrand.toLowerCase().split(' '),
           ...selectedState?.toLowerCase().split(' ') ?? [],
@@ -198,6 +205,8 @@ class _SellYourBikeState extends State<SellYourBike>
         brandController.clear();
         modelController.clear();
         cityController.clear();
+        addressController.clear();
+        pinCodeController.clear();
         kmDrivenController.clear();
         priceController.clear();
         additionalDetailsController.clear();
@@ -283,7 +292,7 @@ class _SellYourBikeState extends State<SellYourBike>
                     children: [
                       // ... (Seller Name and Contact fields remain the same)
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        padding: const EdgeInsets.symmetric(vertical: 10.0),
                         child: TextFormField(
                           controller: sellerNameController,
                           decoration: context.inputDecoration(
@@ -292,7 +301,7 @@ class _SellYourBikeState extends State<SellYourBike>
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        padding: const EdgeInsets.symmetric(vertical: 10.0),
                         child: Row(
                           children: [
                             DropdownButton<String>(
@@ -319,7 +328,7 @@ class _SellYourBikeState extends State<SellYourBike>
                       ),
                       // --- DYNAMIC BRAND & MODEL FIELDS ---
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        padding: const EdgeInsets.symmetric(vertical: 10.0),
                         child: DropdownButtonFormField<String>(
                           value: selectedBrand,
                           decoration: context.inputDecoration(
@@ -346,7 +355,7 @@ class _SellYourBikeState extends State<SellYourBike>
                       ),
                       if (isBrandOthers)
                         Padding(
-                          padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+                          padding: const EdgeInsets.only(top: 10.0, bottom: 10.0),
                           child: TextFormField(
                             controller: brandController,
                             focusNode: brandFocusNode,
@@ -358,7 +367,7 @@ class _SellYourBikeState extends State<SellYourBike>
                         ),
                       if (!isBrandOthers)
                         Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          padding: const EdgeInsets.symmetric(vertical: 10.0),
                           child: DropdownButtonFormField<String>(
                             value: selectedModel,
                             decoration: context.inputDecoration(
@@ -387,7 +396,7 @@ class _SellYourBikeState extends State<SellYourBike>
                         ),
                       if (isModelOthers && !isBrandOthers)
                         Padding(
-                          padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+                          padding: const EdgeInsets.only(top: 10.0, bottom: 10.0),
                           child: TextFormField(
                             controller: modelController,
                             focusNode: modelFocusNode,
@@ -399,7 +408,7 @@ class _SellYourBikeState extends State<SellYourBike>
                         ),
                       if (isBrandOthers)
                         Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          padding: const EdgeInsets.symmetric(vertical: 10.0),
                           child: TextFormField(
                             controller: modelController,
                             decoration: context.inputDecoration(
@@ -410,7 +419,7 @@ class _SellYourBikeState extends State<SellYourBike>
                         ),
                       // ... (Rest of the form fields)
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        padding: const EdgeInsets.symmetric(vertical: 10.0),
                         child: MonthYearPicker(
                           enable: true,
                           label: "Manufacture Date",
@@ -422,7 +431,7 @@ class _SellYourBikeState extends State<SellYourBike>
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        padding: const EdgeInsets.symmetric(vertical: 10.0),
                         child: MonthYearPicker(
                           enable: true,
                           label: "Registration Date",
@@ -434,7 +443,7 @@ class _SellYourBikeState extends State<SellYourBike>
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        padding: const EdgeInsets.symmetric(vertical: 10.0),
                         child: DropdownButtonFormField<String>(
                           value: selectedState,
                           decoration: context.inputDecoration(
@@ -448,23 +457,44 @@ class _SellYourBikeState extends State<SellYourBike>
                           validator: (val) => val == null ? "Required" : null,
                         ),
                       ),
+                      const SizedBox(height: 10),
                       AutocompleteSearchField(
-                        label: "City",
-                        hint: "Enter city name",
-                        controller: cityController,
+                        label: "Address",
+                        hint: "Enter address or locality",
+                        controller: addressController,
                         icon: null,
                         lat: stateCoordinates[selectedState]?['lat'] ?? 0.0,
                         lon: stateCoordinates[selectedState]?['lon'] ?? 0.0,
                         onPlaceSelected: (suggestion) {
                           // Update all location controllers when a place is selected
                           setState(() {
+                            addressController.text = suggestion.text;
                             cityController.text = suggestion.municipality ?? '';
+                            pinCodeController.text = suggestion.postalCode ?? '';
                           });
                         },
                         validator: (val) => val!.isEmpty ? "Required" : null,
                       ),
+                      const SizedBox(height: 10),
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        padding: const EdgeInsets.symmetric(vertical: 10.0),
+                        child: TextFormField(
+                          controller: cityController,
+                          decoration: context.inputDecoration(
+                              "City", "Enter city name"),
+                          validator: (val) => val!.isEmpty ? "Required" : null,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10.0),
+                        child: TextFormField(
+                          controller: pinCodeController,
+                          decoration: context.inputDecoration(
+                              "Pin Code", "Enter Pin code"),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10.0),
                         child: TextFormField(
                           controller: kmDrivenController,
                           decoration: context.inputDecoration(
@@ -473,7 +503,7 @@ class _SellYourBikeState extends State<SellYourBike>
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        padding: const EdgeInsets.symmetric(vertical: 10.0),
                         child: TextFormField(
                           keyboardType: TextInputType.number,
                           controller: priceController,
@@ -483,7 +513,7 @@ class _SellYourBikeState extends State<SellYourBike>
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        padding: const EdgeInsets.symmetric(vertical: 10.0),
                         child: CustomDropdownFormField(
                           label: 'Are you the first owner?',
                           hint: "Tap to select",
@@ -500,7 +530,7 @@ class _SellYourBikeState extends State<SellYourBike>
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        padding: const EdgeInsets.symmetric(vertical: 10.0),
                         child: CustomDropdownFormField(
                           label: 'Invoice available?',
                           hint: "Tap to select",
@@ -517,7 +547,7 @@ class _SellYourBikeState extends State<SellYourBike>
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        padding: const EdgeInsets.symmetric(vertical: 10.0),
                         child: CustomDropdownFormField(
                           label: 'NOC available?',
                           hint: "Tap to select",
@@ -533,7 +563,7 @@ class _SellYourBikeState extends State<SellYourBike>
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        padding: const EdgeInsets.symmetric(vertical: 10.0),
                         child: CustomDropdownFormField<String>(
                           label: 'Insurance available?',
                           hint: 'Select insurance availability',
@@ -554,7 +584,7 @@ class _SellYourBikeState extends State<SellYourBike>
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        padding: const EdgeInsets.symmetric(vertical: 10.0),
                         child: MonthYearPicker(
                           enable: _insuranceAvailable == 'Yes',
                           label: "Insurance validity till",
@@ -565,7 +595,7 @@ class _SellYourBikeState extends State<SellYourBike>
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        padding: const EdgeInsets.symmetric(vertical: 10.0),
                         child: CustomDropdownFormField<String>(
                           label: 'Battery condition',
                           hint: 'Select battery condition',
@@ -582,7 +612,7 @@ class _SellYourBikeState extends State<SellYourBike>
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        padding: const EdgeInsets.symmetric(vertical: 10.0),
                         child: CustomDropdownFormField<String>(
                           label: 'Tyre condition',
                           hint: 'Select tyre condition',
@@ -599,7 +629,7 @@ class _SellYourBikeState extends State<SellYourBike>
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        padding: const EdgeInsets.symmetric(vertical: 10.0),
                         child: TextFormField(
                           controller: additionalDetailsController,
                           decoration: context.inputDecoration(
@@ -608,7 +638,7 @@ class _SellYourBikeState extends State<SellYourBike>
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        padding: const EdgeInsets.symmetric(vertical: 10.0),
                         child: ImagePickerSection(
                           images: _images,
                           onImagesChanged: (images) => setState(() {

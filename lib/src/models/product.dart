@@ -19,6 +19,8 @@ class Product {
   final DateTime? registrationDate;
   String? registrationPlace; // City & State
   final String city;
+  final String address; // City & State
+  final String? pinCode; // City & State
   final String state;
   final String? nocAvailable; // If other states
   final String? insuranceAvailable;
@@ -62,6 +64,8 @@ class Product {
       this.registrationDate,
       this.registrationPlace,
       required this.city,
+      required this.address,
+      this.pinCode,
       required this.state,
       this.nocAvailable,
       this.insuranceAvailable,
@@ -114,6 +118,8 @@ class Product {
         registrationDate: _parseDate(json['registrationDate']),
         registrationPlace: json['registrationPlace'] as String? ?? '',
         city: json['city'] as String? ?? '',
+        address: json['address'] as String? ?? '',
+        pinCode: json['pinCode'] as String? ?? '',
         state: json['state'] as String? ?? '',
         nocAvailable: json['nocAvailable'] as String?,
         insuranceAvailable: json['insuranceAvailable'] as String?,
@@ -170,6 +176,8 @@ class Product {
         'registrationDate': Timestamp.fromDate(registrationDate!),
       'registrationPlace': "$city - $state",
       'city': city,
+      'address': address,
+      'pinCode': pinCode,
       'state': state,
       if (nocAvailable != null) 'nocAvailable': nocAvailable,
       if (insuranceAvailable != null) 'insuranceAvailable': insuranceAvailable,
@@ -230,6 +238,8 @@ class Product {
       DateTime? registrationDate,
       String? registrationPlace,
       String? city,
+      String? address,
+      String? pinCode,
       String? state,
       String? nocAvailable,
       String? insuranceAvailable,
@@ -276,6 +286,8 @@ class Product {
         registrationDate: registrationDate ?? this.registrationDate,
         registrationPlace: registrationPlace ?? this.registrationPlace,
         city: city ?? this.city,
+        address: address ?? this.address,
+        pinCode: pinCode ?? this.pinCode,
         state: state ?? this.state,
         nocAvailable: nocAvailable ?? this.nocAvailable,
         insuranceAvailable: insuranceAvailable ?? this.insuranceAvailable,

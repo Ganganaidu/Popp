@@ -12,6 +12,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../api/api_url.dart';
 import '../../firebase/firebase_api_service.dart';
+import '../../search/autocomplete_search_field.dart';
 import '../../utils/app_loger.dart';
 import '../../utils/product_content_data.dart';
 import '../../widgets/working_hours_picker.dart'; // You might need to create this widget
@@ -411,29 +412,6 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: ImagePickerSection(
-                      title: "Upload pics for Business Promo or Adv Picture",
-                      // 2
-                      images: _promoImages,
-                      onImagesChanged: (images) => setState(() {
-                        _promoImages.clear();
-                        _promoImages.addAll(images);
-                      }),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: ImagePickerSection(
-                      title: "Upload pics for Shop/Garage Pics", // 3
-                      images: _shopGarageImages,
-                      onImagesChanged: (images) => setState(() {
-                        _shopGarageImages.clear();
-                        _shopGarageImages.addAll(images);
-                      }),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
                     child: Row(
                       children: [
                         DropdownButton<String>(
@@ -485,35 +463,6 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: TextFormField(
-                      controller: businessAddressController, // 9
-                      decoration: context.inputDecoration(
-                          "Business Address", "Enter your business address"),
-                      validator: (val) =>
-                          val!.isEmpty ? "Address is mandatory" : null,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: TextFormField(
-                      controller: areaController, // 10
-                      decoration: context.inputDecoration("Area", "Enter area"),
-                      validator: (val) =>
-                          val!.isEmpty ? "Area is mandatory" : null,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: TextFormField(
-                      controller: cityController, // 11
-                      decoration:
-                          context.inputDecoration("City", "Enter city name"),
-                      validator: (val) =>
-                          val!.isEmpty ? "City is mandatory" : null,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
                     child: CustomDropdownFormField<String>(
                       label: "State",
                       hint: "Select your state",
@@ -524,6 +473,35 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                           .toList(),
                       onChanged: (val) => setState(() => _selectedState = val),
                       validator: (val) => val == null ? "Required" : null,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  AutocompleteSearchField(
+                    label: "Business Address",
+                    hint: "Enter your business address",
+                    controller: businessAddressController,
+                    icon: null,
+                    lat: stateCoordinates[_selectedState]?['lat'] ?? 0.0,
+                    lon: stateCoordinates[_selectedState]?['lon'] ?? 0.0,
+                    onPlaceSelected: (suggestion) {
+                      // Update all location controllers when a place is selected
+                      setState(() {
+                        businessAddressController.text = suggestion.text;
+                        cityController.text = suggestion.municipality ?? '';
+                        pincodeController.text = suggestion.postalCode ?? '';
+                      });
+                    },
+                    validator: (val) => val!.isEmpty ? "Required" : null,
+                  ),
+                  const SizedBox(height: 10),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: TextFormField(
+                      controller: cityController, // 11
+                      decoration:
+                          context.inputDecoration("City", "Enter city name"),
+                      validator: (val) =>
+                          val!.isEmpty ? "City is mandatory" : null,
                     ),
                   ),
                   Padding(
@@ -602,6 +580,29 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                           : null,
                     ),
                   ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: ImagePickerSection(
+                      title: "Upload pics for Business Promo or Adv Picture",
+                      // 2
+                      images: _promoImages,
+                      onImagesChanged: (images) => setState(() {
+                        _promoImages.clear();
+                        _promoImages.addAll(images);
+                      }),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: ImagePickerSection(
+                      title: "Upload pics for Shop/Garage Pics", // 3
+                      images: _shopGarageImages,
+                      onImagesChanged: (images) => setState(() {
+                        _shopGarageImages.clear();
+                        _shopGarageImages.addAll(images);
+                      }),
+                    ),
+                  ),
                 ],
                 if (_selectedCategory == 'Track day' ||
                     _selectedCategory == 'Training day') ...[
@@ -618,13 +619,43 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: ImagePickerSection(
-                      title: "Event Promo Picture", // 2
-                      images: _promoImages,
-                      onImagesChanged: (images) => setState(() {
-                        _promoImages.clear();
-                        _promoImages.addAll(images);
-                      }),
+                    child: Row(
+                      children: [
+                        DropdownButton<String>(
+                          value: selectedCountryCode,
+                          items: countryCodes
+                              .map((code) => DropdownMenuItem(
+                                  value: code, child: Text(code)))
+                              .toList(),
+                          onChanged: (val) =>
+                              setState(() => selectedCountryCode = val!),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: TextFormField(
+                            controller: businessContactController,
+                            // 23 (Contact #)
+                            keyboardType: TextInputType.phone,
+                            decoration: context.inputDecoration(
+                                "Contact #", "Enter contact number"),
+                            validator: (val) =>
+                                val!.isEmpty ? "Contact is mandatory" : null,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: TextFormField(
+                      controller: contactNameController,
+                      // 24 (Point of Contact Name)
+                      decoration: context.inputDecoration(
+                          "Point of Contact Name",
+                          "Enter point of contact name"),
+                      validator: (val) => val!.isEmpty
+                          ? "Point of Contact Name is mandatory"
+                          : null,
                     ),
                   ),
                   // Bike Type/Model (TextFormField as it's free text) - Not explicitly mapped to controller
@@ -800,38 +831,9 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                     child: TextFormField(
                       controller: locationNameController, // 12
                       decoration: context.inputDecoration(
-                          "Location Name", "Enter location name"),
+                          "Location Name", "Enter name the location"),
                       validator: (val) =>
                           val!.isEmpty ? "Location Name is mandatory" : null,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: TextFormField(
-                      controller: locationAddressController, // 13
-                      decoration: context.inputDecoration("Location Address",
-                          "Enter location address with landmark"),
-                      validator: (val) =>
-                          val!.isEmpty ? "Location Address is mandatory" : null,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: TextFormField(
-                      controller: areaController, // 14
-                      decoration: context.inputDecoration("Area", "Enter area"),
-                      validator: (val) =>
-                          val!.isEmpty ? "Area is mandatory" : null,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: TextFormField(
-                      controller: cityController, // 15
-                      decoration:
-                          context.inputDecoration("City", "Enter city name"),
-                      validator: (val) =>
-                          val!.isEmpty ? "City is mandatory" : null,
                     ),
                   ),
                   Padding(
@@ -846,6 +848,44 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                           .toList(),
                       onChanged: (val) => setState(() => _selectedState = val),
                       validator: (val) => val == null ? "Required" : null,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  AutocompleteSearchField(
+                    label: "Location Address",
+                    hint: "Enter location address with landmark",
+                    controller: locationAddressController,
+                    icon: null,
+                    lat: stateCoordinates[_selectedState]?['lat'] ?? 0.0,
+                    lon: stateCoordinates[_selectedState]?['lon'] ?? 0.0,
+                    onPlaceSelected: (suggestion) {
+                      // Update all location controllers when a place is selected
+                      setState(() {
+                        businessAddressController.text = suggestion.text;
+                        cityController.text = suggestion.municipality ?? '';
+                        pincodeController.text = suggestion.postalCode ?? '';
+                      });
+                    },
+                    validator: (val) => val!.isEmpty ? "Required" : null,
+                  ),
+                  const SizedBox(height: 10),
+                  // Padding(
+                  //   padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  //   child: TextFormField(
+                  //     controller: areaController, // 14
+                  //     decoration: context.inputDecoration("Area", "Enter area"),
+                  //     validator: (val) =>
+                  //         val!.isEmpty ? "Area is mandatory" : null,
+                  //   ),
+                  // ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: TextFormField(
+                      controller: cityController, // 15
+                      decoration:
+                          context.inputDecoration("City", "Enter city name"),
+                      validator: (val) =>
+                          val!.isEmpty ? "City is mandatory" : null,
                     ),
                   ),
                   Padding(
@@ -902,43 +942,13 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Row(
-                      children: [
-                        DropdownButton<String>(
-                          value: selectedCountryCode,
-                          items: countryCodes
-                              .map((code) => DropdownMenuItem(
-                                  value: code, child: Text(code)))
-                              .toList(),
-                          onChanged: (val) =>
-                              setState(() => selectedCountryCode = val!),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: TextFormField(
-                            controller: businessContactController,
-                            // 23 (Contact #)
-                            keyboardType: TextInputType.phone,
-                            decoration: context.inputDecoration(
-                                "Contact #", "Enter contact number"),
-                            validator: (val) =>
-                                val!.isEmpty ? "Contact is mandatory" : null,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: TextFormField(
-                      controller: contactNameController,
-                      // 24 (Point of Contact Name)
-                      decoration: context.inputDecoration(
-                          "Point of Contact Name",
-                          "Enter point of contact name"),
-                      validator: (val) => val!.isEmpty
-                          ? "Point of Contact Name is mandatory"
-                          : null,
+                    child: ImagePickerSection(
+                      title: "Event Promo Picture", // 2
+                      images: _promoImages,
+                      onImagesChanged: (images) => setState(() {
+                        _promoImages.clear();
+                        _promoImages.addAll(images);
+                      }),
                     ),
                   ),
                 ],

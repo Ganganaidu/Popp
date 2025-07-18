@@ -43,9 +43,9 @@ class NavHelper {
   void initializeWidgetOptions() {
     widgetOptions = <Widget>[
       const DashboardScreen(),
-      const ComingSoonScreen(),
+      // const ComingSoonScreen(),
       const ExploreProductsScreen(),
-      const ComingSoonScreen(),
+     // const ComingSoonScreen(),
       const HelpScreen(),
     ];
   }

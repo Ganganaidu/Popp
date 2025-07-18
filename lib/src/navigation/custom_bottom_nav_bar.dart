@@ -40,31 +40,31 @@ class CustomBottomNavBar extends StatelessWidget {
                 ),
                 label: Constants.home,
               ),
+              // BottomNavigationBarItem(
+              //   icon: Icon(
+              //     selectedIndex == 1
+              //         ? Icons.two_wheeler
+              //         : Icons.two_wheeler_outlined,
+              //   ),
+              //   label: Constants.rides,
+              // ),
               BottomNavigationBarItem(
                 icon: Icon(
-                  selectedIndex == 1
-                      ? Icons.two_wheeler
-                      : Icons.two_wheeler_outlined,
-                ),
-                label: Constants.rides,
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(
-                  selectedIndex == 1
+                  selectedIndex == 2
                       ? Icons.search_sharp
                       : Icons.search_outlined,
                 ),
                 label: Constants.explore,
               ),
+              // BottomNavigationBarItem(
+              //   icon: Icon(
+              //     selectedIndex == 3 ? Icons.map : Icons.map_outlined,
+              //   ),
+              //   label: Constants.routes,
+              // ),
               BottomNavigationBarItem(
                 icon: Icon(
-                  selectedIndex == 3 ? Icons.map : Icons.map_outlined,
-                ),
-                label: Constants.routes,
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(
-                  selectedIndex == 2
+                  selectedIndex == 4
                       ? Icons.help_center_rounded
                       : Icons.help_center_outlined,
                 ),

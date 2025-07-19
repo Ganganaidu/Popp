@@ -135,6 +135,7 @@ class _SellYourBikeState extends State<SellYourBike>
       Product newProduct = Product(
         id: productId,
         isApproved: false,
+        isSold: false,
         countryCode: countryCode,
         userId: FirebaseAuth.instance.currentUser?.uid,
         categoryId: catList[0].categoryId,

@@ -57,7 +57,9 @@ class CategoryListWidget extends StatelessWidget {
                   ),
                   IconButton(
                     icon: const Icon(Icons.arrow_forward_ios, size: 18),
-                    onPressed: () {},
+                    onPressed: () {
+                      _navigateToCategoryPage(context);
+                    },
                   ),
                 ],
               ),
@@ -72,13 +74,13 @@ class CategoryListWidget extends StatelessWidget {
               separatorBuilder: (_, __) => const SizedBox(width: 12),
               itemBuilder: (context, index) {
                 final product = products[index];
-                AppLogger.d("product.isSold ${product.isSold}");
+                // AppLogger.d("product.isSold ${product.isSold}");
                 return ListingCard(
                     title: product.getTitle(),
                     imageUrl: product.imageUrl,
                     price: product.expectedPrice,
                     width: itemWidth,
-                    status: product.isSold == true ? 'Sold' : null,
+                    status: product.isSold ? 'Sold' : null,
                     showOptionsMenu: false,
                     onTap: () {
                       onProductDetailsTap(context, product.toJson());

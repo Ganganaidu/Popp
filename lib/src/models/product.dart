@@ -43,7 +43,7 @@ class Product {
   String? batteryCondition;
   String? tyreCondition;
   bool isApproved = false; // Default value for new products
-  bool? isSold = false; // Default value for new products
+  bool isSold = false;
   List<String>? searchKeywords;
   List<String>? favoritedBy;
   final String? countryCode;
@@ -91,7 +91,7 @@ class Product {
       this.batteryCondition,
       this.tyreCondition,
       required this.isApproved,
-      this.isSold,
+      required this.isSold,
       this.searchKeywords,
       required this.countryCode,
       this.favoritedBy});
@@ -131,8 +131,9 @@ class Product {
         kmDriven: json['kmDriven'] as String?,
         isFavorite: json['isFavorite'] as bool?,
         isProductBikeSpecific: json['isProductBikeSpecific'] as bool?,
-        isApproved: json['isApproved'] as bool,
-        isSold: json['isSold'] as bool?,
+        isApproved: json['isApproved'] as bool? ?? false,
+        isSold: json['isSold'] as bool? ?? false,
+        // Explicitly cast to non-nullable
         billDate: _parseDate(json['billDate']),
         productSize: json['productSize'] as String?,
         productCondition: json['productCondition'] as String?,
@@ -162,7 +163,7 @@ class Product {
       if (userId != null) 'userId': userId,
       'id': id,
       'isApproved': isApproved, // Assuming default value for new products
-      'isSold': isSold, // Assuming default value for new products
+      'isSold': isSold, // Always include isSold in the JSON
       'categoryId': categoryId,
       'category': category,
       if (subCategory != null) 'subCategory': subCategory,

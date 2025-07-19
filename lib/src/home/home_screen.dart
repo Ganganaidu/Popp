@@ -43,12 +43,19 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _setupNotifications() async {
-    await _requestPermissions();
-    await _getFCMToken(); // This will now also save the token
-    _configureForegroundMessageHandler();
+    try {
+      await _requestPermissions();
+      if (!mounted) return; // Add mounted check after async operation
+      await _getFCMToken();
+      if (!mounted) return; // Add mounted check after async operation
+      _configureForegroundMessageHandler();
+    } catch (e) {
+      AppLogger.e('Error setting up notifications: $e');
+    }
   }
 
   Future<void> _requestPermissions() async {
+    if (!mounted) return;
     FirebaseMessaging messaging = FirebaseMessaging.instance;
     NotificationSettings settings = await messaging.requestPermission(
       alert: true,
@@ -59,18 +66,25 @@ class _HomeScreenState extends State<HomeScreen> {
       provisional: false,
       sound: true,
     );
-    AppLogger.d('User granted permission: ${settings.authorizationStatus}');
+    if (mounted) {
+      AppLogger.d('User granted permission: ${settings.authorizationStatus}');
+    }
   }
 
   Future<void> _getFCMToken() async {
-    String? token = await FirebaseMessaging.instance.getToken();
-    setState(() {
-      _fcmToken = token;
-    });
-    AppLogger.d('FCM Token: $_fcmToken');
-    // Send this token to your backend server or save it to Firestore
-    if (token != null && FirebaseAuth.instance.currentUser != null) {
-      await _saveFCMTokenToFirestore(token, FirebaseAuth.instance.currentUser!.uid);
+    if (!mounted) return;
+    try {
+      String? token = await FirebaseMessaging.instance.getToken();
+      if (!mounted) return; // Check mounted after async operation
+      if (token != null) {
+        setState(() {
+          _fcmToken = token;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        print('Error getting FCM token: $e');
+      }
     }
   }
 

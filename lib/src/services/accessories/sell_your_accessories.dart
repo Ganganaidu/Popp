@@ -96,6 +96,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
       Product newProduct = Product(
         id: productId,
         isApproved: false,
+        isSold: false,
         countryCode: countryCode,
         userId: FirebaseAuth.instance.currentUser?.uid,
         categoryId: selectedCategory?.categoryId ?? "",

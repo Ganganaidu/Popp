@@ -35,7 +35,7 @@ final ThemeData poppLightTheme = ThemeData(
     ),
     hintStyle: const TextStyle(color: Colors.black54),
   ),
-  cardTheme: const CardThemeData(elevation: 2, color: Colors.white70),
+  cardTheme: const CardThemeData(elevation: 2, color: Colors.white),
 );
 
 final ThemeData poppDarkTheme = ThemeData(
@@ -73,4 +73,5 @@ final ThemeData poppDarkTheme = ThemeData(
     ),
     hintStyle: const TextStyle(color: Colors.white54),
   ),
+  cardTheme: const CardThemeData(elevation: 2, color: Colors.black),
 );

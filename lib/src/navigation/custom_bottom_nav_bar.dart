@@ -13,6 +13,7 @@ class CustomBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Stack(
       alignment: Alignment.bottomCenter,
       children: [
@@ -25,7 +26,7 @@ class CustomBottomNavBar extends StatelessWidget {
           padding: const EdgeInsets.only(bottom: 5),
           child: BottomNavigationBar(
             type: BottomNavigationBarType.fixed,
-            backgroundColor: Colors.transparent,
+            backgroundColor: isDarkMode ? null : Colors.grey[50],
             elevation: 0,
             currentIndex: selectedIndex,
             selectedItemColor: Colors.orange,

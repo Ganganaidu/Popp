@@ -14,6 +14,20 @@ class ProductRepository {
         .collection(ApiUrl.productsPath)
         .where('isApproved', isEqualTo: isApproved)
         .get();
+    return _processSnapshot(snapshot, targetCountryCode);
+  }
+
+  Stream<List<PopCategory>> getProductsStream(
+      bool isApproved, String targetCountryCode) {
+    return _db
+        .collection(ApiUrl.productsPath)
+        .where('isApproved', isEqualTo: isApproved)
+        .snapshots()
+        .asyncMap((snapshot) => _processSnapshot(snapshot, targetCountryCode));
+  }
+
+  Future<List<PopCategory>> _processSnapshot(
+      QuerySnapshot snapshot, String targetCountryCode) async {
     if (snapshot.docs.isEmpty) return [];
 
     List<Product> products = [];
@@ -22,7 +36,6 @@ class ProductRepository {
     for (var doc in snapshot.docs) {
       Product product =
           Product.fromJson(doc.data() as Map<String, dynamic>, doc.id);
-      // Format the expected price using CurrencyService
       String formattedPrice = await CurrencyService.getLocalizedPrice(
           product.expectedPrice.toString(),
           product.countryCode,

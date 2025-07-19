@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:popp/src/utils/app_loger.dart';
 import '../models/product.dart';
 import '../navigation/nav_router.dart';
 import '../utils/product_content_data.dart';
@@ -71,11 +72,13 @@ class CategoryListWidget extends StatelessWidget {
               separatorBuilder: (_, __) => const SizedBox(width: 12),
               itemBuilder: (context, index) {
                 final product = products[index];
+                AppLogger.d("product.isSold ${product.isSold}");
                 return ListingCard(
                     title: product.getTitle(),
                     imageUrl: product.imageUrl,
                     price: product.expectedPrice,
                     width: itemWidth,
+                    status: product.isSold == true ? 'Sold' : null,
                     showOptionsMenu: false,
                     onTap: () {
                       onProductDetailsTap(context, product.toJson());

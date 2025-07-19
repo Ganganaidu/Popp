@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:popp/src/widgets/shimmer_image.dart'; // Assuming this is your custom image widget
+import 'package:popp/src/widgets/shimmer_image.dart';
 
 class ListingCard extends StatelessWidget {
   final String title;
@@ -25,7 +25,7 @@ class ListingCard extends StatelessWidget {
     this.onSold,
   });
 
-  // --- NEW: Helper to determine banner color and icon based on status ---
+  // Helper to determine banner color and icon based on status ---
   (Color, IconData?) _getStatusStyle(String status) {
     switch (status.toLowerCase()) {
       case 'sold':
@@ -69,9 +69,7 @@ class ListingCard extends StatelessWidget {
                       right: 4,
                       child: _buildOptionsMenu(context),
                     ),
-                  // --- NEW: Conditionally display the status banner ---
-                  if (status != null && status!.isNotEmpty && showOptionsMenu)
-                    _buildStatusBanner(),
+                  if (status != null) _buildStatusBanner(),
                 ],
               ),
             ),

@@ -43,6 +43,7 @@ class Product {
   String? batteryCondition;
   String? tyreCondition;
   bool isApproved = false; // Default value for new products
+  bool? isSold = false; // Default value for new products
   List<String>? searchKeywords;
   List<String>? favoritedBy;
   final String? countryCode;
@@ -90,6 +91,7 @@ class Product {
       this.batteryCondition,
       this.tyreCondition,
       required this.isApproved,
+      this.isSold,
       this.searchKeywords,
       required this.countryCode,
       this.favoritedBy});
@@ -130,6 +132,7 @@ class Product {
         isFavorite: json['isFavorite'] as bool?,
         isProductBikeSpecific: json['isProductBikeSpecific'] as bool?,
         isApproved: json['isApproved'] as bool,
+        isSold: json['isSold'] as bool?,
         billDate: _parseDate(json['billDate']),
         productSize: json['productSize'] as String?,
         productCondition: json['productCondition'] as String?,
@@ -159,6 +162,7 @@ class Product {
       if (userId != null) 'userId': userId,
       'id': id,
       'isApproved': isApproved, // Assuming default value for new products
+      'isSold': isSold, // Assuming default value for new products
       'categoryId': categoryId,
       'category': category,
       if (subCategory != null) 'subCategory': subCategory,
@@ -264,6 +268,7 @@ class Product {
       String? batteryCondition,
       String? tyreCondition,
       bool isApproved = false, // Default value for new products
+      bool isSold = false, // Default value for new products
       List<String>? searchKeywords,
       List<String>? favoritedBy,
       String? countryCode}) {
@@ -309,6 +314,7 @@ class Product {
         batteryCondition: batteryCondition ?? this.batteryCondition,
         tyreCondition: tyreCondition ?? this.tyreCondition,
         isApproved: isApproved,
+        isSold: isSold,
         searchKeywords: searchKeywords ?? this.searchKeywords,
         favoritedBy: favoritedBy ?? this.favoritedBy,
         countryCode: countryCode ?? this.countryCode);

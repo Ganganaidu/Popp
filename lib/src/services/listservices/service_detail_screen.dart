@@ -9,6 +9,7 @@ import 'package:url_launcher/url_launcher_string.dart';
 import '../../api/api_url.dart';
 import '../../firebase/firebase_api_service.dart';
 import '../../utils/app_constants.dart';
+import '../../utils/app_utils.dart';
 import '../../utils/product_content_data.dart';
 import '../../widgets/chat_with_user_widget.dart';
 
@@ -81,10 +82,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
   Widget build(BuildContext context) {
     final isAdmin =
         FirebaseAuth.instance.currentUser?.uid == Constants.adminUserId;
-    String appBarTitle = widget.category;
-    if (appBarTitle.contains("Track")) {
-      appBarTitle = "Track and Training day";
-    }
+    String appBarTitle = AppUtils.getServiceAppBarTitle(widget.category);
     return Scaffold(
       appBar: AppBar(
         title: Text(appBarTitle),
@@ -475,7 +473,9 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                       ] else if (isBikeRentalCategory &&
                           bikeRentalDetails.isNotEmpty) ...[
                         Text(
-                          'Bike Rental Details',
+                          widget.category == serviceCategories[1]
+                              ? 'Bike Rental Details'
+                              : 'Mechanic Details',
                           style: context.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),

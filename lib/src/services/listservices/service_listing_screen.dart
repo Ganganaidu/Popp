@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:popp/src/utils/app_constants.dart';
 import 'package:popp/src/utils/app_loger.dart';
+import 'package:popp/src/utils/app_utils.dart';
 import 'package:popp/src/utils/build_extensions.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -43,10 +44,7 @@ class _ServiceListingScreenState extends State<ServiceListingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    String appBarTitle = widget.category;
-    if (appBarTitle.contains("Track")) {
-      appBarTitle = "Track and Training day";
-    }
+    String appBarTitle = AppUtils.getServiceAppBarTitle(widget.category);
     return Scaffold(
       appBar: AppBar(
         title: Text(appBarTitle),

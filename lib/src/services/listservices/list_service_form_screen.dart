@@ -397,8 +397,8 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                       ),
                     ),
                   ),
-                if (_selectedCategory == 'Book your Bike service' ||
-                    _selectedCategory == 'Bike Rentals') ...[
+                if (_selectedCategory == serviceCategories[0] ||
+                    _selectedCategory == serviceCategories[1]) ...[
                   // Fields for Book your Service / Bike Rentals (from image_1a7749.png)
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),

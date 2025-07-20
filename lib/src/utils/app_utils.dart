@@ -1,4 +1,4 @@
-
+import 'package:popp/src/utils/product_content_data.dart';
 
 class AppUtils {
   // Private constructor to prevent instantiation
@@ -24,5 +24,15 @@ class AppUtils {
       months += 12;
     }
     return {'years': years, 'months': months};
+  }
+
+  static String getServiceAppBarTitle(String appBarTitle) {
+    if (appBarTitle.contains("Track")) {
+      appBarTitle = "Track and Training day";
+    }
+    if (appBarTitle.contains(serviceCategories[0])) {
+      appBarTitle = "Find your mechanic";
+    }
+    return appBarTitle;
   }
 }

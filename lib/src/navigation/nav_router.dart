@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:popp/src/login/model/user_data_model.dart';
 import 'package:popp/src/settings/about_us.dart';
 import 'package:popp/src/settings/favorites_screen.dart';
-import 'package:popp/src/login/model/user_data_model.dart';
 import 'package:popp/src/settings/settings_screen.dart';
 import 'package:popp/src/utils/app_constants.dart';
 
@@ -9,7 +9,6 @@ import '../admin/admin_dashboard_screen.dart';
 import '../chat/agent_chat_list_screen.dart';
 import '../chat/generic_chat_screen.dart';
 import '../login/forgot_password_screen.dart';
-import '../login/otp_screen.dart';
 import '../login/register_and_subscribe_screen.dart';
 import '../login/verification_screen.dart';
 import '../products/product_detail_screen.dart';
@@ -113,14 +112,6 @@ void onForgotPasswordTap(BuildContext context, bool isChangePassword) {
         builder: (_) => ForgotPasswordScreen(
               isChangePassword: isChangePassword,
             )),
-  );
-}
-
-void onOTPScreen(BuildContext context, String email, String password) {
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-        builder: (_) => OTPScreen(email: email, password: password)),
   );
 }
 

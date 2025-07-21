@@ -7,7 +7,7 @@ import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 import '../../api/api_url.dart';
-import '../../firebase/firebase_api_service.dart';
+import '../../api/firebase/firebase_api_service.dart';
 import '../../utils/app_constants.dart';
 import '../../utils/app_utils.dart';
 import '../../utils/product_content_data.dart';
@@ -117,7 +117,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                         : () async {
                             final serviceId = widget.serviceData['id'] ?? '';
                             if (serviceId != '') {
-                              await FirebaseApiService()
+                              await _firebaseApiService
                                   .updateServiceApprovalStatus(serviceId, true);
                               setState(() {
                                 _isApproved = true;

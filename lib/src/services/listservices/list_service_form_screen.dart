@@ -3,19 +3,19 @@ import 'dart:io';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:popp/src/navigation/nav_router.dart';
-import 'package:popp/src/utils/build_extensions.dart'; // From build_extensions.dart
-import 'package:popp/src/widgets/custom_dropdown_form_field.dart'; // You might need to create this widget
-import 'package:popp/src/widgets/image_picker_selection.dart'; // You might need to create this widget
-import 'package:popp/src/widgets/loading_overlay.dart'; // You might need to create this widget
+import 'package:popp/src/utils/build_extensions.dart';
+import 'package:popp/src/widgets/custom_dropdown_form_field.dart';
+import 'package:popp/src/widgets/image_picker_selection.dart';
+import 'package:popp/src/widgets/loading_overlay.dart';
 import 'package:popp/src/widgets/month_year_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../api/api_url.dart';
-import '../../firebase/firebase_api_service.dart';
+import '../../api/firebase/firebase_api_service.dart';
 import '../../search/autocomplete_search_field.dart';
 import '../../utils/app_loger.dart';
 import '../../utils/product_content_data.dart';
-import '../../widgets/working_hours_picker.dart'; // You might need to create this widget
+import '../../widgets/working_hours_picker.dart';
 
 class ListServiceFormScreen extends StatefulWidget {
   const ListServiceFormScreen({super.key});

@@ -1,11 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:popp/src/utils/app_loger.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../api/api_url.dart';
-import '../firebase/auth_service.dart';
+import '../api/firebase/auth_service.dart';
 import '../navigation/nav_router.dart';
 import '../subscription/subscribe_page_widget.dart';
 import '../widgets/app_dialogs.dart';
@@ -122,14 +123,14 @@ class _RegisterAndSubscribeScreenState
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text("One Last Step...",
+                  Text("Welcome To POPP!",
                       style: textTheme.headlineMedium
                           ?.copyWith(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
                   Text(
-                    "Review the details and subscribe to unlock the full power of the community.",
+                    "Pre Owned Premium Products",
                     style: textTheme.titleSmall?.copyWith(
                         color:
                             isDarkMode ? Colors.grey[400] : Colors.grey[600]),
@@ -142,11 +143,13 @@ class _RegisterAndSubscribeScreenState
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
                   children: [
+                    Lottie.asset('assets/congrats.json', height: 100),
+                    const SizedBox(height: 8),
                     // Welcome Card
                     _buildInfoCard(
                       icon: Icons.celebration_rounded,
                       iconColor: Colors.amber,
-                      title: "Welcome to the Crew!",
+                      title: "Congratulations!",
                       content:
                           "You're now part of a passionate community built by riders, for riders. Explore all features for free during the trial period!",
                     ),
@@ -177,7 +180,7 @@ class _RegisterAndSubscribeScreenState
                       iconColor: Colors.deepOrangeAccent,
                       title: "Subscription required?",
                       content:
-                          "Practically Free, After the trial ends, keep riding with us for a yearly subscription fee so low, it's almost unbelievable.",
+                          "It’s completely free to use until we introduce our subscription system — and even then, the yearly fee will be so low, it’s almost unbelievable. Until then, enjoy unlimited access to all our services!",
                     ),
 
                     const SizedBox(height: 20),
@@ -352,7 +355,7 @@ class _RegisterAndSubscribeScreenState
               )),
               child: isSubmitting
                   ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text("Register & Subscribe",
+                  : const Text("Let's Ride!", // Register & Subscribe
                       style:
                           TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             ),

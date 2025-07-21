@@ -8,7 +8,7 @@ import 'package:popp/src/widgets/app_dialogs.dart';
 import 'package:popp/src/widgets/loading_overlay.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../firebase/firebase_api_service.dart';
+import '../../api/firebase/firebase_api_service.dart';
 import '../../models/pop_category.dart';
 import '../../models/product.dart';
 import '../../navigation/nav_router.dart';

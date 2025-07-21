@@ -157,9 +157,34 @@ class _VerificationScreenState extends State<VerificationScreen> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
-              const Text(
-                'Click the link in the email to complete your registration. This screen will update automatically.',
-                textAlign: TextAlign.center,
+              Column(
+                children: [
+                  const Text(
+                    'Click the link in the email to complete your registration. This screen will update automatically.',
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 10),
+                  RichText(
+                    textAlign: TextAlign.center,
+                    text: const TextSpan(
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey,
+                        fontStyle: FontStyle.italic,
+                      ),
+                      children: [
+                        TextSpan(
+                            text:
+                                'If you haven\'t received the email, please check your '),
+                        TextSpan(
+                          text: 'spam/junk',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        TextSpan(text: ' folder.'),
+                      ],
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 32),
               const CircularProgressIndicator(),

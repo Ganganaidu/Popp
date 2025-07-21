@@ -6,7 +6,7 @@ import 'package:popp/src/utils/build_extensions.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../api/api_url.dart';
-import '../../firebase/firebase_api_service.dart';
+import '../../api/firebase/firebase_api_service.dart';
 import '../../navigation/nav_router.dart';
 import '../../utils/product_content_data.dart';
 

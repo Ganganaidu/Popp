@@ -8,7 +8,7 @@ import 'package:popp/src/login/model/user_data_model.dart';
 import 'package:popp/src/utils/app_loger.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
-import '../api/api_url.dart';
+import '../api_url.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;

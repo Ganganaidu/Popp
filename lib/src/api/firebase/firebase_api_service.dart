@@ -5,9 +5,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:popp/src/utils/app_loger.dart';
 
-import '../api/api_url.dart';
-import '../gallery/pic_image_gallery.dart';
-import '../models/product.dart';
+import '../api_url.dart';
+import '../../gallery/pic_image_gallery.dart';
+import '../../models/product.dart';
+import '../../systemalerts/message_data.dart';
 
 class FirebaseApiService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -149,8 +150,7 @@ class FirebaseApiService {
 
       AppLogger.d("Batch process productRef $productRef");
       // 2. Add product ID to the user's 'createdProductIds'
-      DocumentReference userRef =
-          _db.collection(ApiUrl.userPath).doc(user.uid);
+      DocumentReference userRef = _db.collection(ApiUrl.userPath).doc(user.uid);
       batch.update(userRef, {
         'createdProductIds': FieldValue.arrayUnion([productId])
       });
@@ -291,8 +291,7 @@ class FirebaseApiService {
     if (user == null) return [];
 
     try {
-      final userDoc =
-          await _db.collection(ApiUrl.userPath).doc(user.uid).get();
+      final userDoc = await _db.collection(ApiUrl.userPath).doc(user.uid).get();
       if (!userDoc.exists || userDoc.data()?['createdProductIds'] == null) {
         return [];
       }
@@ -325,8 +324,7 @@ class FirebaseApiService {
     if (user == null) return [];
 
     try {
-      final userDoc =
-          await _db.collection(ApiUrl.userPath).doc(user.uid).get();
+      final userDoc = await _db.collection(ApiUrl.userPath).doc(user.uid).get();
       if (!userDoc.exists || userDoc.data()?['savedProductIds'] == null) {
         return [];
       }
@@ -579,5 +577,67 @@ class FirebaseApiService {
       AppLogger.d('toggleFavoriteProduct error: $e');
       return false;
     }
+  }
+
+  Future<SystemMessage?> getPriorityMessage() async {
+    // 1. Check for a global message first.
+    final globalMessage = await _getGlobalMessage();
+    if (globalMessage != null &&
+        globalMessage.isActive &&
+        globalMessage.priority == MessagePriority.high) {
+      // If there's a high-priority global message, it overrides everything.
+      return globalMessage;
+    }
+
+    // 2. Check for a user-specific block message.
+    final user = _auth.currentUser;
+    if (user != null) {
+      final userMessage = await _getUserBlockMessage(user.uid);
+      if (userMessage != null && userMessage.isActive) {
+        // A user block is always high priority.
+        return userMessage;
+      }
+    }
+
+    // 3. If no high-priority messages, return the active global message (if any).
+    if (globalMessage != null && globalMessage.isActive) {
+      return globalMessage;
+    }
+
+    // No active messages found.
+    return null;
+  }
+
+  /// Fetches the current global message.
+  Future<SystemMessage?> _getGlobalMessage() async {
+    try {
+      final doc = await _db.collection(ApiUrl.globalMessagesPath).doc('current').get();
+      if (doc.exists) {
+        return SystemMessage.fromFirestore(doc);
+      }
+    } catch (e) {
+      // Handle potential errors, e.g., logging.
+      AppLogger.e("Error fetching global message: $e");
+    }
+    return null;
+  }
+
+  /// Fetches a block message for a specific user.
+  Future<SystemMessage?> _getUserBlockMessage(String userId) async {
+    try {
+      final doc = await _db
+          .collection(ApiUrl.userPath)
+          .doc(userId)
+          .collection('user_messages')
+          .doc('block_status')
+          .get();
+
+      if (doc.exists) {
+        return SystemMessage.fromFirestore(doc);
+      }
+    } catch (e) {
+      AppLogger.e("Error fetching user message: $e");
+    }
+    return null;
   }
 }

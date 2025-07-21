@@ -7,7 +7,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../api/api_url.dart';
-import '../firebase/firebase_api_service.dart';
+import '../api/firebase/firebase_api_service.dart';
 import '../utils/app_constants.dart';
 import '../widgets/app_dialogs.dart';
 import '../widgets/chat_with_user_widget.dart';

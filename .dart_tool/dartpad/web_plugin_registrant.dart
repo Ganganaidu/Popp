@@ -13,6 +13,7 @@ import 'package:firebase_app_check_web/firebase_app_check_web.dart';
 import 'package:firebase_auth_web/firebase_auth_web.dart';
 import 'package:firebase_core_web/firebase_core_web.dart';
 import 'package:firebase_messaging_web/firebase_messaging_web.dart';
+import 'package:firebase_remote_config_web/firebase_remote_config_web.dart';
 import 'package:firebase_storage_web/firebase_storage_web.dart';
 import 'package:flutter_facebook_auth_web/flutter_facebook_auth_web.dart';
 import 'package:flutter_native_splash/flutter_native_splash_web.dart';
@@ -35,6 +36,7 @@ void registerPlugins([final Registrar? pluginRegistrar]) {
   FirebaseAuthWeb.registerWith(registrar);
   FirebaseCoreWeb.registerWith(registrar);
   FirebaseMessagingWeb.registerWith(registrar);
+  FirebaseRemoteConfigWeb.registerWith(registrar);
   FirebaseStorageWeb.registerWith(registrar);
   FlutterFacebookAuthPlugin.registerWith(registrar);
   FlutterNativeSplashWeb.registerWith(registrar);

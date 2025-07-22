@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'message_data.dart'; // Import the model from Step 2
 
 class BlockingScreen extends StatelessWidget {
   final SystemMessage systemMessage;
 
   const BlockingScreen({super.key, required this.systemMessage});
+
+  Future<void> _saveMessageId() async {
+    if (systemMessage.messageId != null) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('shown_message_${systemMessage.messageId}', 'true');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,6 +65,7 @@ class BlockingScreen extends StatelessWidget {
                             horizontal: 32, vertical: 12),
                       ),
                       onPressed: () {
+                        _saveMessageId();
                         // Allow dismissing low priority messages
                         if (systemMessage.priority == MessagePriority.low) {
                           Navigator.pushReplacementNamed(context, '/home');

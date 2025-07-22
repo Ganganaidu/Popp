@@ -6,10 +6,12 @@ class SystemMessage {
   final String message;
   final MessagePriority priority;
   final bool isActive;
+  final String? messageId;
 
   SystemMessage({
     required this.message,
     required this.priority,
+    required this.messageId,
     this.isActive = false,
   });
 
@@ -17,6 +19,7 @@ class SystemMessage {
     final data = doc.data() as Map<String, dynamic>? ?? {};
     return SystemMessage(
       message: data['message'] ?? 'An important message from the Popp team.',
+      messageId: data['messageId'],
       priority: (data['priority'] == 'high')
           ? MessagePriority.high
           : MessagePriority.low,

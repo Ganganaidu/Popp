@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../api/api_url.dart';
 import '../api/firebase/auth_service.dart';
+import '../api/firebase/remote_config_service.dart';
 import '../navigation/nav_router.dart';
 import '../subscription/subscribe_page_widget.dart';
 import '../widgets/app_dialogs.dart';
@@ -27,6 +28,20 @@ class _RegisterAndSubscribeScreenState
   bool termsAccepted = false;
   bool isSubmitting = false;
   bool hasClickedTermsLink = false;
+  bool _showSubscription = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadConfig();
+  }
+
+  void _loadConfig() async {
+    final configService = await RemoteConfigService.getInstance();
+    setState(() {
+      _showSubscription = configService.isSubscriptionFeatureEnabled;
+    });
+  }
 
   void _openTermsLink() async {
     AppLogger.w("Terms link clicked");
@@ -62,29 +77,34 @@ class _RegisterAndSubscribeScreenState
         await updateRegistrationComplete(
             uid: widget.userData.uid, registrationComplete: true);
 
-        if (!mounted) return;
-        await showModalBottomSheet(
-          context: context,
-          isScrollControlled: true,
-          isDismissible: false,
-          enableDrag: false,
-          backgroundColor: Colors.transparent,
-          builder: (context) => DraggableScrollableSheet(
-            initialChildSize: 0.8,
-            maxChildSize: 0.9,
-            minChildSize: 0.7,
-            builder: (_, scrollController) => Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-              ),
-              child: SubscribePageWidget(
-                userUid: widget.userData.uid,
-                isFromSettings: false,
+        if (_showSubscription) {
+          if (!mounted) return;
+          await showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            isDismissible: false,
+            enableDrag: false,
+            backgroundColor: Colors.transparent,
+            builder: (context) => DraggableScrollableSheet(
+              initialChildSize: 0.8,
+              maxChildSize: 0.9,
+              minChildSize: 0.7,
+              builder: (_, scrollController) => Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                child: SubscribePageWidget(
+                  userUid: widget.userData.uid,
+                  isFromSettings: false,
+                ),
               ),
             ),
-          ),
-        );
+          );
+        } else {
+          if (!mounted) return;
+          Navigator.pushReplacementNamed(context, '/home');
+        }
       } else {
         await updateRegistrationComplete(
             uid: widget.userData.uid, registrationComplete: false);
@@ -179,8 +199,9 @@ class _RegisterAndSubscribeScreenState
                       icon: Icons.workspace_premium_rounded,
                       iconColor: Colors.deepOrangeAccent,
                       title: "Subscription required?",
-                      content:
-                          "It’s completely free to use until we introduce our subscription system — and even then, the yearly fee will be so low, it’s almost unbelievable. Until then, enjoy unlimited access to all our services!",
+                      content: _showSubscription
+                          ? "Practically Free, After the trial ends, keep riding with us for a Monthly/yearly subscription fee so low, it's almost unbelievable."
+                          : "It’s completely free to use until we introduce our subscription system — and even then, the yearly fee will be so low, it’s almost unbelievable. Until then, enjoy unlimited access to all our services!",
                     ),
 
                     const SizedBox(height: 20),
@@ -355,9 +376,12 @@ class _RegisterAndSubscribeScreenState
               )),
               child: isSubmitting
                   ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text("Let's Ride!", // Register & Subscribe
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  : Text(
+                      _showSubscription
+                          ? "Register & Subscribe"
+                          : "Let's Ride!",
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold)),
             ),
           ),
         ],

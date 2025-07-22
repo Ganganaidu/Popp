@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 
 import '../../main.dart';
 import '../api/api_url.dart';
+import '../api/firebase/remote_config_service.dart';
 import '../navigation/nav_router.dart';
 import '../subscription/subscribe_page_widget.dart';
 import '../subscription/subscription_provider.dart';
@@ -15,8 +16,28 @@ import '../subscription/subscription_status_screen.dart';
 import '../utils/app_constants.dart';
 import '../utils/app_loger.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  bool _showSubscription = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadConfig();
+  }
+
+  void _loadConfig() async {
+    final configService = await RemoteConfigService.getInstance();
+    setState(() {
+      _showSubscription = configService.isSubscriptionFeatureEnabled;
+    });
+  }
 
   Future<String> _fetchUsername(String uid) async {
     try {
@@ -225,6 +246,7 @@ class SettingsScreen extends StatelessWidget {
           enabled: isLoggedIn,
           onTap: () => onMyListingScreenTap(context, false),
         ),
+        if (_showSubscription)
         _buildListTile(
           context,
           icon: Icons.star_border,

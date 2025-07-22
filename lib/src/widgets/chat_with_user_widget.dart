@@ -2,11 +2,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../api/firebase/remote_config_service.dart';
 import '../navigation/nav_router.dart';
 import '../subscription/subscription_provider.dart';
 import 'app_dialogs.dart';
 
-class ChatWithSellerCard extends StatelessWidget {
+class ChatWithSellerCard extends StatefulWidget {
   final String receiverUserName;
   final String receiverUserID;
 
@@ -16,8 +17,29 @@ class ChatWithSellerCard extends StatelessWidget {
     required this.receiverUserID,
   });
 
+  @override
+  State<ChatWithSellerCard> createState() => _ChatWithSellerCardState();
+}
+
+class _ChatWithSellerCardState extends State<ChatWithSellerCard> {
+  bool _showSubscription = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadConfig();
+  }
+
+  void _loadConfig() async {
+    final configService = await RemoteConfigService.getInstance();
+    setState(() {
+      _showSubscription = configService.isSubscriptionFeatureEnabled;
+    });
+  }
+
   void _openChatWithSeller(BuildContext context) async {
-    onUserToUserChatTap(context, receiverUserName, receiverUserID);
+    onUserToUserChatTap(
+        context, widget.receiverUserName, widget.receiverUserID);
   }
 
   @override
@@ -25,8 +47,8 @@ class ChatWithSellerCard extends StatelessWidget {
     final user = FirebaseAuth.instance.currentUser;
     final isSubscribed = context.watch<SubscriptionProvider>().isSubscribed;
     final canChat = user != null && isSubscribed;
-    final isSelfChat = receiverUserID == user?.uid;
-    final bool chatEnabled = canChat && !isSelfChat;
+    final isSelfChat = widget.receiverUserID == user?.uid;
+    final bool chatEnabled = !_showSubscription || (canChat && !isSelfChat);
 
     return Card(
       elevation: 3,
@@ -45,7 +67,7 @@ class ChatWithSellerCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(receiverUserName,
+                  Text(widget.receiverUserName,
                       style: const TextStyle(
                           fontWeight: FontWeight.bold, fontSize: 16)),
                   const SizedBox(height: 4),

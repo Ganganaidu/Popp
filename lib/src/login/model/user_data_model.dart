@@ -1,22 +1,24 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UserData {
-  String uid; // Required by create rule
-  String email; // Standard, good to have
+  String uid;
+  String email;
   String? displayName;
   String? photoURL;
-  // Required by create rule (use FieldValue.serverTimestamp())
-  FieldValue createdAt;
-  List<String> createdProductIds; // Required by create rule
-  List<String> savedProductIds;   // Required by create rule
-  List<BikeData>? bikeData; // List of bike data>
-  // Add other fields from your sign-up form
+
+  // FIX 1: Changed type from 'Timestamp?' to 'dynamic'.
+  // This allows the field to hold a 'Timestamp' when read from Firestore,
+  // or a 'FieldValue' when being prepared for a write operation.
+  final dynamic createdAt;
+  List<String> createdProductIds;
+  List<String> savedProductIds;
+  List<BikeData> bikeData;
   String? username;
   String? phoneNumber;
   String? address;
   String? city;
   String? pinCode;
-  String? stateName; // Assuming from your earlier UI context
+  String? stateName;
   bool isSubscribed;
   bool registrationComplete;
 
@@ -25,10 +27,10 @@ class UserData {
     required this.email,
     this.displayName,
     this.photoURL,
-    required this.createdAt,
-    List<String>? createdProductIds, // Allow null for default empty list
-    List<String>? savedProductIds,   // Allow null for default empty list
-    List<BikeData>? bikeData,   // Allow null for default empty list
+    this.createdAt, // This now correctly accepts FieldValue or Timestamp
+    List<String>? createdProductIds,
+    List<String>? savedProductIds,
+    List<BikeData>? bikeData,
     this.username,
     this.phoneNumber,
     this.address,
@@ -37,19 +39,23 @@ class UserData {
     this.stateName,
     this.isSubscribed = false,
     this.registrationComplete = false,
-  })  : createdProductIds = createdProductIds ?? [], // Default to empty list
-        savedProductIds = savedProductIds ?? [];   // Default to empty list
+  })  : createdProductIds = createdProductIds ?? [],
+        savedProductIds = savedProductIds ?? [],
+        bikeData = bikeData ?? [];
 
+  /// Converts the UserData instance to a Map for writing to Firestore.
   Map<String, dynamic> toMap() {
     return {
       'uid': uid,
       'email': email,
       'displayName': displayName ?? username,
       if (photoURL != null) 'photoURL': photoURL,
-      'createdAt': createdAt, // This will be FieldValue.serverTimestamp()
+      // This logic remains correct. If createdAt is null (new user),
+      // it uses the server timestamp.
+      'createdAt': createdAt ?? FieldValue.serverTimestamp(),
       'createdProductIds': createdProductIds,
       'savedProductIds': savedProductIds,
-      'bikeData': bikeData,
+      'bikeData': bikeData.map((b) => b.toMap()).toList(),
       if (username != null) 'username': username,
       if (phoneNumber != null) 'phoneNumber': phoneNumber,
       if (address != null) 'address': address,
@@ -61,25 +67,35 @@ class UserData {
     };
   }
 
-  // Optional: Add a fromJson factory if you fetch this data
-  factory UserData.fromFireStore(DocumentSnapshot<Map<String, dynamic>> doc) {
+  /// Factory constructor to create a UserData instance from a Firestore document.
+  factory UserData.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data()!;
+
+    final bikeDataListRaw = data['bikeData'] as List<dynamic>?;
+    final bikeDataList = bikeDataListRaw != null
+        ? bikeDataListRaw
+            .map((b) => BikeData.fromMap(b as Map<String, dynamic>))
+            .toList()
+        : <BikeData>[];
+
     return UserData(
-      uid: doc.id, // Or data['uid'] if you store it redundantly
+      uid: doc.id,
       email: data['email'] ?? '',
       displayName: data['displayName'],
       photoURL: data['photoURL'],
-      createdAt: data['createdAt'], // This will be a Timestamp when read
+      // FIX 2: No cast is needed now, as the value is already dynamic.
+      createdAt: data['createdAt'],
       createdProductIds: List<String>.from(data['createdProductIds'] ?? []),
       savedProductIds: List<String>.from(data['savedProductIds'] ?? []),
+      bikeData: bikeDataList,
       username: data['username'],
       phoneNumber: data['phoneNumber'],
       address: data['address'],
       city: data['city'],
       pinCode: data['pinCode'],
       stateName: data['stateName'],
-      isSubscribed: data['isSubscribed'],
-      registrationComplete: data['registrationComplete']
+      isSubscribed: data['isSubscribed'] ?? false,
+      registrationComplete: data['registrationComplete'] ?? false,
     );
   }
 }
@@ -101,5 +117,13 @@ class BikeData {
       'model': model,
       'monthYear': monthYear,
     };
+  }
+
+  factory BikeData.fromMap(Map<String, dynamic> map) {
+    return BikeData(
+      brand: map['brand'] ?? '',
+      model: map['model'] ?? '',
+      monthYear: map['monthYear'] ?? '',
+    );
   }
 }

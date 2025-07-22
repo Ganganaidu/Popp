@@ -18,6 +18,7 @@ import '../services/listservices/list_service_form_screen.dart';
 import '../services/listservices/service_detail_screen.dart';
 import '../services/listservices/service_listing_screen.dart';
 import '../settings/my_listings_screen.dart';
+import '../settings/profile_details_screen.dart';
 
 // Define routes for each tab
 final Map<String, WidgetBuilder> routes = {
@@ -230,6 +231,15 @@ void onAboutUsTap(BuildContext context) {
     context,
     MaterialPageRoute(
       builder: (context) => const AboutUsScreen(),
+    ),
+  );
+}
+
+void onProfileDetailsTap(BuildContext context) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => const ProfileDetailsScreen(),
     ),
   );
 }

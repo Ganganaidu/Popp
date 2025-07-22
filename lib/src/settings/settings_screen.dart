@@ -216,18 +216,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _buildListTile(
           context,
           icon: Icons.person_outline,
-          title: "Profile Identifier",
+          title: "Profile details",
           subtitle: user?.email ?? user?.phoneNumber,
           enabled: isLoggedIn,
-          disableArrow: false,
-          onTap: () => {},
-        ),
-        _buildListTile(
-          context,
-          icon: Icons.lock_outline,
-          title: "Change Password",
-          enabled: isLoggedIn,
-          onTap: () => onForgotPasswordTap(context, true),
+          disableArrow: true,
+          onTap: () => {onProfileDetailsTap(context)},
         ),
         if (isLoggedIn && user.uid == Constants.adminUserId)
           _buildListTile(
@@ -247,44 +240,44 @@ class _SettingsScreenState extends State<SettingsScreen> {
           onTap: () => onMyListingScreenTap(context, false),
         ),
         if (_showSubscription)
-        _buildListTile(
-          context,
-          icon: Icons.star_border,
-          title: "Subscriptions",
-          enabled: isLoggedIn,
-          trailing: isSubscribed
-              ? Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Text(
-                    'ACTIVE',
-                    style: TextStyle(
-                      color: Colors.green,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
+          _buildListTile(
+            context,
+            icon: Icons.star_border,
+            title: "Subscriptions",
+            enabled: isLoggedIn,
+            trailing: isSubscribed
+                ? Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Text(
+                      'ACTIVE',
+                      style: TextStyle(
+                        color: Colors.green,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  )
+                : null,
+            onTap: () {
+              if (isSubscribed && subscribedProduct != null) {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => SubscriptionStatusScreen(
+                      subscribedProduct: subscribedProduct!,
+                      userUid: user!.uid,
                     ),
                   ),
-                )
-              : null,
-          onTap: () {
-            if (isSubscribed && subscribedProduct != null) {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => SubscriptionStatusScreen(
-                    subscribedProduct: subscribedProduct!,
-                    userUid: user!.uid,
-                  ),
-                ),
-              );
-            } else {
-              _showSubscribeBottomSheet(context, user!.uid);
-            }
-          },
-        ),
+                );
+              } else {
+                _showSubscribeBottomSheet(context, user!.uid);
+              }
+            },
+          ),
         const SizedBox(height: 24),
         _buildSettingsSectionTitle("App Settings"),
         _buildDarkModeSwitch(),

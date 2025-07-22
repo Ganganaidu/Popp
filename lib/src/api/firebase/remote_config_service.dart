@@ -14,10 +14,10 @@ class RemoteConfigService {
     if (_instance == null) {
       final remoteConfig = FirebaseRemoteConfig.instance;
       await remoteConfig.setConfigSettings(RemoteConfigSettings(
-        fetchTimeout: const Duration(minutes: 1),
+        fetchTimeout: const Duration(hours: 1),
         // Use a low minimum fetch interval for testing.
         // In production, you'll want a higher value (e.g., 1 hour)
-        minimumFetchInterval: const Duration(seconds: 30),
+        minimumFetchInterval: const Duration(hours: 1),
       ));
       // Set default values in case fetching fails
       await remoteConfig.setDefaults({

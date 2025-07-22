@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:popp/src/utils/app_loger.dart';
+
 import '../models/product.dart';
 import '../navigation/nav_router.dart';
 import '../utils/product_content_data.dart';

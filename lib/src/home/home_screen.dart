@@ -1,5 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart'; // NEW: Import Firestore
-import 'package:firebase_auth/firebase_auth.dart'; // NEW: Import FirebaseAuth
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -25,8 +25,6 @@ class _HomeScreenState extends State<HomeScreen> {
   final ValueNotifier<bool> _canPop = ValueNotifier(false);
   final ValueNotifier<String> _appBarTitle = ValueNotifier(Constants.appName);
 
-  String? _fcmToken;
-
   // Recommended for foreground notifications on Android
   late AndroidNotificationChannel _channel;
   late FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin;
@@ -42,70 +40,63 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  /// Sets up all notification-related logic.
   Future<void> _setupNotifications() async {
     try {
-      await _requestPermissions();
-      if (!mounted) return; // Add mounted check after async operation
-      await _getFCMToken();
-      if (!mounted) return; // Add mounted check after async operation
-      _configureForegroundMessageHandler();
+      final messaging = FirebaseMessaging.instance;
+
+      // 1. Request permission from the user.
+      await messaging.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+
+      // 2. Get the initial token and save it to Firestore.
+      final initialToken = await messaging.getToken();
+      if (initialToken != null) {
+        _saveToken(initialToken);
+      }
+
+      // 3. Set up a listener for any future token refreshes.
+      // This is crucial for keeping the token up-to-date.
+      FirebaseMessaging.instance.onTokenRefresh.listen(_saveToken);
+
+      // 4. Configure foreground message handling.
+      if (mounted) {
+        _configureForegroundMessageHandler();
+      }
     } catch (e) {
       AppLogger.e('Error setting up notifications: $e');
     }
   }
 
-  Future<void> _requestPermissions() async {
-    if (!mounted) return;
-    FirebaseMessaging messaging = FirebaseMessaging.instance;
-    NotificationSettings settings = await messaging.requestPermission(
-      alert: true,
-      announcement: false,
-      badge: true,
-      carPlay: false,
-      criticalAlert: false,
-      provisional: false,
-      sound: true,
-    );
-    if (mounted) {
-      AppLogger.d('User granted permission: ${settings.authorizationStatus}');
+  /// Saves the given FCM token to the current user's document in Firestore.
+  Future<void> _saveToken(String token) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      AppLogger.d('User not logged in. Skipping FCM token save.');
+      return;
     }
-  }
 
-  Future<void> _getFCMToken() async {
-    if (!mounted) return;
     try {
-      String? token = await FirebaseMessaging.instance.getToken();
-      if (!mounted) return; // Check mounted after async operation
-      if (token != null) {
-        setState(() {
-          _fcmToken = token;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        print('Error getting FCM token: $e');
-      }
-    }
-  }
-
-  // NEW: Method to save FCM token to Firestore
-  Future<void> _saveFCMTokenToFirestore(String token, String uid) async {
-    try {
-      final userRef = FirebaseFirestore.instance.collection(ApiUrl.userPath).doc(uid);
+      final userRef = FirebaseFirestore.instance.collection(ApiUrl.userPath).doc(user.uid);
+      // Use arrayUnion to add the token only if it's not already present.
+      // This prevents duplicate tokens.
       await userRef.set(
         {
-          'fcmTokens': FieldValue.arrayUnion([token]), // Add token to an array
+          'fcmTokens': FieldValue.arrayUnion([token]),
           'lastTokenUpdate': FieldValue.serverTimestamp(),
         },
-        SetOptions(merge: true), // Use merge to avoid overwriting existing fields
+        SetOptions(merge: true), // Use merge to avoid overwriting other user data.
       );
-      AppLogger.d('FCM Token saved to Firestore for user: $uid');
+      AppLogger.d('FCM Token saved to Firestore for user: ${user.uid}');
     } catch (e) {
       AppLogger.e('Error saving FCM Token to Firestore: $e');
     }
   }
 
-
+  /// Configures how incoming messages are handled while the app is in the foreground.
   void _configureForegroundMessageHandler() {
     // Required for foreground notifications on Android
     _channel = const AndroidNotificationChannel(
@@ -136,7 +127,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
         // If you're on Android, you need to display the notification manually
         // using flutter_local_notifications.
-        if (android != null && !kIsWeb) { // Add !kIsWeb check for Android-specific logic
+        if (android != null && !kIsWeb) {
           _flutterLocalNotificationsPlugin.show(
             notification.hashCode,
             notification.title,
@@ -168,10 +159,10 @@ class _HomeScreenState extends State<HomeScreen> {
   // Define a top-level function for background messages handler
   @pragma('vm:entry-point')
   static Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-    // If you're using Firebase services, make sure to initialize them
-    // For example: await Firebase.initializeApp();
+    // If you're using other Firebase services in the background,
+    // make sure to initialize them first.
+    // await Firebase.initializeApp();
     AppLogger.d("Handling a background message: ${message.messageId}");
-    // You can process the message here, e.g., save to local storage, show local notification
   }
 
 
@@ -243,6 +234,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
+// Helper widget to rebuild when two ValueListenables change.
 class ValueListenableBuilder2<A, B> extends StatelessWidget {
   final ValueListenable<A> first;
   final ValueListenable<B> second;

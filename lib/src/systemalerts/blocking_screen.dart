@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'message_data.dart'; // Import the model from Step 2
+import 'message_data.dart';
 
 class BlockingScreen extends StatelessWidget {
   final SystemMessage systemMessage;
@@ -19,7 +19,6 @@ class BlockingScreen extends StatelessWidget {
     final bool isHighPriority = systemMessage.priority == MessagePriority.high;
 
     return PopScope(
-      // Prevent user from dismissing a high priority message
       canPop: !isHighPriority,
       child: Scaffold(
         body: SafeArea(

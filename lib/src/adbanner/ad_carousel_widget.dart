@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:popp/src/adbanner/model/ad_banner.dart';
 import 'package:popp/src/adbanner/repository/ad_carousel_viewmodel.dart';
+import 'package:popp/src/utils/app_loger.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:shimmer/shimmer.dart';
-
 
 class AdCarouselWidget extends StatefulWidget {
   const AdCarouselWidget({super.key});
@@ -30,7 +30,7 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
       builder: (context, viewModel, _) {
         if (viewModel.isLoading) {
           return SizedBox(
-            height: 400,
+            height: 350,
             child: Shimmer.fromColors(
               baseColor: Colors.grey[300]!,
               highlightColor: Colors.grey[100]!,
@@ -42,12 +42,16 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
           );
         }
 
-        if (viewModel.error != null) {
-          return SizedBox(height: 400, child: Center(child: Text(viewModel.error!)));
+        // If there's an error or no ads, show the engaging business-focused fallback UI.
+        if (viewModel.error != null || viewModel.ads.isEmpty) {
+          return _buildFallbackUI();
         }
 
-        if (viewModel.ads.isEmpty) {
-          return const SizedBox(height: 400, child: Center(child: Text("No ads available.")));
+        if (viewModel.ads.length == 1) {
+          return SizedBox(
+            height: 350,
+            child: buildAdSlide(viewModel.ads.first),
+          );
         }
 
         return Stack(
@@ -56,10 +60,11 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
             CarouselSlider(
               items: viewModel.ads.map(buildAdSlide).toList(),
               options: CarouselOptions(
-                height: 400,
+                height: 350,
                 viewportFraction: 1.0,
                 autoPlay: true,
-                onPageChanged: (index, reason) => setState(() => _current = index),
+                onPageChanged: (index, reason) =>
+                    setState(() => _current = index),
               ),
             ),
             Positioned(
@@ -86,58 +91,181 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
     );
   }
 
-  Widget buildAdSlide(AdBanner ad) {
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        Image.network(
-          ad.imageUrl,
-          fit: BoxFit.cover,
+  /// Builds the fallback UI to show when ads are unavailable, targeting potential advertisers.
+  Widget _buildFallbackUI() {
+    return Container(
+      height: 350,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.bottomLeft,
+          end: Alignment.topRight,
+          colors: [
+            Colors.blueGrey.shade900,
+            Colors.grey.shade900,
+          ],
         ),
-        Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Color.fromARGB(120, 0, 0, 0), // top transparent shadow
-                Colors.black54 // bottom dark gradient
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.orange.shade300, width: 1.5),
+              ),
+              child: Icon(Icons.campaign_outlined,
+                  color: Colors.orange.shade300, size: 40),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Promote Your Business Here',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 26,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.5,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'This space is available for promotions. Reach thousands of dedicated motorcycle enthusiasts in the Popp community.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  color: Colors.white.withOpacity(0.8),
+                  fontSize: 15,
+                  height: 1.5),
+            ),
+            const SizedBox(height: 24),
+            OutlinedButton.icon(
+              icon: const Icon(Icons.email_outlined, size: 18),
+              label: const Text('Contact Us for more info'),
+              onPressed: () async {
+                final Uri emailLaunchUri = Uri(
+                  scheme: 'mailto',
+                  path: 'preownedpremiumproducts@gmail.com',
+                  queryParameters: {
+                    'subject': 'Inquiry: Advertising on Popp App',
+                  },
+                );
+                await launchUrl(emailLaunchUri);
+              },
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.white,
+                side: BorderSide(color: Colors.orange.shade300),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildAdSlide(AdBanner ad) {
+    return GestureDetector(
+      onTap: () async {
+        final url = Uri.parse(ad.buttonLink);
+        if (await canLaunchUrl(url)) {
+          await launchUrl(url, mode: LaunchMode.externalApplication);
+        } else {
+          AppLogger.e('Could not launch ${ad.buttonLink}');
+        }
+      },
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.network(
+            ad.imageUrl,
+            fit: BoxFit.cover,
+            loadingBuilder: (context, child, loadingProgress) {
+              if (loadingProgress == null) return child;
+              return Shimmer.fromColors(
+                baseColor: Colors.grey[300]!,
+                highlightColor: Colors.grey[100]!,
+                child: Container(color: Colors.white),
+              );
+            },
+            errorBuilder: (context, error, stackTrace) {
+              // If a single image fails to load, show a placeholder
+              return Container(
+                color: Colors.grey.shade700,
+                child: const Center(
+                  child: Icon(Icons.image_not_supported_outlined,
+                      color: Colors.white38, size: 50),
+                ),
+              );
+            },
+          ),
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color.fromARGB(120, 0, 0, 0), Colors.black54],
+                stops: [0.0, 0.8],
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Text(ad.title,
+                    style: const TextStyle(color: Colors.white, fontSize: 16)),
+                Text(ad.highlight,
+                    style: const TextStyle(
+                        color: Colors.orange,
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                Text(ad.subtitle,
+                    style: const TextStyle(color: Colors.white70)),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 8,
+                  children: ad.points
+                      .map((point) => Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.check_circle_outline,
+                                  color: Colors.orange, size: 18),
+                              const SizedBox(width: 4),
+                              Text(point,
+                                  style: const TextStyle(color: Colors.white)),
+                            ],
+                          ))
+                      .toList(),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () async {
+                    final url = Uri.parse(ad.buttonLink);
+                    await launchUrl(url, mode: LaunchMode.externalApplication);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: Text(ad.buttonText),
+                ),
               ],
             ),
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Text(ad.title, style: const TextStyle(color: Colors.white, fontSize: 16)),
-              Text(ad.highlight, style: const TextStyle(color: Colors.orange, fontSize: 28, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              Text(ad.subtitle, style: const TextStyle(color: Colors.white70)),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 12,
-                children: ad.points.map((point) => Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.check_circle_outline, color: Colors.orange, size: 18),
-                    const SizedBox(width: 4),
-                    Text(point, style: const TextStyle(color: Colors.white)),
-                  ],
-                )).toList(),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () => launchUrl(Uri.parse(ad.buttonLink)),
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
-                child: Text(ad.buttonText),
-              ),
-            ],
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
-import 'package:lottie/lottie.dart'; // Added for animations
+import 'package:lottie/lottie.dart';
 import 'package:popp/src/utils/build_extensions.dart';
 import 'package:provider/provider.dart';
 

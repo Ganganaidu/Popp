@@ -443,8 +443,14 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                       const SizedBox(height: 8),
                       if (status != 'N/A')
                         _buildInfoRow(context, 'Status:', status, Colors.green),
-                      _buildInfoRow(context, 'When:', dateTimeInfo),
-                      _buildInfoRow(context, 'Where:', locationInfo),
+                      _buildInfoRow(
+                          context,
+                          isBikeRentalCategory ? 'Address: ' : "Where:",
+                          locationInfo),
+                      _buildInfoRow(
+                          context,
+                          isBikeRentalCategory ? 'Hours: ' : "When:",
+                          dateTimeInfo),
                       if (capacityInfo != 'N/A')
                         _buildInfoRow(context, 'Capacity:', capacityInfo),
                       const SizedBox(height: 20),

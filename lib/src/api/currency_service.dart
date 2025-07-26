@@ -30,6 +30,14 @@ class CurrencyService {
       return priceValueStr; // Return original string if parsing fails
     }
 
+    if (sourceCuntryCode == null || sourceCuntryCode.isEmpty) {
+      sourceCuntryCode = 'IN'; // Default to India if null
+    }
+
+    if (targetCountryCode == null || targetCountryCode.isEmpty) {
+      targetCountryCode = 'IN'; // Default to US if null or empty
+    }
+
     String sourceCurrency = (sourceCuntryCode == 'IN') ? 'INR' : 'USD';
     // 1. Get the device's locale to determine the target currency.
     // final String targetCountryCode =

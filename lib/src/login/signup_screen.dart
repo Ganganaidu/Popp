@@ -244,7 +244,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     _buildTextField("Phone number", phoneNumberController,
                         icon: Icons.phone_outlined,
                         keyboardType: TextInputType.number,
-                        isRequired: true),
+                        isRequired: false),
                     const SizedBox(height: 15),
                     _buildTextField("Password", passwordController,
                         icon: Icons.lock_outline,

@@ -7,6 +7,13 @@ import 'package:in_app_purchase_android/in_app_purchase_android.dart';
 import 'package:provider/provider.dart';
 import 'subscription_provider.dart'; // Your provider class
 
+
+
+// TODO Apple needs this information to be displayed on the subscription page:
+// - Title of auto-renewing subscription (this may be the same as the in-app purchase product name)
+// - Length of subscription
+// - Price of subscription, and price per unit if appropriate
+
 class SubscribePageWidget extends StatefulWidget {
   final String userUid;
   final bool isFromSettings;

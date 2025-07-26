@@ -19,6 +19,7 @@ import '../services/listservices/service_detail_screen.dart';
 import '../services/listservices/service_listing_screen.dart';
 import '../settings/my_listings_screen.dart';
 import '../settings/profile_details_screen.dart';
+import '../widgets/app_dialogs.dart';
 
 // Define routes for each tab
 final Map<String, WidgetBuilder> routes = {
@@ -211,6 +212,14 @@ void onLoginTap(BuildContext context) {
   Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
 }
 
+onLoginClicked(BuildContext context, String message) {
+  AppDialogs.showUserLoginDialog(context, () {
+    if (context.mounted) {
+      onLoginTap(context);
+    }
+  }, message);
+}
+
 void onVerificationScreenTap(BuildContext context, UserData? userData,
     String email, String password, bool isFromSignUp) {
   Navigator.push(
@@ -243,3 +252,5 @@ void onProfileDetailsTap(BuildContext context) {
     ),
   );
 }
+
+

@@ -1,18 +1,10 @@
-enum PopServiceAction {
-  sellBike,
-  sellAccessory,
-  findYourMechanic,
-  findTrackTraining,
-  findBikeRentals,
-  listYourServices,
-  premiumBikeInspection,
-}
+import '../deeplink/DeepLinkConfig.dart';
 
 class PopServiceItem {
   final String? imageUrl;
   final String title;
   final String assetImageUrl;
-  final PopServiceAction action;
+  final String action;
 
   PopServiceItem({
     this.imageUrl,
@@ -20,22 +12,6 @@ class PopServiceItem {
     required this.assetImageUrl,
     required this.action,
   });
-
-  factory PopServiceItem.fromJson(Map<String, dynamic> json) {
-    return PopServiceItem(
-        imageUrl: json['image'],
-        title: json['title'],
-        assetImageUrl: json['assetImageUrl'],
-        action: PopServiceAction.sellBike);
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'image': imageUrl,
-      'title': title,
-      'assetImageUrl': assetImageUrl,
-    };
-  }
 }
 
 final List<PopServiceItem> items = [
@@ -43,35 +19,35 @@ final List<PopServiceItem> items = [
       imageUrl: null,
       title: 'Sell your bike',
       assetImageUrl: "assets/sell_your_bike.png",
-      action: PopServiceAction.sellBike),
+      action: sellYourBike),
   PopServiceItem(
       imageUrl: null,
       title: 'Sell your accessory',
       assetImageUrl: "assets/sell_your_accessories.png",
-      action: PopServiceAction.sellAccessory),
+      action: sellAccessory),
   PopServiceItem(
       imageUrl: null,
       title: 'Find your Mechanic',
       assetImageUrl: "assets/book_your_services.png",
-      action: PopServiceAction.findYourMechanic),
+      action: findYourMechanic),
   PopServiceItem(
       imageUrl: null,
       title: 'Find track day & Training ',
       assetImageUrl: "assets/book_track_trainings.png",
-      action: PopServiceAction.findTrackTraining),
+      action: findTrackTraining),
   PopServiceItem(
       imageUrl: null,
       title: 'Find bike rentals',
       assetImageUrl: "assets/find_bike_rentals.png",
-      action: PopServiceAction.findBikeRentals),
+      action: findBikeRentals),
   PopServiceItem(
       imageUrl: null,
       title: 'Premium Bike Inspection',
       assetImageUrl: "assets/premium_bike_inspections.png",
-      action: PopServiceAction.premiumBikeInspection),
+      action: premiumBikeInspection),
   PopServiceItem(
       imageUrl: null,
       title: 'List your services',
       assetImageUrl: "assets/list_your_services.png",
-      action: PopServiceAction.listYourServices)
+      action: listYourServices)
 ];

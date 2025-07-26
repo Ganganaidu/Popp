@@ -1,11 +1,15 @@
+import 'package:carousel_slider/carousel_slider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:popp/src/adbanner/model/ad_banner.dart';
 import 'package:popp/src/adbanner/repository/ad_carousel_viewmodel.dart';
 import 'package:popp/src/utils/app_loger.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+import '../deeplink/DeepLinkConfig.dart';
+import '../navigation/nav_router.dart';
 
 class AdCarouselWidget extends StatefulWidget {
   const AdCarouselWidget({super.key});
@@ -16,6 +20,38 @@ class AdCarouselWidget extends StatefulWidget {
 
 class _AdCarouselWidgetState extends State<AdCarouselWidget> {
   int _current = 0;
+
+  deepLinkToTarget(String deepLink) async {
+    try {
+      final uri = Uri.parse(deepLink);
+      // Check if it's a valid URL with scheme
+      if (uri.hasScheme && (uri.scheme == 'http' || uri.scheme == 'https')) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+        return;
+      }
+    } catch (e) {
+      // Not a valid URI, continue with deep link handling
+    }
+
+    final user = FirebaseAuth.instance.currentUser;
+
+    // Find the matching configuration
+    final config = deepLinkConfigs.entries
+        .firstWhere(
+          (entry) => deepLink.contains(entry.key),
+          orElse: () => MapEntry('', DeepLinkConfig()),
+        )
+        .value;
+
+    // Handle authentication and action
+    if (config.requiresAuth && user == null) {
+      onLoginClicked(context, config.loginMessage);
+      return;
+    }
+
+    // Execute the action if available
+    config.action?.call(context);
+  }
 
   @override
   void initState() {
@@ -250,17 +286,17 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
                       .toList(),
                 ),
                 const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () async {
-                    final url = Uri.parse(ad.buttonLink);
-                    await launchUrl(url, mode: LaunchMode.externalApplication);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
-                    foregroundColor: Colors.white,
+                if (ad.buttonText.isNotEmpty && ad.buttonLink.isNotEmpty)
+                  ElevatedButton(
+                    onPressed: () async {
+                      deepLinkToTarget(ad.buttonLink);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange,
+                      foregroundColor: Colors.white,
+                    ),
+                    child: Text(ad.buttonText),
                   ),
-                  child: Text(ad.buttonText),
-                ),
               ],
             ),
           ),

@@ -3,70 +3,22 @@ import 'package:flutter/material.dart';
 
 import '../models/pop_service_item.dart';
 import '../navigation/nav_router.dart';
-import '../utils/app_constants.dart';
-import '../utils/product_content_data.dart';
-import '../widgets/app_dialogs.dart';
+import '../deeplink/DeepLinkConfig.dart';
 
 class PopServicesWidgets extends StatelessWidget {
   const PopServicesWidgets({super.key});
 
-  void _handleAction(BuildContext context, PopServiceAction action) {
+  void _handleAction(BuildContext context, String deepLinkKey) {
     final user = FirebaseAuth.instance.currentUser;
-    switch (action) {
-      case PopServiceAction.sellBike:
-        if (user == null) {
-          onLoginClicked(context, "Sell your bike");
-          return;
-        }
-        onSelleYourBikeTap(context);
-        break;
-      case PopServiceAction.sellAccessory:
-        if (user == null) {
-          onLoginClicked(context, "Sell your accessory");
-          return;
-        }
-        onSellYourAccessoriesTap(context);
-        break;
-      case PopServiceAction.findYourMechanic:
-        if (user == null) {
-          onLoginClicked(context, "Find your Mechanic");
-          return;
-        }
-        onServiceListingTap(context, serviceCategories[0], false);
-      case PopServiceAction.findTrackTraining:
-        if (user == null) {
-          onLoginClicked(context, "Find Track Day or Training Day");
-          return;
-        }
-        onServiceListingTap(context,
-            [serviceCategories[2], serviceCategories[3]].join(','), false);
-      case PopServiceAction.findBikeRentals:
-        if (user == null) {
-          onLoginClicked(context, "Find Bike Rentals");
-          return;
-        }
-        onServiceListingTap(context, serviceCategories[1], false);
-      case PopServiceAction.listYourServices:
-        if (user == null) {
-          onLoginClicked(context, "List your service");
-          return;
-        }
-        onListYourServiceTap(context);
-      case PopServiceAction.premiumBikeInspection:
-        if (user == null) {
-          onLoginClicked(context, "Premium Bike Inspection");
-          return;
-        }
-        onServiceListingTap(context, Constants.premiumInspection, false);
-    }
-  }
 
-  onLoginClicked(BuildContext context, String message) {
-    AppDialogs.showUserLoginDialog(context, () {
-      if (context.mounted) {
-        onLoginTap(context);
-      }
-    }, message);
+    final config = deepLinkConfigs[deepLinkKey];
+    if (config == null) return;
+
+    if (config.requiresAuth && user == null) {
+      onLoginClicked(context, config.loginMessage);
+      return;
+    }
+    config.action?.call(context);
   }
 
   @override

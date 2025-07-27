@@ -63,7 +63,9 @@ class ListingCard extends StatelessWidget {
                         ? ShimmerImage(imageUrl: imageUrl!)
                         : _buildPlaceholderImage(),
                   ),
-                  if (showOptionsMenu)
+                  if (showOptionsMenu &&
+                      (status?.toLowerCase() != 'pending' &&
+                          status?.toLowerCase() != 'sold'))
                     Positioned(
                       top: 4,
                       right: 4,
@@ -156,10 +158,11 @@ class ListingCard extends StatelessWidget {
         }
       },
       itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-        const PopupMenuItem<String>(
-            value: 'edit',
-            child: ListTile(
-                leading: Icon(Icons.edit_outlined), title: Text('Edit'))),
+        if (status?.toLowerCase() == 'pending')
+          const PopupMenuItem<String>(
+              value: 'edit',
+              child: ListTile(
+                  leading: Icon(Icons.edit_outlined), title: Text('Edit'))),
         const PopupMenuItem<String>(
             value: 'sold',
             child: ListTile(

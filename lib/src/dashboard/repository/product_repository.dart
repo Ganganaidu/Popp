@@ -13,6 +13,7 @@ class ProductRepository {
     QuerySnapshot snapshot = await _db
         .collection(ApiUrl.productsPath)
         .where('isApproved', isEqualTo: isApproved)
+        .where('isActive', isEqualTo: true)
         .get();
     return _processSnapshot(snapshot, targetCountryCode);
   }
@@ -22,6 +23,7 @@ class ProductRepository {
     return _db
         .collection(ApiUrl.productsPath)
         .where('isApproved', isEqualTo: isApproved)
+        .where('isActive', isEqualTo: true)
         .snapshots()
         .asyncMap((snapshot) => _processSnapshot(snapshot, targetCountryCode));
   }

@@ -528,6 +528,7 @@ class FirebaseApiService {
           .collection(ApiUrl.servicePath)
           .where('category', whereIn: categories)
           .where('isApproved', isEqualTo: isApproved)
+          .where('isActive', isEqualTo: true)
           .get();
 
       // Include document ID as 'id' in each map

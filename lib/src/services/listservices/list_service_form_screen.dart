@@ -201,6 +201,7 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
         formData.addAll({
           'countryCode': countryCode,
           'category': _selectedCategory,
+          'isActive': true,
           'businessTitle': businessTitleController.text,
           'businessPromoPicture': _promoImages.map((e) => e.path).toList(),
           'shopGaragePics': _shopGarageImages.map((e) => e.path).toList(),
@@ -228,6 +229,7 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
       } else if (_selectedCategory == serviceCategories[2] ||
           _selectedCategory == serviceCategories[3]) {
         formData.addAll({
+          'isActive': true,
           'countryCode': countryCode,
           'category': _selectedCategory,
           'eventName': eventNameController.text,

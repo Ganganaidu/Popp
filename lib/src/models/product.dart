@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Product {
+  final bool? isActive;
   final String? id;
   final String? userId;
   final String categoryId;
@@ -50,6 +51,7 @@ class Product {
 
   Product(
       {this.id,
+      this.isActive,
       this.userId,
       required this.categoryId,
       required this.category,
@@ -100,6 +102,7 @@ class Product {
   factory Product.fromJson(Map<String, dynamic> json, String documentId) {
     return Product(
         id: documentId,
+        isActive: json['isActive'] as bool? ?? true,
         userId: json['userId'] as String?,
         categoryId: json['categoryId'] as String? ?? '',
         category: json['category'] as String? ?? '',
@@ -162,6 +165,7 @@ class Product {
     return {
       if (userId != null) 'userId': userId,
       'id': id,
+      'isActive': isActive ?? true, // Default to true if not provided
       'isApproved': isApproved, // Assuming default value for new products
       'isSold': isSold, // Always include isSold in the JSON
       'categoryId': categoryId,
@@ -226,6 +230,7 @@ class Product {
 
   Product copyWith(
       {String? userId,
+      bool? isActive,
       String? id,
       String? categoryId,
       String? category,
@@ -269,13 +274,14 @@ class Product {
       String? batteryCondition,
       String? tyreCondition,
       bool isApproved = false, // Default value for new products
-      bool isSold = false, // Default value for new products
+      bool? isSold,
       List<String>? searchKeywords,
       List<String>? favoritedBy,
       String? countryCode}) {
     return Product(
         userId: userId ?? this.userId,
         id: id ?? this.id,
+        isActive: isActive ?? this.isActive,
         categoryId: categoryId ?? this.categoryId,
         category: category ?? this.category,
         subCategory: subCategory ?? this.subCategory,
@@ -315,7 +321,7 @@ class Product {
         batteryCondition: batteryCondition ?? this.batteryCondition,
         tyreCondition: tyreCondition ?? this.tyreCondition,
         isApproved: isApproved,
-        isSold: isSold,
+        isSold: isSold ?? this.isSold,
         searchKeywords: searchKeywords ?? this.searchKeywords,
         favoritedBy: favoritedBy ?? this.favoritedBy,
         countryCode: countryCode ?? this.countryCode);

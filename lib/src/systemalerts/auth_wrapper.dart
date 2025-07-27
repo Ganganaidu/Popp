@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:popp/src/login/login_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import '../api/firebase/firebase_api_service.dart';
 import '../home/home_screen.dart';
@@ -22,6 +23,14 @@ class _AuthWrapperState extends State<AuthWrapper> {
     if (messageId == null) return false;
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('shown_message_$messageId') == 'true';
+  }
+
+  Future<bool> _shouldShowMessage(SystemMessage message) async {
+    final hasBeenShown = await _hasMessageBeenShown(message.messageId);
+    if (hasBeenShown) return false;
+
+    final packageInfo = await PackageInfo.fromPlatform();
+    return packageInfo.buildNumber != message.versionCode;
   }
 
   @override
@@ -52,22 +61,20 @@ class _AuthWrapperState extends State<AuthWrapper> {
               // If there is an active message, check if it's been shown before
               if (message != null && message.isActive) {
                 return FutureBuilder<bool>(
-                  future: _hasMessageBeenShown(message.messageId),
+                  future: _shouldShowMessage(message),
                   builder: (context, shownSnapshot) {
-                    if (shownSnapshot.connectionState ==
-                        ConnectionState.waiting) {
+                    if (shownSnapshot.connectionState == ConnectionState.waiting) {
                       return const Scaffold(
                         body: Center(child: CircularProgressIndicator()),
                       );
                     }
 
-                    final bool hasBeenShown = shownSnapshot.data ?? false;
-                    if (!hasBeenShown) {
+                    final bool shouldShow = shownSnapshot.data ?? false;
+                    if (shouldShow) {
                       WidgetsBinding.instance.addPostFrameCallback((_) {
                         Navigator.of(context).pushAndRemoveUntil(
                           MaterialPageRoute(
-                            builder: (_) =>
-                                BlockingScreen(systemMessage: message),
+                            builder: (_) => BlockingScreen(systemMessage: message),
                             fullscreenDialog: true,
                           ),
                           (route) => false,

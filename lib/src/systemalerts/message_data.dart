@@ -7,11 +7,13 @@ class SystemMessage {
   final MessagePriority priority;
   final bool isActive;
   final String? messageId;
+  final String? versionCode;
 
   SystemMessage({
     required this.message,
     required this.priority,
     required this.messageId,
+    this.versionCode,
     this.isActive = false,
   });
 
@@ -20,6 +22,7 @@ class SystemMessage {
     return SystemMessage(
       message: data['message'] ?? 'An important message from the Popp team.',
       messageId: data['messageId'],
+      versionCode: data['versionCode'],
       priority: (data['priority'] == 'high')
           ? MessagePriority.high
           : MessagePriority.low,

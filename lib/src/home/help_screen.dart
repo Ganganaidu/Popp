@@ -79,6 +79,14 @@ class HelpScreen extends StatelessWidget {
             launchUrl(Uri.parse(ApiUrl.privacyLink));
           },
         ),
+        const Divider(),
+        ListTile(
+          leading: const Icon(Icons.question_answer_outlined),
+          title: const Text('Frequently Asked Questions'),
+          onTap: () async {
+            launchUrl(Uri.parse(ApiUrl.frequentlyAsked));
+          },
+        ),
       ],
     );
   }

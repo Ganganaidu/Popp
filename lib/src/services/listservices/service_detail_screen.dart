@@ -73,7 +73,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     // This is your deep link. Ensure your domain is correct.
     final String deepLink = "${ApiUrl.servicePath}/$serviceId";
 
-    final String shareText = "Check out $serviceName on POPP! $deepLink";
+    final String shareText = "Check out $serviceName on Bikerverse! $deepLink";
     AppLogger.i("shareText $shareText");
     Share.share(shareText, subject: 'Check out this service!');
   }

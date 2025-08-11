@@ -3,7 +3,7 @@ class Constants {
   const Constants._();
 
   static const String appBundleId = 'com.popp.abike';
-  static const String appName = 'POPP';
+  static const String appName = 'Bikerverse';
 
   static const String home = 'Home';
   static const String rides = 'Rides';

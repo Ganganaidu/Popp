@@ -20,7 +20,7 @@ class SystemMessage {
   factory SystemMessage.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>? ?? {};
     return SystemMessage(
-      message: data['message'] ?? 'An important message from the Popp team.',
+      message: data['message'] ?? 'An important message from the Bikerverse team.',
       messageId: data['messageId'],
       versionCode: data['versionCode'],
       priority: (data['priority'] == 'high')

@@ -170,7 +170,7 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
             ),
             const SizedBox(height: 12),
             Text(
-              'This space is available for promotions. Reach thousands of dedicated motorcycle enthusiasts in the Popp community.',
+              'This space is available for promotions. Reach thousands of dedicated motorcycle enthusiasts in the Bikerverse community.',
               textAlign: TextAlign.center,
               style: TextStyle(
                   color: Colors.white.withOpacity(0.8),
@@ -186,7 +186,7 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
                   scheme: 'mailto',
                   path: 'preownedpremiumproducts@gmail.com',
                   queryParameters: {
-                    'subject': 'Inquiry: Advertising on Popp App',
+                    'subject': 'Inquiry: Advertising on Bikerverse App',
                   },
                 );
                 await launchUrl(emailLaunchUri);

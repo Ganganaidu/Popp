@@ -173,7 +173,7 @@ class _MyAppState extends State<MyApp> {
       builder: (context, currentThemeMode, _) {
         return MaterialApp(
           navigatorKey: navigatorKey,
-          title: 'Popp',
+          title: 'BikerVerse',
           themeMode: currentThemeMode,
           theme: poppLightTheme,
           darkTheme: poppDarkTheme,

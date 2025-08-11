@@ -137,7 +137,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     final serviceId = widget.productJson['id'];
     final serviceName = product.getTitle();
     final String deepLink = "${ApiUrl.productsPath}/$serviceId";
-    final String shareText = "Check out $serviceName on POPP! $deepLink";
+    final String shareText = "Check out $serviceName on Bikerverse! $deepLink";
     AppLogger.i("shareText $shareText");
     Share.share(shareText, subject: 'Check out this product!');
   }
@@ -169,7 +169,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         title: Text(product.subCategory != null &&
                 product.subCategory.toString().isNotEmpty
             ? '${product.category} - ${product.subCategory}'
-            : product.category),
+            : product.category, style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'Orbitron')),
         actions: [
           IconButton(
             icon: const Icon(Icons.share),

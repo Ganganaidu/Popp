@@ -43,7 +43,7 @@ class _AboutUsScreenState extends State<AboutUsScreen> {
       scheme: 'mailto',
       path: Constants.contactEmail,
       queryParameters: {
-        'subject': 'Popp App Support Inquiry',
+        'subject': 'Bikerverse App Support Inquiry',
       },
     );
 
@@ -54,7 +54,7 @@ class _AboutUsScreenState extends State<AboutUsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('About Popp'),
+        title: const Text('About Bikerverse'),
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -65,9 +65,9 @@ class _AboutUsScreenState extends State<AboutUsScreen> {
             _buildHeader(context),
             const SizedBox(height: 32),
             _buildSection(
-              title: 'Popp (Pre Owned Premium Products)',
+              title: 'Bikerverse',
               content:
-                  "The all-in-one app built for motorcycle enthusiasts and bike businesses. Whether you're a rider looking to buy, sell, or explore, or a service provider wanting to reach the biking community, Popp brings everything you need into one seamless experience.",
+                  "The all-in-one app built for motorcycle enthusiasts and bike businesses. Whether you're a rider looking to buy, sell, or explore, or a service provider wanting to reach the biking community, Bikerverse brings everything you need into one seamless experience.",
             ),
             const SizedBox(height: 32),
             _buildSection(
@@ -185,7 +185,7 @@ class _AboutUsScreenState extends State<AboutUsScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Popp',
+            'Bikerverse',
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),

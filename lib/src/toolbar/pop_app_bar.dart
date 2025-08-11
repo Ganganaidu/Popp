@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:popp/src/navigation/nav_router.dart';
 
+import '../utils/app_constants.dart';
+
 class PopAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final int selectedIndex;
@@ -51,10 +53,12 @@ class PopAppBar extends StatelessWidget implements PreferredSizeWidget {
                 )
               : const SizedBox(key: ValueKey('emptySpace')),
         ),
-        title: Image.asset(
-          'assets/app_icon_trans.png',
-          height: 32,
-        ),
+        titleSpacing: 0.0,
+        title: const Text(Constants.appName,
+            style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Orbitron')),
         centerTitle: true,
         actions: <Widget>[
           IconButton(

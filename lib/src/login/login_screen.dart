@@ -5,6 +5,7 @@ import 'package:popp/src/widgets/app_dialogs.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../navigation/nav_router.dart';
+import '../utils/app_constants.dart';
 import '../utils/app_utils.dart';
 import 'social_login_buttons.dart';
 
@@ -31,8 +32,7 @@ class _LoginScreenState extends State<LoginScreen>
   late Animation<double> _fadeAnimation;
 
   // State variables for dynamic welcome messages
-  // String _welcomeMessage = "POPP";
-  final String _welcomeSubtitle = "Pre owned Premium Products";
+  // String _welcomeMessage = "Bikerverse";
 
   @override
   void initState() {
@@ -194,7 +194,7 @@ class _LoginScreenState extends State<LoginScreen>
         // You can replace this with an Image.asset for your logo
         // Icon(Icons.two_wheeler_rounded, size: 60, color: context.primaryColor),
         Image.asset(
-          'assets/app_icon_trans.png',
+          'assets/app_icon.png',
           width: 80,
           height: 80,
           fit: BoxFit.contain,
@@ -203,8 +203,8 @@ class _LoginScreenState extends State<LoginScreen>
         // Text(_welcomeMessage,
         //     style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
-        Text(_welcomeSubtitle,
-            style: const TextStyle(fontSize: 16)),
+        const Text(Constants.appName,
+            style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold, fontFamily: 'Orbitron')),
       ],
     );
   }

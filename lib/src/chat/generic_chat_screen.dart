@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:popp/src/utils/build_extensions.dart';
 import '../utils/app_loger.dart';
 import 'chat_bubble.dart';
 import 'chat_service.dart';
@@ -282,7 +283,7 @@ class _GenericChatScreenState extends State<GenericChatScreen> {
           FloatingActionButton(
             onPressed: sendMessage,
             mini: true,
-            backgroundColor: Colors.orange,
+            backgroundColor: context.primaryColor,
             child: const Icon(Icons.send, color: Colors.white),
           )
         ],

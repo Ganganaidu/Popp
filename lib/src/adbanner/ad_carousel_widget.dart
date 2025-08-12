@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:popp/src/adbanner/model/ad_banner.dart';
 import 'package:popp/src/adbanner/repository/ad_carousel_viewmodel.dart';
 import 'package:popp/src/utils/app_loger.dart';
+import 'package:popp/src/utils/build_extensions.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -261,8 +262,8 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
                 Text(ad.title,
                     style: const TextStyle(color: Colors.white, fontSize: 16)),
                 Text(ad.highlight,
-                    style: const TextStyle(
-                        color: Colors.orange,
+                    style: TextStyle(
+                        color: context.primaryColor,
                         fontSize: 28,
                         fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
@@ -276,8 +277,8 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
                       .map((point) => Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.check_circle_outline,
-                                  color: Colors.orange, size: 18),
+                              Icon(Icons.check_circle_outline,
+                                  color: context.primaryColor, size: 18),
                               const SizedBox(width: 4),
                               Text(point,
                                   style: const TextStyle(color: Colors.white)),
@@ -292,7 +293,7 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
                       deepLinkToTarget(ad.buttonLink);
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange,
+                      backgroundColor: context.primaryColor,
                       foregroundColor: Colors.white,
                     ),
                     child: Text(ad.buttonText),

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 final ThemeData poppLightTheme = ThemeData(
   brightness: Brightness.light,
-  primaryColor: Colors.orange,
+  primaryColor: Colors.green,
   scaffoldBackgroundColor: Colors.white,
   appBarTheme: const AppBarTheme(
     backgroundColor: Colors.white,
@@ -16,16 +16,16 @@ final ThemeData poppLightTheme = ThemeData(
   ),
   elevatedButtonTheme: ElevatedButtonThemeData(
     style: ElevatedButton.styleFrom(
-      backgroundColor: Colors.orange,
+      backgroundColor: Colors.green,
       foregroundColor: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
     ),
   ),
   switchTheme: SwitchThemeData(
-    thumbColor: WidgetStateProperty.all(Colors.orange),
-    trackColor: WidgetStateProperty.all(Colors.orange.shade200),
+    thumbColor: WidgetStateProperty.all(Colors.green),
+    trackColor: WidgetStateProperty.all(Colors.green.shade200),
   ),
-  iconTheme: const IconThemeData(color: Colors.orange),
+  iconTheme: const IconThemeData(color: Colors.green),
   inputDecorationTheme: InputDecorationTheme(
     filled: true,
     fillColor: Colors.grey.shade100,
@@ -40,7 +40,7 @@ final ThemeData poppLightTheme = ThemeData(
 
 final ThemeData poppDarkTheme = ThemeData(
   brightness: Brightness.dark,
-  primaryColor: Colors.orange,
+  primaryColor: Colors.green,
   scaffoldBackgroundColor: Colors.grey[900],
   appBarTheme: AppBarTheme(
     backgroundColor: Colors.grey[900],
@@ -54,16 +54,16 @@ final ThemeData poppDarkTheme = ThemeData(
   ),
   elevatedButtonTheme: ElevatedButtonThemeData(
     style: ElevatedButton.styleFrom(
-      backgroundColor: Colors.orange,
+      backgroundColor: Colors.green,
       foregroundColor: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
     ),
   ),
   switchTheme: SwitchThemeData(
-    thumbColor: WidgetStateProperty.all(Colors.orange),
-    trackColor: WidgetStateProperty.all(Colors.orange.shade300),
+    thumbColor: WidgetStateProperty.all(Colors.green),
+    trackColor: WidgetStateProperty.all(Colors.green.shade300),
   ),
-  iconTheme: const IconThemeData(color: Colors.orange),
+  iconTheme: const IconThemeData(color: Colors.green),
   inputDecorationTheme: InputDecorationTheme(
     filled: true,
     fillColor: Colors.grey[800],

@@ -56,7 +56,7 @@ class PopAppBar extends StatelessWidget implements PreferredSizeWidget {
         titleSpacing: 0.0,
         title: const Text(Constants.appName,
             style: TextStyle(
-                fontSize: 16,
+                fontSize: 25,
                 fontWeight: FontWeight.bold,
                 fontFamily: 'Orbitron')),
         centerTitle: true,

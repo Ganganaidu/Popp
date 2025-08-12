@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:popp/src/utils/build_extensions.dart';
 import '../utils/app_constants.dart';
 
 class CustomBottomNavBar extends StatelessWidget {
@@ -29,7 +30,7 @@ class CustomBottomNavBar extends StatelessWidget {
             backgroundColor: isDarkMode ? null : Colors.grey[50],
             elevation: 0,
             currentIndex: selectedIndex,
-            selectedItemColor: Colors.orange,
+            selectedItemColor: context.primaryColor,
             unselectedItemColor: Colors.grey,
             onTap: onItemTapped,
             showSelectedLabels: true,

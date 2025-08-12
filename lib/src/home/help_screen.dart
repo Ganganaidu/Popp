@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:popp/src/utils/app_constants.dart';
+import 'package:popp/src/utils/build_extensions.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../api/api_url.dart';
@@ -31,7 +32,7 @@ class HelpScreen extends StatelessWidget {
 
         if (isAdmin)
           ListTile(
-            leading: const Icon(Icons.chat_bubble_outline),
+            leading: Icon(Icons.chat_bubble_outline, color: context.primaryColor),
             title: const Text('Chat user list'),
             onTap: () {
               onAgentChatTap(context);
@@ -39,7 +40,7 @@ class HelpScreen extends StatelessWidget {
           )
         else
           ListTile(
-            leading: const Icon(Icons.chat_bubble_outline),
+            leading: Icon(Icons.chat_bubble_outline, color: context.primaryColor),
             title: const Text('Chat with us'),
             onTap: () {
               if (FirebaseAuth.instance.currentUser == null) {
@@ -57,7 +58,7 @@ class HelpScreen extends StatelessWidget {
           ),
         const Divider(),
         ListTile(
-          leading: const Icon(Icons.call_outlined),
+          leading: Icon(Icons.call_outlined, color: context.primaryColor),
           title: const Text('Call us'),
           onTap: () {
             launchUrl(Uri(scheme: 'tel', path: Constants.contactNumber));
@@ -65,7 +66,7 @@ class HelpScreen extends StatelessWidget {
         ),
         const Divider(),
         ListTile(
-          leading: const Icon(Icons.email_outlined),
+          leading: Icon(Icons.email_outlined, color: context.primaryColor),
           title: const Text('Email us'),
           onTap: () {
             launchUrl(Uri(scheme: 'mailto', path: Constants.contactEmail));
@@ -73,7 +74,7 @@ class HelpScreen extends StatelessWidget {
         ),
         const Divider(),
         ListTile(
-          leading: const Icon(Icons.privacy_tip_outlined),
+          leading: Icon(Icons.privacy_tip_outlined, color: context.primaryColor),
           title: const Text('Privacy Policy'),
           onTap: () async {
             launchUrl(Uri.parse(ApiUrl.privacyLink));
@@ -81,7 +82,7 @@ class HelpScreen extends StatelessWidget {
         ),
         const Divider(),
         ListTile(
-          leading: const Icon(Icons.question_answer_outlined),
+          leading: Icon(Icons.question_answer_outlined, color: context.primaryColor),
           title: const Text('Frequently Asked Questions'),
           onTap: () async {
             launchUrl(Uri.parse(ApiUrl.frequentlyAsked));

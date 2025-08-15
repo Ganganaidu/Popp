@@ -320,7 +320,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
           style: ElevatedButton.styleFrom(
             shape: const StadiumBorder(),
             padding: const EdgeInsets.symmetric(vertical: 16),
-            backgroundColor: Colors.orange,
+            backgroundColor: context.primaryColor,
             foregroundColor: Colors.white,
           ),
           child: _isSaving

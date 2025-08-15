@@ -333,7 +333,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 style: ElevatedButton.styleFrom(
                   shape: const StadiumBorder(),
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  backgroundColor: Colors.orange,
+                  backgroundColor: context.primaryColor,
                   foregroundColor: Colors.white,
                 ),
                 child: isSubmitting

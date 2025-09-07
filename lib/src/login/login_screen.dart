@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:popp/src/utils/build_extensions.dart';
 import 'package:popp/src/widgets/app_dialogs.dart';
@@ -139,6 +140,91 @@ class _LoginScreenState extends State<LoginScreen>
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
+    if (kIsWeb && context.isDesktop) {
+      return _buildWebLayout(context, isDarkMode);
+    } else {
+      return _buildMobileLayout(context, isDarkMode);
+    }
+  }
+
+  Widget _buildWebLayout(BuildContext context, bool isDarkMode) {
+    return Scaffold(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: isDarkMode
+                ? [Colors.grey[850]!, Colors.grey[900]!]
+                : [const Color(0xFFFDFBFB), const Color(0xFFEBEDEE)],
+          ),
+        ),
+        child: Row(
+          children: [
+            // Left side - Branding
+            Expanded(
+              flex: 1,
+              child: Container(
+                padding: const EdgeInsets.all(60),
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Image.asset(
+                        'assets/app_icon.png',
+                        width: 120,
+                        height: 120,
+                        fit: BoxFit.contain,
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        Constants.appName,
+                        style: TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Orbitron',
+                          color: isDarkMode ? Colors.white : Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Welcome back! Sign in to continue your journey.',
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: isDarkMode ? Colors.white70 : Colors.black54,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            // Right side - Login Form
+            Expanded(
+              flex: 1,
+              child: Container(
+                padding: const EdgeInsets.all(60),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 400),
+                    child: FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: _buildLoginForm(context),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMobileLayout(BuildContext context, bool isDarkMode) {
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -162,21 +248,7 @@ class _LoginScreenState extends State<LoginScreen>
                     const SizedBox(height: 40),
                     _buildHeader(),
                     const SizedBox(height: 40),
-                    _buildEmailField(),
-                    const SizedBox(height: 16),
-                    _buildPasswordField(),
-                    const SizedBox(height: 16),
-                    _buildActionsRow(),
-                    const SizedBox(height: 32),
-                    _buildLoginButton(),
-                    if (showSocialLogin) ...[
-                      const SizedBox(height: 32),
-                      _buildOrDivider(),
-                      const SizedBox(height: 24),
-                      const SocialLoginButtons(),
-                    ],
-                    const SizedBox(height: 40),
-                    _buildFooter(),
+                    _buildLoginForm(context),
                     const SizedBox(height: 20),
                   ],
                 ),
@@ -185,6 +257,51 @@ class _LoginScreenState extends State<LoginScreen>
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildLoginForm(BuildContext context) {
+    return Column(
+      children: [
+        if (kIsWeb && context.isDesktop) ...[
+          Text(
+            'Sign In',
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).brightness == Brightness.dark 
+                  ? Colors.white 
+                  : Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Enter your credentials to access your account',
+            style: TextStyle(
+              fontSize: 16,
+              color: Theme.of(context).brightness == Brightness.dark 
+                  ? Colors.white70 
+                  : Colors.black54,
+            ),
+          ), 
+          const SizedBox(height: 40),
+        ],
+        _buildEmailField(),
+        const SizedBox(height: 20),
+        _buildPasswordField(),
+        const SizedBox(height: 20),
+        _buildActionsRow(),
+        const SizedBox(height: 32),
+        _buildLoginButton(),
+        if (showSocialLogin) ...[
+          const SizedBox(height: 32),
+          _buildOrDivider(),
+          const SizedBox(height: 24),
+          const SocialLoginButtons(),
+        ],
+        const SizedBox(height: 40),
+        _buildFooter(),
+      ],
     );
   }
 
@@ -210,32 +327,52 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   Widget _buildEmailField() {
+    final isWeb = kIsWeb && context.isDesktop;
     return TextFormField(
       controller: _emailController,
       keyboardType: TextInputType.emailAddress,
+      style: TextStyle(
+        fontSize: isWeb ? 16 : 14,
+      ),
       decoration: context.inputDecoration(
         '',
         'Email',
         icon: Icons.email_outlined,
+        borderRadius: isWeb ? 8.0 : 8.0,
+      ).copyWith(
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: isWeb ? 20 : 16,
+          vertical: isWeb ? 18 : 16,
+        ),
       ),
     );
   }
 
   Widget _buildPasswordField() {
+    final isWeb = kIsWeb && context.isDesktop;
     return TextFormField(
       controller: _passwordController,
       obscureText: !isPasswordVisible,
+      style: TextStyle(
+        fontSize: isWeb ? 16 : 14,
+      ),
       decoration: context
           .inputDecoration(
             '',
             'Password',
             icon: Icons.lock_outline_rounded,
+            borderRadius: isWeb ? 8.0 : 8.0,
           )
           .copyWith(
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: isWeb ? 20 : 16,
+              vertical: isWeb ? 18 : 16,
+            ),
             // Use copyWith to add the suffix icon without modifying the common method
             suffixIcon: IconButton(
               icon: Icon(
                 isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                size: isWeb ? 20 : 18,
               ),
               onPressed: () =>
                   setState(() => isPasswordVisible = !isPasswordVisible),
@@ -245,6 +382,7 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   Widget _buildActionsRow() {
+    final isWeb = kIsWeb && context.isDesktop;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -254,20 +392,44 @@ class _LoginScreenState extends State<LoginScreen>
               value: rememberMe,
               onChanged: _onRememberMeChanged,
               activeColor: context.primaryColor,
+              materialTapTargetSize: isWeb 
+                  ? MaterialTapTargetSize.shrinkWrap 
+                  : MaterialTapTargetSize.padded,
             ),
-            const Text('Remember me'),
+            Text(
+              'Remember me',
+              style: TextStyle(
+                fontSize: isWeb ? 14 : 12,
+                color: Theme.of(context).brightness == Brightness.dark 
+                    ? Colors.white70 
+                    : Colors.black87,
+              ),
+            ),
           ],
         ),
         TextButton(
           onPressed: () => onForgotPasswordTap(context, false),
-          child: Text('Forgot Password?',
-              style: TextStyle(color: context.primaryColor)),
+          style: TextButton.styleFrom(
+            padding: EdgeInsets.symmetric(
+              horizontal: isWeb ? 12 : 8,
+              vertical: isWeb ? 8 : 4,
+            ),
+          ),
+          child: Text(
+            'Forgot Password?',
+            style: TextStyle(
+              color: context.primaryColor,
+              fontSize: isWeb ? 14 : 12,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
         )
       ],
     );
   }
 
   Widget _buildLoginButton() {
+    final isWeb = kIsWeb && context.isDesktop;
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
@@ -275,16 +437,32 @@ class _LoginScreenState extends State<LoginScreen>
         style: ElevatedButton.styleFrom(
           backgroundColor: context.primaryColor,
           foregroundColor: Colors.white,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          elevation: 5,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(isWeb ? 8 : 30),
+          ),
+          padding: EdgeInsets.symmetric(
+            vertical: isWeb ? 18 : 16,
+            horizontal: isWeb ? 24 : 16,
+          ),
+          elevation: isWeb ? 2 : 5,
           shadowColor: context.primaryColor.withOpacity(0.4),
         ),
         child: _isLoading
-            ? const CircularProgressIndicator(color: Colors.white)
-            : const Text('Sign In',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            ? SizedBox(
+                height: isWeb ? 20 : 18,
+                width: isWeb ? 20 : 18,
+                child: const CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2,
+                ),
+              )
+            : Text(
+                'Sign In',
+                style: TextStyle(
+                  fontSize: isWeb ? 16 : 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
       ),
     );
   }
@@ -303,27 +481,60 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   Widget _buildFooter() {
+    final isWeb = kIsWeb && context.isDesktop;
     return Column(
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text("Don't have an account?"),
+            Text(
+              "Don't have an account?",
+              style: TextStyle(
+                fontSize: isWeb ? 14 : 12,
+                color: Theme.of(context).brightness == Brightness.dark 
+                    ? Colors.white70 
+                    : Colors.black54,
+              ),
+            ),
             TextButton(
               onPressed: () =>
                   Navigator.pushReplacementNamed(context, '/signup'),
-              child: Text("Sign Up",
-                  style: TextStyle(
-                      color: context.primaryColor,
-                      fontWeight: FontWeight.bold)),
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.symmetric(
+                  horizontal: isWeb ? 8 : 4,
+                  vertical: isWeb ? 4 : 2,
+                ),
+              ),
+              child: Text(
+                "Sign Up",
+                style: TextStyle(
+                  color: context.primaryColor,
+                  fontWeight: FontWeight.w600,
+                  fontSize: isWeb ? 14 : 12,
+                ),
+              ),
             )
           ],
         ),
-        TextButton(
-          onPressed: () => Navigator.pushReplacementNamed(context, '/home'),
-          child:
-              Text('Skip for now', style: TextStyle(color: Colors.grey[600])),
-        ),
+        if (!isWeb) ...[
+          const SizedBox(height: 8),
+          TextButton(
+            onPressed: () => Navigator.pushReplacementNamed(context, '/home'),
+            style: TextButton.styleFrom(
+              padding: EdgeInsets.symmetric(
+                horizontal: isWeb ? 8 : 4,
+                vertical: isWeb ? 4 : 2,
+              ),
+            ),
+            child: Text(
+              'Skip for now',
+              style: TextStyle(
+                color: Colors.grey[600],
+                fontSize: isWeb ? 14 : 12,
+              ),
+            ),
+          ),
+        ],
       ],
     );
   }

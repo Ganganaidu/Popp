@@ -1,8 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../adbanner/ad_carousel_widget.dart';
 import '../dashboard/dashboard_list_widget.dart';
 import '../services/pop_services_widgets.dart';
+import '../utils/build_extensions.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -19,6 +21,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isWeb = kIsWeb && context.isDesktop;
+    
+    if (isWeb) {
+      return _buildWebLayout();
+    } else {
+      return _buildMobileLayout();
+    }
+  }
+
+  Widget _buildWebLayout() {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          const SizedBox(height: 24),
+          // Hero section with ad carousel - centered with max width
+          Center(
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 1200),
+              margin: const EdgeInsets.symmetric(horizontal: 24),
+              child: _buildWebHeroSection(),
+            ),
+          ),
+          const SizedBox(height: 48),
+          // Services section - full width with centered content
+          _buildWebServicesSection(),
+          const SizedBox(height: 48),
+          // Products section - full width with centered content
+          _buildWebProductsSection(),
+          const SizedBox(height: 48),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMobileLayout() {
     return const SingleChildScrollView(
       child: Column(
         children: [
@@ -28,6 +65,112 @@ class _DashboardScreenState extends State<DashboardScreen> {
           DashboardListViewWidget(),
           // Disclaimers(),
         ],
+      ),
+    );
+  }
+
+  Widget _buildWebHeroSection() {
+    return Container(
+      height: 400,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: const AdCarouselWidget(),
+      ),
+    );
+  }
+
+  Widget _buildWebServicesSection() {
+    return Container(
+      width: double.infinity,
+      color: Theme.of(context).scaffoldBackgroundColor,
+      child: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 1200),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Padding(
+                padding: EdgeInsets.only(bottom: 24),
+                child: Text(
+                  'Our Services',
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardColor,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: const PopServicesWidgets(),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWebProductsSection() {
+    return Container(
+      width: double.infinity,
+      color: Theme.of(context).scaffoldBackgroundColor,
+      child: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 1200),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Padding(
+                padding: EdgeInsets.only(bottom: 24),
+                child: Text(
+                  'Featured Products',
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardColor,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: const DashboardListViewWidget(),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

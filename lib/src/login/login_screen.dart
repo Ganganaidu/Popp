@@ -326,58 +326,61 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  Widget _buildEmailField() {
+  Widget _buildTextField(String hint, TextEditingController controller,
+      {IconData? icon,
+      TextInputType? keyboardType,
+      bool isPasswordField = false,
+      bool? isPasswordVisible,
+      VoidCallback? onTogglePasswordVisibility}) {
     final isWeb = kIsWeb && context.isDesktop;
+    
     return TextFormField(
-      controller: _emailController,
-      keyboardType: TextInputType.emailAddress,
-      style: TextStyle(
-        fontSize: isWeb ? 16 : 14,
-      ),
+      controller: controller,
+      keyboardType: keyboardType,
+      obscureText: isPasswordField ? !(isPasswordVisible ?? false) : false,
+      style: TextStyle(fontSize: isWeb ? 16 : 14),
       decoration: context.inputDecoration(
         '',
-        'Email',
-        icon: Icons.email_outlined,
+        hint,
+        icon: icon,
         borderRadius: isWeb ? 8.0 : 8.0,
       ).copyWith(
         contentPadding: EdgeInsets.symmetric(
           horizontal: isWeb ? 20 : 16,
           vertical: isWeb ? 18 : 16,
         ),
+        suffixIcon: isPasswordField
+            ? IconButton(
+                icon: Icon(
+                  (isPasswordVisible ?? false)
+                      ? Icons.visibility
+                      : Icons.visibility_off,
+                  size: isWeb ? 20 : 18,
+                ),
+                onPressed: onTogglePasswordVisibility,
+              )
+            : null,
       ),
     );
   }
 
+  Widget _buildEmailField() {
+    return _buildTextField(
+      'Email',
+      _emailController,
+      icon: Icons.email_outlined,
+      keyboardType: TextInputType.emailAddress,
+    );
+  }
+
   Widget _buildPasswordField() {
-    final isWeb = kIsWeb && context.isDesktop;
-    return TextFormField(
-      controller: _passwordController,
-      obscureText: !isPasswordVisible,
-      style: TextStyle(
-        fontSize: isWeb ? 16 : 14,
-      ),
-      decoration: context
-          .inputDecoration(
-            '',
-            'Password',
-            icon: Icons.lock_outline_rounded,
-            borderRadius: isWeb ? 8.0 : 8.0,
-          )
-          .copyWith(
-            contentPadding: EdgeInsets.symmetric(
-              horizontal: isWeb ? 20 : 16,
-              vertical: isWeb ? 18 : 16,
-            ),
-            // Use copyWith to add the suffix icon without modifying the common method
-            suffixIcon: IconButton(
-              icon: Icon(
-                isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                size: isWeb ? 20 : 18,
-              ),
-              onPressed: () =>
-                  setState(() => isPasswordVisible = !isPasswordVisible),
-            ),
-          ),
+    return _buildTextField(
+      'Password',
+      _passwordController,
+      icon: Icons.lock_outline_rounded,
+      isPasswordField: true,
+      isPasswordVisible: isPasswordVisible,
+      onTogglePasswordVisibility: () => setState(() => isPasswordVisible = !isPasswordVisible),
     );
   }
 
@@ -407,33 +410,20 @@ class _LoginScreenState extends State<LoginScreen>
             ),
           ],
         ),
-        TextButton(
-          onPressed: () => onForgotPasswordTap(context, false),
-          style: TextButton.styleFrom(
-            padding: EdgeInsets.symmetric(
-              horizontal: isWeb ? 12 : 8,
-              vertical: isWeb ? 8 : 4,
-            ),
-          ),
-          child: Text(
-            'Forgot Password?',
-            style: TextStyle(
-              color: context.primaryColor,
-              fontSize: isWeb ? 14 : 12,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
+        _buildTextButton(
+          'Forgot Password?',
+          () => onForgotPasswordTap(context, false),
         )
       ],
     );
   }
 
-  Widget _buildLoginButton() {
+  Widget _buildButton(String text, VoidCallback? onPressed, {bool isLoading = false}) {
     final isWeb = kIsWeb && context.isDesktop;
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: _isLoading ? null : _signIn,
+        onPressed: isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: context.primaryColor,
           foregroundColor: Colors.white,
@@ -447,7 +437,7 @@ class _LoginScreenState extends State<LoginScreen>
           elevation: isWeb ? 2 : 5,
           shadowColor: context.primaryColor.withOpacity(0.4),
         ),
-        child: _isLoading
+        child: isLoading
             ? SizedBox(
                 height: isWeb ? 20 : 18,
                 width: isWeb ? 20 : 18,
@@ -457,7 +447,7 @@ class _LoginScreenState extends State<LoginScreen>
                 ),
               )
             : Text(
-                'Sign In',
+                text,
                 style: TextStyle(
                   fontSize: isWeb ? 16 : 18,
                   fontWeight: FontWeight.w600,
@@ -465,6 +455,10 @@ class _LoginScreenState extends State<LoginScreen>
               ),
       ),
     );
+  }
+
+  Widget _buildLoginButton() {
+    return _buildButton('Sign In', _signIn, isLoading: _isLoading);
   }
 
   Widget _buildOrDivider() {
@@ -477,6 +471,27 @@ class _LoginScreenState extends State<LoginScreen>
         ),
         const Expanded(child: Divider()),
       ],
+    );
+  }
+
+  Widget _buildTextButton(String text, VoidCallback? onPressed, {Color? textColor}) {
+    final isWeb = kIsWeb && context.isDesktop;
+    return TextButton(
+      onPressed: onPressed,
+      style: TextButton.styleFrom(
+        padding: EdgeInsets.symmetric(
+          horizontal: isWeb ? 8 : 4,
+          vertical: isWeb ? 4 : 2,
+        ),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: textColor ?? context.primaryColor,
+          fontWeight: FontWeight.w600,
+          fontSize: isWeb ? 14 : 12,
+        ),
+      ),
     );
   }
 
@@ -496,43 +511,18 @@ class _LoginScreenState extends State<LoginScreen>
                     : Colors.black54,
               ),
             ),
-            TextButton(
-              onPressed: () =>
-                  Navigator.pushReplacementNamed(context, '/signup'),
-              style: TextButton.styleFrom(
-                padding: EdgeInsets.symmetric(
-                  horizontal: isWeb ? 8 : 4,
-                  vertical: isWeb ? 4 : 2,
-                ),
-              ),
-              child: Text(
-                "Sign Up",
-                style: TextStyle(
-                  color: context.primaryColor,
-                  fontWeight: FontWeight.w600,
-                  fontSize: isWeb ? 14 : 12,
-                ),
-              ),
+            _buildTextButton(
+              "Sign Up",
+              () => Navigator.pushReplacementNamed(context, '/signup'),
             )
           ],
         ),
         if (!isWeb) ...[
           const SizedBox(height: 8),
-          TextButton(
-            onPressed: () => Navigator.pushReplacementNamed(context, '/home'),
-            style: TextButton.styleFrom(
-              padding: EdgeInsets.symmetric(
-                horizontal: isWeb ? 8 : 4,
-                vertical: isWeb ? 4 : 2,
-              ),
-            ),
-            child: Text(
-              'Skip for now',
-              style: TextStyle(
-                color: Colors.grey[600],
-                fontSize: isWeb ? 14 : 12,
-              ),
-            ),
+          _buildTextButton(
+            'Skip for now',
+            () => Navigator.pushReplacementNamed(context, '/home'),
+            textColor: Colors.grey[600],
           ),
         ],
       ],

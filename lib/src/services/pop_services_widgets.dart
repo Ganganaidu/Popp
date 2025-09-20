@@ -165,7 +165,7 @@ class PopServicesWidgets extends StatelessWidget {
             ),
             SizedBox(height: isWeb ? 16 : 8),
             SizedBox(
-                height: isWeb ? 40 : 36,
+                height: 40,
                 // Give the text container a fixed height
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: isWeb ? 8 : 0),

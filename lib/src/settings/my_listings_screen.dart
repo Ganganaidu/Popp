@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../api/api_url.dart';
+import '../widgets/title_text.dart';
 import 'list_grid_view.dart';
 
 class MyListingsScreen extends StatefulWidget {
@@ -34,7 +35,7 @@ class _MyListingsScreenState extends State<MyListingsScreen>
 
     if (user == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text("My Listings")),
+        appBar: AppBar(title: const TitleText("My Listings")),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -56,7 +57,7 @@ class _MyListingsScreenState extends State<MyListingsScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("My Listings"),
+        title: const TitleText("My Listings"),
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: Colors.orange,

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:in_app_purchase_android/billing_client_wrappers.dart';
 import 'package:in_app_purchase_android/in_app_purchase_android.dart';
+import 'package:popp/src/widgets/title_text.dart';
 import 'package:provider/provider.dart';
 import 'subscription_provider.dart'; // Your provider class
 
@@ -114,7 +115,7 @@ class _SubscribePageWidgetState extends State<SubscribePageWidget> {
         final isProcessing = provider.purchasePending;
 
         return Scaffold(
-          appBar: AppBar(title: const Text("Subscribe")),
+          appBar: AppBar(title: const TitleText("Subscribe")),
           body: SafeArea(
             child: Stack(
               children: [

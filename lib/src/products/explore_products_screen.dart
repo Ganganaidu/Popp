@@ -178,7 +178,7 @@ class _ExploreProductsScreenState extends State<ExploreProductsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Explore Categories',
+                      'Categories',
                       style:
                           TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                     ),

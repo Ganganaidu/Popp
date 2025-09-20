@@ -3,6 +3,8 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:popp/src/utils/app_constants.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../widgets/title_text.dart';
+
 class AboutUsScreen extends StatefulWidget {
   const AboutUsScreen({super.key});
 
@@ -54,7 +56,7 @@ class _AboutUsScreenState extends State<AboutUsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('About Bikerverse'),
+        title: const TitleText('About Bikerverse'),
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -175,7 +177,8 @@ class _AboutUsScreenState extends State<AboutUsScreen> {
       child: Column(
         children: [
           Image.asset(
-            'assets/app_icon_trans.png', // Ensure you have a logo in your assets folder
+            'assets/app_icon_trans.png',
+            // Ensure you have a logo in your assets folder
             height: 80,
             errorBuilder: (context, error, stackTrace) => Icon(
               Icons.two_wheeler_rounded,
@@ -191,10 +194,8 @@ class _AboutUsScreenState extends State<AboutUsScreen> {
                 ),
           ),
           const SizedBox(height: 4),
-          Text(
-            'Your Ultimate Bike Companion',
-            style: Theme.of(context).textTheme.titleMedium
-          ),
+          Text('Your Ultimate Bike Companion',
+              style: Theme.of(context).textTheme.titleMedium),
         ],
       ),
     );

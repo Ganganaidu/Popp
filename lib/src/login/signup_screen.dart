@@ -9,6 +9,7 @@ import 'package:popp/src/api/api_url.dart';
 import 'package:popp/src/login/model/user_data_model.dart';
 import 'package:popp/src/login/validation_requiremen_text.dart';
 import 'package:popp/src/utils/build_extensions.dart';
+import 'package:popp/src/widgets/title_text.dart';
 
 import '../navigation/nav_router.dart';
 import '../search/autocomplete_search_field.dart';
@@ -227,7 +228,7 @@ class _SignupScreenState extends State<SignupScreen> {
           onPressed: () => onLoginTap(context),
           tooltip: 'Back',
         ),
-        title: const Text("Create Account"),
+        title: const TitleText("Create Account"),
         elevation: 0,
         backgroundColor: Colors.transparent,
       ),
@@ -279,7 +280,7 @@ class _SignupScreenState extends State<SignupScreen> {
           onPressed: () => onLoginTap(context),
           tooltip: 'Back',
         ),
-        title: const Text("Create Account"),
+        title: const TitleText("Create Account"),
         elevation: 0,
       ),
       body: Form(

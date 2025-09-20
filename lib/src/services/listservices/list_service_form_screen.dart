@@ -8,6 +8,7 @@ import 'package:popp/src/widgets/custom_dropdown_form_field.dart';
 import 'package:popp/src/widgets/image_picker_selection.dart';
 import 'package:popp/src/widgets/loading_overlay.dart';
 import 'package:popp/src/widgets/month_year_picker.dart';
+import 'package:popp/src/widgets/title_text.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../api/api_url.dart';
@@ -366,7 +367,7 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('List your service'),
+        title: const TitleText('List your service'),
         actions: [
           IconButton(
             icon: const Icon(Icons.category),

@@ -3,6 +3,7 @@ import 'package:popp/src/utils/app_constants.dart';
 import 'package:popp/src/utils/app_loger.dart';
 import 'package:popp/src/utils/app_utils.dart';
 import 'package:popp/src/utils/build_extensions.dart';
+import 'package:popp/src/widgets/title_text.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../api/api_url.dart';
@@ -47,7 +48,7 @@ class _ServiceListingScreenState extends State<ServiceListingScreen> {
     String appBarTitle = AppUtils.getServiceAppBarTitle(widget.category);
     return Scaffold(
       appBar: AppBar(
-        title: Text(appBarTitle),
+        title: TitleText(appBarTitle),
       ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: _servicesFuture,

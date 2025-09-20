@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:popp/src/api/currency_service.dart';
 import 'package:popp/src/models/product.dart';
 import 'package:popp/src/utils/app_loger.dart';
+import 'package:popp/src/widgets/title_text.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -166,7 +167,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(product.subCategory != null &&
+        title: TitleText(product.subCategory != null &&
                 product.subCategory.toString().isNotEmpty
             ? '${product.category} - ${product.subCategory}'
             : product.category, style: const TextStyle(

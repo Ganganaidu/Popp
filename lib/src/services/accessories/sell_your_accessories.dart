@@ -8,6 +8,7 @@ import 'package:popp/src/utils/app_utils.dart';
 import 'package:popp/src/utils/build_extensions.dart';
 import 'package:popp/src/widgets/category_selector.dart';
 import 'package:popp/src/widgets/loading_overlay.dart';
+import 'package:popp/src/widgets/title_text.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../api/firebase/firebase_api_service.dart';
@@ -214,7 +215,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Sell Your Accessories')),
+      appBar: AppBar(title: const TitleText('Sell Your Accessories')),
       body: LoadingOverlay(
         isLoading: _isLoading,
         child: SingleChildScrollView(

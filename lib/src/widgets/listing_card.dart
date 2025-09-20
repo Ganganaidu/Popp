@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:popp/src/utils/build_extensions.dart';
 import 'package:popp/src/widgets/shimmer_image.dart';
 
 class ListingCard extends StatelessWidget {
@@ -94,7 +95,7 @@ class ListingCard extends StatelessWidget {
                     Text(
                       price!,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: Colors.orange,
+                            color: context.primaryColor,
                             fontWeight: FontWeight.bold,
                           ),
                     ),

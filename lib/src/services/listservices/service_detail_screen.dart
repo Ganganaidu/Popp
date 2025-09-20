@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:popp/src/utils/app_loger.dart';
 import 'package:popp/src/utils/build_extensions.dart';
+import 'package:popp/src/widgets/title_text.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher_string.dart';
@@ -85,7 +86,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     String appBarTitle = AppUtils.getServiceAppBarTitle(widget.category);
     return Scaffold(
       appBar: AppBar(
-        title: Text(appBarTitle),
+        title: TitleText(appBarTitle),
         automaticallyImplyLeading: true,
         actions: [
           IconButton(

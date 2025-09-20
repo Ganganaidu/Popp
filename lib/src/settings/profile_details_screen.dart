@@ -10,6 +10,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../navigation/nav_router.dart';
 import '../utils/product_content_data.dart';
 import '../widgets/custom_dropdown_form_field.dart';
+import '../widgets/title_text.dart';
 
 class ProfileDetailsScreen extends StatefulWidget {
   const ProfileDetailsScreen({super.key});
@@ -143,7 +144,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile Details'),
+        title: const TitleText('Profile Details'),
         elevation: 0,
       ),
       body: _isLoading

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:popp/src/utils/build_extensions.dart';
 import 'package:popp/src/widgets/app_dialogs.dart';
 import 'package:popp/src/widgets/loading_overlay.dart';
+import 'package:popp/src/widgets/title_text.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../api/firebase/firebase_api_service.dart';
@@ -277,7 +278,7 @@ class _SellYourBikeState extends State<SellYourBike>
         modelsForBrand.isNotEmpty ? [...modelsForBrand, 'Others'] : <String>[];
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Sell Your Bike')),
+      appBar: AppBar(title: const TitleText('Sell Your Bike')),
       body: LoadingOverlay(
         isLoading: _isLoading,
         child: Column(

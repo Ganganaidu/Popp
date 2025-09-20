@@ -15,6 +15,7 @@ import '../subscription/subscription_provider.dart';
 import '../subscription/subscription_status_screen.dart';
 import '../utils/app_constants.dart';
 import '../utils/app_loger.dart';
+import '../widgets/title_text.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -107,24 +108,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ImageProvider<Object> backgroundImage) {
     return SliverAppBar(
       expandedHeight: 220.0,
-      floating: false,
-      pinned: true,
       backgroundColor: Theme.of(context).primaryColor,
       flexibleSpace: FlexibleSpaceBar(
         centerTitle: true,
-        title: Text(
+        title: const TitleText(
           "Settings",
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            shadows: [
-              Shadow(
-                blurRadius: 2.0,
-                color: Colors.black.withOpacity(0.5),
-                offset: const Offset(1.0, 1.0),
-              ),
-            ],
-          ),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         background: Stack(
           fit: StackFit.expand,
@@ -132,14 +121,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             // Animated background (now using GIF instead of Lottie)
             Lottie.asset(
               'assets/popp_animated_background.json',
-              // Add a Lottie file for empty state
               width: 200,
               height: 200,
             ),
-            // Image.asset(
-            //   'assets/popp_animated_background.gif',
-            //   fit: BoxFit.cover,
-            // ),
             // Gradient overlay for better text visibility
             Container(
               decoration: BoxDecoration(
@@ -155,40 +139,40 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
             // User Info
-            if (isLoggedIn)
-              Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircleAvatar(
-                      radius: 45,
-                      backgroundImage: backgroundImage,
-                      backgroundColor: Colors.white.withOpacity(0.8),
-                    ),
-                    const SizedBox(height: 12),
-                    FutureBuilder<String>(
-                      future: _fetchUsername(user!.uid),
-                      builder: (context, snapshot) {
-                        return Text(
-                          snapshot.data ?? 'Rider',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                            shadows: [
-                              Shadow(
-                                blurRadius: 2.0,
-                                color: Colors.black,
-                                offset: Offset(1.0, 1.0),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ),
+            // if (isLoggedIn)
+            //   Center(
+            //     child: Column(
+            //       mainAxisAlignment: MainAxisAlignment.center,
+            //       children: [
+            //         // CircleAvatar(
+            //         //   radius: 45,
+            //         //   backgroundImage: backgroundImage,
+            //         //   backgroundColor: Colors.white.withOpacity(0.8),
+            //         // ),
+            //         const SizedBox(height: 12),
+            //         FutureBuilder<String>(
+            //           future: _fetchUsername(user!.uid),
+            //           builder: (context, snapshot) {
+            //             return Text(
+            //               snapshot.data ?? 'Rider',
+            //               style: const TextStyle(
+            //                 color: Colors.white,
+            //                 fontWeight: FontWeight.bold,
+            //                 fontSize: 18,
+            //                 shadows: [
+            //                   Shadow(
+            //                     blurRadius: 2.0,
+            //                     color: Colors.black,
+            //                     offset: Offset(1.0, 1.0),
+            //                   ),
+            //                 ],
+            //               ),
+            //             );
+            //           },
+            //         ),
+            //       ],
+            //     ),
+            //   ),
           ],
         ),
       ),
@@ -359,7 +343,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           return SwitchListTile(
             title: const Text("Dark Mode"),
             secondary: const Icon(Icons.brightness_6_outlined),
-            value: themeMode == ThemeMode.dark,
+            value: themeMode == ThemeMode.dark ||
+                (themeMode == ThemeMode.system &&
+                    MediaQuery.of(context).platformBrightness == Brightness.dark),
             onChanged: (value) {
               themeNotifier.toggle(value);
             },

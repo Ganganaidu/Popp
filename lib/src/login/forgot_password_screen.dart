@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:popp/src/widgets/title_text.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   final bool isChangePassword;
@@ -80,7 +81,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: TitleText(
             widget.isChangePassword ? "Change Password" : ""),
       ),
       body: SafeArea(

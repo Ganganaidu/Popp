@@ -3,6 +3,7 @@ import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:in_app_purchase/in_app_purchase.dart'; // For ProductDetails
 import 'package:popp/src/subscription/subscription_provider.dart';
+import 'package:popp/src/widgets/title_text.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart'; // For deep linking
 
@@ -82,7 +83,7 @@ class _SubscriptionStatusScreenState extends State<SubscriptionStatusScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("My Subscription"),
+        title: const TitleText("My Subscription"),
         centerTitle: true,
         elevation: 0,
         backgroundColor: Colors.transparent,

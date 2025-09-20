@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:popp/src/widgets/title_text.dart';
 
 import '../api/api_url.dart';
 import 'list_grid_view.dart';
@@ -34,7 +35,8 @@ class _FavoritesScreenState extends State<FavoritesScreen>
 
     if (user == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text("Favorites")),
+        appBar: AppBar(
+            title: const TitleText("Favorites")),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -56,7 +58,7 @@ class _FavoritesScreenState extends State<FavoritesScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("My Favorites"),
+        title: const TitleText("My Favorites"),
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: Colors.orange,

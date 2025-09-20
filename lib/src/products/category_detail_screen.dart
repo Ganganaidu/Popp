@@ -5,6 +5,7 @@ import '../filters/filter_bar.dart';
 import '../models/product.dart';
 import '../navigation/nav_router.dart';
 import '../widgets/listing_card.dart';
+import '../widgets/title_text.dart';
 
 class CategoryDetailScreen extends StatefulWidget {
   final String categoryName;
@@ -63,7 +64,8 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
             (filters['By SubCategory'] is List &&
                 (filters['By SubCategory'] as List).isEmpty)) &&
         (filters['By Year'] == null ||
-            (filters['By Year'] is List && (filters['By Year'] as List).isEmpty));
+            (filters['By Year'] is List &&
+                (filters['By Year'] as List).isEmpty));
     if (filters.isEmpty || isDefaultFilters) {
       return List<Product>.from(products);
     }
@@ -123,8 +125,7 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
         filters['By Category'] != null &&
         (filters['By Category'] as List).isNotEmpty) {
       final List<String> categories = List<String>.from(filters['By Category']);
-      result =
-          result.where((p) => categories.contains(p.category)).toList();
+      result = result.where((p) => categories.contains(p.category)).toList();
     }
     // By SubCategory filter
     if (filters.containsKey('By SubCategory') &&
@@ -132,9 +133,8 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
         (filters['By SubCategory'] as List).isNotEmpty) {
       final List<String> subCategories =
           List<String>.from(filters['By SubCategory']);
-      result = result
-          .where((p) => subCategories.contains(p.subCategory))
-          .toList();
+      result =
+          result.where((p) => subCategories.contains(p.subCategory)).toList();
     }
     // By Year filter
     if (filters.containsKey('By Year') &&
@@ -157,10 +157,10 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.categoryName, style: const TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-          fontFamily: 'Orbitron'))),
+      appBar: AppBar(
+          title: TitleText(widget.categoryName,
+              style:
+                  const TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
       body: Column(
         children: [
           FilterBar(

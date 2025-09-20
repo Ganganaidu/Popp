@@ -26,7 +26,7 @@ class PopServicesWidgets extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWeb = kIsWeb && context.isDesktop;
-    
+
     if (isWeb) {
       return _buildWebLayout();
     } else {
@@ -59,7 +59,7 @@ class PopServicesWidgets extends StatelessWidget {
             } else {
               crossAxisCount = 2;
             }
-            
+
             return GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -82,7 +82,6 @@ class PopServicesWidgets extends StatelessWidget {
   }
 
   Widget _buildMobileLayout(BuildContext context) {
-    final theme = Theme.of(context).textTheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -117,7 +116,8 @@ class PopServicesWidgets extends StatelessWidget {
     );
   }
 
-  Widget _buildServiceCard(BuildContext context, PopServiceItem popServices, {required bool isWeb}) {
+  Widget _buildServiceCard(BuildContext context, PopServiceItem popServices,
+      {required bool isWeb}) {
     return InkWell(
       onTap: () => _handleAction(context, popServices.action),
       splashColor: Colors.grey.shade300,
@@ -126,13 +126,14 @@ class PopServicesWidgets extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(isWeb ? 16 : 12),
           border: isWeb ? Border.all(color: Colors.grey.shade200) : null,
-          boxShadow: isWeb ? [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ] : null,
+          boxShadow: isWeb
+              ? [
+                  const BoxShadow(
+                    blurRadius: 8,
+                    offset: Offset(0, 2),
+                  ),
+                ]
+              : null,
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -145,13 +146,15 @@ class PopServicesWidgets extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: Colors.white70,
                   shape: BoxShape.circle,
-                  boxShadow: isWeb ? [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ] : null,
+                  boxShadow: isWeb
+                      ? [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : null,
                 ),
                 padding: EdgeInsets.all(isWeb ? 16 : 12),
                 child: Image.asset(
@@ -161,19 +164,28 @@ class PopServicesWidgets extends StatelessWidget {
               ),
             ),
             SizedBox(height: isWeb ? 16 : 8),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: isWeb ? 8 : 0),
-              child: Text(
-                popServices.title,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: isWeb ? 16 : 14,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
+            SizedBox(
+                height: isWeb ? 40 : 36,
+                // Give the text container a fixed height
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: isWeb ? 8 : 0),
+                  child: Center(
+                    // Center the text vertically
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: isWeb ? 150 : 100),
+                      child: Text(
+                        popServices.title,
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: isWeb ? 16 : 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                )),
           ],
         ),
       ),

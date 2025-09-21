@@ -356,8 +356,9 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
       },
     );
     if (selected != null && selected != _selectedCategory) {
+      // Don't validate the form here, just clear and update the category
+      _clearAllFields();
       setState(() {
-        _clearAllFields();
         _selectedCategory = selected;
       });
     }
@@ -367,7 +368,7 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const TitleText('List your service'),
+        title: TitleText(_selectedCategory ?? 'List your service'),
         actions: [
           IconButton(
             icon: const Icon(Icons.category),
@@ -738,71 +739,89 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: InkWell(
-                      onTap: () async {
-                        final TimeOfDay? picked = await showTimePicker(
-                          context: context,
-                          initialTime: _eventStartTime ?? TimeOfDay.now(),
-                        );
-                        if (picked != null && picked != _eventStartTime) {
-                          setState(() {
-                            _eventStartTime = picked;
-                          });
+                    child: FormField<TimeOfDay>(
+                      initialValue: _eventStartTime,
+                      validator: (value) {
+                        if (value == null) {
+                          return 'Event Start Time is mandatory';
                         }
+                        return null;
                       },
-                      child: InputDecorator(
-                        decoration: context
-                            .inputDecoration(
-                              "Event Start Time", // 8
-                              _eventStartTime?.format(context) ??
-                                  "Select start time",
-                            )
-                            .copyWith(
-                              errorText: _eventStartTime == null &&
-                                      _formKey.currentState?.validate() == false
-                                  ? "Event Start Time is mandatory"
-                                  : null,
+                      builder: (FormFieldState<TimeOfDay> state) {
+                        return InkWell(
+                          onTap: () async {
+                            final TimeOfDay? picked = await showTimePicker(
+                              context: context,
+                              initialTime: state.value ?? TimeOfDay.now(),
+                            );
+                            if (picked != null && picked != state.value) {
+                              state.didChange(picked);
+                              setState(() {
+                                _eventStartTime = picked;
+                              });
+                            }
+                          },
+                          child: InputDecorator(
+                            decoration: context
+                                .inputDecoration(
+                                  "Event Start Time",
+                                  state.value?.format(context) ??
+                                      "Select start time",
+                                )
+                                .copyWith(
+                                  errorText: state.errorText,
+                                ),
+                            child: Text(
+                              state.value?.format(context) ??
+                                  'Select start time',
+                              style: Theme.of(context).textTheme.titleMedium,
                             ),
-                        child: Text(
-                          _eventStartTime?.format(context) ??
-                              'Select start time',
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                      ),
+                          ),
+                        );
+                      },
                     ),
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: InkWell(
-                      onTap: () async {
-                        final TimeOfDay? picked = await showTimePicker(
-                          context: context,
-                          initialTime: _eventEndTime ?? TimeOfDay.now(),
-                        );
-                        if (picked != null && picked != _eventEndTime) {
-                          setState(() {
-                            _eventEndTime = picked;
-                          });
+                    child: FormField<TimeOfDay>(
+                      initialValue: _eventEndTime,
+                      validator: (value) {
+                        if (value == null) {
+                          return 'Event End Time is mandatory';
                         }
+                        return null;
                       },
-                      child: InputDecorator(
-                        decoration: context
-                            .inputDecoration(
-                              "Event End Time", // 9
-                              _eventEndTime?.format(context) ??
-                                  "Select end time",
-                            )
-                            .copyWith(
-                              errorText: _eventEndTime == null &&
-                                      _formKey.currentState?.validate() == false
-                                  ? "Event End Time is mandatory"
-                                  : null,
+                      builder: (FormFieldState<TimeOfDay> state) {
+                        return InkWell(
+                          onTap: () async {
+                            final TimeOfDay? picked = await showTimePicker(
+                              context: context,
+                              initialTime: state.value ?? TimeOfDay.now(),
+                            );
+                            if (picked != null && picked != state.value) {
+                              state.didChange(picked);
+                              setState(() {
+                                _eventEndTime = picked;
+                              });
+                            }
+                          },
+                          child: InputDecorator(
+                            decoration: context
+                                .inputDecoration(
+                                  "Event End Time",
+                                  state.value?.format(context) ??
+                                      "Select end time",
+                                )
+                                .copyWith(
+                                  errorText: state.errorText,
+                                ),
+                            child: Text(
+                              state.value?.format(context) ?? 'Select end time',
+                              style: Theme.of(context).textTheme.titleMedium,
                             ),
-                        child: Text(
-                          _eventEndTime?.format(context) ?? 'Select end time',
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                      ),
+                          ),
+                        );
+                      },
                     ),
                   ),
                   Padding(

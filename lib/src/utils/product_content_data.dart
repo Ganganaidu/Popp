@@ -1,26 +1,26 @@
 const List<String> bikeBrands = [
-  'Royal Enfield',
-  'KTM',
+  'Aprilia',
   'Bajaj',
-  'TVS',
-  'Yamaha',
-  'Suzuki',
-  'Honda',
-  'Kawasaki',
-  'Triumph',
-  'Harley-Davidson',
-  'BMW Motorrad',
-  'Ducati',
   'Benelli',
+  'BMW Motorrad',
   'CFMoto',
+  'Ducati',
+  'Harley-Davidson',
+  'Honda',
   'Husqvarna',
   'Jawa',
-  'Yezdi',
-  'Aprilia',
+  'Kawasaki',
+  'Keeway',
+  'KTM',
   'Moto Guzzi',
   'MV Agusta',
+  'Royal Enfield',
+  'Suzuki',
+  'Triumph',
+  'TVS',
+  'Yamaha',
+  'Yezdi',
   'Zontes',
-  'Keeway',
 ];
 
 const Map<String, List<String>> bikeBrandModels = {
@@ -165,7 +165,6 @@ const bikeFilters = [
   'By KM Driven',
   'By State',
   'By Year',
-  'Sort By'
 ];
 
 const categoryFilters = [
@@ -174,7 +173,6 @@ const categoryFilters = [
   'By SubCategory',
   'By State',
   'By Year',
-  'Sort By'
 ];
 
 const List<String> countryCodes = ["+91", "+1"];

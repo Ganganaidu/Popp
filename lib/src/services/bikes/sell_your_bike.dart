@@ -55,6 +55,7 @@ class _SellYourBikeState extends State<SellYourBike>
 
   String selectedCountryCode = "+91";
   String? selectedBrand;
+  String? sellerCategory;
   String? selectedModel; // To hold the selected model from dropdown
   String? selectedState;
   String? _areYouFirstOwner;
@@ -142,6 +143,7 @@ class _SellYourBikeState extends State<SellYourBike>
         categoryId: catList[0].categoryId,
         category: catList[0].name,
         subCategory: catList[0].name,
+        sellerCategory: sellerCategory ?? "Individual",
         sellerName: sellerNameController.text,
         sellerContactNumber:
             '$selectedCountryCode ${sellerContactController.text}',
@@ -295,6 +297,24 @@ class _SellYourBikeState extends State<SellYourBike>
                       // ... (Seller Name and Contact fields remain the same)
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 10.0),
+                        child: CustomDropdownFormField<String>(
+                          value: sellerCategory,
+                          label: "Seller Category",
+                          hint: "Choose Category",
+                          items: sellerCategories
+                              .map((b) =>
+                              DropdownMenuItem(value: b, child: Text(b)))
+                              .toList(),
+                          onChanged: (val) {
+                            setState(() {
+                              sellerCategory = val;
+                            });
+                          },
+                          validator: (val) => val == null ? "Required" : null,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10.0),
                         child: TextFormField(
                           controller: sellerNameController,
                           decoration: context.inputDecoration(
@@ -331,10 +351,10 @@ class _SellYourBikeState extends State<SellYourBike>
                       // --- DYNAMIC BRAND & MODEL FIELDS ---
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 10.0),
-                        child: DropdownButtonFormField<String>(
+                        child: CustomDropdownFormField<String>(
                           value: selectedBrand,
-                          decoration: context.inputDecoration(
-                              "Brand Name", "Choose brand"),
+                          label: "Brand Name",
+                          hint: "Choose brand",
                           items: brandListWithOthers
                               .map((b) =>
                                   DropdownMenuItem(value: b, child: Text(b)))
@@ -370,13 +390,12 @@ class _SellYourBikeState extends State<SellYourBike>
                       if (!isBrandOthers)
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 10.0),
-                          child: DropdownButtonFormField<String>(
+                          child: CustomDropdownFormField<String>(
                             value: selectedModel,
-                            decoration: context.inputDecoration(
-                                "Model Name",
-                                selectedBrand != null
-                                    ? "Choose model"
-                                    : "Select a brand first"),
+                            label: "Model Name",
+                            hint: selectedBrand != null
+                                ? "Choose model"
+                                : "Select a brand first",
                             items: modelListWithOthers
                                 .map((m) =>
                                     DropdownMenuItem(value: m, child: Text(m)))
@@ -446,10 +465,10 @@ class _SellYourBikeState extends State<SellYourBike>
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 10.0),
-                        child: DropdownButtonFormField<String>(
+                        child: CustomDropdownFormField<String>(
                           value: selectedState,
-                          decoration: context.inputDecoration(
-                              "State", "Select your state"),
+                          label: "State",
+                          hint: "Select your state",
                           items: stateNames
                               .map((state) => DropdownMenuItem(
                                   value: state, child: Text(state)))

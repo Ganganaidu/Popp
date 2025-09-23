@@ -52,7 +52,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
 
   String selectedCountryCode = "+91";
   String? selectedState;
-
+  String? sellerCategory;
   DateTime? _selectedManufactureDate;
   DateTime? _selectedBillDate;
   String? _productCondition;
@@ -105,6 +105,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
         sellerContactNumber:
             '$selectedCountryCode ${sellerContactController.text}',
         sellerName: sellerNameController.text,
+        sellerCategory: sellerCategory ?? "Individual",
         subCategory: selectedSubcategory,
         modelName: accessoriesNameController.text,
         isProductBikeSpecific: isBikeSpecific,
@@ -224,6 +225,18 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
             key: _formKey,
             child: Column(
               children: [
+                buildPaddedField(CustomDropdownFormField<String>(
+                  enabled: true,
+                  value: sellerCategory,
+                  label: "Seller Category",
+                  hint: "Choose Category",
+                  items: sellerCategories
+                      .map((b) => DropdownMenuItem(value: b, child: Text(b)))
+                      .toList(),
+                  onChanged: (val) => setState(() => sellerCategory = val),
+                  validator: (val) =>
+                  isBikeSpecific && val == null ? "Required" : null,
+                )),
                 buildPaddedField(TextFormField(
                   controller: sellerNameController,
                   decoration: context.inputDecoration(

@@ -48,6 +48,7 @@ class Product {
   List<String>? searchKeywords;
   List<String>? favoritedBy;
   final String? countryCode;
+  final String? sellerCategory; // Added sellerCategory field
 
   Product(
       {this.id,
@@ -96,6 +97,7 @@ class Product {
       required this.isSold,
       this.searchKeywords,
       required this.countryCode,
+      required this.sellerCategory,
       this.favoritedBy});
 
   // Factory constructor to create a Product from a JSON map (e.g., from Firestore)
@@ -155,7 +157,8 @@ class Product {
             .toList(),
         // `createdAt` is a FieldValue for writing, so we read it as DateTime
         createdAtDate: (json['createdAt'] as Timestamp?)?.toDate(),
-        countryCode: json['countryCode'] as String?
+        countryCode: json['countryCode'] as String?,
+        sellerCategory: json['sellerCategory'] as String? ?? '',
         // We don't typically re-initialize `createdAt` (FieldValue) from json
         );
   }
@@ -211,6 +214,7 @@ class Product {
       if (searchKeywords != null) 'searchKeywords': searchKeywords,
       if (favoritedBy != null) 'favoritedBy': favoritedBy,
       'countryCode': countryCode,
+      'sellerCategory': sellerCategory,
       // If it's null and you're creating, Firestore handles it.
       // If you're updating and don't want to change it, don't include it.
       // If you want to force set a timestamp on update, include it.
@@ -277,6 +281,7 @@ class Product {
       bool? isSold,
       List<String>? searchKeywords,
       List<String>? favoritedBy,
+      String? sellerCategory,
       String? countryCode}) {
     return Product(
         userId: userId ?? this.userId,
@@ -324,6 +329,7 @@ class Product {
         isSold: isSold ?? this.isSold,
         searchKeywords: searchKeywords ?? this.searchKeywords,
         favoritedBy: favoritedBy ?? this.favoritedBy,
+        sellerCategory: sellerCategory ?? this.sellerCategory,
         countryCode: countryCode ?? this.countryCode);
   }
 }

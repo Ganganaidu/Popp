@@ -282,3 +282,8 @@ const List<String> riderSkillLevels = [
   'Intermediate',
   'Expert'
 ];
+
+const List<String> sellerCategories = [
+  'Individual',
+  'Business',
+];

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/pop_category.dart';
-import 'custom_dropdown_form_field.dart'; // <--- Your Category model
+import 'custom_dropdown_form_field.dart';
 
 class CategorySelector extends StatefulWidget {
   final Function(PopCategory?) onCategoryChanged;

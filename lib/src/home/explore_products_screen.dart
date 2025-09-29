@@ -2,20 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import '../api/api_url.dart';
+import '../models/shortcut_category.dart';
 import '../navigation/nav_router.dart';
-
-// A dedicated data class for shortcuts.
-class _ShortcutCategory {
-  final String title;
-  final IconData icon;
-  final Color color;
-
-  const _ShortcutCategory({
-    required this.title,
-    required this.icon,
-    required this.color,
-  });
-}
 
 class ExploreProductsScreen extends StatefulWidget {
   const ExploreProductsScreen({super.key});
@@ -28,40 +16,6 @@ class _ExploreProductsScreenState extends State<ExploreProductsScreen> {
   final TextEditingController _searchController = TextEditingController();
   bool _isLoading = false;
   List<Map<String, dynamic>> _results = [];
-
-  // Renamed the variable and made the list type explicit ---
-  final List<_ShortcutCategory> _shortcutCategories = <_ShortcutCategory>[
-    const _ShortcutCategory(
-      title: 'Bike Rentals',
-      icon: Icons.two_wheeler_outlined,
-      color: Colors.blueAccent,
-    ),
-    const _ShortcutCategory(
-      title: 'Events',
-      icon: Icons.event_available_outlined,
-      color: Colors.deepPurpleAccent,
-    ),
-    const _ShortcutCategory(
-      title: 'Services',
-      icon: Icons.miscellaneous_services_outlined,
-      color: Colors.teal,
-    ),
-    const _ShortcutCategory(
-      title: 'Premium bikes',
-      icon: Icons.workspace_premium_outlined,
-      color: Colors.amber,
-    ),
-    const _ShortcutCategory(
-      title: 'Track day',
-      icon: Icons.flag_outlined,
-      color: Colors.redAccent,
-    ),
-    const _ShortcutCategory(
-      title: 'Training day',
-      icon: Icons.school_outlined,
-      color: Colors.green,
-    ),
-  ];
 
   Future<void> _search(String query) async {
     if (query.trim().isEmpty) {
@@ -193,9 +147,9 @@ class _ExploreProductsScreenState extends State<ExploreProductsScreen> {
                           childAspectRatio: 1.2, // Adjusted for icon layout
                         ),
                         // --- Use the new variable name ---
-                        itemCount: _shortcutCategories.length,
+                        itemCount: shortcutCategories.length,
                         itemBuilder: (context, index) {
-                          final shortcut = _shortcutCategories[index];
+                          final shortcut = shortcutCategories[index];
                           return _buildCategoryCard(
                             title: shortcut.title,
                             icon: shortcut.icon,

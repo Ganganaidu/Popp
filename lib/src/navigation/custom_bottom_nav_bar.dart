@@ -56,7 +56,7 @@ class CustomBottomNavBar extends StatelessWidget {
                       ? Icons.search_sharp
                       : Icons.search_outlined,
                 ),
-                label: Constants.explore,
+                label: Constants.search,
               ),
               // BottomNavigationBarItem(
               //   icon: Icon(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:popp/src/utils/app_loger.dart';
 
+import '../api/firebase/firebase_api_service.dart';
 import '../filters/filter_bar.dart';
 import '../models/product.dart';
 import '../navigation/nav_router.dart';
@@ -9,7 +10,7 @@ import '../widgets/title_text.dart';
 
 class CategoryDetailScreen extends StatefulWidget {
   final String categoryName;
-  final List<Product> products;
+  final List<Product>? products;
   final List<String> filters;
 
   const CategoryDetailScreen({
@@ -26,17 +27,47 @@ class CategoryDetailScreen extends StatefulWidget {
 class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
   late List<Product> filteredProducts;
   Map<String, dynamic> activeFilters = {};
+  final FirebaseApiService _productsService = FirebaseApiService();
+  bool _isLoading = false;
+  String? _error;
 
   @override
   void initState() {
     super.initState();
-    filteredProducts = List<Product>.from(widget.products);
+    _initProducts();
+  }
+
+  Future<void> _initProducts() async {
+    if (widget.products == null || widget.products!.isEmpty) {
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
+      try {
+        final List<Map<String, dynamic>> fetched = await _productsService
+            .getProductsByCategory([widget.categoryName]);
+        final List<Product> products =
+            fetched.map((map) => Product.fromJson(map, map['id'])).toList();
+        setState(() {
+          filteredProducts = List<Product>.from(products);
+          _isLoading = false;
+        });
+      } catch (e) {
+        setState(() {
+          filteredProducts = [];
+          _isLoading = false;
+          _error = 'Failed to load products.';
+        });
+      }
+    } else {
+      filteredProducts = List<Product>.from(widget.products!);
+    }
   }
 
   void _onFiltersChanged(Map<String, dynamic> selectedValues) {
     setState(() {
       activeFilters = selectedValues;
-      filteredProducts = _applyFilters(widget.products, selectedValues);
+      filteredProducts = _applyFilters(widget.products!, selectedValues);
     });
     AppLogger.d("User selected: $selectedValues");
   }
@@ -161,45 +192,52 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
           title: TitleText(widget.categoryName,
               style:
                   const TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
-      body: Column(
-        children: [
-          FilterBar(
-            filters: widget.filters,
-            activeFilterCounts: const {},
-            onFiltersChanged: _onFiltersChanged,
-          ),
-          Expanded(
-            child: filteredProducts.isEmpty
-                ? _buildEmptyProductsView(context)
-                : Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: GridView.builder(
-                      itemCount: filteredProducts.length,
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        childAspectRatio: 0.65,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
-                      ),
-                      itemBuilder: (context, index) {
-                        final product = filteredProducts[index];
-                        return ListingCard(
-                            title: product.getTitle(),
-                            imageUrl: product.imageUrl,
-                            price: product.expectedPrice,
-                            width: double.infinity,
-                            showOptionsMenu: false,
-                            onTap: () {
-                              onProductDetailsTap(context, product.toJson());
-                              // Navigate to detail screen
-                            });
-                      },
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _error != null
+              ? Center(
+                  child:
+                      Text(_error!, style: const TextStyle(color: Colors.red)))
+              : Column(
+                  children: [
+                    FilterBar(
+                      filters: widget.filters,
+                      activeFilterCounts: const {},
+                      onFiltersChanged: _onFiltersChanged,
                     ),
-                  ),
-          ),
-        ],
-      ),
+                    Expanded(
+                      child: filteredProducts.isEmpty
+                          ? _buildEmptyProductsView(context)
+                          : Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: GridView.builder(
+                                itemCount: filteredProducts.length,
+                                gridDelegate:
+                                    const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 2,
+                                  childAspectRatio: 0.65,
+                                  crossAxisSpacing: 12,
+                                  mainAxisSpacing: 12,
+                                ),
+                                itemBuilder: (context, index) {
+                                  final product = filteredProducts[index];
+                                  return ListingCard(
+                                      title: product.getTitle(),
+                                      imageUrl: product.imageUrl,
+                                      price: product.expectedPrice,
+                                      width: double.infinity,
+                                      showOptionsMenu: false,
+                                      onTap: () {
+                                        onProductDetailsTap(
+                                            context, product.toJson());
+                                        // Navigate to detail screen
+                                      });
+                                },
+                              ),
+                            ),
+                    ),
+                  ],
+                ),
     );
   }
 

@@ -2,7 +2,6 @@ class ApiUrl {
   static String baseUrl = "https://popp-71efb.web.app";
 
   static const String _appId = 'popp-71efb'; // Hardcoded appId
-  static const String basePath = 'artifacts/$_appId/public/data';
   static const String userPath = 'users';
   static const String userToUserChatPath = 'user_to_user_chats';
   static const String agentToUserChatPath = 'agent_user_chats';

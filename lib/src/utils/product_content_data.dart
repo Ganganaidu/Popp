@@ -269,7 +269,7 @@ const Map<String, Map<String, double>> stateCoordinates = {
 };
 
 const List<String> serviceCategories = [
-  'Book your Bike service', // Find your mechanic
+  'Find Mechanic', // Find your mechanic
   'Bike Rentals',
   'Track day',
   'Training day',

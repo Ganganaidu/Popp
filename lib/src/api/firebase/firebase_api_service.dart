@@ -350,44 +350,6 @@ class FirebaseApiService {
     }
   }
 
-// Fetch all products (e.g., for a public catalog)
-  Future<List<Map<String, dynamic>>> getAllProducts({int limit = 20}) async {
-    try {
-      QuerySnapshot snapshot = await _db
-          .collection(ApiUrl.productsPath)
-          .orderBy('createdAt', descending: true)
-          .limit(limit)
-          .get();
-      return snapshot.docs
-          .map((doc) => doc.data() as Map<String, dynamic>)
-          .toList();
-    } catch (e) {
-      // AppLogger.d("Error fetching all products: $e");
-      AppLogger.d("Error fetching all products: $e");
-      return [];
-    }
-  }
-
-// Fetch products by category
-  Future<List<Map<String, dynamic>>> getProductsByCategory(String categoryId,
-      {int limit = 20}) async {
-    try {
-      QuerySnapshot snapshot = await _db
-          .collection(ApiUrl.productsPath)
-          .where('categoryId', isEqualTo: categoryId)
-          .orderBy('createdAt', descending: true)
-          .limit(limit)
-          .get();
-      return snapshot.docs
-          .map((doc) => doc.data() as Map<String, dynamic>)
-          .toList();
-    } catch (e) {
-      // AppLogger.d("Error fetching products by category: $e");
-      AppLogger.d("Error fetching products by category: $e");
-      return [];
-    }
-  }
-
 // --- User Profile Setup (Call this when a user signs up) ---
   Future<void> createUserProfileDocument(User user, {String? email}) async {
     try {
@@ -520,6 +482,46 @@ class FirebaseApiService {
     }
   }
 
+  // Fetch all products (e.g., for a public catalog)
+  Future<List<Map<String, dynamic>>> getAllProducts({int limit = 20}) async {
+    try {
+      QuerySnapshot snapshot = await _db
+          .collection(ApiUrl.productsPath)
+          .orderBy('createdAt', descending: true)
+          .limit(limit)
+          .get();
+      return snapshot.docs
+          .map((doc) => doc.data() as Map<String, dynamic>)
+          .toList();
+    } catch (e) {
+      // AppLogger.d("Error fetching all products: $e");
+      AppLogger.d("Error fetching all products: $e");
+      return [];
+    }
+  }
+
+// Fetch products by category
+  Future<List<Map<String, dynamic>>> getProductsByCategory(
+      List<String> categories,
+      {int limit = 20}) async {
+    try {
+      QuerySnapshot snapshot = await _db
+          .collection(ApiUrl.productsPath)
+          .where('category', whereIn: categories)
+          .orderBy('createdAt', descending: true)
+          .where('isActive', isEqualTo: true)
+          .limit(limit)
+          .get();
+      return snapshot.docs
+          .map((doc) => doc.data() as Map<String, dynamic>)
+          .toList();
+    } catch (e) {
+      // AppLogger.d("Error fetching products by category: $e");
+      AppLogger.d("Error fetching products by category: $e");
+      return [];
+    }
+  }
+
   // Method to fetch services based on category
   Future<List<Map<String, dynamic>>> fetchServicesByCategories(
       List<String> categories, bool isApproved) async {
@@ -612,7 +614,8 @@ class FirebaseApiService {
   /// Fetches the current global message.
   Future<SystemMessage?> _getGlobalMessage() async {
     try {
-      final doc = await _db.collection(ApiUrl.globalMessagesPath).doc('current').get();
+      final doc =
+          await _db.collection(ApiUrl.globalMessagesPath).doc('current').get();
       if (doc.exists) {
         return SystemMessage.fromFirestore(doc);
       }

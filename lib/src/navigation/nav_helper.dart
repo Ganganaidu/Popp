@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:popp/src/home/explore_screen.dart';
 
 import '../home/dashboard_screen.dart';
 import '../home/help_screen.dart';
-import '../products/explore_products_screen.dart';
+import '../home/explore_products_screen.dart';
 import '../toolbar/tab_navigator_observer.dart';
 import 'nav_router.dart';
 
@@ -43,7 +44,7 @@ class NavHelper {
     widgetOptions = <Widget>[
       const DashboardScreen(),
       // const ComingSoonScreen(),
-      const ExploreProductsScreen(),
+      const ExploreScreen(),
      // const ComingSoonScreen(),
       const HelpScreen(),
     ];

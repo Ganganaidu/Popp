@@ -15,6 +15,17 @@ import '../widgets/chat_with_user_widget.dart';
 import '../widgets/expandable_product_details_widget.dart';
 import '../widgets/expandable_text_widget.dart';
 
+class ProductDetailScreen extends StatefulWidget {
+  final Map<String, dynamic> productJson;
+  final bool showStatus;
+
+  const ProductDetailScreen(
+      {super.key, required this.productJson, this.showStatus = false});
+
+  @override
+  State<ProductDetailScreen> createState() => _ProductDetailScreenState();
+}
+
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
   final FirebaseApiService _firebaseApiService = FirebaseApiService();
 
@@ -466,15 +477,4 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       ),
     );
   }
-}
-
-class ProductDetailScreen extends StatefulWidget {
-  final Map<String, dynamic> productJson;
-  final bool showStatus;
-
-  const ProductDetailScreen(
-      {super.key, required this.productJson, this.showStatus = false});
-
-  @override
-  State<ProductDetailScreen> createState() => _ProductDetailScreenState();
 }

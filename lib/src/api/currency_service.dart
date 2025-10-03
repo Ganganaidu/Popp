@@ -49,11 +49,12 @@ class CurrencyService {
     double finalPrice = priceValue;
     String suffix = '';
 
+    var rate = 83.0;
     // 2. Check if conversion is needed.
     if (sourceCurrency != targetCurrency) {
       // --- CONVERSION LOGIC ---
       if (sourceCurrency == 'INR' && targetCurrency == 'USD') {
-        final rate = await getInrToUsdRate();
+        // final rate = await getInrToUsdRate();
         if (rate != null) {
           finalPrice = priceValue * rate;
         } else {
@@ -62,7 +63,7 @@ class CurrencyService {
           suffix = ' (est.)';
         }
       } else if (sourceCurrency == 'USD' && targetCurrency == 'INR') {
-        final rate = await getUsdToInrRate();
+       //  final rate = await getUsdToInrRate();
         if (rate != null) {
           finalPrice = priceValue * rate;
         } else {

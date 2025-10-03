@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:popp/src/api/currency_service.dart';
 import 'package:popp/src/navigation/nav_router.dart';
+import 'package:popp/src/utils/app_loger.dart';
 import 'package:popp/src/utils/product_content_data.dart';
 import 'package:popp/src/widgets/app_dialogs.dart';
 
@@ -118,10 +119,10 @@ class _ListingsGridViewState extends State<ListingsGridView> {
                   showOptionsMenu: widget.showOptionsMenu,
                   onTap: () {
                     final category = data['category'] as String?;
-                    if (serviceCategories.contains(category)) {
-                      onServiceDetailsScreenTap(context, data, category!);
-                    } else {
+                    if (!serviceCategories.contains(category)) {
                       onProductDetailsTap(context, data, true);
+                    } else {
+                      onServiceDetailsScreenTap(context, data, category!);
                     }
                   },
                   onEdit: () {
@@ -209,7 +210,7 @@ class _ListingsGridViewState extends State<ListingsGridView> {
                   ? "Create a Listing"
                   : "Start Exploring"),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
+                backgroundColor: Theme.of(context).primaryColor,
                 foregroundColor: Colors.white,
                 padding:
                     const EdgeInsets.symmetric(horizontal: 24, vertical: 12),

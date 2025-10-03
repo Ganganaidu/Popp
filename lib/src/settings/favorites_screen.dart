@@ -32,6 +32,7 @@ class _FavoritesScreenState extends State<FavoritesScreen>
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
+    var primaryColor = Theme.of(context).primaryColor;
 
     if (user == null) {
       return Scaffold(
@@ -46,7 +47,7 @@ class _FavoritesScreenState extends State<FavoritesScreen>
               ElevatedButton(
                 onPressed: () => Navigator.pushNamed(context, '/login'),
                 style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
+                    backgroundColor: primaryColor,
                     foregroundColor: Colors.white),
                 child: const Text("Login"),
               )
@@ -61,8 +62,8 @@ class _FavoritesScreenState extends State<FavoritesScreen>
         title: const TitleText("My Favorites"),
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: Colors.orange,
-          labelColor: Colors.orange,
+          indicatorColor: primaryColor,
+          labelColor: primaryColor,
           unselectedLabelColor: Colors.grey,
           tabs: const [
             Tab(icon: Icon(Icons.storefront), text: "Products"),

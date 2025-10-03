@@ -17,24 +17,24 @@ class PopServiceItem {
 final List<PopServiceItem> items = [
   PopServiceItem(
       imageUrl: null,
-      title: 'Sell bike',
+      title: 'Sell Bike',
       assetImageUrl: "assets/sell_your_bike.png",
       action: sellYourBike),
   PopServiceItem(
       imageUrl: null,
-      title: 'Sell accessory',
+      title: 'Sell Accessory',
       assetImageUrl: "assets/sell_your_accessories.png",
       action: sellAccessory),
-  PopServiceItem(
-      imageUrl: null,
-      title: 'List your business',
-      assetImageUrl: "assets/list_your_services.png",
-      action: listYourServices),
   PopServiceItem(
       imageUrl: null,
       title: 'Find Mechanic',
       assetImageUrl: "assets/book_your_services.png",
       action: findYourMechanic),
+  PopServiceItem(
+      imageUrl: null,
+      title: 'List your Services',
+      assetImageUrl: "assets/list_your_services.png",
+      action: listYourServices),
   PopServiceItem(
       imageUrl: null,
       title: 'Track day & Training ',

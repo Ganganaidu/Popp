@@ -8,6 +8,7 @@ import 'package:popp/src/utils/app_constants.dart';
 import '../admin/admin_dashboard_screen.dart';
 import '../chat/agent_chat_list_screen.dart';
 import '../chat/generic_chat_screen.dart';
+import '../home/search_screen.dart';
 import '../login/forgot_password_screen.dart';
 import '../login/register_and_subscribe_screen.dart';
 import '../login/verification_screen.dart';
@@ -85,6 +86,15 @@ void onFavScreenTap(BuildContext context) {
     context,
     MaterialPageRoute(
       builder: (context) => const FavoritesScreen(),
+    ),
+  );
+}
+
+void onSearchTap(BuildContext context) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => const SearchScreen(),
     ),
   );
 }

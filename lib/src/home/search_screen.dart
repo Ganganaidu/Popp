@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import '../api/api_url.dart';
+import '../navigation/nav_router.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -96,9 +97,118 @@ class _SearchScreenState extends State<SearchScreen> {
           onSubmitted: _search,
         ),
       ),
-      body: const Center(
-        child: Text('Search results will appear here'),
-      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _results.isEmpty && _searchController.text.isNotEmpty
+              ? const Center(child: Text('No results found'))
+              : _results.isEmpty
+                  ? const Center(child: Text('Search results will appear here'))
+                  : _buildSearchResults(context),
     );
+  }
+
+  Widget _buildSearchResults(BuildContext context) {
+    return GridView.builder(
+      padding: const EdgeInsets.all(8.0),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 0.85,
+        crossAxisSpacing: 8,
+        mainAxisSpacing: 8,
+      ),
+      itemCount: _results.length,
+      itemBuilder: (context, index) {
+        final item = _results[index];
+        final allImageUrls = _extractAllImageUrls(item);
+        final imageUrl = allImageUrls.isNotEmpty
+            ? allImageUrls.first
+            : ApiUrl.defaultPlaceholderImage;
+
+        return Card(
+          clipBehavior: Clip.antiAlias,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: InkWell(
+            onTap: () {
+              if (item['type'] == 'product') {
+                onProductDetailsTap(context, item);
+              } else if (item['type'] == 'service') {
+                onServiceDetailsScreenTap(context, item,
+                    item['category'] ?? 'Uncategorized');
+              }
+            },
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                    child: Image.network(
+                      imageUrl,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
+                          Icon(
+                            item['type'] == 'product'
+                                ? Icons.shopping_bag
+                                : Icons.miscellaneous_services,
+                            size: 30,
+                          ),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    item['businessTitle'] ??
+                        item['eventName'] ??
+                        item['brandName'] ??
+                        item['modelName'] ??
+                        'No Title',
+                    style: Theme.of(context).textTheme.titleMedium,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                  child: Text(
+                    item['registrationPlace'] ??
+                        item['locationName'] ??
+                        item['locationAddress'] ??
+                        item['businessAddress'] ??
+                        (item['type'] == 'product' ? 'Product' : 'Service'),
+                    style: Theme.of(context).textTheme.bodySmall,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  List<String> _extractAllImageUrls(Map<String, dynamic> item) {
+    List<String> allImageUrls = [];
+    List<dynamic>? promoImages;
+    if (item['promoImageUrls'] is List) {
+      promoImages = item['promoImageUrls'] as List<dynamic>?;
+    } else if (item['promoImageUrls'] is String &&
+        (item['promoImageUrls'] as String).isNotEmpty) {
+      promoImages = [(item['promoImageUrls'] as String)];
+    } else if (item['thumbImageUrls'] is List) {
+      promoImages = item['thumbImageUrls'] as List<dynamic>?;
+    } else if (item['shopImageUrls'] is String &&
+        (item['shopImageUrls'] as String).isNotEmpty) {
+      promoImages = [(item['shopImageUrls'] as String)];
+    }
+    if (promoImages != null && promoImages.isNotEmpty) {
+      allImageUrls.addAll(promoImages.cast<String>());
+    }
+    return allImageUrls;
   }
 }

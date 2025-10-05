@@ -242,7 +242,7 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
           if (ad.imageUrl.isEmpty)
             // If no image URL is provided, show a placeholder
             Image.asset(
-              'assets/biker_verse_logo.png',
+              'assets/ads_default_image.png',
               fit: BoxFit.cover,
               width: double.infinity,
               height: double.infinity,
@@ -262,7 +262,7 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
               errorBuilder: (context, error, stackTrace) {
                 // If a single image fails to load, show a placeholder
                 return Image.asset(
-                  'assets/biker_verse_logo.png',
+                  'assets/ads_default_image.png',
                   fit: BoxFit.cover,
                   width: double.infinity,
                   height: double.infinity,

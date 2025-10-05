@@ -29,7 +29,7 @@ final List<PopServiceItem> items = [
       imageUrl: null,
       title: 'Find Mechanic',
       assetImageUrl: "assets/book_your_services.png",
-      action: findYourMechanic),
+      action: findMechanic),
   PopServiceItem(
       imageUrl: null,
       title: 'List your Services',

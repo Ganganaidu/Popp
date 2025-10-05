@@ -65,7 +65,7 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
   @override
   Widget build(BuildContext context) {
     final isWeb = kIsWeb && context.isDesktop;
-    
+
     return Consumer<AdCarouselViewModel>(
       builder: (context, viewModel, _) {
         if (viewModel.isLoading) {
@@ -98,7 +98,9 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
           alignment: Alignment.bottomCenter,
           children: [
             CarouselSlider(
-              items: viewModel.ads.map((ad) => buildAdSlide(ad, isWeb: isWeb)).toList(),
+              items: viewModel.ads
+                  .map((ad) => buildAdSlide(ad, isWeb: isWeb))
+                  .toList(),
               options: CarouselOptions(
                 height: isWeb ? 400 : 350,
                 viewportFraction: 1.0,
@@ -149,7 +151,7 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
       ),
       child: Padding(
         padding: EdgeInsets.symmetric(
-          horizontal: isWeb ? 48 : 24, 
+          horizontal: isWeb ? 48 : 24,
           vertical: isWeb ? 32 : 20,
         ),
         child: Column(
@@ -164,7 +166,7 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
               ),
               child: Icon(
                 Icons.campaign_outlined,
-                color: Colors.orange.shade300, 
+                color: Colors.orange.shade300,
                 size: isWeb ? 48 : 40,
               ),
             ),
@@ -210,7 +212,7 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
                 foregroundColor: Colors.white,
                 side: BorderSide(color: Colors.orange.shade300),
                 padding: EdgeInsets.symmetric(
-                  horizontal: isWeb ? 24 : 20, 
+                  horizontal: isWeb ? 24 : 20,
                   vertical: isWeb ? 16 : 12,
                 ),
                 shape: RoundedRectangleBorder(
@@ -237,44 +239,52 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          Image.network(
-            ad.imageUrl,
-            fit: BoxFit.cover,
-            loadingBuilder: (context, child, loadingProgress) {
-              if (loadingProgress == null) return child;
-              return Shimmer.fromColors(
-                baseColor: Colors.grey[300]!,
-                highlightColor: Colors.grey[100]!,
-                child: Container(color: Colors.white),
-              );
-            },
-            errorBuilder: (context, error, stackTrace) {
-              // If a single image fails to load, show a placeholder
-              return Container(
-                color: Colors.grey.shade700,
-                child: Center(
-                  child: Icon(
-                    Icons.image_not_supported_outlined,
-                    color: Colors.white38, 
-                    size: isWeb ? 60 : 50,
-                  ),
-                ),
-              );
-            },
-          ),
+          if (ad.imageUrl.isEmpty)
+            // If no image URL is provided, show a placeholder
+            Image.asset(
+              'assets/biker_verse_logo.png',
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: double.infinity,
+            )
+          else
+            Image.network(
+              ad.imageUrl,
+              fit: BoxFit.cover,
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+                return Shimmer.fromColors(
+                  baseColor: Colors.grey[300]!,
+                  highlightColor: Colors.grey[100]!,
+                  child: Container(color: Colors.white),
+                );
+              },
+              errorBuilder: (context, error, stackTrace) {
+                // If a single image fails to load, show a placeholder
+                return Image.asset(
+                  'assets/biker_verse_logo.png',
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: double.infinity,
+                );
+              },
+            ),
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [Color.fromARGB(120, 0, 0, 0), Colors.black54],
+                colors: [
+                  Color.fromARGB(200, 0, 0, 0), // Increased opacity for better contrast
+                  Colors.black87,
+                ],
                 stops: [0.0, 0.8],
               ),
             ),
           ),
           Padding(
             padding: EdgeInsets.symmetric(
-              horizontal: isWeb ? 48 : 24, 
+              horizontal: isWeb ? 48 : 24,
               vertical: isWeb ? 32 : 20,
             ),
             child: Column(
@@ -284,19 +294,32 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
                 Text(
                   ad.title,
                   style: TextStyle(
-                    color: Colors.white, 
-                    fontSize: isWeb ? 20 : 16,
-                    fontWeight: FontWeight.w500,
-                  ),
+                      color: Colors.white,
+                      fontSize: isWeb ? 20 : 16,
+                      fontWeight: FontWeight.w500,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black.withOpacity(0.7),
+                          offset: const Offset(0, 2),
+                          blurRadius: 4,
+                        ),
+                      ]),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   ad.highlight,
                   style: TextStyle(
-                    color: context.primaryColor,
-                    fontSize: isWeb ? 36 : 28,
-                    fontWeight: FontWeight.bold,
-                  ),
+                      color: context.primaryColor,
+                      fontSize: isWeb ? 35 : 16,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Orbitron',
+                      shadows: [
+                        Shadow(
+                          color: Colors.black.withOpacity(0.7),
+                          offset: const Offset(0, 2),
+                          blurRadius: 4,
+                        ),
+                      ]),
                 ),
                 const SizedBox(height: 12),
                 Text(
@@ -304,6 +327,13 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
                   style: TextStyle(
                     color: Colors.white70,
                     fontSize: isWeb ? 18 : 14,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withOpacity(0.7),
+                        offset: const Offset(0, 2),
+                        blurRadius: 4,
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -316,8 +346,15 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
                             children: [
                               Icon(
                                 Icons.check_circle_outline,
-                                color: context.primaryColor, 
+                                color: context.primaryColor,
                                 size: isWeb ? 20 : 18,
+                                shadows: [
+                                  Shadow(
+                                    color: Colors.black.withOpacity(0.7),
+                                    offset: const Offset(0, 2),
+                                    blurRadius: 4,
+                                  ),
+                                ],
                               ),
                               const SizedBox(width: 6),
                               Text(
@@ -325,6 +362,13 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: isWeb ? 16 : 14,
+                                  shadows: [
+                                    Shadow(
+                                      color: Colors.black.withOpacity(0.7),
+                                      offset: const Offset(0, 2),
+                                      blurRadius: 4,
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],

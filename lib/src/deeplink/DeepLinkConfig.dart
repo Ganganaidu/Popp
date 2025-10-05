@@ -17,7 +17,7 @@ class DeepLinkConfig {
 }
 
 final deepLinkConfigs = {
-  findYourMechanic: DeepLinkConfig(
+  findMechanic: DeepLinkConfig(
     requiresAuth: true,
     loginMessage: '',
     action: (context) =>
@@ -56,6 +56,11 @@ final deepLinkConfigs = {
     loginMessage: 'Sell your bike',
     action: (context) => onSelleYourBikeTap(context),
   ),
+  aboutUs: DeepLinkConfig(
+    requiresAuth: true,
+    loginMessage: 'About Us',
+    action: (context) => onAboutUsTap(context),
+  )
 };
 
 const String sellYourBike = 'sellBike';
@@ -64,4 +69,5 @@ const String findTrackTraining = 'findTrackTraining';
 const String premiumBikeInspection = 'premiumBikeInspection';
 const String listYourServices = 'listYourServices';
 const String findBikeRentals = 'findBikeRentals';
-const String findYourMechanic = 'findYourMechanic';
+const String findMechanic = 'findMechanic';
+const aboutUs = 'aboutUs';

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:popp/src/utils/app_loger.dart';
 import 'package:popp/src/utils/app_utils.dart';
@@ -9,8 +10,10 @@ import 'package:popp/src/utils/build_extensions.dart';
 import 'package:popp/src/widgets/category_selector.dart';
 import 'package:popp/src/widgets/loading_overlay.dart';
 import 'package:popp/src/widgets/title_text.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../api/api_url.dart';
 import '../../api/firebase/firebase_api_service.dart';
 import '../../models/pop_category.dart';
 import '../../models/product.dart';
@@ -48,6 +51,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
 
   final TextEditingController addressController = TextEditingController();
   final TextEditingController cityController = TextEditingController();
+  final TextEditingController areaController = TextEditingController();
   final TextEditingController pinCodeController = TextEditingController();
 
   String selectedCountryCode = "+91";
@@ -63,6 +67,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
   bool isBikeSpecific = false;
   bool isBillAvailable = false;
   bool isWarrantyAvailable = false;
+  bool _termsAccepted = false;
 
   void _clearBikeSpecificFields() {
     selectedBikeBrand = null;
@@ -91,8 +96,30 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
     }
   }
 
+  void _openTermsLink() async {
+    AppLogger.w("Terms link clicked");
+    final uri = Uri.parse(ApiUrl.customersTermsLink);
+    final launched = await launchUrl(uri);
+    if (launched) {
+      setState(() => _termsAccepted = true);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text("Could not open Terms & Conditions link.")),
+      );
+    }
+  }
+
   void submitForm() async {
     if (_formKey.currentState!.validate()) {
+      if (!_termsAccepted) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please accept the Terms & Conditions')),
+        );
+        return;
+      }
+
       String countryCode = Localizations.localeOf(context).countryCode ?? "IN";
       Product newProduct = Product(
         id: productId,
@@ -115,6 +142,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
         bikeMfgDate: _selectedManufactureDate,
         state: selectedState ?? "",
         city: cityController.text,
+        area: areaController.text,
         address: addressController.text,
         pinCode: pinCodeController.text,
         productSize: productSizeController.text,
@@ -176,6 +204,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
         sellerContactController.clear();
         modelNameController.clear();
         cityController.clear();
+        areaController.clear();
         addressController.clear();
         pinCodeController.clear();
         priceController.clear();
@@ -183,8 +212,10 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
         productAgingController.clear();
         productSizeController.clear();
         warrantyLeftController.clear();
+
         setState(() {
           _images.clear();
+          _termsAccepted = false;
         });
         if (mounted) {
           AppDialogs.showProductSuccessDialog(context, () {
@@ -206,10 +237,12 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
     sellerNameController.dispose();
     sellerContactController.dispose();
     cityController.dispose();
+    areaController.dispose();
     addressController.dispose();
     pinCodeController.dispose();
     priceController.dispose();
     additionalDetailsController.dispose();
+
     super.dispose();
   }
 
@@ -235,7 +268,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
                       .toList(),
                   onChanged: (val) => setState(() => sellerCategory = val),
                   validator: (val) =>
-                  isBikeSpecific && val == null ? "Required" : null,
+                      isBikeSpecific && val == null ? "Required" : null,
                 )),
                 buildPaddedField(TextFormField(
                   controller: sellerNameController,
@@ -353,6 +386,15 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 10.0),
                   child: TextFormField(
+                    controller: areaController,
+                    decoration:
+                        context.inputDecoration("Area", "Enter Area name"),
+                    validator: (val) => val!.isEmpty ? "Required" : null,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10.0),
+                  child: TextFormField(
                     controller: cityController,
                     decoration:
                         context.inputDecoration("City", "Enter city name"),
@@ -451,6 +493,41 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
                     _images.addAll(images);
                   }),
                 )),
+                buildPaddedField(
+                  Row(
+                    children: [
+                      Checkbox(
+                        value: _termsAccepted,
+                        onChanged: (bool? newValue) {
+                          setState(() {
+                            _termsAccepted = newValue ?? false;
+                          });
+                        },
+                        activeColor: Colors.orange,
+                      ),
+                      Expanded(
+                        child: RichText(
+                          text: TextSpan(
+                            style: Theme.of(context).textTheme.bodyMedium,
+                            children: [
+                              const TextSpan(
+                                  text: 'I have read and agree to the '),
+                              TextSpan(
+                                text: 'Terms & Conditions',
+                                style: const TextStyle(
+                                  color: Colors.blue,
+                                  decoration: TextDecoration.underline,
+                                ),
+                                recognizer: TapGestureRecognizer()
+                                  ..onTap = _openTermsLink,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),

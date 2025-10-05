@@ -1,3 +1,5 @@
+import 'app_utils.dart';
+
 const List<String> bikeBrands = [
   'Aprilia',
   'Bajaj',
@@ -268,13 +270,13 @@ const Map<String, Map<String, double>> stateCoordinates = {
   'West Bengal': {'lat': 22.9868, 'lon': 87.8550},
 };
 
-const List<String> serviceCategories = [
-  'Find Mechanic',
-  'Bike Rentals',
-  'Track day',
-  'Training day',
-  'Accessory Store',
-  'Tyre Shops',
+final List<String> serviceCategories = [
+  AppUtils.findMechanic,
+  AppUtils.bikeRentals,
+  AppUtils.accessoryStore,
+  AppUtils.tyreShop,
+  AppUtils.trackDay,
+  AppUtils.trainingDay,
 ];
 
 const List<String> riderSkillLevels = [

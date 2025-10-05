@@ -2,18 +2,22 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:popp/src/utils/build_extensions.dart';
 import 'package:popp/src/widgets/app_dialogs.dart';
 import 'package:popp/src/widgets/loading_overlay.dart';
 import 'package:popp/src/widgets/title_text.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../api/api_url.dart';
 import '../../api/firebase/firebase_api_service.dart';
 import '../../models/pop_category.dart';
 import '../../models/product.dart';
 import '../../navigation/nav_router.dart';
 import '../../search/autocomplete_search_field.dart';
+import '../../utils/app_loger.dart';
 import '../../utils/product_content_data.dart';
 import '../../widgets/custom_dropdown_form_field.dart';
 import '../../widgets/image_picker_selection.dart';
@@ -47,6 +51,7 @@ class _SellYourBikeState extends State<SellYourBike>
 
   final TextEditingController addressController = TextEditingController();
   final TextEditingController cityController = TextEditingController();
+  final TextEditingController areaController = TextEditingController();
   final TextEditingController pinCodeController = TextEditingController();
 
   // FocusNodes for manual entry fields
@@ -68,6 +73,7 @@ class _SellYourBikeState extends State<SellYourBike>
   bool _isLoading = false;
   String? _insuranceAvailable;
   DateTime? _insuranceValidityTill;
+  bool _termsAccepted = false;
 
   final double _bannerHeight = 40.0;
   final List<File> _images = [];
@@ -96,6 +102,7 @@ class _SellYourBikeState extends State<SellYourBike>
     brandController.dispose();
     modelController.dispose();
     cityController.dispose();
+    areaController.dispose();
     addressController.dispose();
     pinCodeController.dispose();
     kmDrivenController.dispose();
@@ -114,9 +121,31 @@ class _SellYourBikeState extends State<SellYourBike>
     }
   }
 
+  void _openTermsLink() async {
+    AppLogger.w("Terms link clicked");
+    final uri = Uri.parse(ApiUrl.customersTermsLink);
+    final launched = await launchUrl(uri);
+    if (launched) {
+      setState(() => _termsAccepted = true);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text("Could not open Terms & Conditions link.")),
+      );
+    }
+  }
+
   void _submitForm() async {
     if (_formKey.currentState!.validate()) {
       String countryCode = Localizations.localeOf(context).countryCode ?? "IN";
+
+      if (!_termsAccepted) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please accept the Terms & Conditions')),
+        );
+        return;
+      }
 
       // Updated logic to determine final brand and model names
       String finalBrand;
@@ -151,6 +180,7 @@ class _SellYourBikeState extends State<SellYourBike>
         modelName: finalModel,
         state: selectedState ?? "",
         city: cityController.text,
+        area: areaController.text,
         address: addressController.text,
         pinCode: pinCodeController.text,
         kmDriven: kmDrivenController.text,
@@ -209,6 +239,7 @@ class _SellYourBikeState extends State<SellYourBike>
         brandController.clear();
         modelController.clear();
         cityController.clear();
+        areaController.clear();
         addressController.clear();
         pinCodeController.clear();
         kmDrivenController.clear();
@@ -227,6 +258,7 @@ class _SellYourBikeState extends State<SellYourBike>
           _insuranceValidityTill = null;
           _selectedManufactureDate = null;
           _selectedRegistrationDate = null;
+          _termsAccepted = false;
         });
         if (!mounted) return;
         AppDialogs.showProductSuccessDialog(context, () {
@@ -303,7 +335,7 @@ class _SellYourBikeState extends State<SellYourBike>
                           hint: "Choose Category",
                           items: sellerCategories
                               .map((b) =>
-                              DropdownMenuItem(value: b, child: Text(b)))
+                                  DropdownMenuItem(value: b, child: Text(b)))
                               .toList(),
                           onChanged: (val) {
                             setState(() {
@@ -377,7 +409,8 @@ class _SellYourBikeState extends State<SellYourBike>
                       ),
                       if (isBrandOthers)
                         Padding(
-                          padding: const EdgeInsets.only(top: 10.0, bottom: 10.0),
+                          padding:
+                              const EdgeInsets.only(top: 10.0, bottom: 10.0),
                           child: TextFormField(
                             controller: brandController,
                             focusNode: brandFocusNode,
@@ -417,7 +450,8 @@ class _SellYourBikeState extends State<SellYourBike>
                         ),
                       if (isModelOthers && !isBrandOthers)
                         Padding(
-                          padding: const EdgeInsets.only(top: 10.0, bottom: 10.0),
+                          padding:
+                              const EdgeInsets.only(top: 10.0, bottom: 10.0),
                           child: TextFormField(
                             controller: modelController,
                             focusNode: modelFocusNode,
@@ -491,12 +525,22 @@ class _SellYourBikeState extends State<SellYourBike>
                           setState(() {
                             addressController.text = suggestion.text;
                             cityController.text = suggestion.municipality ?? '';
-                            pinCodeController.text = suggestion.postalCode ?? '';
+                            pinCodeController.text =
+                                suggestion.postalCode ?? '';
                           });
                         },
                         validator: (val) => val!.isEmpty ? "Required" : null,
                       ),
                       const SizedBox(height: 10),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10.0),
+                        child: TextFormField(
+                          controller: areaController,
+                          decoration: context.inputDecoration(
+                              "Area", "Enter Area name"),
+                          validator: (val) => val!.isEmpty ? "Required" : null,
+                        ),
+                      ),
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 10.0),
                         child: TextFormField(
@@ -666,6 +710,42 @@ class _SellYourBikeState extends State<SellYourBike>
                             _images.clear();
                             _images.addAll(images);
                           }),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10.0),
+                        child: Row(
+                          children: [
+                            Checkbox(
+                              value: _termsAccepted,
+                              onChanged: (bool? newValue) {
+                                setState(() {
+                                  _termsAccepted = newValue ?? false;
+                                });
+                              },
+                              activeColor: Colors.orange,
+                            ),
+                            Expanded(
+                              child: RichText(
+                                text: TextSpan(
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                  children: [
+                                    const TextSpan(
+                                        text: 'I have read and agree to the '),
+                                    TextSpan(
+                                      text: 'Terms & Conditions',
+                                      style: const TextStyle(
+                                        color: Colors.blue,
+                                        decoration: TextDecoration.underline,
+                                      ),
+                                      recognizer: TapGestureRecognizer()
+                                        ..onTap = _openTermsLink,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],

@@ -13,6 +13,12 @@ class ApiUrl {
   static const String privacyLink =
       'https://popp-71efb.web.app/privacy-policy.html';
 
+  static const String customersTermsLink =
+      'https://popp-71efb.web.app/customers-terms.html';
+
+  static const String businessTermsLink =
+      'https://popp-71efb.web.app/business-owners-terms.html';
+
   static const String userAgreements =
       'https://popp-71efb.web.app/user-agreements.html';
 

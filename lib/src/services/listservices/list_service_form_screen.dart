@@ -15,6 +15,7 @@ import '../../api/api_url.dart';
 import '../../api/firebase/firebase_api_service.dart';
 import '../../search/autocomplete_search_field.dart';
 import '../../utils/app_loger.dart';
+import '../../utils/app_utils.dart';
 import '../../utils/product_content_data.dart';
 import '../../widgets/working_hours_picker.dart';
 
@@ -31,11 +32,11 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
 
   // --- Common controllers, now potentially used in multiple sections based on category ---
   final TextEditingController businessTitleController = TextEditingController();
+  final TextEditingController shopNameController = TextEditingController();
   final TextEditingController businessContactController =
       TextEditingController();
   final TextEditingController contactNameController = TextEditingController();
   final TextEditingController gstController = TextEditingController();
-  final TextEditingController panController = TextEditingController();
   final TextEditingController businessDescriptionController =
       TextEditingController();
   final TextEditingController businessAddressController =
@@ -66,6 +67,7 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
   final List<File> _shopGarageImages =
       []; // Specific to Book Service/Bike Rentals
   String? _doYouInspectPremiumBikes; // For Book Service
+  String? _isTyreFitmentAvailable; // For Book Service
   String? _selectedState; // For Bike Rentals
   String? _bikeProvision; // For Track/Training Day
   String? _riderSkillLevel; // For Track/Training Day
@@ -91,10 +93,10 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
   @override
   void dispose() {
     businessTitleController.dispose();
+    shopNameController.dispose();
     businessContactController.dispose();
     contactNameController.dispose();
     gstController.dispose();
-    panController.dispose();
     businessDescriptionController.dispose();
     businessAddressController.dispose();
     areaController.dispose();
@@ -115,7 +117,7 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
 
   void _openTermsLink() async {
     AppLogger.w("Terms link clicked");
-    final uri = Uri.parse(ApiUrl.privacyLink);
+    final uri = Uri.parse(ApiUrl.customersTermsLink);
     final launched = await launchUrl(uri);
     if (launched) {
       setState(() => _termsAccepted = true);
@@ -140,10 +142,10 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
     _formKey.currentState?.reset(); // Resets the form
     // Clear all text controllers
     businessTitleController.clear();
+    shopNameController.clear();
     businessContactController.clear();
     contactNameController.clear();
     gstController.clear();
-    panController.clear();
     businessDescriptionController.clear();
     businessAddressController.clear();
     areaController.clear();
@@ -204,13 +206,13 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
           'category': _selectedCategory,
           'isActive': true,
           'businessTitle': businessTitleController.text,
+          'shopName': shopNameController.text,
           'businessPromoPicture': _promoImages.map((e) => e.path).toList(),
           'shopGaragePics': _shopGarageImages.map((e) => e.path).toList(),
           'businessContact':
               '$selectedCountryCode ${businessContactController.text}',
           'contactName': contactNameController.text,
           'gstNumber': gstController.text,
-          'panNumber': panController.text,
           'businessDescription': businessDescriptionController.text,
           'businessAddress': businessAddressController.text,
           'area': areaController.text,
@@ -218,11 +220,13 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
           'searchKeywords':
               '${businessTitleController.text} ${areaController.text} '
                       '${cityController.text} $_selectedCategory '
+                      '${shopNameController.text} '
                   .toLowerCase()
                   .split(' '),
           'state': _selectedState,
           'pincode': pincodeController.text,
           'doYouInspectPremiumBikes': _doYouInspectPremiumBikes,
+          'isTyreFitmentAvailable': _isTyreFitmentAvailable,
           'googleMapLink': googleMapLinkController.text,
           'socialMediaLink': socialMediaLinkController.text,
           'businessWorkingDaysHours': businessWorkingDaysHoursController.text,
@@ -261,7 +265,6 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
           'state': _selectedState,
           'pincode': pincodeController.text,
           'gstNumber': gstController.text,
-          'panNumber': panController.text,
           'googleMapLink': googleMapLinkController.text,
           'googleFormLink': googleFormLinkController.text,
           'socialMediaLink': socialMediaLinkController.text,
@@ -310,13 +313,23 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Text('Select Service Category',
-                    style:
-                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Select Service Category',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ],
+                ),
               ),
-              const Divider(thickness: 1, height: 0),
               Align(
                 alignment: Alignment.bottomCenter,
                 child: Column(
@@ -350,17 +363,25 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                       .toList(),
                 ),
               ),
+              const SizedBox(height: 20)
             ],
           ),
         );
       },
     );
-    if (selected != null && selected != _selectedCategory) {
-      // Don't validate the form here, just clear and update the category
-      _clearAllFields();
-      setState(() {
-        _selectedCategory = selected;
-      });
+    if (selected != null) {
+      if (selected != _selectedCategory) {
+        _clearAllFields();
+        setState(() {
+          _selectedCategory = selected;
+        });
+      }
+    } else {
+      // If no category is selected and the user closes the sheet,
+      // and there was no category selected before, close the whole page.
+      if (_selectedCategory == null) {
+        Navigator.of(context).pop();
+      }
     }
   }
 
@@ -401,19 +422,75 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                       ),
                     ),
                   ),
-                if (_selectedCategory == serviceCategories[0] ||
-                    _selectedCategory == serviceCategories[1]) ...[
-                  // Fields for Book your Service / Bike Rentals (from image_1a7749.png)
+                if (_selectedCategory == AppUtils.findMechanic ||
+                    _selectedCategory == AppUtils.bikeRentals ||
+                    _selectedCategory == AppUtils.accessoryStore ||
+                    _selectedCategory == AppUtils.tyreShop) ...[
+                  // Fields for Find Mechanic / Bike Rentals
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: TextFormField(
+                      controller: shopNameController,
+                      decoration: context.inputDecoration(
+                          "Shop name", AppUtils.getShopNameHint(_selectedCategory)),
+                      validator: (val) =>
+                          val!.isEmpty ? "Shop name is mandatory" : null,
+                    ),
+                  ),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
                     child: TextFormField(
                       controller: businessTitleController, // 1
                       decoration: context.inputDecoration(
-                          "Business Title", "Enter your business title"),
+                          "Business name", "As per GST or official records"),
                       validator: (val) =>
                           val!.isEmpty ? "Business Title is mandatory" : null,
                     ),
                   ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: TextFormField(
+                      controller: businessDescriptionController, // 8
+                      decoration: context.inputDecoration(
+                        "Business Description/Clauses",
+                        AppUtils.getBusinessDescriptionHint(_selectedCategory),
+                      ),
+                      maxLines: 3,
+                      validator: (val) => val!.isEmpty
+                          ? "Business Description is mandatory"
+                          : null,
+                    ),
+                  ),
+                  if(_selectedCategory == AppUtils.findMechanic)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: CustomDropdownFormField<String>(
+                      label: "Premium Bike Inspection",
+                      hint: "Would you offer a premium bike inspection?",
+                      value: _doYouInspectPremiumBikes,
+                      items: yesNo
+                          .map(
+                              (s) => DropdownMenuItem(value: s, child: Text(s)))
+                          .toList(),
+                      onChanged: (val) =>
+                          setState(() => _doYouInspectPremiumBikes = val),
+                    ),
+                  ),
+                  if(_selectedCategory == AppUtils.tyreShop)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: CustomDropdownFormField<String>(
+                        label: "Tyre Fitment",
+                        hint: "Is Tyre fitment available in your shop?",
+                        value: _isTyreFitmentAvailable,
+                        items: yesNo
+                            .map(
+                                (s) => DropdownMenuItem(value: s, child: Text(s)))
+                            .toList(),
+                        onChanged: (val) =>
+                            setState(() => _isTyreFitmentAvailable = val),
+                      ),
+                    ),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
                     child: Row(
@@ -454,19 +531,6 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: TextFormField(
-                      controller: businessDescriptionController, // 8
-                      decoration: context.inputDecoration(
-                          "Business Description/Clauses",
-                          "Describe your business and terms"),
-                      maxLines: 3,
-                      validator: (val) => val!.isEmpty
-                          ? "Business Description is mandatory"
-                          : null,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
                     child: CustomDropdownFormField<String>(
                       label: "State",
                       hint: "Select your state",
@@ -481,8 +545,8 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                   ),
                   const SizedBox(height: 10),
                   AutocompleteSearchField(
-                    label: "Business Address",
-                    hint: "Enter your business address",
+                    label: "Shop Address",
+                    hint: "Enter your Shop/Garage address",
                     controller: businessAddressController,
                     icon: null,
                     lat: stateCoordinates[_selectedState]?['lat'] ?? 0.0,
@@ -498,6 +562,16 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                     validator: (val) => val!.isEmpty ? "Required" : null,
                   ),
                   const SizedBox(height: 10),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: TextFormField(
+                      controller: areaController, // 14
+                      decoration:
+                          context.inputDecoration("Area", "Enter area details"),
+                      validator: (val) =>
+                          val!.isEmpty ? "Area is mandatory" : null,
+                    ),
+                  ),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
                     child: TextFormField(
@@ -521,32 +595,12 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: CustomDropdownFormField<String>(
-                      label: "Premium Bike Inspection",
-                      hint: "Do you inspect premium bikes?",
-                      value: _doYouInspectPremiumBikes,
-                      items: yesNo
-                          .map(
-                              (s) => DropdownMenuItem(value: s, child: Text(s)))
-                          .toList(),
-                      onChanged: (val) =>
-                          setState(() => _doYouInspectPremiumBikes = val),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
                     child: TextFormField(
                       controller: gstController, // 6
-                      decoration: context.inputDecoration(
-                          "GST #", "Enter GST number (optional)"),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: TextFormField(
-                      controller: panController, // 7
-                      decoration: context.inputDecoration(
-                          "PAN #", "Enter PAN number (optional)"),
+                      decoration:
+                          context.inputDecoration("GST #", "Enter GST number"),
+                      validator: (val) =>
+                          val!.isEmpty ? "GST number is mandatory" : null,
                     ),
                   ),
                   Padding(
@@ -608,8 +662,8 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                     ),
                   ),
                 ],
-                if (_selectedCategory == 'Track day' ||
-                    _selectedCategory == 'Training day') ...[
+                if (_selectedCategory == serviceCategories[2] ||
+                    _selectedCategory == serviceCategories[3]) ...[
                   // Fields for Track Day / Training Day (from image_1a79f1.png)
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -891,15 +945,15 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                     validator: (val) => val!.isEmpty ? "Required" : null,
                   ),
                   const SizedBox(height: 10),
-                  // Padding(
-                  //   padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  //   child: TextFormField(
-                  //     controller: areaController, // 14
-                  //     decoration: context.inputDecoration("Area", "Enter area"),
-                  //     validator: (val) =>
-                  //         val!.isEmpty ? "Area is mandatory" : null,
-                  //   ),
-                  // ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: TextFormField(
+                      controller: areaController, // 14
+                      decoration: context.inputDecoration("Area", "Enter area"),
+                      validator: (val) =>
+                          val!.isEmpty ? "Area is mandatory" : null,
+                    ),
+                  ),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
                     child: TextFormField(
@@ -927,14 +981,6 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                       controller: gstController, // 18
                       decoration: context.inputDecoration(
                           "GST #", "Enter GST number (optional)"),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: TextFormField(
-                      controller: panController, // 19
-                      decoration: context.inputDecoration(
-                          "PAN #", "Enter PAN number (optional)"),
                     ),
                   ),
                   Padding(

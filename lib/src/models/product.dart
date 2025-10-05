@@ -20,6 +20,7 @@ class Product {
   final DateTime? registrationDate;
   String? registrationPlace; // City & State
   final String city;
+  final String area;
   final String address; // City & State
   final String? pinCode; // City & State
   final String state;
@@ -68,6 +69,7 @@ class Product {
       this.registrationDate,
       this.registrationPlace,
       required this.city,
+      required this.area,
       required this.address,
       this.pinCode,
       required this.state,
@@ -125,6 +127,7 @@ class Product {
         registrationDate: _parseDate(json['registrationDate']),
         registrationPlace: json['registrationPlace'] as String? ?? '',
         city: json['city'] as String? ?? '',
+        area: json['area'] as String? ?? '',
         address: json['address'] as String? ?? '',
         pinCode: json['pinCode'] as String? ?? '',
         state: json['state'] as String? ?? '',
@@ -188,6 +191,7 @@ class Product {
         'registrationDate': Timestamp.fromDate(registrationDate!),
       'registrationPlace': "$city - $state",
       'city': city,
+      'area': area,
       'address': address,
       'pinCode': pinCode,
       'state': state,
@@ -252,6 +256,7 @@ class Product {
       DateTime? registrationDate,
       String? registrationPlace,
       String? city,
+      String? area,
       String? address,
       String? pinCode,
       String? state,
@@ -303,6 +308,7 @@ class Product {
         registrationDate: registrationDate ?? this.registrationDate,
         registrationPlace: registrationPlace ?? this.registrationPlace,
         city: city ?? this.city,
+        area: area ?? this.area,
         address: address ?? this.address,
         pinCode: pinCode ?? this.pinCode,
         state: state ?? this.state,

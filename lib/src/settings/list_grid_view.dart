@@ -105,69 +105,61 @@ class _ListingsGridViewState extends State<ListingsGridView> {
                     ? 'Approved'
                     : 'Pending';
 
-            return FutureBuilder<String>(
-              future: CurrencyService.getLocalizedPrice(
-                  price ?? '', data['countryCode'], countryCode),
-              builder: (context, priceSnapshot) {
-                final localizedPrice = priceSnapshot.data ?? price ?? '';
+            return ListingCard(
+              title: title,
+              imageUrl: imageUrl,
+              price: CurrencyService.getProductPrice(price!, countryCode),
+              status: status,
+              showOptionsMenu: widget.showOptionsMenu,
+              onTap: () {
+                final category = data['category'] as String?;
+                if (!serviceCategories.contains(category)) {
+                  onProductDetailsTap(context, data, true);
+                } else {
+                  onServiceDetailsScreenTap(context, data, category!);
+                }
+              },
+              onEdit: () {
+                // Handle edit action
+              },
+              onSold: () {
+                AppDialogs.showConfirmationDialog(
+                  context: context,
+                  title: "Mark as Sold",
+                  content:
+                      "Marking as sold will update your product status to 'Sold' and it will be automatically removed from the database after 15 days.",
+                  onConfirm: () async {
+                    try {
+                      await FirebaseFirestore.instance
+                          .doc(doc.reference.path)
+                          .update({
+                        'isSold': true,
+                        'soldDate': FieldValue.serverTimestamp(),
+                      });
 
-                return ListingCard(
-                  title: title,
-                  imageUrl: imageUrl,
-                  price: localizedPrice,
-                  status: status,
-                  showOptionsMenu: widget.showOptionsMenu,
-                  onTap: () {
-                    final category = data['category'] as String?;
-                    if (!serviceCategories.contains(category)) {
-                      onProductDetailsTap(context, data, true);
-                    } else {
-                      onServiceDetailsScreenTap(context, data, category!);
+                      // Show success message
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content:
+                                Text('Product marked as sold successfully'),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                        // Force a rebuild of the widget
+                        setState(() {});
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                                'Failed to mark as sold. Please try again.'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
                     }
-                  },
-                  onEdit: () {
-                    // Handle edit action
-                  },
-                  onSold: () {
-                    AppDialogs.showConfirmationDialog(
-                      context: context,
-                      title: "Mark as Sold",
-                      content:
-                          "Marking as sold will update your product status to 'Sold' and it will be automatically removed from the database after 15 days.",
-                      onConfirm: () async {
-                        try {
-                          await FirebaseFirestore.instance
-                              .doc(doc.reference.path)
-                              .update({
-                            'isSold': true,
-                            'soldDate': FieldValue.serverTimestamp(),
-                          });
-
-                          // Show success message
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content:
-                                    Text('Product marked as sold successfully'),
-                                backgroundColor: Colors.green,
-                              ),
-                            );
-                            // Force a rebuild of the widget
-                            setState(() {});
-                          }
-                        } catch (e) {
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                    'Failed to mark as sold. Please try again.'),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
-                          }
-                        }
-                      },
-                    );
                   },
                 );
               },

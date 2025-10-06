@@ -1,4 +1,4 @@
-import 'app_utils.dart';
+import 'package:popp/src/utils/product_utils.dart';
 
 const List<String> bikeBrands = [
   'Aprilia',
@@ -271,12 +271,12 @@ const Map<String, Map<String, double>> stateCoordinates = {
 };
 
 final List<String> serviceCategories = [
-  AppUtils.findMechanic,
-  AppUtils.bikeRentals,
-  AppUtils.accessoryStore,
-  AppUtils.tyreShop,
-  AppUtils.trackDay,
-  AppUtils.trainingDay,
+  ProductUtils.findMechanic,
+  ProductUtils.bikeRentals,
+  ProductUtils.accessoryStore,
+  ProductUtils.tyreShop,
+  ProductUtils.trackDay,
+  ProductUtils.trainingDay,
 ];
 
 const List<String> riderSkillLevels = [

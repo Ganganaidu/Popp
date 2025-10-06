@@ -4,6 +4,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:popp/src/navigation/nav_router.dart';
 import 'package:popp/src/utils/build_extensions.dart';
+import 'package:popp/src/utils/product_utils.dart';
 import 'package:popp/src/widgets/custom_dropdown_form_field.dart';
 import 'package:popp/src/widgets/image_picker_selection.dart';
 import 'package:popp/src/widgets/loading_overlay.dart';
@@ -286,7 +287,7 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
         _clearAllFields(); // Clear all fields after successful submission
         if (!mounted) return;
         // Optionally navigate to a success page or home
-        onServiceListingTap(context, _selectedCategory!, true);
+        onServiceListingTap(context, _selectedCategory!, null, true);
       }
     } else {
       if (!mounted) return;
@@ -422,17 +423,17 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                       ),
                     ),
                   ),
-                if (_selectedCategory == AppUtils.findMechanic ||
-                    _selectedCategory == AppUtils.bikeRentals ||
-                    _selectedCategory == AppUtils.accessoryStore ||
-                    _selectedCategory == AppUtils.tyreShop) ...[
+                if (_selectedCategory == ProductUtils.findMechanic ||
+                    _selectedCategory == ProductUtils.bikeRentals ||
+                    _selectedCategory == ProductUtils.accessoryStore ||
+                    _selectedCategory == ProductUtils.tyreShop) ...[
                   // Fields for Find Mechanic / Bike Rentals
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
                     child: TextFormField(
                       controller: shopNameController,
-                      decoration: context.inputDecoration(
-                          "Shop name", AppUtils.getShopNameHint(_selectedCategory)),
+                      decoration: context.inputDecoration("Shop name",
+                          ProductUtils.getShopNameHint(_selectedCategory)),
                       validator: (val) =>
                           val!.isEmpty ? "Shop name is mandatory" : null,
                     ),
@@ -453,7 +454,8 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                       controller: businessDescriptionController, // 8
                       decoration: context.inputDecoration(
                         "Business Description/Clauses",
-                        AppUtils.getBusinessDescriptionHint(_selectedCategory),
+                        ProductUtils.getBusinessDescriptionHint(
+                            _selectedCategory),
                       ),
                       maxLines: 3,
                       validator: (val) => val!.isEmpty
@@ -461,22 +463,22 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                           : null,
                     ),
                   ),
-                  if(_selectedCategory == AppUtils.findMechanic)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: CustomDropdownFormField<String>(
-                      label: "Premium Bike Inspection",
-                      hint: "Would you offer a premium bike inspection?",
-                      value: _doYouInspectPremiumBikes,
-                      items: yesNo
-                          .map(
-                              (s) => DropdownMenuItem(value: s, child: Text(s)))
-                          .toList(),
-                      onChanged: (val) =>
-                          setState(() => _doYouInspectPremiumBikes = val),
+                  if (_selectedCategory == ProductUtils.findMechanic)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: CustomDropdownFormField<String>(
+                        label: "Premium Bike Inspection",
+                        hint: "Would you offer a premium bike inspection?",
+                        value: _doYouInspectPremiumBikes,
+                        items: yesNo
+                            .map((s) =>
+                                DropdownMenuItem(value: s, child: Text(s)))
+                            .toList(),
+                        onChanged: (val) =>
+                            setState(() => _doYouInspectPremiumBikes = val),
+                      ),
                     ),
-                  ),
-                  if(_selectedCategory == AppUtils.tyreShop)
+                  if (_selectedCategory == ProductUtils.tyreShop)
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8.0),
                       child: CustomDropdownFormField<String>(
@@ -484,8 +486,8 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                         hint: "Is Tyre fitment available in your shop?",
                         value: _isTyreFitmentAvailable,
                         items: yesNo
-                            .map(
-                                (s) => DropdownMenuItem(value: s, child: Text(s)))
+                            .map((s) =>
+                                DropdownMenuItem(value: s, child: Text(s)))
                             .toList(),
                         onChanged: (val) =>
                             setState(() => _isTyreFitmentAvailable = val),

@@ -26,15 +26,14 @@ class DashboardViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      var countryCode = Localizations.localeOf(context).countryCode ?? 'US';
       // Initial load
       categories = await repository.fetchProductsGroupedByCategory(
-          isApproved, countryCode);
+          isApproved);
 
       // Set up real-time listener
       _productsSubscription?.cancel();
       _productsSubscription = repository
-          .getProductsStream(isApproved, countryCode)
+          .getProductsStream(isApproved)
           .listen((updatedCategories) {
         categories = updatedCategories;
         error = null;

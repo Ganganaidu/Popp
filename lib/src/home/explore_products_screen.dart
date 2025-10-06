@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../api/api_url.dart';
 import '../models/shortcut_category.dart';
 import '../navigation/nav_router.dart';
+import '../utils/product_utils.dart';
 
 class ExploreProductsScreen extends StatefulWidget {
   const ExploreProductsScreen({super.key});
@@ -63,26 +64,6 @@ class _ExploreProductsScreenState extends State<ExploreProductsScreen> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
-  }
-
-  List<String> _extractAllImageUrls(Map<String, dynamic> item) {
-    List<String> allImageUrls = [];
-    List<dynamic>? promoImages;
-    if (item['promoImageUrls'] is List) {
-      promoImages = item['promoImageUrls'] as List<dynamic>?;
-    } else if (item['promoImageUrls'] is String &&
-        (item['promoImageUrls'] as String).isNotEmpty) {
-      promoImages = [(item['promoImageUrls'] as String)];
-    } else if (item['thumbImageUrls'] is List) {
-      promoImages = item['thumbImageUrls'] as List<dynamic>?;
-    } else if (item['shopImageUrls'] is String &&
-        (item['shopImageUrls'] as String).isNotEmpty) {
-      promoImages = [(item['shopImageUrls'] as String)];
-    }
-    if (promoImages != null && promoImages.isNotEmpty) {
-      allImageUrls.addAll(promoImages.cast<String>());
-    }
-    return allImageUrls;
   }
 
   @override
@@ -169,10 +150,7 @@ class _ExploreProductsScreenState extends State<ExploreProductsScreen> {
                   itemCount: _results.length,
                   itemBuilder: (context, index) {
                     final item = _results[index];
-                    final allImageUrls = _extractAllImageUrls(item);
-                    final imageUrl = allImageUrls.isNotEmpty
-                        ? allImageUrls.first
-                        : ApiUrl.defaultPlaceholderImage;
+                    final imageUrl = ProductUtils.extractAllImageUrls(item);
 
                     return ListTile(
                       leading: ClipRRect(

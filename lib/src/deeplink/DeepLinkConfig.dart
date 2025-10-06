@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart';
+import 'package:popp/src/utils/product_utils.dart';
 
 import '../navigation/nav_router.dart';
 import '../utils/app_constants.dart';
-import '../utils/product_content_data.dart';
 
 class DeepLinkConfig {
   final bool requiresAuth;
@@ -21,13 +21,13 @@ final deepLinkConfigs = {
     requiresAuth: true,
     loginMessage: '',
     action: (context) =>
-        onServiceListingTap(context, serviceCategories[0], false),
+        onServiceListingTap(context, ProductUtils.findMechanic, null, false),
   ),
   findBikeRentals: DeepLinkConfig(
     requiresAuth: true,
     loginMessage: 'Find Bike Rentals',
     action: (context) =>
-        onServiceListingTap(context, serviceCategories[1], false),
+        onServiceListingTap(context, ProductUtils.bikeRentals, null, false),
   ),
   listYourServices: DeepLinkConfig(
     requiresAuth: true,
@@ -38,13 +38,16 @@ final deepLinkConfigs = {
     requiresAuth: true,
     loginMessage: 'Premium Bike Inspection',
     action: (context) =>
-        onServiceListingTap(context, Constants.premiumInspection, false),
+        onServiceListingTap(context, Constants.premiumInspection, null, false),
   ),
   findTrackTraining: DeepLinkConfig(
     requiresAuth: true,
     loginMessage: 'Find Track Day or Training Day',
     action: (context) => onServiceListingTap(
-        context, [serviceCategories[2], serviceCategories[3]].join(','), false),
+        context,
+        [ProductUtils.trackDay, ProductUtils.trainingDay].join(','),
+        null,
+        false),
   ),
   sellAccessory: DeepLinkConfig(
     requiresAuth: true,

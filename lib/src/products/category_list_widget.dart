@@ -1,34 +1,39 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import '../models/product.dart';
+import '../api/currency_service.dart';
 import '../navigation/nav_router.dart';
 import '../utils/product_content_data.dart';
 import '../utils/build_extensions.dart';
+import '../utils/product_utils.dart';
 import '../widgets/listing_card.dart';
 import 'category_detail_screen.dart';
 
 class CategoryListWidget extends StatelessWidget {
   final String categoryName;
-  final List<Product> products;
+  final List<Map<String, dynamic>> products;
+  final String countryCode;
 
   const CategoryListWidget({
     super.key,
     required this.categoryName,
     required this.products,
+    required this.countryCode
   });
 
   void _navigateToCategoryPage(BuildContext context) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => CategoryDetailScreen(
-          categoryName: categoryName,
-          products: products,
-          filters: categoryName.contains('Premium Bikes')
-              ? bikeFilters
-              : categoryFilters,
-        ),
+        builder: (_) =>
+            CategoryDetailScreen(
+              categoryName: categoryName,
+              subCategory: "",
+              products: products,
+              filters: categoryName.contains(ProductUtils.premiumBikes)
+                  ? bikeFilters
+                  : categoryFilters,
+            ),
       ),
     );
   }
@@ -36,7 +41,6 @@ class CategoryListWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWeb = kIsWeb && context.isDesktop;
-    
     if (isWeb) {
       return _buildWebLayout(context);
     } else {
@@ -45,8 +49,10 @@ class CategoryListWidget extends StatelessWidget {
   }
 
   Widget _buildWebLayout(BuildContext context) {
-    final theme = Theme.of(context).textTheme;
-    
+    final theme = Theme
+        .of(context)
+        .textTheme;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 32.0),
       child: Column(
@@ -61,8 +67,13 @@ class CategoryListWidget extends StatelessWidget {
   }
 
   Widget _buildMobileLayout(BuildContext context) {
-    final theme = Theme.of(context).textTheme;
-    final screenWidth = MediaQuery.of(context).size.width;
+    final theme = Theme
+        .of(context)
+        .textTheme;
+    final screenWidth = MediaQuery
+        .of(context)
+        .size
+        .width;
     final itemWidth = screenWidth * 0.5;
 
     return Padding(
@@ -80,7 +91,8 @@ class CategoryListWidget extends StatelessWidget {
               separatorBuilder: (_, __) => const SizedBox(width: 12),
               itemBuilder: (context, index) {
                 final product = products[index];
-                return _buildProductCard(context, product, itemWidth, isWeb: false);
+                return _buildProductCard(context, product, itemWidth,
+                    isWeb: false);
               },
             ),
           ),
@@ -89,7 +101,8 @@ class CategoryListWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildCategoryHeader(BuildContext context, TextTheme theme, {required bool isWeb}) {
+  Widget _buildCategoryHeader(BuildContext context, TextTheme theme,
+      {required bool isWeb}) {
     return InkWell(
       onTap: () => _navigateToCategoryPage(context),
       child: Padding(
@@ -107,7 +120,7 @@ class CategoryListWidget extends StatelessWidget {
             ),
             IconButton(
               icon: Icon(
-                Icons.arrow_forward_ios, 
+                Icons.arrow_forward_ios,
                 size: isWeb ? 20 : 18,
               ),
               onPressed: () => _navigateToCategoryPage(context),
@@ -134,7 +147,7 @@ class CategoryListWidget extends StatelessWidget {
           crossAxisCount = 2;
           maxItems = 4;
         }
-        
+
         return GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -154,16 +167,19 @@ class CategoryListWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildProductCard(BuildContext context, Product product, double width, {required bool isWeb}) {
+  Widget _buildProductCard(BuildContext context,
+      Map<String, dynamic> product,
+      double width,
+      {required bool isWeb}) {
     return ListingCard(
-      title: product.getTitle(),
-      imageUrl: product.imageUrl,
-      price: product.expectedPrice,
+      title: ProductUtils.getBrandAndModelName(product),
+      imageUrl: product['imageUrl'],
+      price: CurrencyService.getProductPrice(product['price'], countryCode),
       width: width,
-      status: product.isSold ? 'Sold' : null,
+      status: product['isSold'] == true ? 'Sold' : null,
       showOptionsMenu: false,
       onTap: () {
-        onProductDetailsTap(context, product.toJson());
+        onProductDetailsTap(context, product);
       },
     );
   }

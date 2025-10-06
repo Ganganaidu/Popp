@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:popp/src/api/currency_service.dart';
-import 'package:popp/src/models/product.dart';
 import 'package:popp/src/utils/app_loger.dart';
 import 'package:popp/src/widgets/title_text.dart';
 import 'package:share_plus/share_plus.dart';
@@ -19,8 +18,11 @@ class ProductDetailScreen extends StatefulWidget {
   final Map<String, dynamic> productJson;
   final bool showStatus;
 
-  const ProductDetailScreen(
-      {super.key, required this.productJson, this.showStatus = false});
+  const ProductDetailScreen({
+    super.key,
+    required this.productJson,
+    this.showStatus = false,
+  });
 
   @override
   State<ProductDetailScreen> createState() => _ProductDetailScreenState();
@@ -38,6 +40,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   String _status = '';
   String localizedPrice = '';
   bool _didInitPrice = false;
+  String countryCode = '';
 
   @override
   void initState() {
@@ -70,7 +73,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_didInitPrice) {
-      convertPriceToLocal();
+      countryCode = Localizations.localeOf(context).countryCode ?? 'US';
       _didInitPrice = true;
     }
   }
@@ -96,17 +99,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         isFavorite = !prev;
       }
     });
-  }
-
-  void convertPriceToLocal() async {
-    final price = await CurrencyService.getLocalizedPrice(
-        widget.productJson['expectedPrice'],
-        widget.productJson['countryCode'],
-        Localizations.localeOf(context).countryCode ?? 'US');
-    setState(() {
-      localizedPrice = price;
-    });
-    AppLogger.d("ProductDetailScreen convertPriceToLocal: $localizedPrice");
   }
 
   Widget _buildImage(String url, {bool useHero = false}) {
@@ -145,9 +137,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         : imageWidget;
   }
 
-  void _shareProduct(Product product) {
-    final serviceId = widget.productJson['id'];
-    final serviceName = product.getTitle();
+  void _shareProduct(Map<String, dynamic> product) {
+    final serviceId = product['id'];
+    final serviceName = product['title'] ?? '';
     final String deepLink = "${ApiUrl.productsPath}/$serviceId";
     final String shareText = "Check out $serviceName on Bikerverse! $deepLink";
     AppLogger.i("shareText $shareText");
@@ -157,14 +149,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   bool get _isAdmin =>
       FirebaseAuth.instance.currentUser?.uid == Constants.adminUserId;
 
-  // Helper to get styling for status (reused from ListingCard) ---
   (Color, IconData) _getStatusStyle(String status) {
     switch (status.toLowerCase()) {
       case 'sold':
         return (Colors.grey.shade700, Icons.money_off_outlined);
       case 'approved':
         return (Colors.green.shade600, Icons.check_circle_outline);
-      default: // 'Pending'
+      default:
         return (Colors.orange.shade700, Icons.hourglass_top_outlined);
     }
   }
@@ -172,19 +163,20 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context).textTheme;
-    final product =
-        Product.fromJson(widget.productJson, widget.productJson['id']);
-    final imageUrls = product.thumbImageUrls ?? [];
+    final product = widget.productJson;
+    final imageUrls = (product['thumbImageUrls'] as List<dynamic>? ?? []).cast<String>();
 
     return Scaffold(
       appBar: AppBar(
-        title: TitleText(product.subCategory != null &&
-                product.subCategory.toString().isNotEmpty
-            ? '${product.category} - ${product.subCategory}'
-            : product.category, style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            fontFamily: 'Orbitron')),
+        title: TitleText(
+            product['subCategory'] != null &&
+                    product['subCategory'].toString().isNotEmpty
+                ? '${product['category']} - ${product['subCategory']}'
+                : product['category'],
+            style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Orbitron')),
         actions: [
           IconButton(
             icon: const Icon(Icons.share),
@@ -355,25 +347,26 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   const SizedBox(height: 12),
                   // --- Product Title with expandable logic ---
                   ExpandableText(
-                    text: product.getTitle(),
+                    text: product['title'] ?? '',
                     style: theme.titleMedium
                         ?.copyWith(fontWeight: FontWeight.bold),
                     maxLines: 2,
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    localizedPrice,
+                    CurrencyService.getProductPrice(
+                        product['expectedPrice'], countryCode),
                     style: theme.titleLarge?.copyWith(
                       color: Theme.of(context).primaryColor,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 10),
-                  ExpandableProductDetails(product: product),
+                  ExpandableProductDetails(productJson: product),
                   const SizedBox(height: 20),
                   ChatWithSellerCard(
-                    receiverUserName: product.sellerName,
-                    receiverUserID: product.sellerContactNumber,
+                    receiverUserName: product['sellerName'],
+                    receiverUserID: product['sellerContactNumber'],
                   ),
                   const SizedBox(height: 20),
                 ],
@@ -401,10 +394,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     onPressed: _isApproved
                         ? null
                         : () async {
-                            if (product.id != null) {
+                            if (product['id'] != null) {
                               await FirebaseApiService()
                                   .updateProductApprovalStatus(
-                                      product.id ?? '', true);
+                                      product['id'], true);
                               setState(() {
                                 _isApproved = true;
                                 _status = 'Approved';
@@ -413,7 +406,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text(
-                                      'Product "${product.getBrandAndModelName()}" approved successfully!',
+                                      'Product "${product['brandName'] ?? product['title']}" approved successfully!',
                                     ),
                                     duration: const Duration(seconds: 2),
                                   ),
@@ -430,7 +423,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     );
   }
 
-  // Widget for the status banner on the image ---
   Widget _buildStatusBanner() {
     final (color, icon) = _getStatusStyle(_status);
     return Positioned(
@@ -448,7 +440,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           decoration: BoxDecoration(
             color: color,
             borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(0), // Aligns with corner
+              topLeft: Radius.circular(0),
               bottomRight: Radius.circular(12),
             ),
             boxShadow: [

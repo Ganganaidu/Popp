@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../utils/product_utils.dart';
+
 class ShortcutCategory {
   final String title;
   final IconData icon;
@@ -15,7 +17,7 @@ class ShortcutCategory {
 
 final List<ShortcutCategory> shortcutCategories = <ShortcutCategory>[
   const ShortcutCategory(
-    title: 'Premium bikes',
+    title: ProductUtils.premiumBikes,
     icon: Icons.workspace_premium_outlined,
     color: Colors.amber,
   ),
@@ -30,7 +32,7 @@ final List<ShortcutCategory> shortcutCategories = <ShortcutCategory>[
     color: Colors.deepPurpleAccent,
   ),
   const ShortcutCategory(
-    title: 'Find Mechanic',
+    title: ProductUtils.findMechanic,
     icon: Icons.headset_mic_outlined,
     color: Colors.teal,
   ),

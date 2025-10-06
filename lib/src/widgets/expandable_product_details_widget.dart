@@ -4,9 +4,9 @@ import 'package:url_launcher/url_launcher_string.dart';
 import '../models/product.dart';
 
 class ExpandableProductDetails extends StatefulWidget {
-  final Product product;
+  final Map<String, dynamic> productJson;
 
-  const ExpandableProductDetails({super.key, required this.product});
+  const ExpandableProductDetails({super.key, required this.productJson});
 
   @override
   State<ExpandableProductDetails> createState() =>
@@ -19,7 +19,8 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
 
   @override
   Widget build(BuildContext context) {
-    final product = widget.product;
+    final product =
+        Product.fromJson(widget.productJson, widget.productJson["id"]);
     final theme = Theme.of(context).textTheme;
 
     return Column(

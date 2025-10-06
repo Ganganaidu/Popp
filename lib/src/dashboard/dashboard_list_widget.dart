@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../products/category_list_widget.dart';
+import '../utils/app_utils.dart';
 import 'viewmodel/dashboard_viewmodel.dart';
 
 class DashboardListViewWidget extends StatefulWidget {
@@ -24,6 +25,7 @@ class _DashboardListViewWidgetState extends State<DashboardListViewWidget> {
 
   @override
   Widget build(BuildContext context) {
+    String countryCode = Localizations.localeOf(context).countryCode ?? 'US';
     return Consumer<DashboardViewModel>(
       builder: (context, viewModel, _) {
         if (viewModel.isLoading) {
@@ -53,6 +55,7 @@ class _DashboardListViewWidgetState extends State<DashboardListViewWidget> {
               .map((category) => CategoryListWidget(
                     categoryName: category.name,
                     products: (category.products ?? []).reversed.toList(),
+                    countryCode: countryCode,
                   ))
               .toList(),
         );

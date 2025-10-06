@@ -10,8 +10,8 @@ import 'package:url_launcher/url_launcher_string.dart';
 import '../../api/api_url.dart';
 import '../../api/firebase/firebase_api_service.dart';
 import '../../utils/app_constants.dart';
-import '../../utils/app_utils.dart';
 import '../../utils/product_content_data.dart';
+import '../../utils/product_utils.dart';
 import '../../widgets/chat_with_user_widget.dart';
 
 class ServiceDetailScreen extends StatefulWidget {
@@ -83,7 +83,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
   Widget build(BuildContext context) {
     final isAdmin =
         FirebaseAuth.instance.currentUser?.uid == Constants.adminUserId;
-    String appBarTitle = AppUtils.getServiceAppBarTitle(widget.category);
+    String appBarTitle = ProductUtils.getServiceAppBarTitle(widget.category);
     return Scaffold(
       appBar: AppBar(
         title: TitleText(appBarTitle),

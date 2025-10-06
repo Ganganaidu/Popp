@@ -12,6 +12,7 @@ import '../home/search_screen.dart';
 import '../login/forgot_password_screen.dart';
 import '../login/register_and_subscribe_screen.dart';
 import '../login/verification_screen.dart';
+import '../products/category_detail_screen.dart';
 import '../products/product_detail_screen.dart';
 import '../services/accessories/sell_your_accessories.dart';
 import '../services/bikes/sell_your_bike.dart';
@@ -20,6 +21,8 @@ import '../services/listservices/service_detail_screen.dart';
 import '../services/listservices/service_listing_screen.dart';
 import '../settings/my_listings_screen.dart';
 import '../settings/profile_details_screen.dart';
+import '../utils/product_content_data.dart';
+import '../utils/product_utils.dart';
 import '../widgets/app_dialogs.dart';
 
 // Define routes for each tab
@@ -168,20 +171,41 @@ void onAgentChatTap(BuildContext context) {
   );
 }
 
-void onServiceListingTap(
-    BuildContext context, String category, bool isReplacement) {
+void navigateToCategoryPage(BuildContext context, String categoryName,
+    String? subCategory, List<Map<String, dynamic>>? products) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => CategoryDetailScreen(
+        categoryName: categoryName,
+        subCategory: subCategory,
+        products: products,
+        filters: categoryName.contains(ProductUtils.premiumBikes)
+            ? bikeFilters
+            : categoryFilters,
+      ),
+    ),
+  );
+}
+
+void onServiceListingTap(BuildContext context, String category,
+    String? subCategory, bool isReplacement) {
   if (isReplacement) {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => ServiceListingScreen(category: category),
+        builder: (context) => ServiceListingScreen(
+          category: category,
+          subCategory: subCategory,
+        ),
       ),
     );
   } else {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ServiceListingScreen(category: category),
+        builder: (context) =>
+            ServiceListingScreen(category: category, subCategory: subCategory),
       ),
     );
   }
@@ -262,5 +286,3 @@ void onProfileDetailsTap(BuildContext context) {
     ),
   );
 }
-
-

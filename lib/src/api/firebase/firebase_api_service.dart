@@ -502,21 +502,27 @@ class FirebaseApiService {
 
 // Fetch products by category
   Future<List<Map<String, dynamic>>> getProductsByCategory(
-      List<String> categories,
-      {int limit = 20}) async {
+    List<String> categories, {
+    int limit = 20,
+    String? subCategory,
+  }) async {
     try {
-      QuerySnapshot snapshot = await _db
+      Query query = _db
           .collection(ApiUrl.productsPath)
           .where('category', whereIn: categories)
           .orderBy('createdAt', descending: true)
           .where('isActive', isEqualTo: true)
-          .limit(limit)
-          .get();
+          .limit(limit);
+
+      if (subCategory != null && subCategory.isNotEmpty) {
+        query = query.where('subCategory', isEqualTo: subCategory);
+      }
+
+      QuerySnapshot snapshot = await query.get();
       return snapshot.docs
           .map((doc) => doc.data() as Map<String, dynamic>)
           .toList();
     } catch (e) {
-      // AppLogger.d("Error fetching products by category: $e");
       AppLogger.d("Error fetching products by category: $e");
       return [];
     }
@@ -524,16 +530,23 @@ class FirebaseApiService {
 
   // Method to fetch services based on category
   Future<List<Map<String, dynamic>>> fetchServicesByCategories(
-      List<String> categories, bool isApproved) async {
+    List<String> categories,
+    bool isApproved, {
+    String? subCategory,
+  }) async {
     try {
-      QuerySnapshot querySnapshot = await _db
+      Query query = _db
           .collection(ApiUrl.servicePath)
           .where('category', whereIn: categories)
           .where('isApproved', isEqualTo: isApproved)
-          .where('isActive', isEqualTo: true)
-          .get();
+          .where('isActive', isEqualTo: true);
 
-      // Include document ID as 'id' in each map
+      if (subCategory != null && subCategory.isNotEmpty) {
+        query = query.where('subCategory', isEqualTo: subCategory);
+      }
+
+      QuerySnapshot querySnapshot = await query.get();
+
       return querySnapshot.docs.map((doc) {
         final data = doc.data() as Map<String, dynamic>;
         data['id'] = doc.id;

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:popp/src/utils/app_constants.dart';
 import 'package:popp/src/utils/app_loger.dart';
-import 'package:popp/src/utils/app_utils.dart';
 import 'package:popp/src/utils/build_extensions.dart';
 import 'package:popp/src/widgets/title_text.dart';
 import 'package:shimmer/shimmer.dart';
@@ -10,11 +9,14 @@ import '../../api/api_url.dart';
 import '../../api/firebase/firebase_api_service.dart';
 import '../../navigation/nav_router.dart';
 import '../../utils/product_content_data.dart';
+import '../../utils/product_utils.dart';
 
 class ServiceListingScreen extends StatefulWidget {
   final String category;
+  final String? subCategory;
 
-  const ServiceListingScreen({super.key, required this.category});
+  const ServiceListingScreen(
+      {super.key, required this.category, required this.subCategory});
 
   @override
   State<ServiceListingScreen> createState() => _ServiceListingScreenState();
@@ -29,23 +31,26 @@ class _ServiceListingScreenState extends State<ServiceListingScreen> {
     super.initState();
     String category = widget.category;
     if (category.contains(Constants.premiumInspection)) {
-      // Only display Premium Inspection, and search for 'Book your Bike service' and filter by doYouInspectPremiumBikes == 'Yes'
+      // Only display Premium Inspection, and
+      // search for 'Book your Bike service' and
+      // filter by doYouInspectPremiumBikes == 'Yes'
       _servicesFuture = _productsService
-          .fetchServicesByCategories([serviceCategories[0]], true).then(
+          .fetchServicesByCategories([ProductUtils.findMechanic], true).then(
               (services) => services
                   .where((s) => s['doYouInspectPremiumBikes'] == 'Yes')
                   .toList());
     } else {
       final List<String> categories =
           category.split(',').map((e) => e.trim()).toList();
-      _servicesFuture =
-          _productsService.fetchServicesByCategories(categories, true);
+      _servicesFuture = _productsService.fetchServicesByCategories(
+          categories, true,
+          subCategory: widget.subCategory);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    String appBarTitle = AppUtils.getServiceAppBarTitle(widget.category);
+    String appBarTitle = ProductUtils.getServiceAppBarTitle(widget.category);
     return Scaffold(
       appBar: AppBar(
         title: TitleText(appBarTitle),

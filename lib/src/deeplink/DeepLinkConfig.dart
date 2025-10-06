@@ -59,6 +59,18 @@ final deepLinkConfigs = {
     loginMessage: 'Sell your bike',
     action: (context) => onSelleYourBikeTap(context),
   ),
+  tyreShop: DeepLinkConfig(
+    requiresAuth: true,
+    loginMessage: 'Tyre shops',
+    action: (context) =>
+        onServiceListingTap(context, ProductUtils.tyreShop, null, false),
+  ),
+  accessoryStore: DeepLinkConfig(
+    requiresAuth: true,
+    loginMessage: 'Accessory store',
+    action: (context) =>
+        onServiceListingTap(context, ProductUtils.accessoryStore, null, false),
+  ),
   aboutUs: DeepLinkConfig(
     requiresAuth: true,
     loginMessage: 'About Us',
@@ -73,4 +85,6 @@ const String premiumBikeInspection = 'premiumBikeInspection';
 const String listYourServices = 'listYourServices';
 const String findBikeRentals = 'findBikeRentals';
 const String findMechanic = 'findMechanic';
+const String tyreShop = 'tyreShop';
+const String accessoryStore = 'accessoryStore';
 const aboutUs = 'aboutUs';

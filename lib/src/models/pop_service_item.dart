@@ -1,4 +1,5 @@
 import '../deeplink/DeepLinkConfig.dart';
+import '../utils/product_utils.dart';
 
 class PopServiceItem {
   final String? imageUrl;
@@ -50,4 +51,14 @@ final List<PopServiceItem> items = [
       title: 'Premium Bike Inspection',
       assetImageUrl: "assets/premium_bike_inspections.png",
       action: premiumBikeInspection),
+  PopServiceItem(
+      imageUrl: null,
+      title: ProductUtils.tyreShop,
+      assetImageUrl: "assets/tyre_shop.png",
+      action: tyreShop),
+  PopServiceItem(
+      imageUrl: null,
+      title: ProductUtils.accessoryStore,
+      assetImageUrl: "assets/accessories_shop.png",
+      action: accessoryStore),
 ];

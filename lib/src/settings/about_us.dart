@@ -102,7 +102,7 @@ class _AboutUsScreenState extends State<AboutUsScreen> {
                     icon: Icons.engineering_outlined,
                     title: 'Connect with Trusted Mechanics',
                     subtitle:
-                        'Find certified mechanics and service centers, check reviews, and book appointments.',
+                        'Find certified mechanics and service centers.',
                   ),
                   _buildFeatureTile(
                     context: context,
@@ -125,7 +125,7 @@ class _AboutUsScreenState extends State<AboutUsScreen> {
             _buildSection(
               title: 'For Businesses & Service Providers',
               content:
-                  'Popp gives you a powerful platform to list your offerings and connect with a growing community of riders.',
+                  'Bikerverse gives you a powerful platform to list your offerings and connect with a growing community of riders.',
               child: Padding(
                 padding: const EdgeInsets.only(top: 8.0),
                 child: _buildFeatureTile(
@@ -133,7 +133,7 @@ class _AboutUsScreenState extends State<AboutUsScreen> {
                   icon: Icons.storefront_outlined,
                   title: 'List Your Services',
                   subtitle:
-                      'Promote rentals, events, training programs, repair services, and more.',
+                      'Promote Bike rentals, Track days a& Trainings, Repair services, Accessory store and Tyre stores.',
                 ),
               ),
             ),
@@ -147,7 +147,7 @@ class _AboutUsScreenState extends State<AboutUsScreen> {
                 child: _buildFeatureTile(
                   context: context,
                   icon: Icons.email_outlined,
-                  title: 'support@popp.app',
+                  title: 'support@bikerverse.in',
                   subtitle: 'Tap to send us an email',
                   onTap: _launchEmail,
                 ),

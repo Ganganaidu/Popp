@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import '../api/firebase/remote_config_service.dart';
 import '../navigation/nav_router.dart';
 import '../subscription/subscription_provider.dart';
-import 'app_dialogs.dart';
+import '../widgets/app_dialogs.dart';
 
 class ChatWithSellerCard extends StatefulWidget {
   final String receiverUserName;

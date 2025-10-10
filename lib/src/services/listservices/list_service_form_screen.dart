@@ -177,6 +177,8 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
     });
   }
 
+
+
   Future<void> _submitForm() async {
     // Only validate and submit if a category is selected
     if (_selectedCategory == null) {
@@ -200,8 +202,7 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
       Map<String, dynamic> formData = {};
       String countryCode = Localizations.localeOf(context).countryCode ?? "IN";
 
-      if (_selectedCategory == serviceCategories[0] ||
-          _selectedCategory == serviceCategories[1]) {
+      if (isSelectedCategoryValid()) {
         formData.addAll({
           'countryCode': countryCode,
           'category': _selectedCategory,
@@ -232,8 +233,7 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
           'socialMediaLink': socialMediaLinkController.text,
           'businessWorkingDaysHours': businessWorkingDaysHoursController.text,
         });
-      } else if (_selectedCategory == serviceCategories[2] ||
-          _selectedCategory == serviceCategories[3]) {
+      } else if (isSelectedCategoryIsTrackAndTraining()) {
         formData.addAll({
           'isActive': true,
           'countryCode': countryCode,
@@ -286,6 +286,7 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
       if (success) {
         _clearAllFields(); // Clear all fields after successful submission
         if (!mounted) return;
+        AppLogger.d("navigate to : $_selectedCategory");
         // Optionally navigate to a success page or home
         onServiceListingTap(context, _selectedCategory!, null, true);
       }
@@ -295,6 +296,18 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
         const SnackBar(content: Text('Please fill in all required fields')),
       );
     }
+  }
+
+  bool isSelectedCategoryValid() {
+    return _selectedCategory == ProductUtils.findMechanic ||
+        _selectedCategory == ProductUtils.bikeRentals ||
+        _selectedCategory == ProductUtils.accessoryStore ||
+        _selectedCategory == ProductUtils.tyreShop;
+  }
+
+  bool isSelectedCategoryIsTrackAndTraining() {
+    return _selectedCategory == ProductUtils.trackDay ||
+        _selectedCategory == ProductUtils.trainingDay;
   }
 
   void _showCategorySelectionSheet() async {
@@ -393,7 +406,7 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
         title: TitleText(_selectedCategory ?? 'List your service'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.category),
+            icon: const Icon(Icons.arrow_drop_down_circle_rounded),
             tooltip: 'Change Service Category',
             onPressed: _showCategorySelectionSheet,
           ),
@@ -423,10 +436,7 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                       ),
                     ),
                   ),
-                if (_selectedCategory == ProductUtils.findMechanic ||
-                    _selectedCategory == ProductUtils.bikeRentals ||
-                    _selectedCategory == ProductUtils.accessoryStore ||
-                    _selectedCategory == ProductUtils.tyreShop) ...[
+                if (isSelectedCategoryValid()) ...[
                   // Fields for Find Mechanic / Bike Rentals
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -664,8 +674,7 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                     ),
                   ),
                 ],
-                if (_selectedCategory == serviceCategories[2] ||
-                    _selectedCategory == serviceCategories[3]) ...[
+                if (isSelectedCategoryIsTrackAndTraining()) ...[
                   // Fields for Track Day / Training Day (from image_1a79f1.png)
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),

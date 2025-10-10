@@ -85,16 +85,6 @@ class PopServicesWidgets extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.only(top: 20.0, left: 16.0, bottom: 8.0),
-          child: Text(
-            'Would you like to',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
         SizedBox(
           height: 150,
           child: ListView.builder(

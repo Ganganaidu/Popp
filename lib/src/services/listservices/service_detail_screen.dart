@@ -12,7 +12,7 @@ import '../../api/firebase/firebase_api_service.dart';
 import '../../utils/app_constants.dart';
 import '../../utils/product_content_data.dart';
 import '../../utils/product_utils.dart';
-import '../../widgets/chat_with_user_widget.dart';
+import '../../chat/chat_with_user_widget.dart';
 
 class ServiceDetailScreen extends StatefulWidget {
   final Map<String, dynamic> serviceData;

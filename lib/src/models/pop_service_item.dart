@@ -28,14 +28,14 @@ final List<PopServiceItem> items = [
       action: sellAccessory),
   PopServiceItem(
       imageUrl: null,
+      title: 'List your Business',
+      assetImageUrl: "assets/list_your_services.png",
+      action: listYourServices),
+  PopServiceItem(
+      imageUrl: null,
       title: 'Find Mechanic',
       assetImageUrl: "assets/book_your_services.png",
       action: findMechanic),
-  PopServiceItem(
-      imageUrl: null,
-      title: 'List your Services',
-      assetImageUrl: "assets/list_your_services.png",
-      action: listYourServices),
   PopServiceItem(
       imageUrl: null,
       title: 'Track day & Training ',

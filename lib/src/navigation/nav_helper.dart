@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:popp/src/chat/agent_chat_list_screen.dart';
 import 'package:popp/src/home/explore_screen.dart';
 
 import '../home/dashboard_screen.dart';
 import '../home/help_screen.dart';
 import '../home/explore_products_screen.dart';
 import '../toolbar/tab_navigator_observer.dart';
+import '../utils/app_constants.dart';
+import '../widgets/coming_soon_screen.dart';
 import 'nav_router.dart';
 
 class NavHelper {
@@ -43,22 +46,21 @@ class NavHelper {
   void initializeWidgetOptions() {
     widgetOptions = <Widget>[
       const DashboardScreen(),
-      // const ComingSoonScreen(),
       const ExploreScreen(),
-     // const ComingSoonScreen(),
+      const AgentChatListScreen(agentId: Constants.adminUserId),
       const HelpScreen(),
     ];
   }
 
   //
-  // // Method to initialize widgetOptions
+  // Method to initialize widgetOptions
   // void initializeWidgetOptions() {
   //   widgetOptions = <Widget>[
   //     buildNavigator(0, const DashboardScreen()),
-  //     buildNavigator(1, const OurServices()),
+  //     // buildNavigator(1, const OurServices()),
   //     buildNavigator(2, const ExploreProductsScreen()),
   //     buildNavigator(3, const HelpScreen()),
-  //     buildNavigator(4, const CustomerChatScreen()),
+  //     buildNavigator(4, const HelpScreen()),
   //   ];
   // }
 

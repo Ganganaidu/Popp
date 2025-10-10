@@ -66,6 +66,14 @@ class CustomBottomNavBar extends StatelessWidget {
               // ),
               BottomNavigationBarItem(
                 icon: Icon(
+                  selectedIndex == 3
+                      ? Icons.chat_bubble_outlined
+                      : Icons.chat_bubble_outline,
+                ),
+                label: Constants.chat,
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(
                   selectedIndex == 4
                       ? Icons.help_center_rounded
                       : Icons.help_center_outlined,

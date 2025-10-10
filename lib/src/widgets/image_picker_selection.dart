@@ -57,14 +57,6 @@ class _ImagePickerSectionState extends State<ImagePickerSection> {
                   _pickImage(ImageSource.camera);
                 },
               ),
-              ListTile(
-                leading: const Icon(Icons.photo_library),
-                title: const Text('Gallery'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _pickImage(ImageSource.gallery);
-                },
-              ),
             ],
           ),
         );

@@ -10,7 +10,7 @@ import '../api/api_url.dart';
 import '../api/firebase/firebase_api_service.dart';
 import '../utils/app_constants.dart';
 import '../widgets/app_dialogs.dart';
-import '../widgets/chat_with_user_widget.dart';
+import '../chat/chat_with_user_widget.dart';
 import '../widgets/expandable_product_details_widget.dart';
 import '../widgets/expandable_text_widget.dart';
 

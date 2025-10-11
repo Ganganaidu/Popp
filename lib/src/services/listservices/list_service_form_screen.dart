@@ -202,38 +202,38 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
       Map<String, dynamic> formData = {};
       String countryCode = Localizations.localeOf(context).countryCode ?? "IN";
 
-      if (isSelectedCategoryValid()) {
+      if (ProductUtils.isBikeAndOthersCategory(_selectedCategory)) {
         formData.addAll({
-          'countryCode': countryCode,
-          'category': _selectedCategory,
           'isActive': true,
-          'businessTitle': businessTitleController.text,
+          'category': _selectedCategory,
           'shopName': shopNameController.text,
-          'businessPromoPicture': _promoImages.map((e) => e.path).toList(),
-          'shopGaragePics': _shopGarageImages.map((e) => e.path).toList(),
-          'businessContact':
-              '$selectedCountryCode ${businessContactController.text}',
-          'contactName': contactNameController.text,
-          'gstNumber': gstController.text,
+          'businessTitle': businessTitleController.text,
           'businessDescription': businessDescriptionController.text,
-          'businessAddress': businessAddressController.text,
+          'businessContact':
+          '$selectedCountryCode ${businessContactController.text}',
+          'contactName': contactNameController.text,
+          'state': _selectedState,
           'area': areaController.text,
           'city': cityController.text,
-          'searchKeywords':
-              '${businessTitleController.text} ${areaController.text} '
-                      '${cityController.text} $_selectedCategory '
-                      '${shopNameController.text} '
-                  .toLowerCase()
-                  .split(' '),
-          'state': _selectedState,
+          'businessAddress': businessAddressController.text,
           'pincode': pincodeController.text,
+          'gstNumber': gstController.text,
           'doYouInspectPremiumBikes': _doYouInspectPremiumBikes,
           'isTyreFitmentAvailable': _isTyreFitmentAvailable,
           'googleMapLink': googleMapLinkController.text,
           'socialMediaLink': socialMediaLinkController.text,
           'businessWorkingDaysHours': businessWorkingDaysHoursController.text,
+          'businessPromoPicture': _promoImages.map((e) => e.path).toList(),
+          'shopGaragePics': _shopGarageImages.map((e) => e.path).toList(),
+          'searchKeywords':
+          '${businessTitleController.text} ${areaController.text} '
+              '${cityController.text} $_selectedCategory '
+              '${shopNameController.text} '
+              .toLowerCase()
+              .split(' '),
+          'countryCode': countryCode,
         });
-      } else if (isSelectedCategoryIsTrackAndTraining()) {
+      } else if (ProductUtils.isTrackAndTrainingCategory(_selectedCategory)) {
         formData.addAll({
           'isActive': true,
           'countryCode': countryCode,
@@ -286,7 +286,7 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
       if (success) {
         _clearAllFields(); // Clear all fields after successful submission
         if (!mounted) return;
-        AppLogger.d("navigate to : $_selectedCategory");
+        AppLogger.d("Form submission navigate to : $_selectedCategory");
         // Optionally navigate to a success page or home
         onServiceListingTap(context, _selectedCategory!, null, true);
       }
@@ -296,18 +296,6 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
         const SnackBar(content: Text('Please fill in all required fields')),
       );
     }
-  }
-
-  bool isSelectedCategoryValid() {
-    return _selectedCategory == ProductUtils.findMechanic ||
-        _selectedCategory == ProductUtils.bikeRentals ||
-        _selectedCategory == ProductUtils.accessoryStore ||
-        _selectedCategory == ProductUtils.tyreShop;
-  }
-
-  bool isSelectedCategoryIsTrackAndTraining() {
-    return _selectedCategory == ProductUtils.trackDay ||
-        _selectedCategory == ProductUtils.trainingDay;
   }
 
   void _showCategorySelectionSheet() async {
@@ -324,61 +312,63 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
       builder: (context) {
         return SizedBox(
           width: double.infinity,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('Select Service Category',
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold)),
-                    IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                    ),
-                  ],
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Select Service Category',
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold)),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: serviceCategories
-                      .map((category) => Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 6),
-                            child: Card(
-                              elevation: 1,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              color: Theme.of(context).colorScheme.surface,
-                              child: ListTile(
-                                title: Center(
-                                  child: Text(
-                                    category,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 16,
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: serviceCategories
+                        .map((category) => Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 6),
+                              child: Card(
+                                elevation: 1,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                color: Theme.of(context).colorScheme.surface,
+                                child: ListTile(
+                                  title: Center(
+                                    child: Text(
+                                      category,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 16,
+                                      ),
                                     ),
                                   ),
+                                  onTap: () {
+                                    Navigator.of(context).pop(category);
+                                  },
                                 ),
-                                onTap: () {
-                                  Navigator.of(context).pop(category);
-                                },
                               ),
-                            ),
-                          ))
-                      .toList(),
+                            ))
+                        .toList(),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 20)
-            ],
+                const SizedBox(height: 20)
+              ],
+            ),
           ),
         );
       },
@@ -436,7 +426,7 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                       ),
                     ),
                   ),
-                if (isSelectedCategoryValid()) ...[
+                if (ProductUtils.isBikeAndOthersCategory(_selectedCategory)) ...[
                   // Fields for Find Mechanic / Bike Rentals
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -674,7 +664,7 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                     ),
                   ),
                 ],
-                if (isSelectedCategoryIsTrackAndTraining()) ...[
+                if (ProductUtils.isTrackAndTrainingCategory(_selectedCategory)) ...[
                   // Fields for Track Day / Training Day (from image_1a79f1.png)
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),

@@ -30,7 +30,7 @@ class _ServiceListingScreenState extends State<ServiceListingScreen> {
   void initState() {
     super.initState();
     String category = widget.category;
-    if (category.contains(Constants.premiumInspection)) {
+    if (category.contains(ProductUtils.premiumInspection)) {
       // Only display Premium Inspection, and
       // search for 'Book your Bike service' and
       // filter by doYouInspectPremiumBikes == 'Yes'
@@ -95,6 +95,7 @@ class _ServiceListingScreenState extends State<ServiceListingScreen> {
               itemCount: services.length,
               itemBuilder: (context, index) {
                 final service = services[index];
+                final isApproved = service['isApproved'] == true;
 
                 // Determine the background image
                 String? imageUrl;
@@ -127,18 +128,12 @@ class _ServiceListingScreenState extends State<ServiceListingScreen> {
                 String capacity = 'N/A';
 
                 AppLogger.d("category ${widget.category}");
-                if (widget.category == serviceCategories[0] ||
-                    widget.category == serviceCategories[1] ||
-                    widget.category == Constants.premiumInspection) {
+                if (ProductUtils.isBikeAndOthersCategory(widget.category)) {
                   // For Book Service / Bike Rentals
                   location =
                       '${service['businessAddress'] ?? ''}, ${service['city'] ?? ''}, ${service['state'] ?? ''}';
                   dateTime = service['businessWorkingDaysHours'] ?? 'N/A';
-                } else if (widget.category == serviceCategories[2] ||
-                    widget.category == serviceCategories[3] ||
-                    widget.category ==
-                        [serviceCategories[2], serviceCategories[3]]
-                            .join(',')) {
+                } else if (ProductUtils.isTrackAndTrainingCategory(widget.category)) {
                   // For Track Day / Training Day
                   location =
                       '${service['locationAddress'] ?? ''}, ${service['city'] ?? ''}, ${service['state'] ?? ''}';
@@ -270,6 +265,26 @@ class _ServiceListingScreenState extends State<ServiceListingScreen> {
                               ),
                             ),
                           ),
+                          if (!isApproved)
+                            Positioned(
+                              top: 12.0,
+                              right: 12.0,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8.0, vertical: 4.0),
+                                decoration: BoxDecoration(
+                                  color: Colors.orangeAccent,
+                                  borderRadius: BorderRadius.circular(8.0),
+                                ),
+                                child: const Text(
+                                  'Pending',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
                         ],
                       ),
                     ),

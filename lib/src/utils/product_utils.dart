@@ -11,6 +11,7 @@ class ProductUtils {
   static const String tyreShop = "Tyre Shops";
   static const String trackDay = "Track day";
   static const String trainingDay = "Training day";
+  static const String premiumInspection = 'Premium Inspection';
 
   static String getTitle(Map<String, dynamic>? product) {
     return "${product?['brandName']} ${product?['modelName']} - ${product?['city']}";
@@ -78,5 +79,20 @@ class ProductUtils {
       return "Enter Shop/Garage name";
     }
     return "Enter Shop name";
+  }
+
+ static bool isBikeAndOthersCategory(String? selectedCategory) {
+    return selectedCategory == ProductUtils.findMechanic ||
+        selectedCategory == ProductUtils.bikeRentals ||
+        selectedCategory == ProductUtils.accessoryStore ||
+        selectedCategory == ProductUtils.tyreShop ||
+        selectedCategory == ProductUtils.premiumInspection;
+  }
+
+  static bool isTrackAndTrainingCategory(String? selectedCategory) {
+    return selectedCategory == ProductUtils.trackDay ||
+        selectedCategory == ProductUtils.trainingDay ||
+        selectedCategory ==
+            [ProductUtils.trackDay, ProductUtils.trainingDay].join(',');
   }
 }

@@ -12,7 +12,6 @@ class Constants {
   static const String help = 'Help';
   static const String explore = 'Explore';
   static const String search = 'Search';
-  static const String premiumInspection = 'Premium Inspection';
 
   static const String contactNumber = '+91 995 9958 899';
   static const String contactEmail = 'bikerverse.in@gmail.com';

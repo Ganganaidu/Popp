@@ -38,7 +38,7 @@ final deepLinkConfigs = {
     requiresAuth: true,
     loginMessage: 'Premium Bike Inspection',
     action: (context) =>
-        onServiceListingTap(context, Constants.premiumInspection, null, false),
+        onServiceListingTap(context, ProductUtils.premiumInspection, null, false),
   ),
   findTrackTraining: DeepLinkConfig(
     requiresAuth: true,

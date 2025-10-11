@@ -535,23 +535,53 @@ class FirebaseApiService {
     String? subCategory,
   }) async {
     try {
-      Query query = _db
+      final userId = currentUser?.uid;
+      // Query for isActive == true
+      Query queryActive = _db
           .collection(ApiUrl.servicePath)
           .where('category', whereIn: categories)
           .where('isApproved', isEqualTo: isApproved)
           .where('isActive', isEqualTo: true);
-
       if (subCategory != null && subCategory.isNotEmpty) {
-        query = query.where('subCategory', isEqualTo: subCategory);
+        queryActive = queryActive.where('subCategory', isEqualTo: subCategory);
       }
-
-      QuerySnapshot querySnapshot = await query.get();
-
-      return querySnapshot.docs.map((doc) {
+      QuerySnapshot activeSnapshot = await queryActive.get();
+      List<Map<String, dynamic>> activeServices = activeSnapshot.docs.map((doc) {
         final data = doc.data() as Map<String, dynamic>;
         data['id'] = doc.id;
         return data;
       }).toList();
+
+      AppLogger.d("current user $userId");
+
+      // Query for current user's services
+      List<Map<String, dynamic>> userServices = [];
+      if (userId != null) {
+        Query queryUser = _db
+            .collection(ApiUrl.servicePath)
+            .where('category', whereIn: categories)
+            .where('userId', isEqualTo: userId)
+            .where('isActive', isEqualTo: true);
+        if (subCategory != null && subCategory.isNotEmpty) {
+          queryUser = queryUser.where('subCategory', isEqualTo: subCategory);
+        }
+        QuerySnapshot userSnapshot = await queryUser.get();
+        userServices = userSnapshot.docs.map((doc) {
+          final data = doc.data() as Map<String, dynamic>;
+          data['id'] = doc.id;
+          return data;
+        }).toList();
+      }
+
+      // Merge and deduplicate
+      final allServices = <String, Map<String, dynamic>>{};
+      for (var service in activeServices) {
+        allServices[service['id']] = service;
+      }
+      for (var service in userServices) {
+        allServices[service['id']] = service;
+      }
+      return allServices.values.toList();
     } catch (e) {
       AppLogger.d("Error fetching services: $e");
       return [];

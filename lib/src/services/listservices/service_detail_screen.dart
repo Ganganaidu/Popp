@@ -186,16 +186,15 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
       contactName = (serviceData['pointOfContactName'] ?? '') as String;
     }
     String userId = (serviceData['userId'] ?? '') as String;
+    final isApproved = serviceData['isApproved'] == true;
 
     Map<String, String> eventDetails = {};
     Map<String, String> bikeRentalDetails = {};
 
-    final isBikeRentalCategory = (category == serviceCategories[0] ||
-        category == serviceCategories[1] ||
-        category == Constants.premiumInspection);
-    final isTrackOrTrainingDay = (category == serviceCategories[2] ||
-        category == serviceCategories[3] ||
-        category == [serviceCategories[2], serviceCategories[3]].join(','));
+    final isBikeRentalCategory =
+        (ProductUtils.isBikeAndOthersCategory(category));
+    final isTrackOrTrainingDay =
+        (ProductUtils.isTrackAndTrainingCategory(category));
 
     if (isBikeRentalCategory) {
       locationInfo =
@@ -371,7 +370,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                             decoration: BoxDecoration(
                               border: Border.all(
                                 color: _selectedImageIndex == index
-                                    ? Colors.orange
+                                    ? Theme.of(context).primaryColor
                                     : Colors.transparent,
                                 width: 3,
                               ),
@@ -435,9 +434,18 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      if(!isApproved)
+                      Text(
+                        "Status: Pending Approval",
+                        style: context.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.orange
+                        ),
+                      ),
+                      const SizedBox(height: 8),
                       Text(
                         title,
-                        style: context.headlineLarge?.copyWith(
+                        style: context.headlineMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
                       ),

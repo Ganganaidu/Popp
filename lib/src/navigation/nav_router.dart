@@ -21,6 +21,7 @@ import '../services/listservices/service_detail_screen.dart';
 import '../services/listservices/service_listing_screen.dart';
 import '../settings/my_listings_screen.dart';
 import '../settings/profile_details_screen.dart';
+import '../utils/app_loger.dart';
 import '../utils/product_content_data.dart';
 import '../utils/product_utils.dart';
 import '../widgets/app_dialogs.dart';
@@ -190,6 +191,7 @@ void navigateToCategoryPage(BuildContext context, String categoryName,
 
 void onServiceListingTap(BuildContext context, String category,
     String? subCategory, bool isReplacement) {
+  AppLogger.d("Form submission navigate to : $category > $subCategory");
   if (isReplacement) {
     Navigator.pushReplacement(
       context,

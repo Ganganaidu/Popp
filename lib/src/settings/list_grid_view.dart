@@ -108,7 +108,7 @@ class _ListingsGridViewState extends State<ListingsGridView> {
             return ListingCard(
               title: title,
               imageUrl: imageUrl,
-              price: CurrencyService.getProductPrice(price!, countryCode),
+              price: CurrencyService.getProductPrice(price, countryCode),
               status: status,
               showOptionsMenu: widget.showOptionsMenu,
               onTap: () {

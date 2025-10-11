@@ -9,7 +9,10 @@ class CurrencyService {
   static const String _apiKey = '7c021024b664cfb6d1e1dc27';
   static const String _baseUrl = 'https://v6.exchangerate-api.com/v6/';
 
-  static String getProductPrice(String priceValueStr, String? countryCode) {
+  static String getProductPrice(String? priceValueStr, String? countryCode) {
+    if (priceValueStr == null) {
+      return "";
+    }
     if (countryCode == null || countryCode.isEmpty) {
       countryCode = 'IN'; // Default to India if null
     }

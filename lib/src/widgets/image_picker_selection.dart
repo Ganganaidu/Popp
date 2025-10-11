@@ -79,7 +79,7 @@ class _ImagePickerSectionState extends State<ImagePickerSection> {
             itemBuilder: (context, index) {
               if (index == widget.images.length) {
                 return GestureDetector(
-                  onTap: () => _showImageSourceActionSheet(context),
+                  onTap: () => _pickImage(ImageSource.camera),
                   child: Container(
                     width: 100,
                     height: 100,

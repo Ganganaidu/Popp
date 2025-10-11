@@ -67,13 +67,8 @@ class CategoryListWidget extends StatelessWidget {
   }
 
   Widget _buildMobileLayout(BuildContext context) {
-    final theme = Theme
-        .of(context)
-        .textTheme;
-    final screenWidth = MediaQuery
-        .of(context)
-        .size
-        .width;
+    final theme = Theme.of(context).textTheme;
+    final screenWidth = MediaQuery.of(context).size.width;
     final itemWidth = screenWidth * 0.5;
 
     return Padding(

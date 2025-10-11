@@ -504,7 +504,7 @@ class FirebaseApiService {
   Future<List<Map<String, dynamic>>> getProductsByCategory(
     List<String> categories, {
     int limit = 20,
-    String? subCategory,
+        List<String>? subCategory,
   }) async {
     try {
       Query query = _db
@@ -515,7 +515,7 @@ class FirebaseApiService {
           .limit(limit);
 
       if (subCategory != null && subCategory.isNotEmpty) {
-        query = query.where('subCategory', isEqualTo: subCategory);
+        query = query.where('subCategory', whereIn: subCategory);
       }
 
       QuerySnapshot snapshot = await query.get();

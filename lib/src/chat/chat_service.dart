@@ -275,18 +275,36 @@ class ChatService extends ChangeNotifier {
     }
   }
 
-  // Fetch all products (e.g., for a public catalog) - NO CHANGE
-  Future<List<Map<String, dynamic>>> getChats() async {
-    try {
-      QuerySnapshot snapshot =
-      await _firestore.collection(ApiUrl.agentToUserChatPath).get();
-      return snapshot.docs
-          .map((doc) => doc.data() as Map<String, dynamic>)
-          .toList();
-    } catch (e) {
-      AppLogger.d("Error fetching all products: $e");
-      return [];
+  // Stream of messages for the current user (for non-agent dashboard)
+  Stream<List<Map<String, dynamic>>> getUserMessages() {
+    final userId = _firebaseAuth.currentUser?.uid;
+    if (userId == null) {
+      return Stream.value([]);
     }
+    // Assuming messages are stored in a 'chats' collection
+    return _firestore
+        .collection(ApiUrl.userToUserChatPath)
+        .where('participants', arrayContains: userId)
+        .snapshots()
+        .map((snapshot) {
+      // Group messages by chat partner
+      final Map<String, Map<String, dynamic>> chatMap = {};
+      for (var doc in snapshot.docs) {
+        final data = doc.data();
+        final participants = List<String>.from(data['participants'] ?? []);
+        final receiverId = participants.firstWhere((id) => id != userId, orElse: () => '');
+        final receiverName = data['receiverName'] ?? '';
+        final lastMessage = data['lastMessage'] ?? '';
+        if (receiverId.isNotEmpty) {
+          chatMap[receiverId] = {
+            'receiverId': receiverId,
+            'receiverName': receiverName,
+            'lastMessage': lastMessage,
+          };
+        }
+      }
+      return chatMap.values.toList();
+    });
   }
 
   // Existing getUsersStream (for user-to-user selection) - NO CHANGE

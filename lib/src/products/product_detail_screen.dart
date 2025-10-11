@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:popp/src/api/currency_service.dart';
 import 'package:popp/src/utils/app_loger.dart';
+import 'package:popp/src/utils/product_utils.dart';
 import 'package:popp/src/widgets/title_text.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shimmer/shimmer.dart';
@@ -164,14 +165,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context).textTheme;
     final product = widget.productJson;
-    final imageUrls = (product['thumbImageUrls'] as List<dynamic>? ?? []).cast<String>();
+    final imageUrls =
+        (product['thumbImageUrls'] as List<dynamic>? ?? []).cast<String>();
 
     return Scaffold(
       appBar: AppBar(
         title: TitleText(
             product['subCategory'] != null &&
                     product['subCategory'].toString().isNotEmpty
-                ? '${product['category']} - ${product['subCategory']}'
+                ? '${product['subCategory']}'
                 : product['category'],
             style: const TextStyle(
                 fontSize: 16,
@@ -347,7 +349,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   const SizedBox(height: 12),
                   // --- Product Title with expandable logic ---
                   ExpandableText(
-                    text: product['title'] ?? '',
+                    text: ProductUtils.getTitle(product),
                     style: theme.titleMedium
                         ?.copyWith(fontWeight: FontWeight.bold),
                     maxLines: 2,
@@ -366,7 +368,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   const SizedBox(height: 20),
                   ChatWithSellerCard(
                     receiverUserName: product['sellerName'],
-                    receiverUserID: product['sellerContactNumber'],
+                    receiverUserID: product['userId'],
                   ),
                   const SizedBox(height: 20),
                 ],

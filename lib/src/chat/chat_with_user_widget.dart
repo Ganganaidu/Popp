@@ -71,44 +71,51 @@ class _ChatWithSellerCardState extends State<ChatWithSellerCard> {
                       style: const TextStyle(
                           fontWeight: FontWeight.bold, fontSize: 16)),
                   const SizedBox(height: 4),
-                  const Text("Chat with Provider",
-                      style: TextStyle(color: Colors.grey)),
+                  isSelfChat
+                      ? const Text("Owner",
+                          style: TextStyle(
+                              color: Colors.green,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16))
+                      : const Text("Chat with Provider",
+                          style: TextStyle(color: Colors.grey)),
                 ],
               ),
             ),
-            ElevatedButton.icon(
-              onPressed: chatEnabled
-                  ? () => _openChatWithSeller(context)
-                  : () {
-                      String message;
-                      if (isSelfChat) {
-                        message = 'You cannot chat with yourself.';
-                      } else {
-                        message = user == null
-                            ? 'Please login to use chat.'
-                            : 'Chat feature is available for subscribed users only.Please upgrade your plan to start chatting';
-                      }
-                      final confirmText = user == null ? 'Login' : 'Subscribe';
-                      AppDialogs.showConfirmationDialog(
-                          context: context,
-                          title: 'Chat Unavailable',
-                          content: message,
-                          confirmText: confirmText,
-                          onConfirm: () {
-                            if (user == null) {
-                              onLoginTap(context);
-                            } else {
-                              onSettingsTap(context);
-                            }
-                          });
-                    },
-              icon: const Icon(Icons.messenger_rounded),
-              label: const Text("Chat"),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: chatEnabled ? Colors.green : Colors.grey,
-                foregroundColor: Colors.white,
-              ),
-            )
+            if (!isSelfChat)
+              ElevatedButton.icon(
+                onPressed: chatEnabled
+                    ? () => _openChatWithSeller(context)
+                    : () {
+                        String message;
+                        if (user == null) {
+                          message = 'Please login to use chat.';
+                        } else {
+                          message =
+                              'Chat feature is available for subscribed users only. Please upgrade your plan to start chatting';
+                        }
+                        final confirmText =
+                            user == null ? 'Login' : 'Subscribe';
+                        AppDialogs.showConfirmationDialog(
+                            context: context,
+                            title: 'Chat Unavailable',
+                            content: message,
+                            confirmText: confirmText,
+                            onConfirm: () {
+                              if (user == null) {
+                                onLoginTap(context);
+                              } else {
+                                onSettingsTap(context);
+                              }
+                            });
+                      },
+                icon: const Icon(Icons.messenger_rounded),
+                label: const Text("Chat"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: chatEnabled ? Colors.green : Colors.grey,
+                  foregroundColor: Colors.white,
+                ),
+              )
           ],
         ),
       ),

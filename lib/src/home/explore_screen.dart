@@ -128,6 +128,10 @@ class ExploreScreen extends StatelessWidget {
   }
 
   Widget _buildExploreCategories(BuildContext context, bool isDarkMode) {
+    final List<String> categoriesWithPremiumBikes = [
+      ...serviceCategories,
+      ProductUtils.premiumBikes,
+    ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -142,8 +146,8 @@ class ExploreScreen extends StatelessWidget {
         _buildSectionGrid(
           context,
           isDarkMode,
-          shortcutCategories.map((c) => c.title).toList(),
-          (name) => _navigateToTargetPage(context, name, null),
+          categoriesWithPremiumBikes,
+          (name) => onServiceListingTap(context, name, null, false),
         ),
       ],
     );
@@ -171,7 +175,8 @@ class ExploreScreen extends StatelessWidget {
                 context,
                 isDarkMode,
                 category.subcategories!,
-                (name) => _navigateToTargetPage(context, category.name, name),
+                (name) =>
+                    navigateToCategoryPage(context, category.name, name, null),
               ),
               const SizedBox(height: 16)
             ],

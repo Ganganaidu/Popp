@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:popp/src/chat/agent_chat_list_screen.dart';
 import 'package:popp/src/home/explore_screen.dart';
 
+import '../chat/chat_list_screen.dart';
 import '../home/dashboard_screen.dart';
 import '../home/help_screen.dart';
-import '../home/explore_products_screen.dart';
 import '../toolbar/tab_navigator_observer.dart';
 import '../utils/app_constants.dart';
-import '../widgets/coming_soon_screen.dart';
 import 'nav_router.dart';
 
 class NavHelper {
@@ -47,7 +45,7 @@ class NavHelper {
     widgetOptions = <Widget>[
       const DashboardScreen(),
       const ExploreScreen(),
-      const AgentChatListScreen(agentId: Constants.adminUserId),
+      const ChatListScreen(agentId: Constants.adminUserId),
       const HelpScreen(),
     ];
   }

@@ -6,7 +6,7 @@ import 'package:popp/src/settings/settings_screen.dart';
 import 'package:popp/src/utils/app_constants.dart';
 
 import '../admin/admin_dashboard_screen.dart';
-import '../chat/agent_chat_list_screen.dart';
+import '../chat/chat_list_screen.dart';
 import '../chat/generic_chat_screen.dart';
 import '../home/search_screen.dart';
 import '../login/forgot_password_screen.dart';
@@ -167,7 +167,7 @@ void onAgentChatTap(BuildContext context) {
     context,
     MaterialPageRoute(
       builder: (context) =>
-          const AgentChatListScreen(agentId: Constants.adminUserId),
+          const ChatListScreen(agentId: Constants.adminUserId),
     ),
   );
 }

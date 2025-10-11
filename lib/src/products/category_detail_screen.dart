@@ -49,18 +49,18 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
       try {
         final List<Map<String, dynamic>> fetched = await _productsService
             .getProductsByCategory([widget.categoryName],
-                subCategory: widget.subCategory);
+                subCategory: [widget.subCategory].whereType<String>().toList());
         List<Map<String, dynamic>> products =
             List<Map<String, dynamic>>.from(fetched);
         // If no products found, try fetchServicesByCategories
-        if (products.isEmpty) {
-          AppLogger.d("No products found, trying to fetch services...");
-          final List<Map<String, dynamic>> serviceFetched =
-              await _productsService
-                  .fetchServicesByCategories([widget.categoryName], true);
-          AppLogger.d("Fetched services: $serviceFetched");
-          products = List<Map<String, dynamic>>.from(serviceFetched);
-        }
+        // if (products.isEmpty) {
+        //   AppLogger.d("No products found, trying to fetch services...");
+        //   final List<Map<String, dynamic>> serviceFetched =
+        //       await _productsService
+        //           .fetchServicesByCategories([widget.categoryName], true);
+        //   AppLogger.d("Fetched services: $serviceFetched");
+        //   products = List<Map<String, dynamic>>.from(serviceFetched);
+        // }
         setState(() {
           filteredProducts = List<Map<String, dynamic>>.from(products);
           _isLoading = false;

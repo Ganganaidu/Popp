@@ -27,7 +27,7 @@ final List<ShortcutCategory> shortcutCategories = <ShortcutCategory>[
     color: Colors.blueAccent,
   ),
   const ShortcutCategory(
-    title: 'Events',
+    title: 'Accessories store',
     icon: Icons.event_available_outlined,
     color: Colors.deepPurpleAccent,
   ),

@@ -10,11 +10,15 @@ import '../widgets/app_dialogs.dart';
 class ChatWithSellerCard extends StatefulWidget {
   final String receiverUserName;
   final String receiverUserID;
+  final String productId;
+  final String productTitle;
 
   const ChatWithSellerCard({
     super.key,
     required this.receiverUserName,
     required this.receiverUserID,
+    required this.productId,
+    required this.productTitle,
   });
 
   @override
@@ -38,8 +42,8 @@ class _ChatWithSellerCardState extends State<ChatWithSellerCard> {
   }
 
   void _openChatWithSeller(BuildContext context) async {
-    onUserToUserChatTap(
-        context, widget.receiverUserName, widget.receiverUserID);
+    onUserToUserChatTap(context, widget.receiverUserName, widget.receiverUserID,
+        widget.productId, widget.productTitle);
   }
 
   @override

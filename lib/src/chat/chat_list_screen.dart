@@ -83,6 +83,8 @@ class _ChatListScreenState extends State<ChatListScreen> {
                         builder: (context) => GenericChatScreen(
                           receiverUserName: user['name'] ?? 'User',
                           receiverUserID: user['id'],
+                          productId: '',
+                          productTitle: 'Support Chat',
                           chatType: 'agent_user',
                           agentId: widget.agentId,
                         ),
@@ -107,10 +109,12 @@ class _ChatListScreenState extends State<ChatListScreen> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
+          if (snapshot.hasError) {
+            AppLogger.e("User message list error: [1m${snapshot.error}[0m");
+          }
           if (snapshot.hasError ||
               !snapshot.hasData ||
               snapshot.data!.isEmpty) {
-            AppLogger.e("User message list error: [1m${snapshot.error}[0m");
             return Center(
               child: Padding(
                 padding: const EdgeInsets.all(32.0),
@@ -166,6 +170,8 @@ class _ChatListScreenState extends State<ChatListScreen> {
                         builder: (context) => GenericChatScreen(
                           receiverUserName: msg['receiverName'] ?? 'User',
                           receiverUserID: msg['receiverId'],
+                          productId: msg['productId'] ?? '',
+                          productTitle: msg['productTitle'] ?? 'Chat',
                           chatType: 'user_agent',
                           agentId: widget.agentId,
                         ),

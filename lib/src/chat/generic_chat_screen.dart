@@ -10,6 +10,8 @@ import 'chat_service.dart';
 class GenericChatScreen extends StatefulWidget {
   final String receiverUserName;
   final String receiverUserID;
+  final String productId;
+  final String productTitle;
   final String chatType; // 'user_to_user' or 'agent_user'
   final String? agentId; // Required if chatType is 'agent_user'
 
@@ -18,6 +20,8 @@ class GenericChatScreen extends StatefulWidget {
     required this.receiverUserName,
     required this.receiverUserID,
     required this.chatType,
+    required this.productId,
+    required this.productTitle,
     this.agentId,
   }) : assert(chatType == 'user_to_user' ||
       (chatType == 'agent_user' && agentId != null));
@@ -103,6 +107,8 @@ class _GenericChatScreenState extends State<GenericChatScreen> {
           await _chatService.sendUserToUserMessage(
             widget.receiverUserID,
             _messageController.text.trim(),
+            widget.productId,
+            widget.productTitle,
           );
         } else {
           // 'agent_user'

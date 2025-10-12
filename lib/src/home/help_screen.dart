@@ -29,10 +29,10 @@ class HelpScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 32),
-
         if (isAdmin)
           ListTile(
-            leading: Icon(Icons.chat_bubble_outline, color: context.primaryColor),
+            leading:
+                Icon(Icons.chat_bubble_outline, color: context.primaryColor),
             title: const Text('Chat user list'),
             onTap: () {
               onAgentChatTap(context);
@@ -40,7 +40,8 @@ class HelpScreen extends StatelessWidget {
           )
         else
           ListTile(
-            leading: Icon(Icons.chat_bubble_outline, color: context.primaryColor),
+            leading:
+                Icon(Icons.chat_bubble_outline, color: context.primaryColor),
             title: const Text('Chat with us'),
             onTap: () {
               if (FirebaseAuth.instance.currentUser == null) {
@@ -74,7 +75,17 @@ class HelpScreen extends StatelessWidget {
         ),
         const Divider(),
         ListTile(
-          leading: Icon(Icons.privacy_tip_outlined, color: context.primaryColor),
+          leading:
+              Icon(Icons.question_answer_outlined, color: context.primaryColor),
+          title: const Text('Frequently Asked Questions'),
+          onTap: () async {
+            launchUrl(Uri.parse(ApiUrl.frequentlyAsked));
+          },
+        ),
+        const Divider(),
+        ListTile(
+          leading:
+              Icon(Icons.privacy_tip_outlined, color: context.primaryColor),
           title: const Text('Privacy Policy'),
           onTap: () async {
             launchUrl(Uri.parse(ApiUrl.privacyLink));
@@ -82,10 +93,10 @@ class HelpScreen extends StatelessWidget {
         ),
         const Divider(),
         ListTile(
-          leading: Icon(Icons.question_answer_outlined, color: context.primaryColor),
-          title: const Text('Frequently Asked Questions'),
+          leading: Icon(Icons.link, color: context.primaryColor),
+          title: const Text('Terms & Conditions'),
           onTap: () async {
-            launchUrl(Uri.parse(ApiUrl.frequentlyAsked));
+            launchUrl(Uri.parse(ApiUrl.customersTermsLink));
           },
         ),
       ],

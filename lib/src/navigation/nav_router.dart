@@ -131,14 +131,16 @@ void onForgotPasswordTap(BuildContext context, bool isChangePassword) {
   );
 }
 
-void onUserToUserChatTap(
-    BuildContext context, String receiverUserName, String receiverUserID) {
+void onUserToUserChatTap(BuildContext context, String receiverUserName,
+    String receiverUserID, String productId, String productTitle) {
   Navigator.push(
     context,
     MaterialPageRoute(
       builder: (context) => GenericChatScreen(
         receiverUserName: receiverUserName,
         receiverUserID: receiverUserID,
+        productId: productId,
+        productTitle: productTitle,
         chatType: 'user_to_user',
       ),
     ),
@@ -156,6 +158,8 @@ void onAgentToUserChatTap(
         receiverUserID: currentUserId,
         // Current user's ID is the 'user' in agent-user chat
         chatType: 'agent_user',
+        productTitle: 'Support Chat',
+        productId: '',
         agentId: agentUserId,
       ),
     ),

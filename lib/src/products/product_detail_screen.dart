@@ -369,6 +369,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   ChatWithSellerCard(
                     receiverUserName: product['sellerName'],
                     receiverUserID: product['userId'],
+                    productTitle: ProductUtils.getTitle(product),
+                    productId: product['id'],
                   ),
                   const SizedBox(height: 20),
                 ],

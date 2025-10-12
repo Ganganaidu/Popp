@@ -434,14 +434,13 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if(!isApproved)
-                      Text(
-                        "Status: Pending Approval",
-                        style: context.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.orange
+                      if (!isApproved)
+                        Text(
+                          "Status: Pending Approval",
+                          style: context.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.orange),
                         ),
-                      ),
                       const SizedBox(height: 8),
                       Text(
                         title,
@@ -503,6 +502,8 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                       ChatWithSellerCard(
                         receiverUserName: contactName,
                         receiverUserID: userId,
+                        productId: widget.serviceData['id'] ?? '',
+                        productTitle: title,
                       ),
                     ],
                   ),

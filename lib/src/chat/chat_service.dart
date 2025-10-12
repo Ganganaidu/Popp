@@ -16,7 +16,7 @@ class ChatService extends ChangeNotifier {
   Future<Map<String, dynamic>?> getUserData(String userId) async {
     try {
       DocumentSnapshot userDoc =
-      await _firestore.collection(ApiUrl.userPath).doc(userId).get();
+          await _firestore.collection(ApiUrl.userPath).doc(userId).get();
       if (userDoc.exists) {
         return userDoc.data() as Map<String, dynamic>;
       }
@@ -28,7 +28,8 @@ class ChatService extends ChangeNotifier {
   }
 
   // --- User-to-User Chat Methods ---
-  Future<void> sendUserToUserMessage(String receiverId, String message) async {
+  Future<void> sendUserToUserMessage(String receiverId, String message,
+      String productId, String productTitle) async {
     try {
       final User? currentUser = _firebaseAuth.currentUser;
       if (currentUser == null) {
@@ -43,21 +44,21 @@ class ChatService extends ChangeNotifier {
 
       AppLogger.d("Sending U2U from: $currentUserId to: $receiverId");
       ChatMessage newMessage = ChatMessage(
-        senderId: currentUserId,
-        senderEmail: currentUserEmail,
-        receiverId: receiverId,
-        // The other user's ID
-        timestamp: timestamp,
-        message: message,
-      );
+          senderId: currentUserId,
+          senderEmail: currentUserEmail,
+          receiverId: receiverId,
+          // The other user's ID
+          timestamp: timestamp,
+          message: message,
+          productId: productId,
+          productTitle: productTitle);
 
       List<String> ids = [currentUserId, receiverId];
       ids.sort();
       String chatRoomId = ids.join("_"); // Unique ID for user-to-user chat
 
       await _firestore
-          .collection(
-          ApiUrl.userToUserChatPath) // Dedicated collection for U2U
+          .collection(ApiUrl.userToUserChatPath) // Dedicated collection for U2U
           .doc(chatRoomId)
           .collection('messages')
           .add(newMessage.toMap())
@@ -80,8 +81,7 @@ class ChatService extends ChangeNotifier {
 
       AppLogger.d("Getting U2U messages for chatRoomId: $chatRoomId");
       return _firestore
-          .collection(
-          ApiUrl.userToUserChatPath) // Dedicated collection for U2U
+          .collection(ApiUrl.userToUserChatPath) // Dedicated collection for U2U
           .doc(chatRoomId)
           .collection('messages')
           .orderBy('timestamp', descending: false)
@@ -95,8 +95,8 @@ class ChatService extends ChangeNotifier {
   // --- Agent-User Chat Methods ---
   // A single method for sending messages in agent-user threads,
   // regardless of sender (agent or user)
-  Future<void> sendAgentUserMessage(String agentId, String userId,
-      String message) async {
+  Future<void> sendAgentUserMessage(
+      String agentId, String userId, String message) async {
     try {
       final User? currentUser = _firebaseAuth.currentUser;
       if (currentUser == null) {
@@ -115,11 +115,12 @@ class ChatService extends ChangeNotifier {
       ChatMessage newMessage = ChatMessage(
         senderId: currentUserId,
         senderEmail: currentUserEmail,
-        receiverId:
-        currentUserId == agentId ? userId : agentId,
+        receiverId: currentUserId == agentId ? userId : agentId,
         // The actual recipient
         timestamp: timestamp,
         message: message,
+        productId: '',
+        productTitle: 'Support Chat',
       );
 
       // Chat room ID is structured as 'user_id_agent_id'
@@ -130,7 +131,7 @@ class ChatService extends ChangeNotifier {
       // Send the actual chat message
       await _firestore
           .collection(
-          ApiUrl.agentToUserChatPath) // Dedicated collection for A-U
+              ApiUrl.agentToUserChatPath) // Dedicated collection for A-U
           .doc(chatRoomId)
           .collection('messages')
           .add(newMessage.toMap());
@@ -144,9 +145,9 @@ class ChatService extends ChangeNotifier {
       // Get receiver's details for membership record
       final String receiverUserId = currentUserId == agentId ? userId : agentId;
       final Map<String, dynamic>? receiverData =
-      await getUserData(receiverUserId);
-      final String receiverName =
-          receiverData?['username'] ?? 'User ${receiverUserId.substring(0, 4)}...';
+          await getUserData(receiverUserId);
+      final String receiverName = receiverData?['username'] ??
+          'User ${receiverUserId.substring(0, 4)}...';
       final String receiverEmail = receiverData?['email'] ??
           (receiverUserId == Constants.adminUserId
               ? Constants.contactEmail
@@ -207,7 +208,7 @@ class ChatService extends ChangeNotifier {
       AppLogger.d("Getting A-U messages for chatRoomId: $chatRoomId");
       return _firestore
           .collection(
-          ApiUrl.agentToUserChatPath) // Dedicated collection for A-U
+              ApiUrl.agentToUserChatPath) // Dedicated collection for A-U
           .doc(chatRoomId)
           .collection('messages')
           .orderBy('timestamp', descending: false)
@@ -225,8 +226,7 @@ class ChatService extends ChangeNotifier {
       final currentUid = _firebaseAuth.currentUser?.uid;
       AppLogger.d("AgentChatUserList - Current UID: $currentUid");
       AppLogger.d(
-          "AgentChatUserList - Agent UID Match: ${currentUid ==
-              Constants.adminUserId}");
+          "AgentChatUserList - Agent UID Match: ${currentUid == Constants.adminUserId}");
 
       // Ensure the current user is the agent before querying their specific chat memberships
       if (currentUid != agentId) {
@@ -240,14 +240,13 @@ class ChatService extends ChangeNotifier {
           .collection(ApiUrl.userPath) // Start from the users collection
           .doc(agentId) // Get the specific agent's document
           .collection(
-          'agentChatMemberships') // Access their chat memberships sub collection
+              'agentChatMemberships') // Access their chat memberships sub collection
           .orderBy('lastMessageTimestamp',
-          descending: true) // Order by last message to show recent chats
+              descending: true) // Order by last message to show recent chats
           .snapshots()
           .map((snapshot) {
         AppLogger.d(
-            "AgentChatListScreen - Memberships snapshot doc count: ${snapshot
-                .docs.length}");
+            "AgentChatListScreen - Memberships snapshot doc count: ${snapshot.docs.length}");
 
         List<Map<String, dynamic>> userChats = [];
         for (var doc in snapshot.docs) {
@@ -259,14 +258,15 @@ class ChatService extends ChangeNotifier {
             'name': data['otherUserName'],
             'email': data['otherUserEmail'],
             'lastMessage': data['lastMessage'],
+            'productTitle': data['productTitle'],
+            'productId': data['productId'],
             // Display last message if needed
             'timestamp': data['lastMessageTimestamp'],
             // For sorting or display
           });
         }
         AppLogger.d(
-            "AgentChatListScreen - Final chat users list count: ${userChats
-                .length}");
+            "AgentChatListScreen - Final chat users list count: ${userChats.length}");
         return userChats;
       });
     } catch (e, stack) {
@@ -284,7 +284,6 @@ class ChatService extends ChangeNotifier {
     // Assuming messages are stored in a 'chats' collection
     return _firestore
         .collection(ApiUrl.userToUserChatPath)
-        .where('participants', arrayContains: userId)
         .snapshots()
         .map((snapshot) {
       // Group messages by chat partner
@@ -292,7 +291,8 @@ class ChatService extends ChangeNotifier {
       for (var doc in snapshot.docs) {
         final data = doc.data();
         final participants = List<String>.from(data['participants'] ?? []);
-        final receiverId = participants.firstWhere((id) => id != userId, orElse: () => '');
+        final receiverId =
+            participants.firstWhere((id) => id != userId, orElse: () => '');
         final receiverName = data['receiverName'] ?? '';
         final lastMessage = data['lastMessage'] ?? '';
         if (receiverId.isNotEmpty) {
@@ -310,8 +310,7 @@ class ChatService extends ChangeNotifier {
   // Existing getUsersStream (for user-to-user selection) - NO CHANGE
   Stream<List<Map<String, dynamic>>> getUsersStream() {
     try {
-      return _firestore.collection(ApiUrl.userPath).snapshots().map((
-          snapshot) {
+      return _firestore.collection(ApiUrl.userPath).snapshots().map((snapshot) {
         return snapshot.docs.map((doc) {
           final user = doc.data();
           user['id'] = doc.id;

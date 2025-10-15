@@ -61,12 +61,66 @@ class ChatService extends ChangeNotifier {
           .collection(ApiUrl.userToUserChatPath) // Dedicated collection for U2U
           .doc(chatRoomId)
           .collection('messages')
-          .add(newMessage.toMap())
-          .then((value) {
-        AppLogger.d("U2U message sent successfully: ${value.id}");
-      }).catchError((error, stack) {
-        AppLogger.e("Failed to send U2U message: $error", stack);
-      });
+          .add(newMessage.toMap());
+
+      // --- Create/Update chat membership for both users ---
+      const String userChatMemberships = 'userChatMemberships';
+
+      // Get sender details
+      final Map<String, dynamic>? senderData = await getUserData(currentUserId);
+      final String senderName =
+          senderData?['username'] ?? 'User ${currentUserId.substring(0, 4)}...';
+      final String senderEmail = senderData?['email'] ?? currentUserEmail;
+
+      // Get receiver details
+      final Map<String, dynamic>? receiverData = await getUserData(receiverId);
+      final String receiverName = receiverData?['username'] ??
+          'User ${receiverId.substring(0, 4)}...';
+      final String receiverEmail =
+          receiverData?['email'] ?? 'anonymous@example.com';
+
+      // Data for the sender's chat membership document
+      Map<String, dynamic> senderMembershipData = {
+        'chatRoomId': chatRoomId,
+        'otherUserId': receiverId,
+        'otherUserName': receiverName,
+        'otherUserEmail': receiverEmail,
+        'lastMessageTimestamp': timestamp,
+        'lastMessage': message,
+        'productId': productId,
+        'productTitle': productTitle,
+      };
+
+      // Data for the receiver's chat membership document
+      Map<String, dynamic> receiverMembershipData = {
+        'chatRoomId': chatRoomId,
+        'otherUserId': currentUserId,
+        'otherUserName': senderName,
+        'otherUserEmail': senderEmail,
+        'lastMessageTimestamp': timestamp,
+        'lastMessage': message,
+        'productId': productId,
+        'productTitle': productTitle,
+      };
+
+      // Update sender's userChatMemberships subcollection
+      await _firestore
+          .collection(ApiUrl.userPath)
+          .doc(currentUserId)
+          .collection(userChatMemberships)
+          .doc(chatRoomId)
+          .set(senderMembershipData, SetOptions(merge: true));
+
+      // Update receiver's userChatMemberships subcollection
+      await _firestore
+          .collection(ApiUrl.userPath)
+          .doc(receiverId)
+          .collection(userChatMemberships)
+          .doc(chatRoomId)
+          .set(receiverMembershipData, SetOptions(merge: true));
+
+      AppLogger.d(
+          "U2U message sent and memberships updated successfully: $chatRoomId");
     } catch (e, stack) {
       AppLogger.e("Failed to send U2U message: $e", stack);
       rethrow;
@@ -281,29 +335,30 @@ class ChatService extends ChangeNotifier {
     if (userId == null) {
       return Stream.value([]);
     }
-    // Assuming messages are stored in a 'chats' collection
+
+    const String userChatMemberships = 'userChatMemberships';
+
     return _firestore
-        .collection(ApiUrl.userToUserChatPath)
+        .collection(ApiUrl.userPath)
+        .doc(userId)
+        .collection(userChatMemberships)
+        .orderBy('lastMessageTimestamp', descending: true)
         .snapshots()
         .map((snapshot) {
-      // Group messages by chat partner
-      final Map<String, Map<String, dynamic>> chatMap = {};
-      for (var doc in snapshot.docs) {
+      return snapshot.docs.map((doc) {
         final data = doc.data();
-        final participants = List<String>.from(data['participants'] ?? []);
-        final receiverId =
-            participants.firstWhere((id) => id != userId, orElse: () => '');
-        final receiverName = data['receiverName'] ?? '';
-        final lastMessage = data['lastMessage'] ?? '';
-        if (receiverId.isNotEmpty) {
-          chatMap[receiverId] = {
-            'receiverId': receiverId,
-            'receiverName': receiverName,
-            'lastMessage': lastMessage,
-          };
-        }
-      }
-      return chatMap.values.toList();
+        return {
+          'id': data['senderId'],
+          'name': data['otherUserName'],
+          'email': data['senderEmail'],
+          'receiverId': data['receiverId'],
+          'lastMessage': data['lastMessage'],
+          'timestamp': data['lastMessageTimestamp'],
+          'productId': data['productId'],
+          'productTitle': data['productTitle'],
+          'chatRoomId': data['chatRoomId'],
+        };
+      }).toList();
     });
   }
 

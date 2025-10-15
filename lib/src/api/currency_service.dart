@@ -13,41 +13,23 @@ class CurrencyService {
     if (priceValueStr == null) {
       return "";
     }
-    if (countryCode == null || countryCode.isEmpty) {
-      countryCode = 'IN'; // Default to India if null
-    }
+
     if (priceValueStr.contains("\$") || priceValueStr.contains("₹")) {
       return priceValueStr;
     }
 
-    if (countryCode == 'IN') {
-      final format = NumberFormat.currency(
-        locale: 'en_IN',
-        symbol: '₹',
-        decimalDigits: 0,
-      );
-      try {
-        final priceValue = double.parse(priceValueStr);
-        return format.format(priceValue);
-      } catch (e) {
-        AppLogger.e('Error parsing priceValue: $priceValueStr, Error: $e');
-        return priceValueStr; // Return original string if parsing fails
-      }
-    } else if (countryCode == 'US') {
-      final format = NumberFormat.currency(
-        locale: 'en_US',
-        symbol: '\$',
-        decimalDigits: 2,
-      );
-      try {
-        final priceValue = double.parse(priceValueStr);
-        return format.format(priceValue);
-      } catch (e) {
-        AppLogger.e('Error parsing priceValue: $priceValueStr, Error: $e');
-        return priceValueStr; // Return original string if parsing fails
-      }
+    final format = NumberFormat.currency(
+      locale: 'en_IN',
+      symbol: '₹',
+      decimalDigits: 0,
+    );
+    try {
+      final priceValue = double.parse(priceValueStr);
+      return format.format(priceValue);
+    } catch (e) {
+      AppLogger.e('Error parsing priceValue: $priceValueStr, Error: $e');
+      return priceValueStr; // Return original string if parsing fails
     }
-    return "";
   }
 
 // static Future<String> getLocalizedPrice(

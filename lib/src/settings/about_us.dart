@@ -237,7 +237,7 @@ class _AboutUsScreenState extends State<AboutUsScreen> {
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
-        side: BorderSide(color: Colors.orange.shade300, width: 1),
+        side: BorderSide(color: Colors.green.shade300, width: 1),
         borderRadius: BorderRadius.circular(12),
       ),
       margin: const EdgeInsets.only(bottom: 12),

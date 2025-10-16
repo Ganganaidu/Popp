@@ -147,7 +147,7 @@ class ExploreScreen extends StatelessWidget {
           context,
           isDarkMode,
           categoriesWithPremiumBikes,
-          (name) => onServiceListingTap(context, name, null, false),
+          (name) => _navigateToTargetPage(context, name, null),
         ),
       ],
     );
@@ -175,8 +175,7 @@ class ExploreScreen extends StatelessWidget {
                 context,
                 isDarkMode,
                 category.subcategories!,
-                (name) =>
-                    navigateToCategoryPage(context, category.name, name, null),
+                (name) => _navigateToTargetPage(context, category.name, name),
               ),
               const SizedBox(height: 16)
             ],

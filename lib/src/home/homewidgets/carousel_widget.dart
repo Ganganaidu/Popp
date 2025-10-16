@@ -47,12 +47,12 @@ class _CarouselWidgetState extends State<CarouselWidget> {
                 width: isActive ? 16 : 12,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: isActive ? Colors.orange : Colors.white70,
+                  color: isActive ? Colors.green : Colors.white70,
                   borderRadius: BorderRadius.circular(2),
                   boxShadow: isActive
                       ? [
                           BoxShadow(
-                            color: Colors.orange.withOpacity(0.8),
+                            color: Colors.green.withOpacity(0.8),
                             blurRadius: 6,
                             spreadRadius: 1,
                           ),

@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:popp/src/utils/app_loger.dart';
+import 'package:intl/intl.dart'; // **NEW: For timestamp formatting**
 
 import 'chat_service.dart';
 import 'generic_chat_screen.dart';
@@ -70,11 +71,11 @@ class _ChatListScreenState extends State<ChatListScreen> {
                   subtitle: Text('Email: [1m${user['email']}[0m'),
                   trailing: user['lastMessage'] != null
                       ? Text(
-                          user['lastMessage'],
-                          style:
-                              const TextStyle(fontSize: 12, color: Colors.grey),
-                          overflow: TextOverflow.ellipsis,
-                        )
+                    user['lastMessage'],
+                    style:
+                    const TextStyle(fontSize: 12, color: Colors.grey),
+                    overflow: TextOverflow.ellipsis,
+                  )
                       : null,
                   onTap: () {
                     Navigator.push(
@@ -100,10 +101,11 @@ class _ChatListScreenState extends State<ChatListScreen> {
     );
   }
 
+  // **UPDATED: User Chat List View**
   Widget _userChatListView(String? currentUserId) {
     return Scaffold(
       body: StreamBuilder<List<Map<String, dynamic>>>(
-        stream: _chatService.getUserMessages(),
+        stream: _chatService.getUserChatList(),
         // You must implement getUserMessages in ChatService
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -142,37 +144,112 @@ class _ChatListScreenState extends State<ChatListScreen> {
                     const SizedBox(height: 5),
                     const Text(
                       'Explore our Products and services, '
-                      'and connect with sellers for more details!',
+                          'and connect with sellers for more details!',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                           color: Colors.grey, fontWeight: FontWeight.bold),
                     ),
-                    // Removed the ElevatedButton to prevent navigation from this page
                   ],
                 ),
               ),
             );
-            ;
           }
           return ListView.builder(
             itemCount: snapshot.data!.length,
             itemBuilder: (context, index) {
               final msg = snapshot.data![index];
+
+              // ** Format the timestamp **
+              String timeDisplay = '';
+              final timestamp = msg['timestamp']; // Assuming timestamp is available
+              if (timestamp != null) {
+                // If the timestamp is today, show time (e.g., 2:30 PM), otherwise show date (e.g., 10/25/2024)
+                final DateTime messageDate = timestamp.toDate();
+                final DateTime now = DateTime.now();
+                final DateFormat formatter = messageDate.day == now.day &&
+                    messageDate.month == now.month &&
+                    messageDate.year == now.year
+                    ? DateFormat.jm() // 2:30 PM
+                    : DateFormat.yMd(); // 10/25/2024
+                timeDisplay = formatter.format(messageDate);
+              }
+
+
               return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                elevation: 1, // Slight elevation for better separation
                 child: ListTile(
-                  title: Text(msg['receiverName'] ?? 'Chat'),
-                  subtitle: Text(msg['lastMessage'] ?? ''),
+                  contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+
+                  // Use a leading icon or avatar placeholder
+                  leading: CircleAvatar(
+                    backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                    child: Icon(Icons.person, color: Theme.of(context).primaryColor),
+                  ),
+
+                  // Main content area
+                  title: Row(
+                    children: [
+                      // Product Title (Primary focus)
+                      Expanded(
+                        child: Text(
+                          msg['name'] ?? 'Unknown User',
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).primaryColor),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+
+                      // Timestamp (Right aligned)
+                      if (timeDisplay.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: Text(
+                            timeDisplay,
+                            style: const TextStyle(
+                                fontSize: 12, color: Colors.grey),
+                          ),
+                        ),
+                    ],
+                  ),
+
+                  // Subtitle shows the other user and the last message
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 4),
+                      // Username (Seller/Buyer)
+                      Text(
+                        msg['productTitle'] ?? 'General Chat',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Colors.white70,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      // Last Message
+                      Text(
+                        msg['lastMessage'] ?? 'Tap to view conversation...',
+                        style: const TextStyle(color: Colors.grey, fontSize: 14),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                    ],
+                  ),
+
                   onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => GenericChatScreen(
-                          receiverUserName: msg['receiverName'] ?? 'User',
-                          receiverUserID: msg['receiverId'],
+                          receiverUserName: msg['name'] ?? 'User',
+                          receiverUserID: msg['id'],
                           productId: msg['productId'] ?? '',
                           productTitle: msg['productTitle'] ?? 'Chat',
-                          chatType: 'user_agent',
+                          chatType: 'user_to_user',
                           agentId: widget.agentId,
                         ),
                       ),

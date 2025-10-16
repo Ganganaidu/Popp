@@ -194,7 +194,7 @@ class _FilterBarState extends State<FilterBar> {
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
                                           color: isSelected
-                                              ? Colors.orange
+                                              ? Colors.green
                                               : Colors.black54,
                                         )),
                                     onTap: () {
@@ -437,7 +437,7 @@ class _FilterBarState extends State<FilterBar> {
           ),
           shape: StadiumBorder(
             side: BorderSide(
-              color: hasCount ? Colors.orange : Colors.white70,
+              color: hasCount ? Colors.green : Colors.white70,
               width: 2,
             ),
           ),

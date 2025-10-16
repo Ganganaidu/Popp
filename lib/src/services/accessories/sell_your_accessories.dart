@@ -317,7 +317,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
                 buildPaddedField(SwitchListTile(
                   title: const Text("Is your product bike specific?"),
                   value: isBikeSpecific,
-                  activeColor: Colors.orange,
+                  activeColor: Colors.green,
                   onChanged: (val) {
                     setState(() {
                       isBikeSpecific = val;
@@ -427,7 +427,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
                 )),
                 buildPaddedField(SwitchListTile(
                   title: const Text("Bill available?"),
-                  activeColor: Colors.orange,
+                  activeColor: Colors.green,
                   value: isBillAvailable,
                   onChanged: (val) {
                     setState(() {
@@ -459,7 +459,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
                 )),
                 buildPaddedField(SwitchListTile(
                   title: const Text("Warranty available?"),
-                  activeColor: Colors.orange,
+                  activeColor: Colors.green,
                   value: isWarrantyAvailable,
                   onChanged: (val) {
                     setState(() {
@@ -503,7 +503,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
                             _termsAccepted = newValue ?? false;
                           });
                         },
-                        activeColor: Colors.orange,
+                        activeColor: Colors.green,
                       ),
                       Expanded(
                         child: RichText(

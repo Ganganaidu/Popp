@@ -24,7 +24,7 @@ class GenericChatScreen extends StatefulWidget {
     required this.productTitle,
     this.agentId,
   }) : assert(chatType == 'user_to_user' ||
-      (chatType == 'agent_user' && agentId != null));
+            (chatType == 'agent_user' && agentId != null));
 
   @override
   State<GenericChatScreen> createState() => _GenericChatScreenState();
@@ -66,9 +66,7 @@ class _GenericChatScreenState extends State<GenericChatScreen> {
     Stream<QuerySnapshot> messageStream;
     if (widget.chatType == 'user_to_user') {
       messageStream = _chatService.getUserToUserMessages(
-        currentUser.uid,
-        widget.receiverUserID,
-      );
+          currentUser.uid, widget.receiverUserID, widget.productId);
     } else {
       // 'agent_user'
       messageStream = _chatService.getAgentUserMessages(
@@ -94,7 +92,7 @@ class _GenericChatScreenState extends State<GenericChatScreen> {
   void sendMessage() async {
     final User? currentUser = _firebaseAuth.currentUser;
     if (currentUser == null) {
-      AppLogger.e("User not logged in. Cannot send message.");
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please log in to send messages.')),
       );
@@ -102,39 +100,45 @@ class _GenericChatScreenState extends State<GenericChatScreen> {
     }
 
     if (_messageController.text.trim().isNotEmpty) {
+      final message = _messageController.text.trim();
       try {
         if (widget.chatType == 'user_to_user') {
           await _chatService.sendUserToUserMessage(
             widget.receiverUserID,
-            _messageController.text.trim(),
+            message,
             widget.productId,
             widget.productTitle,
           );
+          AppLogger.d("Successfully sent user-to-user message.");
         } else {
           // 'agent_user'
-          // When sending an agent-user message, receiverUserID is the OTHER party's ID
-          // The agentId needs to be consistent for the chat room.
           await _chatService.sendAgentUserMessage(
             widget.agentId!, // The fixed agent ID
             widget.receiverUserID,
             // The fixed user ID (even if agent is current sender)
-            _messageController.text.trim(),
+            message,
           );
+          AppLogger.d("Successfully sent agent-user message.");
         }
         _messageController.clear();
+        AppLogger.d("Message controller cleared.");
         if (_scrollController.hasClients) {
           _scrollController.animateTo(
             _scrollController.position.maxScrollExtent,
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeOut,
           );
+          AppLogger.d("Scrolled to the end of the message list.");
         }
-      } catch (e) {
-        AppLogger.e("Error sending message: $e");
+      } catch (e, stack) {
+        AppLogger.e("Error sending message: $e", stack);
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to send message: ${e.toString()}')),
         );
       }
+    } else {
+      AppLogger.w("Attempted to send an empty message.");
     }
   }
 
@@ -162,12 +166,15 @@ class _GenericChatScreenState extends State<GenericChatScreen> {
                 ),
                 Expanded(
                   child: Text(
-                    widget.receiverUserName,
+                    widget.productTitle.isNotEmpty
+                        ? widget.productTitle
+                        : widget.receiverUserName,
                     style: Theme.of(context)
                         .textTheme
-                        .headlineSmall
+                        .bodyMedium
                         ?.copyWith(fontWeight: FontWeight.bold),
                     textAlign: TextAlign.center,
+                    maxLines: 2,
                   ),
                 ),
                 const SizedBox(width: 48), // Spacer to balance the back button
@@ -193,9 +200,7 @@ class _GenericChatScreenState extends State<GenericChatScreen> {
     Stream<QuerySnapshot> messageStream;
     if (widget.chatType == 'user_to_user') {
       messageStream = _chatService.getUserToUserMessages(
-        currentUser.uid,
-        widget.receiverUserID,
-      );
+          currentUser.uid, widget.receiverUserID, widget.productId);
     } else {
       // 'agent_user'
       messageStream = _chatService.getAgentUserMessages(
@@ -220,7 +225,8 @@ class _GenericChatScreenState extends State<GenericChatScreen> {
 
         return ListView(
           controller: _scrollController,
-          reverse: false, // Messages are typically displayed bottom-up, so reverse is often true
+          reverse: false,
+          // Messages are typically displayed bottom-up, so reverse is often true
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           children: snapshot.data!.docs
               .map((document) => _buildMessageItem(document))
@@ -235,14 +241,14 @@ class _GenericChatScreenState extends State<GenericChatScreen> {
     final User? currentUser = _firebaseAuth.currentUser;
 
     bool isCurrentUser =
-    (currentUser != null && data['senderId'] == currentUser.uid);
+        (currentUser != null && data['senderId'] == currentUser.uid);
 
     return Container(
       alignment: isCurrentUser ? Alignment.centerRight : Alignment.centerLeft,
       margin: const EdgeInsets.symmetric(vertical: 4),
       child: Column(
         crossAxisAlignment:
-        isCurrentUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+            isCurrentUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
           Text(
             data['senderEmail'] ?? 'Unknown User', // Display sender's email

@@ -1034,7 +1034,7 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                               _termsAccepted = newValue ?? false;
                             });
                           },
-                          activeColor: Colors.orange,
+                          activeColor: Colors.green,
                         ),
                         Expanded(
                           child: RichText(

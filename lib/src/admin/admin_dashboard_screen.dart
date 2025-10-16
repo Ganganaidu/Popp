@@ -64,8 +64,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
         title: const Text("Admin Dashboard"),
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: Colors.orange,
-          labelColor: Colors.orange,
+          indicatorColor: Colors.green,
+          labelColor: Colors.green,
           unselectedLabelColor: Colors.grey,
           tabs: const [
             Tab(icon: Icon(Icons.storefront), text: "Products"),

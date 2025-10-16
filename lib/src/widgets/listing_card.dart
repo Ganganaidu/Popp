@@ -168,9 +168,9 @@ class ListingCard extends StatelessWidget {
             value: 'sold',
             child: ListTile(
                 leading:
-                    Icon(Icons.monetization_on_outlined, color: Colors.orange),
+                    Icon(Icons.monetization_on_outlined, color: Colors.green),
                 title: Text('Mark as Sold',
-                    style: TextStyle(color: Colors.orange)))),
+                    style: TextStyle(color: Colors.green)))),
       ],
       icon: Container(
         decoration: BoxDecoration(

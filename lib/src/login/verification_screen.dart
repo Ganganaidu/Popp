@@ -136,7 +136,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.email_outlined, size: 80, color: Colors.orange),
+              const Icon(Icons.email_outlined, size: 80, color: Colors.green),
               const SizedBox(height: 24),
               Text(
                 'Check Your Inbox',

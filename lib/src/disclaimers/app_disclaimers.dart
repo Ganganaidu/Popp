@@ -46,7 +46,7 @@ class Disclaimers extends StatelessWidget {
             child: const Row(
               children: [
                 Icon(Icons.call_end_outlined,
-                    color: Colors.orangeAccent, size: 32),
+                    color: Colors.green, size: 32),
                 SizedBox(width: 16),
                 Text('+91 995 5995 8899',
                     style: TextStyle(color: Colors.white)),
@@ -59,7 +59,7 @@ class Disclaimers extends StatelessWidget {
             child: const Row(
               children: [
                 Icon(Icons.email_outlined,
-                    color: Colors.orangeAccent, size: 32),
+                    color: Colors.green, size: 32),
                 SizedBox(width: 16),
                 Text('support@poppapp.in',
                     style: TextStyle(color: Colors.white)),

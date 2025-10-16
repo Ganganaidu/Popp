@@ -15,9 +15,9 @@
     },
     {
       "name": "app_links",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/app_links-6.4.0",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/app_links-6.4.1",
       "packageUri": "lib/",
-      "languageVersion": "3.3"
+      "languageVersion": "3.5"
     },
     {
       "name": "app_links_linux",
@@ -63,7 +63,7 @@
     },
     {
       "name": "carousel_slider",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/carousel_slider-5.0.0",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/carousel_slider-5.1.1",
       "packageUri": "lib/",
       "languageVersion": "2.12"
     },
@@ -75,9 +75,9 @@
     },
     {
       "name": "checked_yaml",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/checked_yaml-2.0.3",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/checked_yaml-2.0.4",
       "packageUri": "lib/",
-      "languageVersion": "2.19"
+      "languageVersion": "3.8"
     },
     {
       "name": "cli_util",
@@ -93,19 +93,19 @@
     },
     {
       "name": "cloud_firestore",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/cloud_firestore-5.6.11",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/cloud_firestore-5.6.12",
       "packageUri": "lib/",
       "languageVersion": "3.2"
     },
     {
       "name": "cloud_firestore_platform_interface",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/cloud_firestore_platform_interface-6.6.11",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/cloud_firestore_platform_interface-6.6.12",
       "packageUri": "lib/",
       "languageVersion": "3.2"
     },
     {
       "name": "cloud_firestore_web",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/cloud_firestore_web-4.4.11",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/cloud_firestore_web-4.4.12",
       "packageUri": "lib/",
       "languageVersion": "3.4"
     },
@@ -177,7 +177,7 @@
     },
     {
       "name": "file_picker",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/file_picker-10.1.2",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/file_picker-10.3.3",
       "packageUri": "lib/",
       "languageVersion": "3.4"
     },
@@ -189,9 +189,9 @@
     },
     {
       "name": "file_selector_macos",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/file_selector_macos-0.9.4+2",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/file_selector_macos-0.9.4+4",
       "packageUri": "lib/",
-      "languageVersion": "3.3"
+      "languageVersion": "3.7"
     },
     {
       "name": "file_selector_platform_interface",
@@ -207,37 +207,37 @@
     },
     {
       "name": "firebase_app_check",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/firebase_app_check-0.3.2+9",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/firebase_app_check-0.3.2+10",
       "packageUri": "lib/",
       "languageVersion": "3.2"
     },
     {
       "name": "firebase_app_check_platform_interface",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/firebase_app_check_platform_interface-0.1.1+9",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/firebase_app_check_platform_interface-0.1.1+10",
       "packageUri": "lib/",
       "languageVersion": "3.2"
     },
     {
       "name": "firebase_app_check_web",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/firebase_app_check_web-0.2.0+13",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/firebase_app_check_web-0.2.0+14",
       "packageUri": "lib/",
       "languageVersion": "3.4"
     },
     {
       "name": "firebase_auth",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/firebase_auth-5.6.2",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/firebase_auth-5.7.0",
       "packageUri": "lib/",
       "languageVersion": "3.2"
     },
     {
       "name": "firebase_auth_platform_interface",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/firebase_auth_platform_interface-7.7.2",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/firebase_auth_platform_interface-7.7.3",
       "packageUri": "lib/",
       "languageVersion": "3.2"
     },
     {
       "name": "firebase_auth_web",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/firebase_auth_web-5.15.2",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/firebase_auth_web-5.15.3",
       "packageUri": "lib/",
       "languageVersion": "3.4"
     },
@@ -249,7 +249,7 @@
     },
     {
       "name": "firebase_core_platform_interface",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/firebase_core_platform_interface-6.0.0",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/firebase_core_platform_interface-6.0.2",
       "packageUri": "lib/",
       "languageVersion": "3.2"
     },
@@ -261,19 +261,19 @@
     },
     {
       "name": "firebase_messaging",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/firebase_messaging-15.2.9",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/firebase_messaging-15.2.10",
       "packageUri": "lib/",
       "languageVersion": "3.2"
     },
     {
       "name": "firebase_messaging_platform_interface",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/firebase_messaging_platform_interface-4.6.9",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/firebase_messaging_platform_interface-4.6.10",
       "packageUri": "lib/",
       "languageVersion": "3.2"
     },
     {
       "name": "firebase_messaging_web",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/firebase_messaging_web-3.10.9",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/firebase_messaging_web-3.10.10",
       "packageUri": "lib/",
       "languageVersion": "3.4"
     },
@@ -297,19 +297,19 @@
     },
     {
       "name": "firebase_storage",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/firebase_storage-12.4.9",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/firebase_storage-12.4.10",
       "packageUri": "lib/",
       "languageVersion": "3.2"
     },
     {
       "name": "firebase_storage_platform_interface",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/firebase_storage_platform_interface-5.2.9",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/firebase_storage_platform_interface-5.2.10",
       "packageUri": "lib/",
       "languageVersion": "3.2"
     },
     {
       "name": "firebase_storage_web",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/firebase_storage_web-3.10.16",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/firebase_storage_web-3.10.17",
       "packageUri": "lib/",
       "languageVersion": "3.4"
     },
@@ -345,7 +345,7 @@
     },
     {
       "name": "flutter_launcher_icons",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/flutter_launcher_icons-0.14.3",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/flutter_launcher_icons-0.14.4",
       "packageUri": "lib/",
       "languageVersion": "3.0"
     },
@@ -357,7 +357,7 @@
     },
     {
       "name": "flutter_local_notifications",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/flutter_local_notifications-19.1.0",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/flutter_local_notifications-19.4.2",
       "packageUri": "lib/",
       "languageVersion": "3.4"
     },
@@ -369,13 +369,13 @@
     },
     {
       "name": "flutter_local_notifications_platform_interface",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/flutter_local_notifications_platform_interface-9.0.0",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/flutter_local_notifications_platform_interface-9.1.0",
       "packageUri": "lib/",
       "languageVersion": "3.4"
     },
     {
       "name": "flutter_local_notifications_windows",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/flutter_local_notifications_windows-1.0.0",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/flutter_local_notifications_windows-1.0.3",
       "packageUri": "lib/",
       "languageVersion": "3.4"
     },
@@ -393,9 +393,9 @@
     },
     {
       "name": "flutter_plugin_android_lifecycle",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/flutter_plugin_android_lifecycle-2.0.28",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/flutter_plugin_android_lifecycle-2.0.31",
       "packageUri": "lib/",
-      "languageVersion": "3.6"
+      "languageVersion": "3.7"
     },
     {
       "name": "flutter_secure_storage",
@@ -495,7 +495,7 @@
     },
     {
       "name": "http",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/http-1.3.0",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/http-1.5.0",
       "packageUri": "lib/",
       "languageVersion": "3.4"
     },
@@ -513,51 +513,51 @@
     },
     {
       "name": "image_picker",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/image_picker-1.1.2",
-      "packageUri": "lib/",
-      "languageVersion": "3.3"
-    },
-    {
-      "name": "image_picker_android",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/image_picker_android-0.8.12+23",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/image_picker-1.2.0",
       "packageUri": "lib/",
       "languageVersion": "3.6"
     },
     {
-      "name": "image_picker_for_web",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/image_picker_for_web-3.0.6",
+      "name": "image_picker_android",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/image_picker_android-0.8.13+1",
       "packageUri": "lib/",
-      "languageVersion": "3.4"
+      "languageVersion": "3.7"
+    },
+    {
+      "name": "image_picker_for_web",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/image_picker_for_web-3.1.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.6"
     },
     {
       "name": "image_picker_ios",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/image_picker_ios-0.8.12+2",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/image_picker_ios-0.8.13",
       "packageUri": "lib/",
-      "languageVersion": "3.4"
+      "languageVersion": "3.6"
     },
     {
       "name": "image_picker_linux",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/image_picker_linux-0.2.1+2",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/image_picker_linux-0.2.2",
       "packageUri": "lib/",
-      "languageVersion": "3.4"
+      "languageVersion": "3.6"
     },
     {
       "name": "image_picker_macos",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/image_picker_macos-0.2.1+2",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/image_picker_macos-0.2.2",
       "packageUri": "lib/",
-      "languageVersion": "3.4"
+      "languageVersion": "3.6"
     },
     {
       "name": "image_picker_platform_interface",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/image_picker_platform_interface-2.10.1",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/image_picker_platform_interface-2.11.0",
       "packageUri": "lib/",
-      "languageVersion": "3.4"
+      "languageVersion": "3.6"
     },
     {
       "name": "image_picker_windows",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/image_picker_windows-0.2.1+1",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/image_picker_windows-0.2.2",
       "packageUri": "lib/",
-      "languageVersion": "2.19"
+      "languageVersion": "3.6"
     },
     {
       "name": "in_app_purchase",
@@ -567,9 +567,9 @@
     },
     {
       "name": "in_app_purchase_android",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/in_app_purchase_android-0.4.0+2",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/in_app_purchase_android-0.4.0+5",
       "packageUri": "lib/",
-      "languageVersion": "3.6"
+      "languageVersion": "3.7"
     },
     {
       "name": "in_app_purchase_platform_interface",
@@ -579,7 +579,7 @@
     },
     {
       "name": "in_app_purchase_storekit",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/in_app_purchase_storekit-0.4.1",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/in_app_purchase_storekit-0.4.4",
       "packageUri": "lib/",
       "languageVersion": "3.6"
     },
@@ -627,7 +627,7 @@
     },
     {
       "name": "logger",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/logger-2.5.0",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/logger-2.6.2",
       "packageUri": "lib/",
       "languageVersion": "2.17"
     },
@@ -675,13 +675,13 @@
     },
     {
       "name": "package_info_plus",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/package_info_plus-8.3.0",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/package_info_plus-8.3.1",
       "packageUri": "lib/",
       "languageVersion": "3.3"
     },
     {
       "name": "package_info_plus_platform_interface",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/package_info_plus_platform_interface-3.2.0",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/package_info_plus_platform_interface-3.2.1",
       "packageUri": "lib/",
       "languageVersion": "2.18"
     },
@@ -699,15 +699,15 @@
     },
     {
       "name": "path_provider_android",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/path_provider_android-2.2.17",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/path_provider_android-2.2.19",
       "packageUri": "lib/",
-      "languageVersion": "3.6"
+      "languageVersion": "3.7"
     },
     {
       "name": "path_provider_foundation",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/path_provider_foundation-2.4.1",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/path_provider_foundation-2.4.2",
       "packageUri": "lib/",
-      "languageVersion": "3.3"
+      "languageVersion": "3.7"
     },
     {
       "name": "path_provider_linux",
@@ -729,9 +729,9 @@
     },
     {
       "name": "petitparser",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/petitparser-6.1.0",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/petitparser-7.0.1",
       "packageUri": "lib/",
-      "languageVersion": "3.5"
+      "languageVersion": "3.8"
     },
     {
       "name": "platform",
@@ -747,25 +747,25 @@
     },
     {
       "name": "posix",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/posix-6.0.2",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/posix-6.0.3",
       "packageUri": "lib/",
       "languageVersion": "3.0"
     },
     {
       "name": "provider",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/provider-6.1.5",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/provider-6.1.5+1",
       "packageUri": "lib/",
       "languageVersion": "2.12"
     },
     {
       "name": "share_plus",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/share_plus-11.0.0",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/share_plus-11.1.0",
       "packageUri": "lib/",
       "languageVersion": "3.4"
     },
     {
       "name": "share_plus_platform_interface",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/share_plus_platform_interface-6.0.0",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/share_plus_platform_interface-6.1.0",
       "packageUri": "lib/",
       "languageVersion": "2.18"
     },
@@ -777,9 +777,9 @@
     },
     {
       "name": "shared_preferences_android",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/shared_preferences_android-2.4.10",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/shared_preferences_android-2.4.13",
       "packageUri": "lib/",
-      "languageVersion": "3.6"
+      "languageVersion": "3.7"
     },
     {
       "name": "shared_preferences_foundation",
@@ -909,21 +909,21 @@
     },
     {
       "name": "url_launcher",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/url_launcher-6.3.1",
-      "packageUri": "lib/",
-      "languageVersion": "3.3"
-    },
-    {
-      "name": "url_launcher_android",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/url_launcher_android-6.3.16",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/url_launcher-6.3.2",
       "packageUri": "lib/",
       "languageVersion": "3.6"
     },
     {
-      "name": "url_launcher_ios",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/url_launcher_ios-6.3.3",
+      "name": "url_launcher_android",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/url_launcher_android-6.3.20",
       "packageUri": "lib/",
-      "languageVersion": "3.4"
+      "languageVersion": "3.7"
+    },
+    {
+      "name": "url_launcher_ios",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/url_launcher_ios-6.3.4",
+      "packageUri": "lib/",
+      "languageVersion": "3.7"
     },
     {
       "name": "url_launcher_linux",
@@ -933,9 +933,9 @@
     },
     {
       "name": "url_launcher_macos",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/url_launcher_macos-3.2.2",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/url_launcher_macos-3.2.3",
       "packageUri": "lib/",
-      "languageVersion": "3.3"
+      "languageVersion": "3.7"
     },
     {
       "name": "url_launcher_platform_interface",
@@ -981,9 +981,9 @@
     },
     {
       "name": "win32",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/win32-5.12.0",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/win32-5.15.0",
       "packageUri": "lib/",
-      "languageVersion": "3.7"
+      "languageVersion": "3.8"
     },
     {
       "name": "xdg_directories",
@@ -993,9 +993,9 @@
     },
     {
       "name": "xml",
-      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/xml-6.5.0",
+      "rootUri": "file:///Users/gangadharkondati/.pub-cache/hosted/pub.dev/xml-6.6.1",
       "packageUri": "lib/",
-      "languageVersion": "3.2"
+      "languageVersion": "3.8"
     },
     {
       "name": "yaml",

@@ -723,7 +723,7 @@ class _SellYourBikeState extends State<SellYourBike>
                                   _termsAccepted = newValue ?? false;
                                 });
                               },
-                              activeColor: Colors.orange,
+                              activeColor: Colors.green,
                             ),
                             Expanded(
                               child: RichText(

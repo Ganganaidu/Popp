@@ -45,7 +45,7 @@ class _MyListingsScreenState extends State<MyListingsScreen>
               ElevatedButton(
                 onPressed: () => Navigator.pushNamed(context, '/login'),
                 style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
+                    backgroundColor: Colors.green,
                     foregroundColor: Colors.white),
                 child: const Text("Login"),
               )
@@ -60,8 +60,8 @@ class _MyListingsScreenState extends State<MyListingsScreen>
         title: const TitleText("My Listings"),
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: Colors.orange,
-          labelColor: Colors.orange,
+          indicatorColor: Colors.green,
+          labelColor: Colors.green,
           unselectedLabelColor: Colors.grey,
           tabs: const [
             Tab(icon: Icon(Icons.storefront), text: "Products"),

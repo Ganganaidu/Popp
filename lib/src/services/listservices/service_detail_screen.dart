@@ -83,6 +83,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
   Widget build(BuildContext context) {
     final isAdmin =
         FirebaseAuth.instance.currentUser?.uid == Constants.adminUserId;
+    AppLogger.d("isAdmin $isAdmin and isApproved $_isApproved");
     String appBarTitle = ProductUtils.getServiceAppBarTitle(widget.category);
     return Scaffold(
       appBar: AppBar(
@@ -117,6 +118,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                         ? null
                         : () async {
                             final serviceId = widget.serviceData['id'] ?? '';
+                            AppLogger.d("serviceId $serviceId");
                             if (serviceId != '') {
                               await _firebaseApiService
                                   .updateServiceApprovalStatus(serviceId, true);

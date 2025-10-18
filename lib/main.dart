@@ -143,7 +143,8 @@ class _MyAppState extends State<MyApp> {
           .get();
 
       if (!doc.exists) return;
-      final data = doc.data() as Map<String, dynamic>;
+      final raw = doc.data() as Map<String, dynamic>;
+      final data = {...raw, 'id': doc.id};
 
       if (productType == 'service') {
         navigatorKey.currentState?.push(

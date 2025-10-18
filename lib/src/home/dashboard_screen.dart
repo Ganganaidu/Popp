@@ -60,6 +60,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: Column(
         children: [
           AdCarouselWidget(),
+          SizedBox(height: 20.0),
           PopServicesWidgets(),
           SizedBox(height: 20.0),
           DashboardListViewWidget(),

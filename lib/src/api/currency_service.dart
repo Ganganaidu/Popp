@@ -1,3 +1,4 @@
+// ignore_for_file: unused_import, unused_field
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
@@ -14,21 +15,85 @@ class CurrencyService {
       return "";
     }
 
+    // If already contains a currency symbol, return as-is.
     if (priceValueStr.contains("\$") || priceValueStr.contains("₹")) {
       return priceValueStr;
     }
 
-    final format = NumberFormat.currency(
-      locale: 'en_IN',
-      symbol: '₹',
-      decimalDigits: 0,
-    );
+    // Determine target formatting by countryCode (always use INR for now)
+    const String locale = 'en_IN';
+    const String symbol = '₹';
+    const int decimalDigits = 0;
+
+    // Normalize whitespace
+    String s = priceValueStr.trim();
+    s = s.replaceAll('\u00A0', ' '); // NBSP -> space
+    s = s.replaceAll(' ', '');
+
+    // Try to handle different grouping/decimal separators gracefully.
+    String normalized = s;
+
     try {
-      final priceValue = double.parse(priceValueStr);
+      if (normalized.contains(',') && normalized.contains('.')) {
+        // Both separators present. Decide which one is decimal by position.
+        if (normalized.lastIndexOf('.') > normalized.lastIndexOf(',')) {
+          // Dot is decimal separator, remove grouping commas.
+          normalized = normalized.replaceAll(',', '');
+        } else {
+          // Comma is decimal separator, remove grouping dots then convert comma to dot.
+          normalized = normalized.replaceAll('.', '');
+          normalized = normalized.replaceAll(',', '.');
+        }
+      } else if (normalized.contains(',')) {
+        // Only comma present. Heuristic: if digits after last comma == 3, treat as grouping, else decimal.
+        final int idx = normalized.lastIndexOf(',');
+        if (idx != -1) {
+          final String after = normalized.substring(idx + 1);
+          if (after.length == 3) {
+            // grouping
+            normalized = normalized.replaceAll(',', '');
+          } else {
+            // decimal
+            normalized = normalized.replaceAll(',', '.');
+          }
+        }
+      } else {
+        // Only dot or plain digits present; nothing to normalize.
+      }
+
+      final priceValue = double.parse(normalized);
+      final format = NumberFormat.currency(
+        locale: locale,
+        symbol: symbol,
+        decimalDigits: decimalDigits,
+      );
       return format.format(priceValue);
     } catch (e) {
       AppLogger.e('Error parsing priceValue: $priceValueStr, Error: $e');
-      return priceValueStr; // Return original string if parsing fails
+
+      // Fallback: try parsing using NumberFormat decimal patterns (en_US then en_IN)
+      try {
+        final num parsed = NumberFormat.decimalPattern('en_US').parse(s);
+        final format = NumberFormat.currency(
+          locale: locale,
+          symbol: symbol,
+          decimalDigits: decimalDigits,
+        );
+        return format.format(parsed.toDouble());
+      } catch (e2) {
+        try {
+          final num parsed = NumberFormat.decimalPattern('en_IN').parse(s);
+          final format = NumberFormat.currency(
+            locale: locale,
+            symbol: symbol,
+            decimalDigits: decimalDigits,
+          );
+          return format.format(parsed.toDouble());
+        } catch (e3) {
+          AppLogger.e('Fallback parsing failed for: $priceValueStr, errors: $e2 | $e3');
+          return priceValueStr; // Give up and return original string
+        }
+      }
     }
   }
 

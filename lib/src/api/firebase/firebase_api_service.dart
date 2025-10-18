@@ -308,7 +308,11 @@ class FirebaseApiService {
             .collection(ApiUrl.productsPath)
             .where(FieldPath.documentId, whereIn: sublist)
             .get();
-        products.addAll(querySnapshot.docs.map((doc) => doc.data()));
+        products.addAll(querySnapshot.docs.map((doc) {
+          final data = doc.data();
+          data['id'] = doc.id;
+          return data;
+        }));
       }
       return products;
     } catch (e) {
@@ -340,7 +344,11 @@ class FirebaseApiService {
             .collection(ApiUrl.productsPath)
             .where(FieldPath.documentId, whereIn: sublist)
             .get();
-        products.addAll(querySnapshot.docs.map((doc) => doc.data()));
+        products.addAll(querySnapshot.docs.map((doc) {
+          final data = doc.data();
+          data['id'] = doc.id;
+          return data;
+        }));
       }
       return products;
     } catch (e) {
@@ -490,9 +498,11 @@ class FirebaseApiService {
           .orderBy('createdAt', descending: true)
           .limit(limit)
           .get();
-      return snapshot.docs
-          .map((doc) => doc.data() as Map<String, dynamic>)
-          .toList();
+      return snapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        data['id'] = doc.id;
+        return data;
+      }).toList();
     } catch (e) {
       // AppLogger.d("Error fetching all products: $e");
       AppLogger.d("Error fetching all products: $e");
@@ -519,9 +529,12 @@ class FirebaseApiService {
       }
 
       QuerySnapshot snapshot = await query.get();
-      return snapshot.docs
-          .map((doc) => doc.data() as Map<String, dynamic>)
-          .toList();
+      return snapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        // ensure the document id is present on the returned map
+        data['id'] = doc.id;
+        return data;
+      }).toList();
     } catch (e) {
       AppLogger.d("Error fetching products by category: $e");
       return [];

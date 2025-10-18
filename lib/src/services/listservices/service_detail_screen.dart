@@ -10,7 +10,6 @@ import 'package:url_launcher/url_launcher_string.dart';
 import '../../api/api_url.dart';
 import '../../api/firebase/firebase_api_service.dart';
 import '../../utils/app_constants.dart';
-import '../../utils/product_content_data.dart';
 import '../../utils/product_utils.dart';
 import '../../chat/chat_with_user_widget.dart';
 
@@ -76,7 +75,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
 
     final String shareText = "Check out $serviceName on Bikerverse! $deepLink";
     AppLogger.i("shareText $shareText");
-    Share.share(shareText, subject: 'Check out this service!');
+    SharePlus.instance.share(ShareParams(text: shareText));
   }
 
   @override
@@ -190,9 +189,6 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     String userId = (serviceData['userId'] ?? '') as String;
     final isApproved = serviceData['isApproved'] == true;
 
-    Map<String, String> eventDetails = {};
-    Map<String, String> bikeRentalDetails = {};
-
     final isBikeRentalCategory =
         (ProductUtils.isBikeAndOthersCategory(category));
     final isTrackOrTrainingDay =
@@ -202,26 +198,6 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
       locationInfo =
           '${serviceData['businessAddress'] ?? ''}, ${serviceData['city'] ?? ''}, ${serviceData['state'] ?? ''}';
       dateTimeInfo = serviceData['businessWorkingDaysHours'] ?? 'N/A';
-      final bikeFields = {
-        'GST Number': serviceData['gstNumber']?.toString(),
-        'PAN Number': serviceData['panNumber']?.toString(),
-        'Business Address': serviceData['businessAddress']?.toString(),
-        'Area': serviceData['area']?.toString(),
-        'City': serviceData['city']?.toString(),
-        'State': serviceData['state']?.toString(),
-        'Pincode': serviceData['pincode']?.toString(),
-        'Do You Inspect Premium Bikes':
-            serviceData['doYouInspectPremiumBikes']?.toString(),
-        'Google Map Link': serviceData['googleMapLink']?.toString(),
-        'Social Media Link': serviceData['socialMediaLink']?.toString(),
-        'Business Working Days/Hours':
-            serviceData['businessWorkingDaysHours']?.toString(),
-      };
-      bikeFields.forEach((key, value) {
-        if (value != null && value.trim().isNotEmpty && value != 'N/A') {
-          bikeRentalDetails[key] = value;
-        }
-      });
     } else if (isTrackOrTrainingDay) {
       locationInfo =
           '${serviceData['locationAddress'] ?? ''}, ${serviceData['city'] ?? ''}, ${serviceData['state'] ?? ''}';
@@ -247,33 +223,75 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
           serviceData['maxSlots'].isNotEmpty) {
         capacityInfo = '${serviceData['maxSlots']} riders(Max slots)';
       }
-
-      eventDetails = {
-        'Meeting Point': serviceData['locationName'] ?? 'N/A',
-        'Bike Type/Model': serviceData['bikeTypeModel'] ?? 'N/A',
-        'Bike Provision': serviceData['bikeProvision'] ?? 'N/A',
-        'Rider Skill Level': serviceData['riderSkillLevel'] ?? 'N/A',
-        'Max Slots': serviceData['maxSlots'] ?? 'N/A',
-      };
-      if (serviceData['pointOfContactName'] != null) {
-        eventDetails['Point of Contact'] = serviceData['pointOfContactName'];
-      }
-      if (serviceData['gstNumber'] != null && serviceData['gstNumber'] != '') {
-        eventDetails['GST #'] = serviceData['gstNumber'];
-      }
-      if (serviceData['panNumber'] != null && serviceData['panNumber'] != '') {
-        eventDetails['PAN #'] = serviceData['panNumber'];
-      }
-      if (serviceData['googleFormLink'] != null &&
-          serviceData['googleFormLink'] != '') {
-        eventDetails['Google Form/Redirect Link'] =
-            serviceData['googleFormLink'];
-      }
-      if (serviceData['socialMediaLink'] != null &&
-          serviceData['socialMediaLink'] != '') {
-        eventDetails['Social Media Link'] = serviceData['socialMediaLink'];
-      }
     }
+
+    // Build a unified details map from all available fields returned by the API.
+    // We exclude a small set of keys that are already displayed separately
+    // (title, description, images, ids, location/time fields etc.) to avoid
+    // duplication. Any other non-empty field from the API will be shown.
+    Map<String, String> allDetails = {};
+
+    // Keys to exclude from the details section because they're shown elsewhere
+    final excludeKeys = {
+      'searchKeywords',
+      'shopName',
+      'isActive',
+      'createdAt',
+      'updatedAt',
+      'approvedAt',
+      'isFavorite',
+      'id',
+      'isApproved',
+      'favoritedBy',
+      'userId',
+      'pointOfContactName',
+      'countryCode',
+      'businessDescription',
+      'businessTitle',
+      'eventDetailedDescription',
+      'eventName',
+      'businessWorkingDaysHours',
+      'businessAddress',
+      'businessPromoPicture',
+      'shopImageUrls',
+      'promoImageUrls',
+      'shopGaragePics',
+      'businessContactNumber',
+      'businessContact',
+      'category',
+    };
+
+    String formatKeyToLabel(String key) {
+      // Replace underscores with spaces, split camel case and capitalize words.
+      final withSpaces = key.replaceAll('_', ' ').replaceAllMapped(
+          RegExp(r'([a-z])([A-Z])'), (m) => '${m[1]} ${m[2]}');
+      final parts = withSpaces.split(' ');
+      return parts.map((p) {
+        if (p.isEmpty) return p;
+        return p[0].toUpperCase() + p.substring(1);
+      }).join(' ');
+    }
+
+    serviceData.forEach((rawKey, rawValue) {
+      try {
+        if (excludeKeys.contains(rawKey)) return;
+        if (rawValue == null) return;
+        String valueStr;
+        if (rawValue is List) {
+          // Join list values into a comma-separated string
+          valueStr = rawValue.map((e) => e.toString()).join(', ');
+        } else {
+          valueStr = rawValue.toString();
+        }
+        if (valueStr.trim().isEmpty) return;
+        if (valueStr.trim().toLowerCase() == 'n/a') return;
+
+        final label = formatKeyToLabel(rawKey.toString());
+        allDetails[label] = valueStr;
+      } catch (e) {
+        // ignore individual conversion errors
+      }
+    });
 
     return CustomScrollView(
       slivers: [
@@ -347,83 +365,63 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
             ),
           ),
         ),
+        // Thumbnail strip for images (only when there are multiple images)
         if (allImageUrls.length > 1)
           SliverToBoxAdapter(
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              child: SizedBox(
-                height: 80,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: allImageUrls.length,
-                  itemBuilder: (context, index) {
-                    String thumbUrl = allImageUrls[index];
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _selectedImageIndex = index;
-                        });
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8.0),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: _selectedImageIndex == index
-                                    ? Theme.of(context).primaryColor
-                                    : Colors.transparent,
-                                width: 3,
-                              ),
+            child: SizedBox(
+              height: 80,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: allImageUrls.length,
+                itemBuilder: (context, index) {
+                  final String thumbUrl = allImageUrls[index];
+                  return GestureDetector(
+                    onTap: () => setState(() => _selectedImageIndex = index),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8.0),
+                        child: Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: _selectedImageIndex == index
+                                  ? Theme.of(context).primaryColor
+                                  : Colors.transparent,
+                              width: 3,
                             ),
-                            child: Stack(
-                              children: [
-                                Shimmer.fromColors(
-                                  baseColor: Colors.grey[300]!,
-                                  highlightColor: Colors.grey[100]!,
-                                  child: Container(
-                                    width: 80,
-                                    height: 80,
-                                    color: Colors.grey[300],
-                                  ),
-                                ),
-                                Image.network(
-                                  thumbUrl,
+                          ),
+                          child: Image.network(
+                            thumbUrl,
+                            fit: BoxFit.cover,
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return Shimmer.fromColors(
+                                baseColor: Colors.grey[300]!,
+                                highlightColor: Colors.grey[100]!,
+                                child: Container(
                                   width: 80,
                                   height: 80,
-                                  fit: BoxFit.cover,
-                                  loadingBuilder:
-                                      (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return Shimmer.fromColors(
-                                      baseColor: Colors.grey[300]!,
-                                      highlightColor: Colors.grey[100]!,
-                                      child: Container(
-                                        width: 80,
-                                        height: 80,
-                                        color: Colors.grey[300],
-                                      ),
-                                    );
-                                  },
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Container(
-                                      width: 80,
-                                      height: 80,
-                                      color: Colors.grey[300],
-                                      child: Icon(Icons.broken_image,
-                                          color: Colors.grey[600]),
-                                    );
-                                  },
+                                  color: Colors.grey[300],
                                 ),
-                              ],
-                            ),
+                              );
+                            },
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                width: 80,
+                                height: 80,
+                                color: Colors.grey[300],
+                                child: Icon(Icons.broken_image,
+                                    color: Colors.grey[600]),
+                              );
+                            },
                           ),
                         ),
                       ),
-                    );
-                  },
-                ),
+                    ),
+                  );
+                },
               ),
             ),
           ),
@@ -476,28 +474,21 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                         style: context.bodyLarge,
                       ),
                       const SizedBox(height: 20),
-                      if (isTrackOrTrainingDay) ...[
+                      // Unified Details section: show any available API fields
+                      // (except the excluded ones) under a single header.
+                      if (allDetails.isNotEmpty) ...[
                         Text(
-                          'Event Details',
+                          ProductUtils.getProductDescTitle(widget.category) ==
+                                  ''
+                              ? 'Details'
+                              : ProductUtils.getProductDescTitle(
+                                  widget.category),
                           style: context.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         const SizedBox(height: 8),
-                        ...eventDetails.entries.map((entry) =>
-                            _buildDetailRow(context, entry.key, entry.value)),
-                      ] else if (isBikeRentalCategory &&
-                          bikeRentalDetails.isNotEmpty) ...[
-                        Text(
-                          widget.category == serviceCategories[1]
-                              ? 'Bike Rental Details'
-                              : 'Mechanic Details',
-                          style: context.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        ...bikeRentalDetails.entries.map((entry) =>
+                        ...allDetails.entries.map((entry) =>
                             _buildDetailRow(context, entry.key, entry.value)),
                       ],
                       const SizedBox(height: 20),
@@ -583,10 +574,10 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
   }
 
   Widget _buildDetailRow(BuildContext context, String label, String value) {
-    if (label.toLowerCase().contains('google map link') ||
-        label.toLowerCase().contains('social media link') &&
-            value.isNotEmpty &&
-            value != 'N/A') {
+    if ((label.toLowerCase().contains('google map link') ||
+            label.toLowerCase().contains('social media link')) &&
+        value.isNotEmpty &&
+        value != 'N/A') {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 4.0),
         child: Row(

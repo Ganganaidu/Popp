@@ -580,10 +580,10 @@ class _SellYourBikeState extends State<SellYourBike>
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 10.0),
                         child: CustomDropdownFormField(
-                          label: 'Are you the first owner?',
+                          label: 'Current Ownership number?',
                           hint: "Tap to select",
                           value: _areYouFirstOwner,
-                          items: yesNo
+                          items: firstOwnerNumber
                               .map((state) => DropdownMenuItem(
                                   value: state, child: Text(state)))
                               .toList(),

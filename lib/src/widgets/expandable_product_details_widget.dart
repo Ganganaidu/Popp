@@ -34,6 +34,7 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
         if (product.registrationPlace?.isNotEmpty ?? false)
           detailRow("Registration Place", product.registrationPlace!, theme),
         if (product.city.isNotEmpty) detailRow("City", product.city, theme),
+        if (product.area.isNotEmpty) detailRow("Area", product.area, theme),
         if (product.state.isNotEmpty)
           detailRow("State", product.state, theme)
         else
@@ -60,6 +61,9 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
                 if (product.registrationDate != null)
                   detailRow(
                       "Bill Date", _formatDate(product.billDate, false), theme),
+                if (product.firstOwner != null)
+                  detailRow(
+                      "Current Ownership Number", product.firstOwner!, theme),
                 if (product.productAging?.isNotEmpty ?? false)
                   detailRow("Product Aging", product.productAging!, theme),
                 if (product.productSize?.isNotEmpty ?? false)
@@ -81,6 +85,14 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
                     product.invoiceAvailable != null ? "Yes" : "No", theme),
                 detailRow("NOC Available",
                     product.nocAvailable != null ? "Yes" : "No", theme),
+                if (product.batteryCondition != null)
+                  detailRow(
+                      "Battery Condition", product.batteryCondition!, theme),
+                if (product.tyreCondition != null)
+                  detailRow("Tyre Condition", product.tyreCondition!, theme),
+                if (product.additionalDetails.isNotEmpty)
+                  detailRow(
+                      "Additional Details", product.additionalDetails, theme),
               ],
             ),
           ),

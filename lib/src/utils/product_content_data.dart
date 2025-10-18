@@ -179,6 +179,8 @@ const categoryFilters = [
 
 const List<String> countryCodes = ["+91", "+1"];
 
+const List<String> firstOwnerNumber = ["1", "2", "3", "4", "5"];
+
 const List<String> yesNo = ["Yes", "No"];
 const List<String> yesNoNA = ["Yes", "No", "N/A"];
 const List<String> goodBadList = ["Good", "Need replacement"];

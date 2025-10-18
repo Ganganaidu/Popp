@@ -81,7 +81,20 @@ class ProductUtils {
     return "Enter Shop name";
   }
 
- static bool isBikeAndOthersCategory(String? selectedCategory) {
+  static String getProductDescTitle(String? selectedCategory) {
+    if (selectedCategory == findMechanic) {
+      return "Mechanic Details";
+    } else if (selectedCategory == bikeRentals) {
+      return "Bike Rental Details";
+    } else if (selectedCategory == accessoryStore) {
+      return "Store Details";
+    } else if (selectedCategory == tyreShop) {
+      return "Shop Details";
+    }
+    return "Event Details";
+  }
+
+  static bool isBikeAndOthersCategory(String? selectedCategory) {
     return selectedCategory == ProductUtils.findMechanic ||
         selectedCategory == ProductUtils.bikeRentals ||
         selectedCategory == ProductUtils.accessoryStore ||

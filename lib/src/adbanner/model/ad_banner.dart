@@ -1,4 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class AdBanner {
+  final String? id;
   final String imageUrl;
   final String title;
   final String highlight;
@@ -6,8 +9,10 @@ class AdBanner {
   final List<String> points;
   final String buttonText;
   final String buttonLink;
+  final bool isActive;
 
   AdBanner({
+    this.id,
     required this.imageUrl,
     required this.title,
     required this.highlight,
@@ -15,6 +20,7 @@ class AdBanner {
     required this.points,
     required this.buttonText,
     required this.buttonLink,
+    required this.isActive,
   });
 
   factory AdBanner.fromJson(Map<String, dynamic> json) {
@@ -26,6 +32,23 @@ class AdBanner {
       points: List<String>.from(json['points'] ?? []),
       buttonText: json['buttonText'] ?? 'Learn More',
       buttonLink: json['buttonLink'] ?? '',
+      isActive: json['isActive'] ?? true,
+    );
+  }
+
+  /// Create an AdBanner from a Firestore document snapshot and include the doc id.
+  factory AdBanner.fromDocument(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>? ?? {};
+    return AdBanner(
+      id: doc.id,
+      imageUrl: data['imageUrl'] ?? '',
+      title: data['title'] ?? '',
+      highlight: data['highlight'] ?? '',
+      subtitle: data['subtitle'] ?? '',
+      points: List<String>.from(data['points'] ?? []),
+      buttonText: data['buttonText'] ?? 'Learn More',
+      buttonLink: data['buttonLink'] ?? '',
+      isActive: data['isActive'] ?? true,
     );
   }
 }

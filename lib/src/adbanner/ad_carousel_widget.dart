@@ -59,7 +59,7 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
   void initState() {
     super.initState();
     Future.microtask(() =>
-        Provider.of<AdCarouselViewModel>(context, listen: false).loadAds());
+        Provider.of<AdCarouselViewModel>(context, listen: false).loadAds(true));
   }
 
   @override

@@ -3,8 +3,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:popp/src/utils/app_constants.dart';
 
+import '../adbanner/ui/ad_list_page.dart';
 import '../api/api_url.dart';
 import '../settings/list_grid_view.dart';
+import 'package:popp/src/adbanner/ui/ads_submission_screen.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -24,7 +26,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
   }
 
   @override
@@ -70,6 +72,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
           tabs: const [
             Tab(icon: Icon(Icons.storefront), text: "Products"),
             Tab(icon: Icon(Icons.miscellaneous_services), text: "Services"),
+            Tab(icon: Icon(Icons.campaign), text: "Ads"),
           ],
         ),
       ),
@@ -90,6 +93,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                 .where('isApproved', isEqualTo: false),
             showOptionsMenu: false, // Show edit/delete options
           ),
+          // Ads submission form for admins
+          const AdListPage()
         ],
       ),
     );

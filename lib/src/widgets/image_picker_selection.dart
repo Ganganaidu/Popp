@@ -1,18 +1,25 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
 
 // widgets/image_picker_selection.dart
 class ImagePickerSection extends StatefulWidget {
   final List<File> images;
   final ValueChanged<List<File>> onImagesChanged;
   final String title;
+  final bool isCameraOnly;
+  final bool isGalleryOnly;
+  final bool allowMultipleImages;
 
   const ImagePickerSection({
     super.key,
     required this.images,
     required this.onImagesChanged,
     this.title = "Upload Pictures",
+    this.isCameraOnly = false,
+    this.isGalleryOnly = false,
+    this.allowMultipleImages = false,
   });
 
   @override
@@ -22,7 +29,7 @@ class ImagePickerSection extends StatefulWidget {
 class _ImagePickerSectionState extends State<ImagePickerSection> {
   final ImagePicker _picker = ImagePicker();
 
-  Future<void> _pickImage(ImageSource source) async {
+  Future<void> _pickSingleImage(ImageSource source) async {
     final pickedFile = await _picker.pickImage(source: source);
     if (pickedFile != null) {
       setState(() {
@@ -30,6 +37,19 @@ class _ImagePickerSectionState extends State<ImagePickerSection> {
         newImages.add(File(pickedFile.path));
         widget.onImagesChanged(newImages);
       });
+    }
+  }
+
+  Future<void> _pickMultipleImages() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+      allowMultiple: true,
+    );
+
+    if (result != null && result.paths.isNotEmpty) {
+      final files = result.paths.map((p) => File(p!)).toList();
+      final newImages = List<File>.from(widget.images)..addAll(files);
+      widget.onImagesChanged(newImages);
     }
   }
 
@@ -49,14 +69,28 @@ class _ImagePickerSectionState extends State<ImagePickerSection> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              ListTile(
-                leading: const Icon(Icons.camera_alt),
-                title: const Text('Camera'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _pickImage(ImageSource.camera);
-                },
-              ),
+              if (!widget.isGalleryOnly)
+                ListTile(
+                  leading: const Icon(Icons.camera_alt),
+                  title: const Text('Camera'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _pickSingleImage(ImageSource.camera);
+                  },
+                ),
+              if (!widget.isCameraOnly)
+                ListTile(
+                  leading: const Icon(Icons.photo_library),
+                  title: const Text('Gallery'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    if (widget.allowMultipleImages) {
+                      _pickMultipleImages();
+                    } else {
+                      _pickSingleImage(ImageSource.gallery);
+                    }
+                  },
+                ),
             ],
           ),
         );
@@ -79,7 +113,20 @@ class _ImagePickerSectionState extends State<ImagePickerSection> {
             itemBuilder: (context, index) {
               if (index == widget.images.length) {
                 return GestureDetector(
-                  onTap: () => _pickImage(ImageSource.camera),
+                  onTap: () {
+                    // If gallery only, open gallery directly. If camera only, open camera. Otherwise show options.
+                    if (widget.isGalleryOnly) {
+                      if (widget.allowMultipleImages) {
+                        _pickMultipleImages();
+                      } else {
+                        _pickSingleImage(ImageSource.gallery);
+                      }
+                    } else if (widget.isCameraOnly) {
+                      _pickSingleImage(ImageSource.camera);
+                    } else {
+                      _showImageSourceActionSheet(context);
+                    }
+                  },
                   child: Container(
                     width: 100,
                     height: 100,
@@ -89,7 +136,8 @@ class _ImagePickerSectionState extends State<ImagePickerSection> {
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: Colors.grey),
                     ),
-                    child: const Icon(Icons.add_a_photo, color: Colors.grey, size: 40),
+                    child: const Icon(Icons.add_a_photo,
+                        color: Colors.grey, size: 40),
                   ),
                 );
               } else {

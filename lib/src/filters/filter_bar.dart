@@ -311,7 +311,7 @@ class _FilterBarState extends State<FilterBar> {
     if (tempValues.containsKey(filterName)) {
       final RangeValues values = tempValues[filterName]!;
       final double max = filterName == 'Budget' ? 20000 : 200000;
-      final String unit = filterName == 'Budget' ? '\$' : 'km';
+      final String unit = filterName == 'Budget' ? '₹' : 'km ';
 
       return RangeFilterWidget(
         title: 'Select $filterName Range',

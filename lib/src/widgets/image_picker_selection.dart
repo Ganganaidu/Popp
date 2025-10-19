@@ -17,7 +17,7 @@ class ImagePickerSection extends StatefulWidget {
     required this.images,
     required this.onImagesChanged,
     this.title = "Upload Pictures",
-    this.isCameraOnly = false,
+    this.isCameraOnly = true,
     this.isGalleryOnly = false,
     this.allowMultipleImages = false,
   });

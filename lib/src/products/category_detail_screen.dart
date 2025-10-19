@@ -124,7 +124,7 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
       AppLogger.d("Budget filter: ${filters['Budget']}");
       final RangeValues range = filters['Budget'];
       result = result.where((p) {
-        final price = p['expectedPrice'];
+        final price = p['price'];
         final priceDouble = (price != null && price.toString().isNotEmpty)
             ? double.tryParse(price.toString())
             : null;

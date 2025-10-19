@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:popp/src/login/login_screen.dart';
+import 'package:popp/src/systemalerts/system_alerts_api_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -17,21 +18,8 @@ class AuthWrapper extends StatefulWidget {
 }
 
 class _AuthWrapperState extends State<AuthWrapper> {
-  final FirebaseApiService _firebaseApiService = FirebaseApiService();
-
-  Future<bool> _hasMessageBeenShown(String? messageId) async {
-    if (messageId == null) return false;
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('shown_message_$messageId') == 'true';
-  }
-
-  Future<bool> _shouldShowMessage(SystemMessage message) async {
-    final hasBeenShown = await _hasMessageBeenShown(message.messageId);
-    if (hasBeenShown) return false;
-
-    final packageInfo = await PackageInfo.fromPlatform();
-    return packageInfo.buildNumber != message.versionCode;
-  }
+  final SystemAlertsApiServices _systemAlertsApiServices =
+      SystemAlertsApiServices();
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +36,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
         // If user is logged in
         if (snapshot.hasData && (snapshot.data?.emailVerified ?? false)) {
           return FutureBuilder<SystemMessage?>(
-            future: _firebaseApiService.getPriorityMessage(),
+            future: _systemAlertsApiServices.getPriorityMessage(),
             builder: (context, messageSnapshot) {
               if (messageSnapshot.connectionState == ConnectionState.waiting) {
                 return const Scaffold(
@@ -61,9 +49,10 @@ class _AuthWrapperState extends State<AuthWrapper> {
               // If there is an active message, check if it's been shown before
               if (message != null && message.isActive) {
                 return FutureBuilder<bool>(
-                  future: _shouldShowMessage(message),
+                  future: _systemAlertsApiServices.shouldShowMessage(message),
                   builder: (context, shownSnapshot) {
-                    if (shownSnapshot.connectionState == ConnectionState.waiting) {
+                    if (shownSnapshot.connectionState ==
+                        ConnectionState.waiting) {
                       return const Scaffold(
                         body: Center(child: CircularProgressIndicator()),
                       );
@@ -74,7 +63,8 @@ class _AuthWrapperState extends State<AuthWrapper> {
                       WidgetsBinding.instance.addPostFrameCallback((_) {
                         Navigator.of(context).pushAndRemoveUntil(
                           MaterialPageRoute(
-                            builder: (_) => BlockingScreen(systemMessage: message),
+                            builder: (_) =>
+                                BlockingScreen(systemMessage: message),
                             fullscreenDialog: true,
                           ),
                           (route) => false,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:popp/src/utils/app_constants.dart';
 
 class AppDialogs {
   // Private constructor to prevent instantiation
@@ -41,28 +42,6 @@ class AppDialogs {
           ],
         );
       },
-    );
-  }
-
-  static Future<void> showProductSuccessDialog(
-    BuildContext context,
-    VoidCallback callBack,
-    VoidCallback homeCallBack, {
-    String title = "Product listed successfully",
-    String confirmText = "My Listing",
-    String? cancelText = "Home",
-  }) {
-    return showConfirmationDialog(
-      context: context,
-      title: title,
-      content: "Your product has been sent for approval. Once it's approved, "
-          "it will go live and be visible to the public. "
-          "Meanwhile, check the current status under My Listings in Settings. "
-          "Thanks for listing with us!",
-      onConfirm: callBack,
-      cancelCallback: homeCallBack,
-      confirmText: confirmText,
-      cancelText: cancelText,
     );
   }
 
@@ -114,6 +93,43 @@ class AppDialogs {
       content: "We’re building something awesome. Stay tuned!",
       onConfirm: callBack,
       cancelText: "",
+      confirmText: "okay",
+    );
+  }
+
+  static Future<void> showProductSuccessDialog(
+    BuildContext context,
+    VoidCallback callBack,
+    VoidCallback homeCallBack, {
+    String title = "Product listed successfully",
+    String confirmText = "My Listing",
+    String? cancelText = "Home",
+  }) {
+    return showConfirmationDialog(
+      context: context,
+      title: title,
+      content: "Your product has been sent for approval. Once it's approved, "
+          "it will go live and be visible to the public. "
+          "Meanwhile, check the current status under My Listings in Settings. "
+          "Thanks for listing with us!",
+      onConfirm: callBack,
+      cancelCallback: homeCallBack,
+      confirmText: confirmText,
+      cancelText: cancelText,
+    );
+  }
+
+  static Future<void> showServiceSubmitDialog(
+      BuildContext context, String category, VoidCallback callBack) {
+    return showConfirmationDialog(
+      context: context,
+      title: "Listing Submitted",
+      content: "Your '$category' listing has been submitted for review. "
+          "Once approved it will be visible to all users. Until then, "
+          "it will remain pending and visible only to you. "
+          "Thank you for listing with ${Constants.appName}!",
+      onConfirm: callBack,
+      cancelText: null,
       confirmText: "okay",
     );
   }

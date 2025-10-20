@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:popp/src/navigation/nav_router.dart';
 import 'package:popp/src/utils/build_extensions.dart';
 import 'package:popp/src/utils/product_utils.dart';
+import 'package:popp/src/widgets/app_dialogs.dart';
 import 'package:popp/src/widgets/custom_dropdown_form_field.dart';
 import 'package:popp/src/widgets/image_picker_selection.dart';
 import 'package:popp/src/widgets/loading_overlay.dart';
@@ -16,7 +17,6 @@ import '../../api/api_url.dart';
 import '../../api/firebase/firebase_api_service.dart';
 import '../../search/autocomplete_search_field.dart';
 import '../../utils/app_loger.dart';
-import '../../utils/app_utils.dart';
 import '../../utils/product_content_data.dart';
 import '../../widgets/working_hours_picker.dart';
 
@@ -177,8 +177,6 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
     });
   }
 
-
-
   Future<void> _submitForm() async {
     // Only validate and submit if a category is selected
     if (_selectedCategory == null) {
@@ -210,7 +208,7 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
           'businessTitle': businessTitleController.text,
           'businessDescription': businessDescriptionController.text,
           'businessContact':
-          '$selectedCountryCode ${businessContactController.text}',
+              '$selectedCountryCode ${businessContactController.text}',
           'contactName': contactNameController.text,
           'state': _selectedState,
           'area': areaController.text,
@@ -226,11 +224,11 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
           'businessPromoPicture': _promoImages.map((e) => e.path).toList(),
           'shopGaragePics': _shopGarageImages.map((e) => e.path).toList(),
           'searchKeywords':
-          '${businessTitleController.text} ${areaController.text} '
-              '${cityController.text} $_selectedCategory '
-              '${shopNameController.text} '
-              .toLowerCase()
-              .split(' '),
+              '${businessTitleController.text} ${areaController.text} '
+                      '${cityController.text} $_selectedCategory '
+                      '${shopNameController.text} '
+                  .toLowerCase()
+                  .split(' '),
           'countryCode': countryCode,
         });
       } else if (ProductUtils.isTrackAndTrainingCategory(_selectedCategory)) {
@@ -287,8 +285,11 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
         _clearAllFields(); // Clear all fields after successful submission
         if (!mounted) return;
         AppLogger.d("Form submission navigate to : $_selectedCategory");
-        // Optionally navigate to a success page or home
-        onServiceListingTap(context, _selectedCategory!, null, true);
+        // Show a confirmation dialog explaining the review process and then navigate
+        await AppDialogs.showServiceSubmitDialog(context, _selectedCategory!,
+            () {
+          onServiceListingTap(context, _selectedCategory!, null, true);
+        });
       }
     } else {
       if (!mounted) return;
@@ -426,7 +427,8 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                       ),
                     ),
                   ),
-                if (ProductUtils.isBikeAndOthersCategory(_selectedCategory)) ...[
+                if (ProductUtils.isBikeAndOthersCategory(
+                    _selectedCategory)) ...[
                   // Fields for Find Mechanic / Bike Rentals
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -664,7 +666,8 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                     ),
                   ),
                 ],
-                if (ProductUtils.isTrackAndTrainingCategory(_selectedCategory)) ...[
+                if (ProductUtils.isTrackAndTrainingCategory(
+                    _selectedCategory)) ...[
                   // Fields for Track Day / Training Day (from image_1a79f1.png)
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),

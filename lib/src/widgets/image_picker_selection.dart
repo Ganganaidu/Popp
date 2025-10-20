@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:popp/src/utils/app_constants.dart';
 
 // widgets/image_picker_selection.dart
 class ImagePickerSection extends StatefulWidget {
@@ -28,19 +29,49 @@ class ImagePickerSection extends StatefulWidget {
 
 class _ImagePickerSectionState extends State<ImagePickerSection> {
   final ImagePicker _picker = ImagePicker();
+  static const int _maxImages = 8;
 
+  // Show a non-blocking SnackBar informing the user about the max images limit.
+  void _showMaxImagesDialog() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Max 8 images allowed. To submit more, '
+          'finish this listing and contact ${Constants.appName} support — they can '
+          'help add extra photos for you.',
+        ),
+        duration: Duration(seconds: 4),
+      ),
+    );
+  }
+
+  // Append single picked image so the internal list stays chronological (oldest->newest).
+  // The UI reverses this list so the newest image displays first.
   Future<void> _pickSingleImage(ImageSource source) async {
+    if (widget.images.length >= _maxImages) {
+      _showMaxImagesDialog();
+      return;
+    }
+
     final pickedFile = await _picker.pickImage(source: source);
     if (pickedFile != null) {
       setState(() {
         final newImages = List<File>.from(widget.images);
-        newImages.add(File(pickedFile.path));
+        newImages.add(File(pickedFile.path)); // append newest at end
         widget.onImagesChanged(newImages);
       });
     }
   }
 
+  // Append multiple picked images in selection order; the UI will reverse the list so the last selected displays first.
   Future<void> _pickMultipleImages() async {
+    if (widget.images.length >= _maxImages) {
+      _showMaxImagesDialog();
+      return;
+    }
+
+    final remaining = _maxImages - widget.images.length;
+
     final result = await FilePicker.platform.pickFiles(
       type: FileType.image,
       allowMultiple: true,
@@ -48,8 +79,31 @@ class _ImagePickerSectionState extends State<ImagePickerSection> {
 
     if (result != null && result.paths.isNotEmpty) {
       final files = result.paths.map((p) => File(p!)).toList();
-      final newImages = List<File>.from(widget.images)..addAll(files);
-      widget.onImagesChanged(newImages);
+
+      // If user selected more files than remaining capacity, accept only up to remaining
+      final accepted =
+          files.length > remaining ? files.sublist(0, remaining) : files;
+
+      setState(() {
+        final newImages = List<File>.from(widget.images);
+        // Append the accepted picked files so the chronological order is preserved
+        newImages.addAll(accepted);
+        widget.onImagesChanged(newImages);
+      });
+
+      if (files.length > accepted.length) {
+        // Notify user that only a subset was accepted
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'You selected ${files.length} images, but only ${accepted.length} were added. '
+              'Max $_maxImages images allowed. To add more, please contact '
+              '${Constants.appName} support after submitting this listing.',
+            ),
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
     }
   }
 
@@ -75,6 +129,10 @@ class _ImagePickerSectionState extends State<ImagePickerSection> {
                   title: const Text('Camera'),
                   onTap: () {
                     Navigator.pop(context);
+                    if (widget.images.length >= _maxImages) {
+                      _showMaxImagesDialog();
+                      return;
+                    }
                     _pickSingleImage(ImageSource.camera);
                   },
                 ),
@@ -84,6 +142,10 @@ class _ImagePickerSectionState extends State<ImagePickerSection> {
                   title: const Text('Gallery'),
                   onTap: () {
                     Navigator.pop(context);
+                    if (widget.images.length >= _maxImages) {
+                      _showMaxImagesDialog();
+                      return;
+                    }
                     if (widget.allowMultipleImages) {
                       _pickMultipleImages();
                     } else {
@@ -100,6 +162,9 @@ class _ImagePickerSectionState extends State<ImagePickerSection> {
 
   @override
   Widget build(BuildContext context) {
+    // We'll display an add button first, then images in newest-first order by reversing the chronological list.
+    final displayedImages = widget.images.reversed.toList();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -109,11 +174,19 @@ class _ImagePickerSectionState extends State<ImagePickerSection> {
           height: 100, // Adjust height as needed
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            itemCount: widget.images.length + 1, // +1 for the add button
+            itemCount: displayedImages.length + 1,
+            // +1 for the add button at start
             itemBuilder: (context, index) {
-              if (index == widget.images.length) {
+              if (index == 0) {
+                // Add/select button at the start
                 return GestureDetector(
                   onTap: () {
+                    // If already at max, show dialog and don't open picker
+                    if (widget.images.length >= _maxImages) {
+                      _showMaxImagesDialog();
+                      return;
+                    }
+
                     // If gallery only, open gallery directly. If camera only, open camera. Otherwise show options.
                     if (widget.isGalleryOnly) {
                       if (widget.allowMultipleImages) {
@@ -141,6 +214,12 @@ class _ImagePickerSectionState extends State<ImagePickerSection> {
                   ),
                 );
               } else {
+                // For displayedImages, map back to the original index when removing
+                final displayedIndex = index - 1; // index into displayedImages
+                final file = displayedImages[displayedIndex];
+                // original index in widget.images (chronological list): last element is newest
+                final originalIndex = widget.images.length - 1 - displayedIndex;
+
                 return Stack(
                   children: [
                     Container(
@@ -150,7 +229,7 @@ class _ImagePickerSectionState extends State<ImagePickerSection> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(8),
                         image: DecorationImage(
-                          image: FileImage(widget.images[index]),
+                          image: FileImage(file),
                           fit: BoxFit.cover,
                         ),
                       ),
@@ -159,7 +238,7 @@ class _ImagePickerSectionState extends State<ImagePickerSection> {
                       top: 0,
                       right: 0,
                       child: GestureDetector(
-                        onTap: () => _removeImage(index),
+                        onTap: () => _removeImage(originalIndex),
                         child: Container(
                           decoration: BoxDecoration(
                             color: Colors.red,

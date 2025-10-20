@@ -79,7 +79,7 @@ class CategoryListWidget extends StatelessWidget {
           _buildCategoryHeader(context, theme, isWeb: false),
           const SizedBox(height: 8),
           SizedBox(
-            height: itemWidth,
+            height: itemWidth + 50,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: products.length,

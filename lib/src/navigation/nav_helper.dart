@@ -92,8 +92,10 @@ class NavHelper {
   Future<bool> onWillPop(int selectedIndex) async {
     // Check if the current Navigator can pop
     if (navigatorKeys[selectedIndex].currentState?.canPop() ?? false) {
-      // Pop the current Navigator
-      navigatorKeys[selectedIndex].currentState?.pop();
+      // Use maybePop() so the inner navigator's route will handle willPop
+      // callbacks (PopScope/WillPopScope) and allow the screen to intercept
+      // device back / gesture back events.
+      await navigatorKeys[selectedIndex].currentState?.maybePop();
       return false; // Don't pop the root Navigator
     } else {
       return false;

@@ -177,7 +177,7 @@ class _AboutUsScreenState extends State<AboutUsScreen> {
       child: Column(
         children: [
           Image.asset(
-            'assets/app_icon_trans.png',
+            'assets/app_icon_brand.png',
             // Ensure you have a logo in your assets folder
             height: 80,
             errorBuilder: (context, error, stackTrace) => Icon(

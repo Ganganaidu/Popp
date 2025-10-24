@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.7+33
+version: 1.0.8+34
 
 environment:
   sdk: '>=3.4.3 <4.0.0'
@@ -68,6 +68,7 @@ dependencies:
   app_links: ^6.4.0
   package_info_plus: ^8.3.0
   firebase_remote_config : ^5.5.0
+  flutter_spinkit: ^5.2.2
 
 dev_dependencies:
   flutter_test:
@@ -91,7 +92,7 @@ flutter_launcher_icons:
 # flutter pub run flutter_native_splash:create
 flutter_native_splash:
   # The default background color (used for light theme)
-  color: "#FFFFFF"
+  color: "#121212"
   # An optional background color for dark mode
   color_dark: "#121212" # A common dark theme background color
 
@@ -109,7 +110,7 @@ flutter_native_splash:
     # On Android 12+, you can specify a separate image for the icon background.
     image: assets/app_icon.png
     image_dark: assets/app_icon.png
-    icon_background_color: "#FFFFFF"
+    icon_background_color: "#121212"
     icon_background_color_dark: "#121212"
 
   # To hide the status bar on the splash screen, set fullscreen to true.

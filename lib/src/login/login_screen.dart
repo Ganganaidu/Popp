@@ -174,7 +174,7 @@ class _LoginScreenState extends State<LoginScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Image.asset(
-                        'assets/app_icon.png',
+                        'assets/app_icon_trans.png',
                         width: 120,
                         height: 120,
                         fit: BoxFit.contain,
@@ -245,9 +245,9 @@ class _LoginScreenState extends State<LoginScreen>
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 30),
                     _buildHeader(),
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 30),
                     _buildLoginForm(context),
                     const SizedBox(height: 20),
                   ],
@@ -311,7 +311,7 @@ class _LoginScreenState extends State<LoginScreen>
         // You can replace this with an Image.asset for your logo
         // Icon(Icons.two_wheeler_rounded, size: 60, color: context.primaryColor),
         Image.asset(
-          'assets/app_icon.png',
+          'assets/app_icon_trans.png',
           width: 80,
           height: 80,
           fit: BoxFit.contain,

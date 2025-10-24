@@ -1,8 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:popp/src/login/login_screen.dart';
+import 'package:popp/src/screens/intro_page.dart';
 import 'package:popp/src/screens/intro_screen.dart';
 import 'package:popp/src/systemalerts/system_alerts_api_services.dart';
+import 'package:popp/src/utils/app_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../home/home_screen.dart';
@@ -47,16 +50,14 @@ class _AuthWrapperState extends State<AuthWrapper> {
   Widget build(BuildContext context) {
     if (_hasSeenIntro == null) {
       // Waiting for pref check
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return _buildLoadingScreen();
     }
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
         // Show a loading spinner while checking auth state
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
+          return _buildLoadingScreen();
         }
 
         // If user is logged in
@@ -65,9 +66,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
             future: _systemAlertsApiServices.getPriorityMessage(),
             builder: (context, messageSnapshot) {
               if (messageSnapshot.connectionState == ConnectionState.waiting) {
-                return const Scaffold(
-                  body: Center(child: CircularProgressIndicator()),
-                );
+                return _buildLoadingIntroScreen();
               }
 
               final message = messageSnapshot.data;
@@ -79,9 +78,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
                   builder: (context, shownSnapshot) {
                     if (shownSnapshot.connectionState ==
                         ConnectionState.waiting) {
-                      return const Scaffold(
-                        body: Center(child: CircularProgressIndicator()),
-                      );
+                      return _buildLoadingIntroScreen();
                     }
 
                     final bool shouldShow = shownSnapshot.data ?? false;
@@ -112,4 +109,58 @@ class _AuthWrapperState extends State<AuthWrapper> {
       },
     );
   }
+}
+
+Widget _buildLoadingScreen() {
+  return const Scaffold(body: Center(child: CircularProgressIndicator()));
+}
+
+Widget _buildLoadingIntroScreen() {
+  return Scaffold(
+    body: Center(
+      child: Stack(
+        children: [
+          // 1. The main welcome content (IntroPage)
+          const IntroPage(
+            image: 'assets/app_icon_trans.png',
+            title: 'Welcome to ${Constants.appName}',
+            description:
+                'Gear up! We\'re loading your personalized dashboard now.',
+          ),
+
+          // 2. Interactive and stylized loader
+          Positioned(
+            top: 80,
+            bottom: 10,
+            right: 20,
+            left: 20,
+            child: SpinKitPulsingGrid(
+              // A nice, animated, non-boring loader
+              color: Colors.green.withOpacity(0.8),
+              size: 80.0,
+            ),
+          ),
+
+          Positioned(
+            right: 20,
+            top: 100,
+            bottom: 100,
+            child: RotatedBox(
+              quarterTurns: 1,
+              child: Text(
+                'BIKERVERSE',
+                style: TextStyle(
+                  fontFamily: 'Orbitron',
+                  fontSize: 40,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 8,
+                  color: Colors.green.withOpacity(0.3),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 }

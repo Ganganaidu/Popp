@@ -161,6 +161,11 @@ class _VerificationScreenState extends State<VerificationScreen> {
               Column(
                 children: [
                   const Text(
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.white,
+                      fontStyle: FontStyle.italic,
+                    ),
                     'Click the link in the email to complete your registration. This screen will update automatically.',
                     textAlign: TextAlign.center,
                   ),
@@ -169,8 +174,8 @@ class _VerificationScreenState extends State<VerificationScreen> {
                     textAlign: TextAlign.center,
                     text: const TextSpan(
                       style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey,
+                        fontSize: 16,
+                        color: Colors.red,
                         fontStyle: FontStyle.italic,
                       ),
                       children: [

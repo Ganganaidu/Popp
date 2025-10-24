@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:popp/src/systemalerts/auth_wrapper.dart';
 import 'package:popp/src/utils/app_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'intro_page.dart';
 
 class IntroScreen extends StatelessWidget {
   const IntroScreen({super.key});
@@ -37,7 +39,7 @@ class IntroScreen extends StatelessWidget {
               children: [
                 Stack(
                   children: [
-                    const _IntroPage(
+                    const IntroPage(
                       image: 'assets/app_icon_trans.png',
                       title: 'Welcome to ${Constants.appName}',
                       description:
@@ -63,13 +65,13 @@ class IntroScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                const _IntroPage(
+                const IntroPage(
                   image: 'assets/intro_screen_01.png',
                   title: 'Your ultimate motorcycle Hub',
                   description:
                       'Everything you need, all in one place. From buying and selling bikes to finding the best riding gear and accessories.',
                 ),
-                _IntroPage(
+                IntroPage(
                   image: 'assets/intro_screen_02.png',
                   title: 'Buy, List, find accessories and more',
                   description:
@@ -129,80 +131,5 @@ class IntroScreen extends StatelessWidget {
         ),
       );
     }
-  }
-}
-
-class _IntroPage extends StatelessWidget {
-  final String image;
-  final String title;
-  final String description;
-  final bool showGetStarted;
-  final VoidCallback? onGetStarted;
-
-  const _IntroPage({
-    required this.image,
-    required this.title,
-    required this.description,
-    this.showGetStarted = false,
-    this.onGetStarted,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Expanded(
-            flex: 3,
-            child: Image.asset(
-              image,
-              height: 200,
-              fit: BoxFit.contain,
-            ),
-          ),
-          const SizedBox(height: 40),
-          Text(
-            title,
-            style: theme.textTheme.headlineMedium?.copyWith(
-              fontFamily: 'Orbitron',
-              fontWeight: FontWeight.bold,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            description,
-            style: theme.textTheme.bodyLarge,
-            textAlign: TextAlign.center,
-          ),
-          if (showGetStarted) ...[
-            const SizedBox(height: 48),
-            ElevatedButton(
-              onPressed: onGetStarted,
-              style: ElevatedButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  backgroundColor: theme.primaryColor),
-              child: const Text(
-                'Get Started',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-          const Spacer(),
-        ],
-      ),
-    );
   }
 }

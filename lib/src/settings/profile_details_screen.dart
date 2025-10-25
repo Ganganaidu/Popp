@@ -128,7 +128,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
 
   Future<void> _launchDeleteAccountUrl() async {
     // IMPORTANT: Replace with your actual account deletion URL
-    final Uri url = Uri.parse('https://popp-71efb.web.app/delete-account.html');
+    final Uri url = Uri.parse(ApiUrl.deleteAccountPolicy);
     if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

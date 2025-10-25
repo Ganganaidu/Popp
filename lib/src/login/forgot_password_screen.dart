@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:popp/src/api/api_url.dart';
 import 'package:popp/src/widgets/title_text.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
@@ -32,7 +33,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       // ActionCodeSettings are needed to redirect the user back to the app
       // after they reset their password from the link in the email.
       var acs = ActionCodeSettings(
-          url: 'https://popp-71efb.web.app',
+          url: ApiUrl.baseUrl,
           handleCodeInApp: true,
           iOSBundleId: 'com.popp.abike',
           androidPackageName: 'com.popp.abike',

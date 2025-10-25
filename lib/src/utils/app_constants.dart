@@ -14,7 +14,7 @@ class Constants {
   static const String search = 'Search';
 
   static const String contactNumber = '+91 995 9958 899';
-  static const String contactEmail = 'bikerverse.in@gmail.com';
+  static const String contactEmail = 'preownedpremiumproducts@gmail.com';
 
   // Keep agentUserId consistent with Firestore rules
   static const String adminUserId = '3SYkhqmzDKPf2n2j7csaBUI4OzF2';

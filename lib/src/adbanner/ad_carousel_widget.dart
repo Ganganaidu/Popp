@@ -9,6 +9,7 @@ import 'package:popp/src/utils/build_extensions.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:popp/src/utils/app_constants.dart';
 
 import '../deeplink/DeepLinkConfig.dart';
 import '../navigation/nav_router.dart';
@@ -201,7 +202,7 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
               onPressed: () async {
                 final Uri emailLaunchUri = Uri(
                   scheme: 'mailto',
-                  path: 'preownedpremiumproducts@gmail.com',
+                  path: Constants.contactEmail,
                   queryParameters: {
                     'subject': 'Inquiry: Advertising on Bikerverse App',
                   },
@@ -275,7 +276,8 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Color.fromARGB(200, 0, 0, 0), // Increased opacity for better contrast
+                  Color.fromARGB(200, 0, 0, 0),
+                  // Increased opacity for better contrast
                   Colors.black87,
                 ],
                 stops: [0.0, 0.8],

@@ -287,7 +287,7 @@ class _SellYourBikeState extends State<SellYourBike>
           child: isCollapsed
               ? null
               : const Text(
-                  "Strictly Only 35+ HP/NM Powered Bikes",
+                  "Strictly Only 250CC and above Powered Bikes",
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,

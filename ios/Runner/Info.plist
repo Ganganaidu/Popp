@@ -67,5 +67,9 @@
 		</array>
 		<key>UIViewControllerBasedStatusBarAppearance</key>
 		<false/>
+		<key>NSCameraUsageDescription</key>
+        <string>Bikerverse uses your camera so you can take photos of your bike, accessories and stores when creating or editing listings for sale.</string>
+        <key>NSPhotoLibraryUsageDescription</key>
+        <string>Bikerverse needs access to your photo library so you can choose existing photos of your bike or accessories to include in your listings.</string>
 	</dict>
 </plist>

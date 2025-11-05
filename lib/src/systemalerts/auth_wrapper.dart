@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:popp/src/login/login_screen.dart';
@@ -6,6 +7,7 @@ import 'package:popp/src/screens/intro_page.dart';
 import 'package:popp/src/screens/intro_screen.dart';
 import 'package:popp/src/systemalerts/system_alerts_api_services.dart';
 import 'package:popp/src/utils/app_constants.dart';
+import 'package:popp/src/utils/build_extensions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../home/home_screen.dart';
@@ -27,6 +29,10 @@ class _AuthWrapperState extends State<AuthWrapper> {
   @override
   void initState() {
     super.initState();
+    final isWeb = kIsWeb && context.isDesktop;
+    if (isWeb) {
+      _hasSeenIntro = true; // Skip intro on web/desktop
+    }
     _checkIntroSeen();
   }
 

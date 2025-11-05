@@ -50,12 +50,15 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
+                <data android:scheme="bikerverse" />
                 <data android:scheme="https" />
                 <data android:host="popp-71efb.web.app" />
                 <data android:host="bikerverse.in" />
                 <!-- Add pathPrefix to handle specific routes -->
                 <data android:pathPrefix="/service" />
                 <data android:pathPrefix="/product" />
+                <data android:pathPrefix="/welcome" />
+
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.

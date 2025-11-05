@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:popp/src/api/api_url.dart';
 import 'package:popp/src/login/model/user_data_model.dart';
 import 'package:popp/src/login/validation_requiremen_text.dart';
+import 'package:popp/src/utils/app_loger.dart';
 import 'package:popp/src/utils/build_extensions.dart';
 import 'package:popp/src/widgets/title_text.dart';
 
@@ -122,8 +123,8 @@ class _SignupScreenState extends State<SignupScreen> {
       if (user == null) throw Exception("User creation failed.");
 
       var acs = ActionCodeSettings(
-          url: ApiUrl.baseUrl,
-          handleCodeInApp: true,
+          url: ApiUrl.welcomePage,
+          handleCodeInApp: false,
           iOSBundleId: Constants.appBundleId,
           androidPackageName: Constants.appBundleId,
           androidInstallApp: true,
@@ -200,6 +201,7 @@ class _SignupScreenState extends State<SignupScreen> {
         default:
           errorMessage = 'An error occurred: ${e.message}';
       }
+      AppLogger.e(errorMessage);
       if (mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(errorMessage)));

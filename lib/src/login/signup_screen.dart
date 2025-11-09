@@ -124,7 +124,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
       var acs = ActionCodeSettings(
           url: ApiUrl.welcomePage,
-          handleCodeInApp: false,
+          handleCodeInApp: true,
           iOSBundleId: Constants.appBundleId,
           androidPackageName: Constants.appBundleId,
           androidInstallApp: true,

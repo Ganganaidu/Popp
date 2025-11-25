@@ -11,6 +11,7 @@ import 'package:popp/src/utils/build_extensions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../home/home_screen.dart';
+import '../utils/app_loger.dart';
 import 'blocking_screen.dart';
 import 'message_data.dart';
 
@@ -29,11 +30,11 @@ class _AuthWrapperState extends State<AuthWrapper> {
   @override
   void initState() {
     super.initState();
-    final isWeb = kIsWeb && context.isDesktop;
-    if (isWeb) {
-      _hasSeenIntro = true; // Skip intro on web/desktop
+    if (kIsWeb) {
+      _hasSeenIntro = true; // Skip intro on web
+    } else {
+     _checkIntroSeen();
     }
-    _checkIntroSeen();
   }
 
   Future<void> _checkIntroSeen() async {
@@ -61,6 +62,12 @@ class _AuthWrapperState extends State<AuthWrapper> {
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
+        AppLogger.e('is webview to display: $kIsWeb');
+        // Skip login on web
+        if (kIsWeb) {
+          return const HomeScreen();
+        }
+
         // Show a loading spinner while checking auth state
         if (snapshot.connectionState == ConnectionState.waiting) {
           return _buildLoadingScreen();

@@ -119,15 +119,15 @@ class _MyAppState extends State<MyApp> {
 
   /// Parses the URI and navigates to the correct screen.
   Future<void> _navigateToDetailScreen(Uri uri) async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      navigatorKey.currentState?.pushReplacementNamed('/login');
-      return;
-    }
-
     final segments = uri.pathSegments;
     if (segments.length != 2 ||
         (segments[0] != 'service' && segments[0] != 'product')) {
+      return;
+    }
+
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      navigatorKey.currentState?.pushReplacementNamed('/login');
       return;
     }
 

@@ -62,7 +62,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
-        AppLogger.e('is webview to display: $kIsWeb');
+        AppLogger.d('is webview to display: $kIsWeb');
         // Skip login on web
         if (kIsWeb) {
           return const HomeScreen();

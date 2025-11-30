@@ -1,4 +1,4 @@
-import 'package:popp/src/utils/product_utils.dart';
+
 
 const List<String> bikeBrands = [
   'Aprilia',
@@ -271,15 +271,6 @@ const Map<String, Map<String, double>> stateCoordinates = {
   'Uttarakhand': {'lat': 30.0668, 'lon': 79.0193},
   'West Bengal': {'lat': 22.9868, 'lon': 87.8550},
 };
-
-final List<String> serviceCategories = [
-  ProductUtils.findMechanic,
-  ProductUtils.bikeRentals,
-  ProductUtils.trackDay,
-  ProductUtils.trainingDay,
-  ProductUtils.accessoryStore,
-  ProductUtils.tyreShop,
-];
 
 const List<String> riderSkillLevels = [
   'All',

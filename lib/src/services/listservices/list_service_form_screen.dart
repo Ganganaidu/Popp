@@ -337,7 +337,7 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                   alignment: Alignment.bottomCenter,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
-                    children: serviceCategories
+                    children: ProductUtils.listYourServiceCategories
                         .map((category) => Padding(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 16, vertical: 6),

@@ -129,7 +129,7 @@ class ExploreScreen extends StatelessWidget {
 
   Widget _buildExploreCategories(BuildContext context, bool isDarkMode) {
     final List<String> categoriesWithPremiumBikes = [
-      ...serviceCategories,
+      ...ProductUtils.listYourServiceCategories,
       ProductUtils.premiumBikes,
     ];
     return Column(

@@ -27,8 +27,7 @@ class DashboardViewModel extends ChangeNotifier {
 
     try {
       // Initial load
-      categories = await repository.fetchProductsGroupedByCategory(
-          isApproved);
+      categories = await repository.fetchProductsGroupedByCategory(isApproved);
 
       // Set up real-time listener
       _productsSubscription?.cancel();
@@ -37,18 +36,6 @@ class DashboardViewModel extends ChangeNotifier {
           .listen((updatedCategories) {
         categories = updatedCategories;
         error = null;
-        // for (var category in categories) {
-        //   for (var product in category.products ?? []) {
-        //     product.isApproved = isApproved;
-        //     AppLogger.d(
-        //       'Product updated in ${category.name}: '
-        //       'ID: ${product.id}, '
-        //       'Name: ${product.modelName}, '
-        //       'sold: ${product.isSold}, '
-        //       'Status: ${product.isSold ? "Sold" : product.isApproved ? "Approved" : "Pending"}'
-        //     );
-        //   }
-        // }
         notifyListeners();
       }, onError: (e) {
         error = e.toString();

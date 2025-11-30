@@ -13,6 +13,15 @@ class ProductUtils {
   static const String trainingDay = "Training day";
   static const String premiumInspection = 'Premium Inspection';
 
+  static List<String> listYourServiceCategories = [
+    findMechanic,
+    bikeRentals,
+    trackDay,
+    trainingDay,
+    accessoryStore,
+    tyreShop,
+  ];
+
   static String getTitle(Map<String, dynamic>? product) {
     return "${product?['brandName']} ${product?['modelName']} - ${product?['city']}";
   }

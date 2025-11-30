@@ -4,6 +4,7 @@ import 'package:lottie/lottie.dart';
 import 'package:popp/src/api/currency_service.dart';
 import 'package:popp/src/navigation/nav_router.dart';
 import 'package:popp/src/utils/product_content_data.dart';
+import 'package:popp/src/utils/product_utils.dart';
 import 'package:popp/src/widgets/app_dialogs.dart';
 
 import '../widgets/listing_card.dart';
@@ -115,7 +116,7 @@ class _ListingsGridViewState extends State<ListingsGridView> {
               showOptionsMenu: widget.showOptionsMenu,
               onTap: () {
                 final category = data['category'] as String?;
-                if (!serviceCategories.contains(category)) {
+                if (!ProductUtils.listYourServiceCategories.contains(category)) {
                   onProductDetailsTap(context, data, true);
                 } else {
                   onServiceDetailsScreenTap(context, data, category!);

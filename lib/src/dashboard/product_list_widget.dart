@@ -1,33 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
-
 import '../products/category_list_widget.dart';
-import '../utils/app_utils.dart';
 import 'viewmodel/dashboard_viewmodel.dart';
+import 'viewmodel/service_viewmodel.dart';
 
-class DashboardListViewWidget extends StatefulWidget {
-  const DashboardListViewWidget({super.key});
+class ProductListViewWidget extends StatefulWidget {
+  const ProductListViewWidget({super.key});
 
   @override
-  State<DashboardListViewWidget> createState() =>
-      _DashboardListViewWidgetState();
+  State<ProductListViewWidget> createState() =>
+      _ProductListViewWidgetState();
 }
 
-class _DashboardListViewWidgetState extends State<DashboardListViewWidget> {
-  @override
-  void initState() {
-    super.initState();
-    Future.microtask(() =>
-        Provider.of<DashboardViewModel>(context, listen: false)
-            .loadCategories(context, true));
-  }
-
+class _ProductListViewWidgetState extends State<ProductListViewWidget> {
   @override
   Widget build(BuildContext context) {
     String countryCode = Localizations.localeOf(context).countryCode ?? 'US';
-    return Consumer<DashboardViewModel>(
-      builder: (context, viewModel, _) {
+    return Consumer2<DashboardViewModel, ServiceViewModel>(
+      builder: (context, viewModel, serviceViewModel, _) {
         if (viewModel.isLoading) {
           return _shimmerLoading();
         }
@@ -41,12 +32,19 @@ class _DashboardListViewWidgetState extends State<DashboardListViewWidget> {
         }
 
         if (viewModel.categories.isEmpty) {
-          return _buildMessageWidget(
-            icon: Icons.inventory_2_outlined,
-            title: "No Products Found",
-            message:
-                "Your product list is waiting to grow. Get started by adding one using our services!",
-          );
+          // Only show "No Products Found" if BOTH products and services are empty.
+          // If services are present, we just return an empty container here,
+          // because the ServiceListWidget (which is separate) will show the services.
+          if (serviceViewModel.categories.isEmpty) {
+            return _buildMessageWidget(
+              icon: Icons.inventory_2_outlined,
+              title: "No Products Found",
+              message:
+                  "Your product list is waiting to grow. Get started by adding one using our services!",
+            );
+          } else {
+            return const SizedBox.shrink();
+          }
         }
 
         return Column(

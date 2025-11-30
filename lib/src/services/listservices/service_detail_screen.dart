@@ -256,8 +256,6 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
       'shopImageUrls',
       'promoImageUrls',
       'shopGaragePics',
-      'businessContactNumber',
-      'businessContact',
       'category',
     };
 

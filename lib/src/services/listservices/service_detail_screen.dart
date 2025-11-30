@@ -195,8 +195,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
         (ProductUtils.isTrackAndTrainingCategory(category));
 
     if (isBikeRentalCategory) {
-      locationInfo =
-          '${serviceData['businessAddress'] ?? ''}, ${serviceData['city'] ?? ''}, ${serviceData['state'] ?? ''}';
+      locationInfo = serviceData['businessAddress'];
       dateTimeInfo = serviceData['businessWorkingDaysHours'] ?? 'N/A';
     } else if (isTrackOrTrainingDay) {
       locationInfo =
@@ -440,7 +439,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                               color: Colors.orange),
                         ),
                       const SizedBox(height: 8),
-                      Text(
+                      TitleText(
                         title,
                         style: context.headlineMedium?.copyWith(
                           fontWeight: FontWeight.bold,
@@ -572,10 +571,35 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
   }
 
   Widget _buildDetailRow(BuildContext context, String label, String value) {
+    bool isLink = false;
+    VoidCallback? onTap;
+
     if ((label.toLowerCase().contains('google map link') ||
             label.toLowerCase().contains('social media link')) &&
         value.isNotEmpty &&
         value != 'N/A') {
+      isLink = true;
+      onTap = () async {
+        final url = value.startsWith('http') ? value : 'https://$value';
+        await launchUrlString(url, mode: LaunchMode.externalApplication);
+      };
+    } else if ((label.toLowerCase().contains('phone') ||
+            label.toLowerCase().contains('mobile') ||
+            label.toLowerCase().contains('contact')) &&
+        !label.toLowerCase().contains('name') &&
+        value.isNotEmpty &&
+        value != 'N/A') {
+      isLink = true;
+      onTap = () async {
+        final Uri launchUri = Uri(
+          scheme: 'tel',
+          path: value,
+        );
+        await launchUrlString(launchUri.toString());
+      };
+    }
+
+    if (isLink) {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 4.0),
         child: Row(
@@ -592,12 +616,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
             Expanded(
               flex: 3,
               child: GestureDetector(
-                onTap: () async {
-                  final url =
-                      value.startsWith('http') ? value : 'https://$value';
-                  await launchUrlString(url,
-                      mode: LaunchMode.externalApplication);
-                },
+                onTap: onTap,
                 child: Text(
                   value,
                   style: context.bodyMedium?.copyWith(

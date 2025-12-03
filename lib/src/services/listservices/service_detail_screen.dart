@@ -12,6 +12,7 @@ import '../../api/firebase/firebase_api_service.dart';
 import '../../utils/app_constants.dart';
 import '../../utils/product_utils.dart';
 import '../../chat/chat_with_user_widget.dart';
+import '../../widgets/full_screen_image_screen.dart';
 
 class ServiceDetailScreen extends StatefulWidget {
   final Map<String, dynamic> serviceData;
@@ -342,22 +343,52 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                     ),
                   ),
                 ),
-                Positioned(
-                  top: 16,
-                  right: 16,
-                  child: CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Colors.white70,
-                    child: IconButton(
-                      iconSize: 25,
-                      icon: Icon(
-                        _isFav ? Icons.favorite : Icons.favorite_border,
-                        color: _isFav ? Colors.red : Colors.red,
-                      ),
-                      onPressed: _favButtonDisabled ? null : _toggleFavorite,
+                  Positioned(
+                    top: 16,
+                    right: 16,
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 20,
+                          backgroundColor: Colors.white70,
+                          child: IconButton(
+                            iconSize: 25,
+                            icon: const Icon(
+                              Icons.fullscreen,
+                              color: Colors.black,
+                            ),
+                            onPressed: () {
+                              if (allImageUrls.isNotEmpty) {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    fullscreenDialog: true,
+                                    builder: (context) => FullScreenImageScreen(
+                                      imageUrls: allImageUrls,
+                                      initialIndex: _selectedImageIndex,
+                                    ),
+                                  ),
+                                );
+                              }
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        CircleAvatar(
+                          radius: 20,
+                          backgroundColor: Colors.white70,
+                          child: IconButton(
+                            iconSize: 25,
+                            icon: Icon(
+                              _isFav ? Icons.favorite : Icons.favorite_border,
+                              color: _isFav ? Colors.red : Colors.red,
+                            ),
+                            onPressed: _favButtonDisabled ? null : _toggleFavorite,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ),
               ],
             ),
           ),

@@ -14,6 +14,7 @@ import '../widgets/app_dialogs.dart';
 import '../chat/chat_with_user_widget.dart';
 import '../widgets/expandable_product_details_widget.dart';
 import '../widgets/expandable_text_widget.dart';
+import '../widgets/full_screen_image_screen.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final Map<String, dynamic> productJson;
@@ -220,15 +221,43 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   Positioned(
                     top: 32,
                     right: 16,
-                    child: GestureDetector(
-                      onTap: _favButtonDisabled ? null : _toggleFavorite,
-                      child: CircleAvatar(
-                        backgroundColor: Colors.white70,
-                        child: Icon(
-                          isFavorite ? Icons.favorite : Icons.favorite_border,
-                          color: Colors.red,
+                    child: Row(
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            if (imageUrls.isNotEmpty) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  fullscreenDialog: true,
+                                  builder: (context) => FullScreenImageScreen(
+                                    imageUrls: imageUrls,
+                                    initialIndex: selectedImageIndexNotifier.value,
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+                          child: CircleAvatar(
+                            backgroundColor: Colors.white70,
+                            child: const Icon(
+                              Icons.fullscreen,
+                              color: Colors.black,
+                            ),
+                          ),
                         ),
-                      ),
+                        const SizedBox(width: 8),
+                        GestureDetector(
+                          onTap: _favButtonDisabled ? null : _toggleFavorite,
+                          child: CircleAvatar(
+                            backgroundColor: Colors.white70,
+                            child: Icon(
+                              isFavorite ? Icons.favorite : Icons.favorite_border,
+                              color: Colors.red,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   Positioned(

@@ -100,48 +100,48 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
       body: _buildBody(context),
       bottomNavigationBar: isAdmin && !_isApproved
           ? SafeArea(
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          _isApproved ? Colors.green : Colors.orange,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    onPressed: _isApproved
-                        ? null
-                        : () async {
-                            final serviceId = widget.serviceData['id'] ?? '';
-                            AppLogger.d("serviceId $serviceId");
-                            if (serviceId != '') {
-                              await _firebaseApiService
-                                  .updateServiceApprovalStatus(serviceId, true);
-                              setState(() {
-                                _isApproved = true;
-                              });
-                              if (_isApproved) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'Product approved successfully!',
-                                    ),
-                                    duration: Duration(seconds: 2),
-                                  ),
-                                );
-                              }
-                            }
-                          },
-                    child: Text(_isApproved ? 'Approved' : 'Approve'),
-                  ),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          child: SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor:
+                _isApproved ? Colors.green : Colors.orange,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
                 ),
               ),
-            )
+              onPressed: _isApproved
+                  ? null
+                  : () async {
+                final serviceId = widget.serviceData['id'] ?? '';
+                AppLogger.d("serviceId $serviceId");
+                if (serviceId != '') {
+                  await _firebaseApiService
+                      .updateServiceApprovalStatus(serviceId, true);
+                  setState(() {
+                    _isApproved = true;
+                  });
+                  if (_isApproved) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Product approved successfully!',
+                        ),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  }
+                }
+              },
+              child: Text(_isApproved ? 'Approved' : 'Approve'),
+            ),
+          ),
+        ),
+      )
           : null,
     );
   }
@@ -191,28 +191,29 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     final isApproved = serviceData['isApproved'] == true;
 
     final isBikeRentalCategory =
-        (ProductUtils.isBikeAndOthersCategory(category));
+    (ProductUtils.isBikeAndOthersCategory(category));
     final isTrackOrTrainingDay =
-        (ProductUtils.isTrackAndTrainingCategory(category));
+    (ProductUtils.isTrackAndTrainingCategory(category));
 
     if (isBikeRentalCategory) {
       locationInfo = serviceData['businessAddress'];
       dateTimeInfo = serviceData['businessWorkingDaysHours'] ?? 'N/A';
     } else if (isTrackOrTrainingDay) {
       locationInfo =
-          '${serviceData['locationAddress'] ?? ''}, ${serviceData['city'] ?? ''}, ${serviceData['state'] ?? ''}';
+      '${serviceData['locationAddress'] ?? ''}, ${serviceData['city'] ??
+          ''}, ${serviceData['state'] ?? ''}';
 
       String startDate = serviceData['eventStartDate'] != null
           ? DateTime.parse(serviceData['eventStartDate'])
-              .toLocal()
-              .toIso8601String()
-              .split('T')[0]
+          .toLocal()
+          .toIso8601String()
+          .split('T')[0]
           : 'N/A';
       String endDate = serviceData['eventEndDate'] != null
           ? DateTime.parse(serviceData['eventEndDate'])
-              .toLocal()
-              .toIso8601String()
-              .split('T')[0]
+          .toLocal()
+          .toIso8601String()
+          .split('T')[0]
           : 'N/A';
       String startTime = serviceData['eventStartTime'] ?? 'N/A';
       String endTime = serviceData['eventEndTime'] ?? 'N/A';
@@ -281,7 +282,9 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
         } else {
           valueStr = rawValue.toString();
         }
-        if (valueStr.trim().isEmpty) return;
+        if (valueStr
+            .trim()
+            .isEmpty) return;
         if (valueStr.trim().toLowerCase() == 'n/a') return;
 
         final label = formatKeyToLabel(rawKey.toString());
@@ -309,27 +312,44 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                     color: Colors.grey[300],
                   ),
                 ),
-                Image.network(
-                  allImageUrls.isNotEmpty
-                      ? allImageUrls[_selectedImageIndex]
-                      : ApiUrl.defaultPlaceholderImage,
-                  fit: BoxFit.cover,
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return Shimmer.fromColors(
-                      baseColor: Colors.grey[300]!,
-                      highlightColor: Colors.grey[100]!,
-                      child: Container(
-                        color: Colors.grey[300],
-                      ),
-                    );
+                GestureDetector(
+                  onTap: () {
+                    if (allImageUrls.isNotEmpty) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          fullscreenDialog: true,
+                          builder: (context) =>
+                              FullScreenImageScreen(
+                                imageUrls: allImageUrls,
+                                initialIndex: _selectedImageIndex,
+                              ),
+                        ),
+                      );
+                    }
                   },
-                  errorBuilder: (context, error, stackTrace) {
-                    return Image.network(
-                      ApiUrl.defaultPlaceholderImage,
-                      fit: BoxFit.cover,
-                    );
-                  },
+                  child: Image.network(
+                    allImageUrls.isNotEmpty
+                        ? allImageUrls[_selectedImageIndex]
+                        : ApiUrl.defaultPlaceholderImage,
+                    fit: BoxFit.cover,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Shimmer.fromColors(
+                        baseColor: Colors.grey[300]!,
+                        highlightColor: Colors.grey[100]!,
+                        child: Container(
+                          color: Colors.grey[300],
+                        ),
+                      );
+                    },
+                    errorBuilder: (context, error, stackTrace) {
+                      return Image.network(
+                        ApiUrl.defaultPlaceholderImage,
+                        fit: BoxFit.cover,
+                      );
+                    },
+                  ),
                 ),
                 Container(
                   decoration: BoxDecoration(
@@ -343,52 +363,29 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                     ),
                   ),
                 ),
-                  Positioned(
-                    top: 16,
-                    right: 16,
-                    child: Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 20,
-                          backgroundColor: Colors.white70,
-                          child: IconButton(
-                            iconSize: 25,
-                            icon: const Icon(
-                              Icons.fullscreen,
-                              color: Colors.black,
-                            ),
-                            onPressed: () {
-                              if (allImageUrls.isNotEmpty) {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    fullscreenDialog: true,
-                                    builder: (context) => FullScreenImageScreen(
-                                      imageUrls: allImageUrls,
-                                      initialIndex: _selectedImageIndex,
-                                    ),
-                                  ),
-                                );
-                              }
-                            },
+                Positioned(
+                  top: 16,
+                  right: 16,
+                  child: Row(
+                    children: [
+
+                      CircleAvatar(
+                        radius: 20,
+                        backgroundColor: Colors.white70,
+                        child: IconButton(
+                          iconSize: 25,
+                          icon: Icon(
+                            _isFav ? Icons.favorite : Icons.favorite_border,
+                            color: _isFav ? Colors.red : Colors.red,
                           ),
+                          onPressed: _favButtonDisabled
+                              ? null
+                              : _toggleFavorite,
                         ),
-                        const SizedBox(width: 8),
-                        CircleAvatar(
-                          radius: 20,
-                          backgroundColor: Colors.white70,
-                          child: IconButton(
-                            iconSize: 25,
-                            icon: Icon(
-                              _isFav ? Icons.favorite : Icons.favorite_border,
-                              color: _isFav ? Colors.red : Colors.red,
-                            ),
-                            onPressed: _favButtonDisabled ? null : _toggleFavorite,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
+                ),
               ],
             ),
           ),
@@ -415,7 +412,9 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                           decoration: BoxDecoration(
                             border: Border.all(
                               color: _selectedImageIndex == index
-                                  ? Theme.of(context).primaryColor
+                                  ? Theme
+                                  .of(context)
+                                  .primaryColor
                                   : Colors.transparent,
                               width: 3,
                             ),
@@ -455,7 +454,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
           ),
         SliverList(
           delegate: SliverChildBuilderDelegate(
-            (BuildContext context, int index) {
+                (BuildContext context, int index) {
               if (index == 0) {
                 return Padding(
                   padding: const EdgeInsets.all(16.0),
@@ -507,10 +506,10 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                       if (allDetails.isNotEmpty) ...[
                         Text(
                           ProductUtils.getProductDescTitle(widget.category) ==
-                                  ''
+                              ''
                               ? 'Details'
                               : ProductUtils.getProductDescTitle(
-                                  widget.category),
+                              widget.category),
                           style: context.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
@@ -606,7 +605,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     VoidCallback? onTap;
 
     if ((label.toLowerCase().contains('google map link') ||
-            label.toLowerCase().contains('social media link')) &&
+        label.toLowerCase().contains('social media link')) &&
         value.isNotEmpty &&
         value != 'N/A') {
       isLink = true;
@@ -615,8 +614,8 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
         await launchUrlString(url, mode: LaunchMode.externalApplication);
       };
     } else if ((label.toLowerCase().contains('phone') ||
-            label.toLowerCase().contains('mobile') ||
-            label.toLowerCase().contains('contact')) &&
+        label.toLowerCase().contains('mobile') ||
+        label.toLowerCase().contains('contact')) &&
         !label.toLowerCase().contains('name') &&
         value.isNotEmpty &&
         value != 'N/A') {
@@ -641,7 +640,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
               child: Text(
                 '$label:',
                 style:
-                    context.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+                context.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
               ),
             ),
             Expanded(

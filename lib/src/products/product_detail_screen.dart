@@ -211,7 +211,23 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         itemBuilder: (context, index) {
                           final url =
                               imageUrls.isNotEmpty ? imageUrls[index] : '';
-                          return _buildImage(url, useHero: index == 0);
+                          return GestureDetector(
+                            onTap: () {
+                              if (imageUrls.isNotEmpty) {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    fullscreenDialog: true,
+                                    builder: (context) => FullScreenImageScreen(
+                                      imageUrls: imageUrls,
+                                      initialIndex: selectedImageIndexNotifier.value,
+                                    ),
+                                  ),
+                                );
+                              }
+                            },
+                            child: _buildImage(url, useHero: index == 0),
+                          );
                         },
                       );
                     },
@@ -223,30 +239,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     right: 16,
                     child: Row(
                       children: [
-                        GestureDetector(
-                          onTap: () {
-                            if (imageUrls.isNotEmpty) {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  fullscreenDialog: true,
-                                  builder: (context) => FullScreenImageScreen(
-                                    imageUrls: imageUrls,
-                                    initialIndex: selectedImageIndexNotifier.value,
-                                  ),
-                                ),
-                              );
-                            }
-                          },
-                          child: CircleAvatar(
-                            backgroundColor: Colors.white70,
-                            child: const Icon(
-                              Icons.fullscreen,
-                              color: Colors.black,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
+
                         GestureDetector(
                           onTap: _favButtonDisabled ? null : _toggleFavorite,
                           child: CircleAvatar(

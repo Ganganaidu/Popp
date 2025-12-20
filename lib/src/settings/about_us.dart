@@ -165,6 +165,7 @@ class _AboutUsScreenState extends State<AboutUsScreen> {
                 'Version $_version',
               ),
             ),
+            const SizedBox(height: 50),
           ],
         ),
       ),

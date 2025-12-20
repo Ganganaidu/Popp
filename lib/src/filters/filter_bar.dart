@@ -126,7 +126,8 @@ class _FilterBarState extends State<FilterBar> {
                     _selectedBrands = List<String>.from(selectedBrands);
                     _selectedStates = List<String>.from(selectedStates);
                     _selectedCategories = List<String>.from(selectedCategories);
-                    _selectedSubCategories = List<String>.from(selectedSubCategories);
+                    _selectedSubCategories =
+                        List<String>.from(selectedSubCategories);
                     _yearFrom = tempYearFrom;
                     _yearTo = tempYearTo;
                   });
@@ -261,7 +262,12 @@ class _FilterBarState extends State<FilterBar> {
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.all(16.0),
+                        padding: const EdgeInsets.fromLTRB(
+                          16.0,
+                          16.0,
+                          16.0,
+                          50.0,
+                        ),
                         child: Row(
                           children: [
                             Expanded(

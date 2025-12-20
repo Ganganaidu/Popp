@@ -92,7 +92,7 @@ class _FullScreenImageScreenState extends State<FullScreenImageScreen> {
           // Page indicator
           if (widget.imageUrls.length > 1)
             Positioned(
-              bottom: 20,
+              bottom: 60,
               left: 0,
               right: 0,
               child: Center(
@@ -100,6 +100,7 @@ class _FullScreenImageScreenState extends State<FullScreenImageScreen> {
                   "${_currentIndex + 1} / ${widget.imageUrls.length}",
                   style: const TextStyle(
                     color: Colors.white,
+                    backgroundColor: Colors.black38,
                     fontSize: 16.0,
                   ),
                 ),

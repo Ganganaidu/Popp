@@ -365,7 +365,12 @@ class _SignupScreenState extends State<SignupScreen> {
             ),
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(
+                16.0,
+                16.0,
+                16.0,
+                50.0,
+              ),
               child: ElevatedButton(
                 onPressed: isSubmitting ? null : _createAccountAndContinue,
                 style: ElevatedButton.styleFrom(
@@ -395,8 +400,8 @@ class _SignupScreenState extends State<SignupScreen> {
           style: TextStyle(
             fontSize: 32,
             fontWeight: FontWeight.bold,
-            color: Theme.of(context).brightness == Brightness.dark 
-                ? Colors.white 
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
                 : Colors.black87,
           ),
         ),
@@ -405,8 +410,8 @@ class _SignupScreenState extends State<SignupScreen> {
           "Join our community and start your biking journey today",
           style: TextStyle(
             fontSize: 18,
-            color: Theme.of(context).brightness == Brightness.dark 
-                ? Colors.white70 
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white70
                 : Colors.black54,
           ),
         ),
@@ -427,7 +432,7 @@ class _SignupScreenState extends State<SignupScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildWebSectionHeader(
-                  "Account Details", 
+                  "Account Details",
                   "Create your login credentials",
                   Icons.person_outline,
                 ),
@@ -456,7 +461,8 @@ class _SignupScreenState extends State<SignupScreen> {
                     isPasswordTextField: true,
                     currentPasswordVisibility: _isConfirmPasswordVisible,
                     onTogglePasswordVisibility: () => setState(() =>
-                        _isConfirmPasswordVisible = !_isConfirmPasswordVisible)),
+                        _isConfirmPasswordVisible =
+                            !_isConfirmPasswordVisible)),
                 const SizedBox(height: 20),
                 _buildPasswordRequirements(),
               ],
@@ -472,7 +478,7 @@ class _SignupScreenState extends State<SignupScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildWebSectionHeader(
-                  "Your Location", 
+                  "Your Location",
                   "Used to find rides and services near you",
                   Icons.location_on_outlined,
                 ),
@@ -489,7 +495,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     keyboardType: TextInputType.number),
                 const SizedBox(height: 30),
                 _buildWebSectionHeader(
-                  "Bike Details (Optional)", 
+                  "Bike Details (Optional)",
                   "Add your bikes for custom notifications",
                   Icons.two_wheeler_outlined,
                 ),
@@ -508,8 +514,8 @@ class _SignupScreenState extends State<SignupScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Theme.of(context).brightness == Brightness.dark 
-            ? Colors.grey[900] 
+        color: Theme.of(context).brightness == Brightness.dark
+            ? Colors.grey[900]
             : Colors.white,
         boxShadow: [
           BoxShadow(
@@ -562,12 +568,12 @@ class _SignupScreenState extends State<SignupScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Theme.of(context).brightness == Brightness.dark 
+        color: Theme.of(context).brightness == Brightness.dark
             ? Colors.grey[800]?.withOpacity(0.5)
             : Colors.white.withOpacity(0.8),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: Theme.of(context).brightness == Brightness.dark 
+          color: Theme.of(context).brightness == Brightness.dark
               ? Colors.grey[700]!
               : Colors.grey[300]!,
           width: 1,
@@ -597,8 +603,8 @@ class _SignupScreenState extends State<SignupScreen> {
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Theme.of(context).brightness == Brightness.dark 
-                        ? Colors.white 
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
                         : Colors.black87,
                   ),
                 ),
@@ -607,8 +613,8 @@ class _SignupScreenState extends State<SignupScreen> {
                   subtitle,
                   style: TextStyle(
                     fontSize: 14,
-                    color: Theme.of(context).brightness == Brightness.dark 
-                        ? Colors.white70 
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white70
                         : Colors.black54,
                   ),
                 ),
@@ -772,23 +778,23 @@ class _SignupScreenState extends State<SignupScreen> {
 
   Widget _buildPasswordRequirements() {
     final isWeb = kIsWeb && context.isDesktop;
-    
+
     return ValueListenableBuilder<TextEditingValue>(
       valueListenable: passwordController,
       builder: (context, value, child) {
         final currentPassword = value.text;
-        
+
         if (isWeb) {
           // Web version - always visible in a styled container
           return Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Theme.of(context).brightness == Brightness.dark 
+              color: Theme.of(context).brightness == Brightness.dark
                   ? Colors.grey[800]?.withOpacity(0.3)
                   : Colors.grey[50],
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: Theme.of(context).brightness == Brightness.dark 
+                color: Theme.of(context).brightness == Brightness.dark
                     ? Colors.grey[700]!
                     : Colors.grey[300]!,
                 width: 1,
@@ -802,8 +808,8 @@ class _SignupScreenState extends State<SignupScreen> {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: Theme.of(context).brightness == Brightness.dark 
-                        ? Colors.white 
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
                         : Colors.black87,
                   ),
                 ),
@@ -853,7 +859,6 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
-
   Widget _buildTextField(String hint, TextEditingController controller,
       {IconData? icon,
       int maxLines = 1,
@@ -864,7 +869,7 @@ class _SignupScreenState extends State<SignupScreen> {
       bool? currentPasswordVisibility,
       FocusNode? focusNode}) {
     final isWeb = kIsWeb && context.isDesktop;
-    
+
     return TextFormField(
       controller: controller,
       focusNode: focusNode,
@@ -906,23 +911,26 @@ class _SignupScreenState extends State<SignupScreen> {
         }
         return null;
       },
-      decoration: context.inputDecoration("", hint, icon: icon, borderRadius: isWeb ? 8.0 : 8.0).copyWith(
-        contentPadding: EdgeInsets.symmetric(
-          horizontal: isWeb ? 20 : 16,
-          vertical: isWeb ? 18 : 16,
-        ),
-        suffixIcon: isPasswordTextField
-            ? IconButton(
-                icon: Icon(
-                  (currentPasswordVisibility ?? false)
-                      ? Icons.visibility
-                      : Icons.visibility_off,
-                  size: isWeb ? 20 : 18,
-                ),
-                onPressed: onTogglePasswordVisibility,
-              )
-            : null,
-      ),
+      decoration: context
+          .inputDecoration("", hint,
+              icon: icon, borderRadius: isWeb ? 8.0 : 8.0)
+          .copyWith(
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: isWeb ? 20 : 16,
+              vertical: isWeb ? 18 : 16,
+            ),
+            suffixIcon: isPasswordTextField
+                ? IconButton(
+                    icon: Icon(
+                      (currentPasswordVisibility ?? false)
+                          ? Icons.visibility
+                          : Icons.visibility_off,
+                      size: isWeb ? 20 : 18,
+                    ),
+                    onPressed: onTogglePasswordVisibility,
+                  )
+                : null,
+          ),
     );
   }
 
@@ -976,7 +984,8 @@ class _SignupScreenState extends State<SignupScreen> {
               label: const Text("Add Another Bike"),
               style: TextButton.styleFrom(
                 foregroundColor: context.primaryColor,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               ),
             ),
           ),
@@ -1004,12 +1013,12 @@ class _SignupScreenState extends State<SignupScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
-        color: Theme.of(context).brightness == Brightness.dark 
+        color: Theme.of(context).brightness == Brightness.dark
             ? Colors.grey[800]?.withOpacity(0.3)
             : Colors.white.withOpacity(0.6),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: Theme.of(context).brightness == Brightness.dark 
+          color: Theme.of(context).brightness == Brightness.dark
               ? Colors.grey[700]!
               : Colors.grey[300]!,
           width: 1,
@@ -1028,8 +1037,8 @@ class _SignupScreenState extends State<SignupScreen> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Theme.of(context).brightness == Brightness.dark 
-                        ? Colors.white 
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
                         : Colors.black87,
                   ),
                 ),
@@ -1045,10 +1054,13 @@ class _SignupScreenState extends State<SignupScreen> {
             const SizedBox(height: 20),
             DropdownButtonFormField<String>(
               value: selectedBrand,
-              decoration: context.inputDecoration("", "Choose brand",
-                  icon: Icons.two_wheeler_outlined, borderRadius: 8.0).copyWith(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-              ),
+              decoration: context
+                  .inputDecoration("", "Choose brand",
+                      icon: Icons.two_wheeler_outlined, borderRadius: 8.0)
+                  .copyWith(
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 18),
+                  ),
               items: brandListWithOthers
                   .map((b) => DropdownMenuItem(value: b, child: Text(b)))
                   .toList(),
@@ -1076,14 +1088,19 @@ class _SignupScreenState extends State<SignupScreen> {
               const SizedBox(height: 20),
               DropdownButtonFormField<String>(
                 value: selectedModel,
-                decoration: context.inputDecoration(
-                  "",
-                  selectedBrand != null ? "Choose model" : "Select a brand first",
-                  icon: Icons.motorcycle_outlined,
-                  borderRadius: 8.0,
-                ).copyWith(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-                ),
+                decoration: context
+                    .inputDecoration(
+                      "",
+                      selectedBrand != null
+                          ? "Choose model"
+                          : "Select a brand first",
+                      icon: Icons.motorcycle_outlined,
+                      borderRadius: 8.0,
+                    )
+                    .copyWith(
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 18),
+                    ),
                 onChanged: selectedBrand != null
                     ? (val) {
                         setState(() {
@@ -1127,5 +1144,4 @@ class _SignupScreenState extends State<SignupScreen> {
       ),
     );
   }
-
 }

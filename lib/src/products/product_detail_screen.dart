@@ -394,7 +394,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     productTitle: ProductUtils.getTitle(product),
                     productId: product['id'],
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 50),
                 ],
               ),
             ),

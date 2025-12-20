@@ -345,7 +345,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             secondary: const Icon(Icons.brightness_6_outlined),
             value: themeMode == ThemeMode.dark ||
                 (themeMode == ThemeMode.system &&
-                    MediaQuery.of(context).platformBrightness == Brightness.dark),
+                    MediaQuery.of(context).platformBrightness ==
+                        Brightness.dark),
             onChanged: (value) {
               themeNotifier.toggle(value);
             },
@@ -357,7 +358,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildBottomButton(BuildContext context, bool isLoggedIn) {
     return Container(
-      padding: const EdgeInsets.all(24.0),
+      padding: const EdgeInsets.fromLTRB(
+        24.0,
+        24.0,
+        24.0,
+        50.0,
+      ),
       width: double.infinity,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(

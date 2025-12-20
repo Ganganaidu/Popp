@@ -287,7 +287,7 @@ class _RegisterAndSubscribeScreenState
   Widget _buildBottomActionArea(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 50),
       decoration: BoxDecoration(
         color: isDarkMode ? Colors.grey[900] : Colors.white,
         boxShadow: [

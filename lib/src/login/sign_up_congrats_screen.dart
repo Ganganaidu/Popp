@@ -98,7 +98,7 @@ class SignUpCongratsScreen extends StatelessWidget {
               ),
               // The button is now in a consistent bottom bar
               Padding(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 50),
                 child: SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(

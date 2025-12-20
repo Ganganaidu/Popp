@@ -225,6 +225,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
             ),
           ),
           _buildSaveButton(),
+          const SizedBox(height: 35),
         ],
       ),
     );

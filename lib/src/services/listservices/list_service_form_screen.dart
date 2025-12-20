@@ -1234,6 +1234,7 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                       ),
                     ),
                   ),
+                  const SizedBox(height: 50),
                 ],
               ),
             ),

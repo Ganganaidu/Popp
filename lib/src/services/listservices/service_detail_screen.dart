@@ -56,6 +56,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     final prev = _isFav;
     final result = await _firebaseApiService.toggleFavoriteProduct(
         ApiUrl.servicePath, widget.serviceData['id']);
+    if (!mounted) return;
     setState(() {
       _favButtonDisabled = false;
       if (!result) {
@@ -122,6 +123,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                             if (serviceId != '') {
                               await _firebaseApiService
                                   .updateServiceApprovalStatus(serviceId, true);
+                              if (!mounted) return;
                               setState(() {
                                 _isApproved = true;
                               });
@@ -312,6 +314,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                 GestureDetector(
                   onTap: () {
                     if (allImageUrls.isNotEmpty) {
+                      FocusManager.instance.primaryFocus?.unfocus();
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -347,15 +350,17 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                     },
                   ),
                 ),
-                Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black.withAlpha((0.7 * 255).toInt())
-                      ],
+                IgnorePointer(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withAlpha((0.7 * 255).toInt())
+                        ],
+                      ),
                     ),
                   ),
                 ),

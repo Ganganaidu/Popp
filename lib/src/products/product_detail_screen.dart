@@ -95,6 +95,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     final prev = isFavorite;
     final result = await _firebaseApiService.toggleFavoriteProduct(
         ApiUrl.productsPath, widget.productJson['id']);
+    if (!mounted) return;
     setState(() {
       _favButtonDisabled = false;
       if (!result) {
@@ -214,6 +215,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           return GestureDetector(
                             onTap: () {
                               if (imageUrls.isNotEmpty) {
+                                FocusManager.instance.primaryFocus?.unfocus();
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
@@ -424,6 +426,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               await FirebaseApiService()
                                   .updateProductApprovalStatus(
                                       product['id'], true);
+                              if (!mounted) return;
                               setState(() {
                                 _isApproved = true;
                                 _status = 'Approved';

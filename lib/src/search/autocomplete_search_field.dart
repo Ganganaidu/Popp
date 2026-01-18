@@ -42,6 +42,7 @@ class AutocompleteSearchField extends StatefulWidget {
   final void Function(PlaceSuggestion suggestion) onPlaceSelected;
   final double? lat;
   final double? lon;
+  final int? maxLines;
   final FormFieldValidator<String>? validator;
 
   const AutocompleteSearchField({
@@ -50,6 +51,7 @@ class AutocompleteSearchField extends StatefulWidget {
     required this.hint,
     required this.controller,
     required this.onPlaceSelected,
+    this.maxLines,
     this.icon,
     this.lat,
     this.lon,
@@ -193,7 +195,7 @@ class _AutocompleteSearchFieldState extends State<AutocompleteSearchField> {
     return CompositedTransformTarget(
       link: _layerLink,
       child: TextFormField(
-        maxLines: 2,
+        maxLines: widget.maxLines ?? 1,
         controller: widget.controller,
         decoration: context
             .inputDecoration(

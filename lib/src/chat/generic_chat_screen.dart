@@ -77,6 +77,26 @@ class _GenericChatScreenState extends State<GenericChatScreen> {
 
     // Listen to the stream to automatically scroll to the bottom when new messages arrive
     messageStream.listen((snapshot) {
+      if (currentUser != null) {
+        String otherUserId = widget.receiverUserID;
+        if (widget.chatType == 'agent_user') {
+          // If current user is the agent, other user is receiverUserID.
+          // If current user is the regular user, other user is agentId.
+          if (currentUser.uid == widget.agentId) {
+            otherUserId = widget.receiverUserID;
+          } else {
+            otherUserId = widget.agentId!;
+          }
+        }
+
+        _chatService.markChatAsRead(
+          currentUser.uid,
+          otherUserId,
+          productId: widget.productId,
+          chatType: widget.chatType,
+        );
+      }
+
       if (_scrollController.hasClients) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _scrollController.animateTo(

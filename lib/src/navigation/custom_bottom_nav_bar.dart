@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:popp/src/utils/build_extensions.dart';
+import 'package:provider/provider.dart';
+import '../chat/chat_service.dart';
 import '../utils/app_constants.dart';
 
 class CustomBottomNavBar extends StatelessWidget {
@@ -42,39 +44,35 @@ class CustomBottomNavBar extends StatelessWidget {
                 ),
                 label: Constants.home,
               ),
-              // BottomNavigationBarItem(
-              //   icon: Icon(
-              //     selectedIndex == 1
-              //         ? Icons.two_wheeler
-              //         : Icons.two_wheeler_outlined,
-              //   ),
-              //   label: Constants.rides,
-              // ),
               BottomNavigationBarItem(
                 icon: Icon(
-                  selectedIndex == 2
+                  selectedIndex == 1
                       ? Icons.search_sharp
                       : Icons.search_outlined,
                 ),
                 label: Constants.explore,
               ),
-              // BottomNavigationBarItem(
-              //   icon: Icon(
-              //     selectedIndex == 3 ? Icons.map : Icons.map_outlined,
-              //   ),
-              //   label: Constants.routes,
-              // ),
               BottomNavigationBarItem(
-                icon: Icon(
-                  selectedIndex == 3
-                      ? Icons.chat_bubble_outlined
-                      : Icons.chat_bubble_outline,
+                icon: StreamBuilder<int>(
+                  stream: context.read<ChatService>().totalUnreadCountStream,
+                  builder: (context, snapshot) {
+                    final int count = snapshot.data ?? 0;
+                    return Badge(
+                      isLabelVisible: count > 0,
+                      label: Text('$count'),
+                      child: Icon(
+                        selectedIndex == 2
+                            ? Icons.chat_bubble_outlined
+                            : Icons.chat_bubble_outline,
+                      ),
+                    );
+                  },
                 ),
                 label: Constants.chat,
               ),
               BottomNavigationBarItem(
                 icon: Icon(
-                  selectedIndex == 4
+                  selectedIndex == 3
                       ? Icons.help_center_rounded
                       : Icons.help_center_outlined,
                 ),

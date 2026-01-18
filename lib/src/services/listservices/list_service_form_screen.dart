@@ -15,13 +15,15 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../api/api_url.dart';
 import '../../api/firebase/firebase_api_service.dart';
+import '../../api/firebase/remote_config_service.dart';
 import '../../search/autocomplete_search_field.dart';
 import '../../utils/app_loger.dart';
 import '../../utils/product_content_data.dart';
 import '../../widgets/working_hours_picker.dart';
 
 class ListServiceFormScreen extends StatefulWidget {
-  const ListServiceFormScreen({super.key});
+  final String? category;
+  const ListServiceFormScreen({super.key, this.category});
 
   @override
   State<ListServiceFormScreen> createState() => _ListServiceFormScreenState();
@@ -78,15 +80,27 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
 
   bool _isLoading = false;
   bool _termsAccepted = false;
+  bool _enableGallery = false;
 
   @override
   void initState() {
     super.initState();
-    // Show category selection bottom sheet on first load
+    if (widget.category != null) {
+      _selectedCategory = widget.category;
+    }
+    _loadConfig();
+    // Show category selection bottom sheet on first load ONLY if no category passed
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_selectedCategory == null) {
         _showCategorySelectionSheet();
       }
+    });
+  }
+
+  void _loadConfig() async {
+    final configService = await RemoteConfigService.getInstance();
+    setState(() {
+      _enableGallery = configService.enableGallery;
     });
   }
 
@@ -507,11 +521,12 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
           ),
           title: TitleText(_selectedCategory ?? 'List your service'),
           actions: [
-            IconButton(
-              icon: const Icon(Icons.arrow_drop_down_circle_rounded),
-              tooltip: 'Change Service Category',
-              onPressed: _showCategorySelectionSheet,
-            ),
+            if (widget.category == null) // Check if category was passed
+              IconButton(
+                icon: const Icon(Icons.arrow_drop_down_circle_rounded),
+                tooltip: 'Change Service Category',
+                onPressed: _showCategorySelectionSheet,
+              ),
           ],
         ),
         body: LoadingOverlay(
@@ -758,7 +773,7 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 8.0),
                       child: ImagePickerSection(
                         title: "Upload pics for Business Promo or Adv Picture",
-                        // 2
+                        isGalleryOnly: _enableGallery,
                         images: _promoImages,
                         onImagesChanged: (images) => setState(() {
                           _promoImages.clear();
@@ -769,7 +784,8 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8.0),
                       child: ImagePickerSection(
-                        title: "Upload pics for Shop/Garage Pics", // 3
+                        title: "Upload pics for Shop/Garage Pics",
+                        isGalleryOnly: _enableGallery,
                         images: _shopGarageImages,
                         onImagesChanged: (images) => setState(() {
                           _shopGarageImages.clear();

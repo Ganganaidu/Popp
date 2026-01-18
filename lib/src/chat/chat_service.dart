@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +15,8 @@ class ChatService extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final String userChatMemberships = 'userChatMemberships';
   final String agentChatMemberships = 'agentChatMemberships';
+  final StreamController<int> _unreadCountController =
+      StreamController<int>.broadcast();
 
   // Helper function to get user data (name and email) from their profile
   Future<Map<String, dynamic>?> getUserData(String userId) async {
@@ -73,7 +77,6 @@ class ChatService extends ChangeNotifier {
           senderData?['username'] ?? 'User ${currentUserId.substring(0, 4)}...';
       final String senderEmail = senderData?['email'] ?? currentUserEmail;
 
-
       final Map<String, dynamic>? receiverData = await getUserData(receiverId);
       final String receiverName =
           receiverData?['username'] ?? 'User ${receiverId.substring(0, 4)}...';
@@ -101,6 +104,8 @@ class ChatService extends ChangeNotifier {
         'lastMessage': message,
         'productId': productId,
         'productTitle': productTitle,
+        'productTitle': productTitle,
+        'unreadCount': 0, // Sender has read their own message
       };
       AppLogger.d("Receiver Membership Data: $receiverMembershipData");
 
@@ -114,12 +119,30 @@ class ChatService extends ChangeNotifier {
       AppLogger.d("Sender's chat membership updated.");
 
       AppLogger.d("Updating receiver's chat membership.");
+      // For receiver, we want to increment the unread count.
+      // We cannot use set with merge for atomic increment easily on a field that might not exist or needs update.
+      // But since we are constructing receiverMembershipData, we can handle it.
+      // However, we want to PRESERVE the existing query structure but just update unreadCount.
+      // The original code was setting the whole object.
+
+      Map<String, dynamic> receiverUpdateData = {
+        'chatRoomId': chatRoomId,
+        'otherUserId': currentUserId,
+        'otherUserName': senderName,
+        'otherUserEmail': senderEmail,
+        'lastMessageTimestamp': timestamp,
+        'lastMessage': message,
+        'productId': productId,
+        'productTitle': productTitle,
+        'unreadCount': FieldValue.increment(1),
+      };
+
       await _firestore
           .collection(ApiUrl.userPath)
           .doc(receiverId)
           .collection(userChatMemberships)
           .doc(chatRoomId)
-          .set(receiverMembershipData, SetOptions(merge: true));
+          .set(receiverUpdateData, SetOptions(merge: true));
       AppLogger.d("Receiver's chat membership updated.");
 
       AppLogger.d(
@@ -132,7 +155,8 @@ class ChatService extends ChangeNotifier {
     }
   }
 
-  Stream<QuerySnapshot> getUserToUserMessages(String userId1, String userId2, String productId) {
+  Stream<QuerySnapshot> getUserToUserMessages(
+      String userId1, String userId2, String productId) {
     try {
       List<String> ids = [userId1, userId2, productId];
       ids.sort();
@@ -220,6 +244,7 @@ class ChatService extends ChangeNotifier {
         'otherUserEmail': receiverEmail,
         'lastMessageTimestamp': timestamp,
         'lastMessage': message, // Store last message for quick display
+        'unreadCount': 0,
       };
 
       // Data for the receiver's chat membership document
@@ -230,6 +255,7 @@ class ChatService extends ChangeNotifier {
         'otherUserEmail': senderEmail,
         'lastMessageTimestamp': timestamp,
         'lastMessage': message,
+        'unreadCount': FieldValue.increment(1),
       };
 
       // Update sender's agentChatMemberships subcollection
@@ -391,5 +417,128 @@ class ChatService extends ChangeNotifier {
       AppLogger.e("Failed to get users stream: $e", stack);
       rethrow;
     }
+  }
+
+  // --- Unread Count Logic ---
+  Future<void> markChatAsRead(String currentUserId, String otherUserId,
+      {String? productId, required String chatType}) async {
+    try {
+      String chatRoomId;
+      if (chatType == 'user_to_user') {
+        List<String> ids = [currentUserId, otherUserId, productId ?? ''];
+        ids.sort();
+        chatRoomId = ids.join("_");
+      } else {
+        // agent_user
+        List<String> ids = [currentUserId, otherUserId];
+        ids.sort();
+        chatRoomId = ids.join("_");
+      }
+      await resetUnreadCount(chatRoomId);
+    } catch (e) {
+      AppLogger.e("Failed to mark chat as read: $e");
+    }
+  }
+
+  Future<void> resetUnreadCount(String chatRoomId) async {
+    try {
+      final user = _firebaseAuth.currentUser;
+      if (user == null) return;
+
+      // We need to check both collections because we don't know which one it is just by ID easily
+      // or we can try to update both or check existence.
+      // Optimization: Try userChatMemberships first, if not found try agentChatMemberships?
+      // Or just update both with merge? No, they are in different subcollections.
+
+      // Since chatRoomId assumes a specific structure, we might be able to guess?
+      // But simplest is to check or just blind update if we knew the type.
+      // Current architecture separates them.
+
+      // Let's try updating userChatMemberships first
+      final userChatDoc = _firestore
+          .collection(ApiUrl.userPath)
+          .doc(user.uid)
+          .collection(userChatMemberships)
+          .doc(chatRoomId);
+
+      // We can use a transaction or just get and check, but blind write is okay if ID is unique across both?
+      // IDs are generated from sorted user IDs.
+      // If a user chats with an agent, it goes to agentChatMemberships?
+      // Let's look at how they are created.
+      // User-User: userChatMemberships
+      // User-Agent: agentChatMemberships
+
+      // The client usually knows which type of chat it is when entering.
+      // BUT for simplicity here, I will try to update both locations.
+      // It's overhead but ensures it is cleared.
+
+      await userChatDoc.set({'unreadCount': 0}, SetOptions(merge: true));
+
+      final agentChatDoc = _firestore
+          .collection(ApiUrl.userPath)
+          .doc(user.uid)
+          .collection(agentChatMemberships)
+          .doc(chatRoomId);
+
+      await agentChatDoc.set({'unreadCount': 0}, SetOptions(merge: true));
+    } catch (e) {
+      AppLogger.e("Failed to reset unread count: $e");
+    }
+  }
+
+  Stream<int> get totalUnreadCountStream {
+    final user = _firebaseAuth.currentUser;
+    if (user == null) return Stream.value(0);
+
+    // We cannot use Rx.combineLatest without rxdart.
+    // So we use a StreamController.
+    // Note: We need to return a stream that stays alive.
+    StreamController<int> controller = StreamController<int>();
+
+    final userChatsStream = _firestore
+        .collection(ApiUrl.userPath)
+        .doc(user.uid)
+        .collection(userChatMemberships)
+        .snapshots();
+
+    final agentChatsStream = _firestore
+        .collection(ApiUrl.userPath)
+        .doc(user.uid)
+        .collection(agentChatMemberships)
+        .snapshots();
+
+    int userCount = 0;
+    int agentCount = 0;
+
+    void update() {
+      if (!controller.isClosed) {
+        controller.add(userCount + agentCount);
+      }
+    }
+
+    final sub1 = userChatsStream.listen((snapshot) {
+      userCount = snapshot.docs.fold(0, (sum, doc) {
+        final data = doc.data();
+        final count = (data['unreadCount'] ?? 0) as int;
+        return sum + count;
+      });
+      update();
+    });
+
+    final sub2 = agentChatsStream.listen((snapshot) {
+      agentCount = snapshot.docs.fold(0, (sum, doc) {
+        final data = doc.data();
+        final count = (data['unreadCount'] ?? 0) as int;
+        return sum + count;
+      });
+      update();
+    });
+
+    controller.onCancel = () {
+      sub1.cancel();
+      sub2.cancel();
+    };
+
+    return controller.stream;
   }
 }

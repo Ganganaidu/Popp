@@ -13,6 +13,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../api/api_url.dart';
 import '../../api/firebase/firebase_api_service.dart';
+import '../../api/firebase/remote_config_service.dart';
 import '../../models/pop_category.dart';
 import '../../models/product.dart';
 import '../../navigation/nav_router.dart';
@@ -74,6 +75,7 @@ class _SellYourBikeState extends State<SellYourBike>
   String? _insuranceAvailable;
   DateTime? _insuranceValidityTill;
   bool _termsAccepted = false;
+  bool _enableGallery = false;
 
   final double _bannerHeight = 40.0;
   final List<File> _images = [];
@@ -82,6 +84,7 @@ class _SellYourBikeState extends State<SellYourBike>
   @override
   void initState() {
     super.initState();
+    _loadConfig();
     _isCollapsedNotifier = ValueNotifier(false);
     _scrollController.addListener(() {
       final offset = _scrollController.offset;
@@ -90,6 +93,13 @@ class _SellYourBikeState extends State<SellYourBike>
       } else if (offset <= 50 && _isCollapsedNotifier.value) {
         _isCollapsedNotifier.value = false;
       }
+    });
+  }
+
+  void _loadConfig() async {
+    final configService = await RemoteConfigService.getInstance();
+    setState(() {
+      _enableGallery = configService.enableGallery;
     });
   }
 
@@ -513,33 +523,34 @@ class _SellYourBikeState extends State<SellYourBike>
                         ),
                       ),
                       const SizedBox(height: 10),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10.0),
+                        child: TextFormField(
+                          maxLines: 2,
+                          controller: addressController,
+                          decoration: context.inputDecoration(
+                              "Address", "Enter Address name"),
+                          validator: (val) => val!.isEmpty ? "Required" : null,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
                       AutocompleteSearchField(
-                        label: "Address",
-                        hint: "Enter address or locality",
-                        controller: addressController,
+                        label: "Area",
+                        hint: "Enter Area name",
+                        controller: areaController,
                         icon: null,
                         lat: stateCoordinates[selectedState]?['lat'] ?? 0.0,
                         lon: stateCoordinates[selectedState]?['lon'] ?? 0.0,
                         onPlaceSelected: (suggestion) {
                           // Update all location controllers when a place is selected
                           setState(() {
-                            addressController.text = suggestion.text;
+                            areaController.text = suggestion.text;
                             cityController.text = suggestion.municipality ?? '';
                             pinCodeController.text =
                                 suggestion.postalCode ?? '';
                           });
                         },
                         validator: (val) => val!.isEmpty ? "Required" : null,
-                      ),
-                      const SizedBox(height: 10),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10.0),
-                        child: TextFormField(
-                          controller: areaController,
-                          decoration: context.inputDecoration(
-                              "Area", "Enter Area name"),
-                          validator: (val) => val!.isEmpty ? "Required" : null,
-                        ),
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 10.0),
@@ -706,6 +717,7 @@ class _SellYourBikeState extends State<SellYourBike>
                         padding: const EdgeInsets.symmetric(vertical: 10.0),
                         child: ImagePickerSection(
                           images: _images,
+                          isGalleryOnly: _enableGallery,
                           onImagesChanged: (images) => setState(() {
                             _images.clear();
                             _images.addAll(images);

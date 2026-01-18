@@ -15,6 +15,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../api/api_url.dart';
 import '../../api/firebase/firebase_api_service.dart';
+import '../../api/firebase/remote_config_service.dart';
 import '../../models/pop_category.dart';
 import '../../models/product.dart';
 import '../../navigation/nav_router.dart';
@@ -68,6 +69,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
   bool isBillAvailable = false;
   bool isWarrantyAvailable = false;
   bool _termsAccepted = false;
+  bool _enableGallery = false;
 
   void _clearBikeSpecificFields() {
     selectedBikeBrand = null;
@@ -87,6 +89,19 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
   final List<File> _images = [];
   var productId = const Uuid().v4();
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadConfig();
+  }
+
+  void _loadConfig() async {
+    final configService = await RemoteConfigService.getInstance();
+    setState(() {
+      _enableGallery = configService.enableGallery;
+    });
+  }
 
   Future<void> _handleLoading(bool isLoading) async {
     if (mounted) {
@@ -318,6 +333,8 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
                   title: const Text("Is your product bike specific?"),
                   value: isBikeSpecific,
                   activeColor: Colors.green,
+                  inactiveThumbColor: Colors.grey,
+                  inactiveTrackColor: Colors.grey.withOpacity(0.5),
                   onChanged: (val) {
                     setState(() {
                       isBikeSpecific = val;
@@ -365,32 +382,32 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
                   validator: (val) => val == null ? "Required" : null,
                 )),
                 const SizedBox(height: 10),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10.0),
+                  child: TextFormField(
+                    controller: addressController,
+                    decoration:
+                    context.inputDecoration("Address", "Enter address or locality"),
+                    maxLines: 2,
+                    validator: (val) => val!.isEmpty ? "Required" : null,
+                  ),
+                ),
                 AutocompleteSearchField(
-                  label: "Address",
-                  hint: "Enter address or locality",
-                  controller: addressController,
+                  label: "Area",
+                  hint: "Enter Area name",
+                  controller: areaController,
                   icon: null,
                   lat: stateCoordinates[selectedState]?['lat'] ?? 0.0,
                   lon: stateCoordinates[selectedState]?['lon'] ?? 0.0,
                   onPlaceSelected: (suggestion) {
                     // Update all location controllers when a place is selected
                     setState(() {
-                      addressController.text = suggestion.text;
+                      areaController.text = suggestion.text;
                       cityController.text = suggestion.municipality ?? '';
                       pinCodeController.text = suggestion.postalCode ?? '';
                     });
                   },
                   validator: (val) => val!.isEmpty ? "Required" : null,
-                ),
-                const SizedBox(height: 10),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 10.0),
-                  child: TextFormField(
-                    controller: areaController,
-                    decoration:
-                        context.inputDecoration("Area", "Enter Area name"),
-                    validator: (val) => val!.isEmpty ? "Required" : null,
-                  ),
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 10.0),
@@ -428,6 +445,8 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
                 buildPaddedField(SwitchListTile(
                   title: const Text("Bill available?"),
                   activeColor: Colors.green,
+                  inactiveThumbColor: Colors.grey,
+                  inactiveTrackColor: Colors.grey.withOpacity(0.5),
                   value: isBillAvailable,
                   onChanged: (val) {
                     setState(() {
@@ -451,8 +470,8 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
                   },
                 )),
                 buildPaddedField(TextFormField(
-                  readOnly: true,
-                  enabled: isBillAvailable,
+                  enabled: true,
+                  keyboardType: TextInputType.number,
                   controller: productAgingController,
                   decoration: context.inputDecoration(
                       "Product aging", "Product age so far"),
@@ -460,6 +479,8 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
                 buildPaddedField(SwitchListTile(
                   title: const Text("Warranty available?"),
                   activeColor: Colors.green,
+                  inactiveThumbColor: Colors.grey,
+                  inactiveTrackColor: Colors.grey.withOpacity(0.5),
                   value: isWarrantyAvailable,
                   onChanged: (val) {
                     setState(() {
@@ -488,6 +509,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
                 )),
                 buildPaddedField(ImagePickerSection(
                   images: _images,
+                  isGalleryOnly: _enableGallery,
                   onImagesChanged: (images) => setState(() {
                     _images.clear();
                     _images.addAll(images);

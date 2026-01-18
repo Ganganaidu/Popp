@@ -43,7 +43,7 @@ class IntroScreen extends StatelessWidget {
                       image: 'assets/app_icon_trans.png',
                       title: 'Welcome to ${Constants.appName}',
                       description:
-                          'Your one-stop destination for all things motorcycles',
+                          'Your one-stop destination for all motorcycle things',
                     ),
                     Positioned(
                       right: 20,
@@ -69,7 +69,7 @@ class IntroScreen extends StatelessWidget {
                   image: 'assets/intro_screen_01.png',
                   title: 'Your ultimate motorcycle Hub',
                   description:
-                      'Everything you need, all in one place. From buying and selling bikes to finding the best riding gear and accessories.',
+                      'Everything you need is all in one place. From buying and selling bikes to finding the best riding gear and accessories.',
                 ),
                 IntroPage(
                   image: 'assets/intro_screen_02.png',

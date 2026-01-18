@@ -16,6 +16,7 @@ import '../products/category_detail_screen.dart';
 import '../products/product_detail_screen.dart';
 import '../services/accessories/sell_your_accessories.dart';
 import '../services/bikes/sell_your_bike.dart';
+import '../services/listservices/list_service_category_screen.dart';
 import '../services/listservices/list_service_form_screen.dart';
 import '../services/listservices/service_detail_screen.dart';
 import '../services/listservices/service_listing_screen.dart';
@@ -53,7 +54,7 @@ void onListYourServiceTap(BuildContext context) {
   Navigator.push(
     context,
     MaterialPageRoute(
-      builder: (context) => const ListServiceFormScreen(),
+      builder: (context) => const ListServiceCategoryScreen(),
     ),
   );
 }

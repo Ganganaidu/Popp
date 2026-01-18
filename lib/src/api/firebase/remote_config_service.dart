@@ -32,6 +32,10 @@ class RemoteConfigService {
   bool get isSubscriptionFeatureEnabled =>
       _remoteConfig.getBool('is_subscription_feature_enabled');
 
+  // Getter for your feature flag
+  bool get enableGallery =>
+      _remoteConfig.getBool('enable_gallery');
+
   // Fetch the latest values from the server
   Future<void> fetchAndActivate() async {
     try {

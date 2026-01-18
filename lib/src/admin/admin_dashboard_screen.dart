@@ -6,7 +6,6 @@ import 'package:popp/src/utils/app_constants.dart';
 import '../adbanner/ui/ad_list_page.dart';
 import '../api/api_url.dart';
 import '../settings/list_grid_view.dart';
-import 'package:popp/src/adbanner/ui/ads_submission_screen.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});

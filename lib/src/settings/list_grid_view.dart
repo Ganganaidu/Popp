@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:popp/src/api/currency_service.dart';
 import 'package:popp/src/navigation/nav_router.dart';
-import 'package:popp/src/utils/product_content_data.dart';
 import 'package:popp/src/utils/product_utils.dart';
 import 'package:popp/src/widgets/app_dialogs.dart';
 

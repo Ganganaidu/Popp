@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:popp/src/utils/app_loger.dart';
-import 'package:popp/src/utils/build_extensions.dart';
 import 'package:popp/src/widgets/title_text.dart';
-import 'package:shimmer/shimmer.dart';
 
-import '../../api/api_url.dart';
 import '../../api/firebase/firebase_api_service.dart';
 import '../../navigation/nav_router.dart';
 import '../../utils/product_utils.dart';

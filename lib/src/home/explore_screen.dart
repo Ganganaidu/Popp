@@ -1,13 +1,9 @@
-import 'dart:developer' as AppLogger;
-
 import 'package:flutter/material.dart';
 import 'package:popp/src/home/search_screen.dart';
 import 'package:popp/src/models/pop_category.dart';
-import 'package:popp/src/products/category_detail_screen.dart';
-import 'package:popp/src/utils/product_content_data.dart';
-import '../models/shortcut_category.dart';
+import 'package:popp/src/utils/app_loger.dart';
+
 import '../navigation/nav_router.dart';
-import '../utils/app_utils.dart';
 import '../utils/product_utils.dart';
 
 class ExploreScreen extends StatelessWidget {
@@ -32,10 +28,10 @@ class ExploreScreen extends StatelessWidget {
 
   void _navigateToTargetPage(
       BuildContext context, String categoryName, String? subCategory) {
-    AppLogger.log('Navigating to category: $categoryName');
+    AppLogger.d('Navigating to category: $categoryName');
     if (!categoryName.contains(ProductUtils.premiumBikes) &&
         subCategory == null) {
-      AppLogger.log('Navigating to service listing for: $categoryName');
+      AppLogger.d('Navigating to service listing for: $categoryName');
       onServiceListingTap(context, categoryName, subCategory, false);
     } else {
       navigateToCategoryPage(context, categoryName, subCategory, null);

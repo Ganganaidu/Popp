@@ -7,7 +7,6 @@ import 'package:popp/src/screens/intro_page.dart';
 import 'package:popp/src/screens/intro_screen.dart';
 import 'package:popp/src/systemalerts/system_alerts_api_services.dart';
 import 'package:popp/src/utils/app_constants.dart';
-import 'package:popp/src/utils/build_extensions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../home/home_screen.dart';

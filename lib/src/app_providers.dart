@@ -4,12 +4,11 @@ import 'package:provider/provider.dart';
 
 import 'adbanner/repository/ad_carousel_viewmodel.dart';
 import 'adbanner/repository/ad_repository.dart';
+import 'chat/chat_service.dart';
 import 'dashboard/repository/product_repository.dart';
 import 'dashboard/repository/service_repository.dart';
 import 'dashboard/viewmodel/dashboard_viewmodel.dart';
-import 'dashboard/viewmodel/dashboard_viewmodel.dart';
 import 'dashboard/viewmodel/service_viewmodel.dart';
-import 'chat/chat_service.dart';
 
 class AppProviders extends StatelessWidget {
   final Widget child;

@@ -104,7 +104,6 @@ class ChatService extends ChangeNotifier {
         'lastMessage': message,
         'productId': productId,
         'productTitle': productTitle,
-        'productTitle': productTitle,
         'unreadCount': 0, // Sender has read their own message
       };
       AppLogger.d("Receiver Membership Data: $receiverMembershipData");

@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:popp/src/utils/product_utils.dart';
 
 import '../navigation/nav_router.dart';
-import '../utils/app_constants.dart';
 
 class DeepLinkConfig {
   final bool requiresAuth;

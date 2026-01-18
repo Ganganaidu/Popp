@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../navigation/nav_router.dart';
-import '../utils/product_utils.dart';
 import 'listservices/service_listing_screen.dart';
 import 'widgets/service_card.dart';
 

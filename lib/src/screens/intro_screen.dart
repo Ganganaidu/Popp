@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:popp/src/systemalerts/auth_wrapper.dart';
 import 'package:popp/src/utils/app_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'intro_page.dart';
 
 class IntroScreen extends StatelessWidget {

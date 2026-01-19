@@ -23,6 +23,7 @@ class AdCarouselWidget extends StatefulWidget {
 
 class _AdCarouselWidgetState extends State<AdCarouselWidget> {
   int _current = 0;
+  final CarouselSliderController _controller = CarouselSliderController();
 
   deepLinkToTarget(String deepLink) async {
     try {
@@ -96,9 +97,10 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
         }
 
         return Stack(
-          alignment: Alignment.bottomCenter,
+          alignment: Alignment.center,
           children: [
             CarouselSlider(
+              carouselController: _controller,
               items: viewModel.ads
                   .map((ad) => buildAdSlide(ad, isWeb: isWeb))
                   .toList(),
@@ -110,6 +112,7 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
                     setState(() => _current = index),
               ),
             ),
+            // Pagination Dots
             Positioned(
               bottom: isWeb ? 24.0 : 20.0,
               child: Row(
@@ -121,13 +124,61 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
                     width: isActive ? (isWeb ? 20 : 16) : (isWeb ? 16 : 12),
                     height: isWeb ? 6 : 4,
                     decoration: BoxDecoration(
-                      color: isActive ? Colors.orange : Colors.white70,
+                      color: isActive ? context.primaryColor : Colors.white70,
                       borderRadius: BorderRadius.circular(isWeb ? 3 : 2),
                     ),
                   );
                 }),
               ),
             ),
+            // Left Arrow (Web Only)
+            if (isWeb)
+              Positioned(
+                left: 20,
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: GestureDetector(
+                    onTap: () => _controller.previousPage(),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.3),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white24, width: 1),
+                      ),
+                      child: const Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            // Right Arrow (Web Only)
+            if (isWeb)
+              Positioned(
+                right: 20,
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: GestureDetector(
+                    onTap: () => _controller.nextPage(),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.3),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white24, width: 1),
+                      ),
+                      child: const Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
           ],
         );
       },
@@ -147,6 +198,7 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
             Colors.blueGrey.shade900,
             Colors.grey.shade900,
           ],
+          stops: const [0.0, 1.0],
         ),
         borderRadius: isWeb ? BorderRadius.circular(16) : null,
       ),
@@ -247,25 +299,22 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 5.0),
         decoration: BoxDecoration(
-
           borderRadius: BorderRadius.circular(16),
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(16),
           child: Stack(
             children: [
-              // LAYER 1: Background Image (Right Aligned)
+              // LAYER 1: Full Background Image
               Positioned.fill(
                 child: ad.imageUrl.isEmpty
                     ? Image.asset(
-                        'assets/ads_default_image.png',
+                        'assets/book_track_trainings.png',
                         fit: BoxFit.cover,
-                        alignment: Alignment.centerRight,
                       )
                     : Image.network(
                         ad.imageUrl,
                         fit: BoxFit.cover,
-                        alignment: Alignment.centerRight,
                         loadingBuilder: (context, child, loadingProgress) {
                           if (loadingProgress == null) return child;
                           return Shimmer.fromColors(
@@ -278,14 +327,12 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
                           return Image.asset(
                             'assets/ads_default_image.png',
                             fit: BoxFit.cover,
-                            alignment: Alignment.centerRight,
                           );
                         },
                       ),
               ),
 
-              // LAYER 2: Gradient Overlay (Left -> Right Fade)
-              // This ensures text is readable regardless of the image content behind it
+              // LAYER 2: Gradient Overlay (Darker at bottom/left for text readability)
               Positioned.fill(
                 child: Container(
                   decoration: BoxDecoration(
@@ -293,119 +340,111 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
                       begin: Alignment.centerLeft,
                       end: Alignment.centerRight,
                       colors: [
-                        context.primaryColorLight,
-                        context.primaryColorLight.withOpacity(0.70),
-                        context.primaryColorLight.withOpacity(0.0),
-                        context.primaryColorLight.withOpacity(0.0),
+                        Colors.black.withOpacity(0.7),
+                        Colors.black.withOpacity(0.3),
                       ],
-                      stops: const [0.0, 0.4, 0.6, 1.0],
+                      stops: const [0.0, 0.7],
                     ),
                   ),
                 ),
               ),
 
-              // LAYER 3: Content (Left Side)
+              // LAYER 3: Content
               Positioned(
-                left: 0,
+                left: 60, // Indent content slightly
                 top: 0,
                 bottom: 0,
-                width: 600, // Fixed max width or percentage for content
-                child: Padding(
-                  padding: const EdgeInsets.all(40.0),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          ad.title,
-                          style: const TextStyle(
-                            color: Colors.white, // User's choice
-                            fontSize: 25, // User's choice
-                            fontWeight: FontWeight.w800,
-                            fontFamily: 'Orbitron',
-                            letterSpacing: -0.5,
-                          ),
+                width: 600, // Fixed max width for content
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (ad.highlight.isNotEmpty) ...[
+                      Text(
+                        ad.highlight,
+                        style: TextStyle(
+                          color: context.primaryColor, // Theme Green
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.2,
                         ),
-                        const SizedBox(height: 15),
-                        Text(
-                          ad.highlight,
-                          style: TextStyle(
-                            color: context.primaryColorDark, // User's choice
-                            fontSize: 20, // User's choice
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'Orbitron',
-                          ),
-                        ),
-                        const SizedBox(height: 15),
-                        Text(
-                          ad.subtitle,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w500,
-                            color: Colors.white,
-                            fontSize: 18,
-                            height: 1.4,
-                          ),
-                        ),
-                        const SizedBox(height: 15),
-                        Wrap(
-                          spacing: 20,
-                          runSpacing: 10,
-                          children: ad.points.map((point) {
-                            return Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.check_circle,
-                                  color: context.primaryColor,
-                                  size: 18, // User's choice
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  point,
-                                  style: const TextStyle(
-                                    color: Colors.black87,
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            );
-                          }).toList(),
-                        ),
-                        const SizedBox(height: 20),
-                        if (ad.buttonText.isNotEmpty &&
-                            ad.buttonLink.isNotEmpty)
-                          ElevatedButton(
-                            onPressed: () async {
-                              deepLinkToTarget(ad.buttonLink);
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: context.primaryColor,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 32,
-                                vertical: 18,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30),
-                              ),
-                              elevation: 4,
-                              shadowColor:
-                                  context.primaryColor.withOpacity(0.4),
-                            ),
-                            child: Text(
-                              ad.buttonText,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                      ],
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+                    Text(
+                      ad.title,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 48, // Larger title
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Orbitron',
+                        height: 1.1,
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 16),
+                    Text(
+                      ad.subtitle,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.normal,
+                        color: Colors.white,
+                        fontSize: 18,
+                        height: 1.5,
+                      ),
+                    ),
+                    if (ad.points.isNotEmpty) ...[
+                      const SizedBox(height: 24),
+                      Wrap(
+                        spacing: 20,
+                        runSpacing: 10,
+                        children: ad.points.map((point) {
+                          return Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.check_circle,
+                                color: context.primaryColor,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                point,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                    const SizedBox(height: 32),
+                    if (ad.buttonText.isNotEmpty &&
+                        ad.buttonLink.isNotEmpty)
+                      ElevatedButton(
+                        onPressed: () async {
+                          deepLinkToTarget(ad.buttonLink);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: context.primaryColor, // Theme Green
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 40,
+                            vertical: 20,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8), // Less rounded for modern look
+                          ),
+                          elevation: 4,
+                          textStyle: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        child: Text(ad.buttonText),
+                      ),
+                  ],
                 ),
               ),
             ],

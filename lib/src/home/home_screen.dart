@@ -5,6 +5,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:popp/src/toolbar/pop_app_bar.dart';
+import 'package:popp/src/toolbar/web_menu_drawer.dart';
+import 'package:popp/src/toolbar/web_top_bar.dart';
 import 'package:popp/src/utils/app_constants.dart';
 import 'package:popp/src/utils/app_loger.dart';
 
@@ -206,12 +208,24 @@ class _HomeScreenState extends State<HomeScreen> {
         _navHelper.onWillPop(_selectedIndex);
       },
       child: Scaffold(
+        drawer: kIsWeb
+            ? WebMenuDrawer(
+                selectedIndex: _selectedIndex,
+                onItemTapped: _onItemTapped,
+              )
+            : null,
         appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(kToolbarHeight),
+          preferredSize: const Size.fromHeight(kIsWeb ? 150 : kToolbarHeight),
           child: ValueListenableBuilder2<bool, String>(
             first: _canPop,
             second: _appBarTitle,
             builder: (context, canPop, title, _) {
+              if (kIsWeb) {
+                return WebTopBar(
+                  selectedIndex: _selectedIndex,
+                  navigatorKeys: _navHelper.navigatorKeys,
+                );
+              }
               return PopAppBar(
                 title: title,
                 selectedIndex: _selectedIndex,
@@ -225,10 +239,12 @@ class _HomeScreenState extends State<HomeScreen> {
           index: _selectedIndex,
           children: _navHelper.widgetOptions,
         ),
-        bottomNavigationBar: CustomBottomNavBar(
-          selectedIndex: _selectedIndex,
-          onItemTapped: _onItemTapped,
-        ),
+        bottomNavigationBar: kIsWeb
+            ? null
+            : CustomBottomNavBar(
+                selectedIndex: _selectedIndex,
+                onItemTapped: _onItemTapped,
+              ),
       ),
     );
   }

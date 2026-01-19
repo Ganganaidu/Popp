@@ -71,7 +71,7 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
       builder: (context, viewModel, _) {
         if (viewModel.isLoading) {
           return SizedBox(
-            height: isWeb ? 400 : 350,
+            height: isWeb ? 500 : 350,
             child: Shimmer.fromColors(
               baseColor: Colors.grey[300]!,
               highlightColor: Colors.grey[100]!,
@@ -90,7 +90,7 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
 
         if (viewModel.ads.length == 1) {
           return SizedBox(
-            height: isWeb ? 400 : 350,
+            height: isWeb ? 500 : 350,
             child: buildAdSlide(viewModel.ads.first, isWeb: isWeb),
           );
         }
@@ -103,7 +103,7 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
                   .map((ad) => buildAdSlide(ad, isWeb: isWeb))
                   .toList(),
               options: CarouselOptions(
-                height: isWeb ? 400 : 350,
+                height: isWeb ? 500 : 350,
                 viewportFraction: 1.0,
                 autoPlay: true,
                 onPageChanged: (index, reason) =>
@@ -137,7 +137,7 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
   /// Builds the fallback UI to show when ads are unavailable, targeting potential advertisers.
   Widget _buildFallbackUI({required bool isWeb}) {
     return Container(
-      height: isWeb ? 400 : 350,
+      height: isWeb ? 500 : 350,
       width: double.infinity,
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -228,6 +228,194 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
   }
 
   Widget buildAdSlide(AdBanner ad, {required bool isWeb}) {
+    if (isWeb) {
+      return _buildWebAdSlide(ad);
+    }
+    return _buildMobileAdSlide(ad);
+  }
+
+  Widget _buildWebAdSlide(AdBanner ad) {
+    return GestureDetector(
+      onTap: () async {
+        final url = Uri.parse(ad.buttonLink);
+        if (await canLaunchUrl(url)) {
+          await launchUrl(url, mode: LaunchMode.externalApplication);
+        } else {
+          AppLogger.e('Could not launch ${ad.buttonLink}');
+        }
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 5.0),
+        decoration: BoxDecoration(
+
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Stack(
+            children: [
+              // LAYER 1: Background Image (Right Aligned)
+              Positioned.fill(
+                child: ad.imageUrl.isEmpty
+                    ? Image.asset(
+                        'assets/ads_default_image.png',
+                        fit: BoxFit.cover,
+                        alignment: Alignment.centerRight,
+                      )
+                    : Image.network(
+                        ad.imageUrl,
+                        fit: BoxFit.cover,
+                        alignment: Alignment.centerRight,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Shimmer.fromColors(
+                            baseColor: Colors.grey[300]!,
+                            highlightColor: Colors.grey[100]!,
+                            child: Container(color: Colors.white),
+                          );
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return Image.asset(
+                            'assets/ads_default_image.png',
+                            fit: BoxFit.cover,
+                            alignment: Alignment.centerRight,
+                          );
+                        },
+                      ),
+              ),
+
+              // LAYER 2: Gradient Overlay (Left -> Right Fade)
+              // This ensures text is readable regardless of the image content behind it
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                      colors: [
+                        context.primaryColorLight,
+                        context.primaryColorLight.withOpacity(0.70),
+                        context.primaryColorLight.withOpacity(0.0),
+                        context.primaryColorLight.withOpacity(0.0),
+                      ],
+                      stops: const [0.0, 0.4, 0.6, 1.0],
+                    ),
+                  ),
+                ),
+              ),
+
+              // LAYER 3: Content (Left Side)
+              Positioned(
+                left: 0,
+                top: 0,
+                bottom: 0,
+                width: 600, // Fixed max width or percentage for content
+                child: Padding(
+                  padding: const EdgeInsets.all(40.0),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          ad.title,
+                          style: const TextStyle(
+                            color: Colors.white, // User's choice
+                            fontSize: 25, // User's choice
+                            fontWeight: FontWeight.w800,
+                            fontFamily: 'Orbitron',
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 15),
+                        Text(
+                          ad.highlight,
+                          style: TextStyle(
+                            color: context.primaryColorDark, // User's choice
+                            fontSize: 20, // User's choice
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Orbitron',
+                          ),
+                        ),
+                        const SizedBox(height: 15),
+                        Text(
+                          ad.subtitle,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white,
+                            fontSize: 18,
+                            height: 1.4,
+                          ),
+                        ),
+                        const SizedBox(height: 15),
+                        Wrap(
+                          spacing: 20,
+                          runSpacing: 10,
+                          children: ad.points.map((point) {
+                            return Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.check_circle,
+                                  color: context.primaryColor,
+                                  size: 18, // User's choice
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  point,
+                                  style: const TextStyle(
+                                    color: Colors.black87,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            );
+                          }).toList(),
+                        ),
+                        const SizedBox(height: 20),
+                        if (ad.buttonText.isNotEmpty &&
+                            ad.buttonLink.isNotEmpty)
+                          ElevatedButton(
+                            onPressed: () async {
+                              deepLinkToTarget(ad.buttonLink);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: context.primaryColor,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 32,
+                                vertical: 18,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                              elevation: 4,
+                              shadowColor:
+                                  context.primaryColor.withOpacity(0.4),
+                            ),
+                            child: Text(
+                              ad.buttonText,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMobileAdSlide(AdBanner ad) {
     return GestureDetector(
       onTap: () async {
         final url = Uri.parse(ad.buttonLink);
@@ -285,9 +473,9 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
             ),
           ),
           Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: isWeb ? 48 : 24,
-              vertical: isWeb ? 32 : 20,
+            padding: const EdgeInsets.symmetric(
+              horizontal: 24,
+              vertical: 20,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -297,7 +485,7 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
                   ad.title,
                   style: TextStyle(
                       color: Colors.white,
-                      fontSize: isWeb ? 20 : 16,
+                      fontSize: 16,
                       fontWeight: FontWeight.w500,
                       shadows: [
                         Shadow(
@@ -312,7 +500,7 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
                   ad.highlight,
                   style: TextStyle(
                       color: context.primaryColor,
-                      fontSize: isWeb ? 35 : 16,
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Orbitron',
                       shadows: [
@@ -328,7 +516,7 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
                   ad.subtitle,
                   style: TextStyle(
                     color: Colors.white70,
-                    fontSize: isWeb ? 18 : 14,
+                    fontSize: 14,
                     shadows: [
                       Shadow(
                         color: Colors.black.withOpacity(0.7),
@@ -340,8 +528,8 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
                 ),
                 const SizedBox(height: 16),
                 Wrap(
-                  spacing: isWeb ? 16 : 12,
-                  runSpacing: isWeb ? 12 : 8,
+                  spacing: 12,
+                  runSpacing: 8,
                   children: ad.points
                       .map((point) => Row(
                             mainAxisSize: MainAxisSize.min,
@@ -349,7 +537,7 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
                               Icon(
                                 Icons.check_circle_outline,
                                 color: context.primaryColor,
-                                size: isWeb ? 20 : 18,
+                                size: 18,
                                 shadows: [
                                   Shadow(
                                     color: Colors.black.withOpacity(0.7),
@@ -363,7 +551,7 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
                                 point,
                                 style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: isWeb ? 16 : 14,
+                                  fontSize: 14,
                                   shadows: [
                                     Shadow(
                                       color: Colors.black.withOpacity(0.7),
@@ -386,17 +574,17 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: context.primaryColor,
                       foregroundColor: Colors.white,
-                      padding: EdgeInsets.symmetric(
-                        horizontal: isWeb ? 24 : 16,
-                        vertical: isWeb ? 16 : 12,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
                       ),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(isWeb ? 8 : 30),
+                        borderRadius: BorderRadius.circular(30),
                       ),
                     ),
                     child: Text(
                       ad.buttonText,
-                      style: TextStyle(fontSize: isWeb ? 16 : 14),
+                      style: const TextStyle(fontSize: 14),
                     ),
                   ),
               ],

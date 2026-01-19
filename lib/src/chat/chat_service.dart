@@ -15,8 +15,7 @@ class ChatService extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final String userChatMemberships = 'userChatMemberships';
   final String agentChatMemberships = 'agentChatMemberships';
-  final StreamController<int> _unreadCountController =
-      StreamController<int>.broadcast();
+
 
   // Helper function to get user data (name and email) from their profile
   Future<Map<String, dynamic>?> getUserData(String userId) async {

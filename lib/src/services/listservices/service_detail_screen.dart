@@ -6,6 +6,7 @@ import 'package:popp/src/widgets/title_text.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher_string.dart';
+import '../../widgets/web_constrained_box.dart';
 
 import '../../api/api_url.dart';
 import '../../api/firebase/firebase_api_service.dart';
@@ -293,251 +294,253 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
       }
     });
 
-    return CustomScrollView(
-      slivers: [
-        SliverAppBar(
-          expandedHeight: 250.0,
-          floating: false,
-          pinned: true,
-          automaticallyImplyLeading: false,
-          flexibleSpace: FlexibleSpaceBar(
-            background: Stack(
-              fit: StackFit.expand,
-              children: [
-                Shimmer.fromColors(
-                  baseColor: Colors.grey[300]!,
-                  highlightColor: Colors.grey[100]!,
-                  child: Container(
-                    color: Colors.grey[300],
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    if (allImageUrls.isNotEmpty) {
-                      FocusManager.instance.primaryFocus?.unfocus();
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          fullscreenDialog: true,
-                          builder: (context) => FullScreenImageScreen(
-                            imageUrls: allImageUrls,
-                            initialIndex: _selectedImageIndex,
+    return WebConstrainedBox(
+        child: CustomScrollView(
+          slivers: [
+            SliverAppBar(
+              expandedHeight: 250.0,
+              floating: false,
+              pinned: true,
+              automaticallyImplyLeading: false,
+              flexibleSpace: FlexibleSpaceBar(
+                background: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Shimmer.fromColors(
+                      baseColor: Colors.grey[300]!,
+                      highlightColor: Colors.grey[100]!,
+                      child: Container(
+                        color: Colors.grey[300],
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        if (allImageUrls.isNotEmpty) {
+                          FocusManager.instance.primaryFocus?.unfocus();
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              fullscreenDialog: true,
+                              builder: (context) => FullScreenImageScreen(
+                                imageUrls: allImageUrls,
+                                initialIndex: _selectedImageIndex,
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                      child: Image.network(
+                        allImageUrls.isNotEmpty
+                            ? allImageUrls[_selectedImageIndex]
+                            : ApiUrl.defaultPlaceholderImage,
+                        fit: BoxFit.cover,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Shimmer.fromColors(
+                            baseColor: Colors.grey[300]!,
+                            highlightColor: Colors.grey[100]!,
+                            child: Container(
+                              color: Colors.grey[300],
+                            ),
+                          );
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return Image.network(
+                            ApiUrl.defaultPlaceholderImage,
+                            fit: BoxFit.cover,
+                          );
+                        },
+                      ),
+                    ),
+                    IgnorePointer(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.transparent,
+                              Colors.black.withAlpha((0.7 * 255).toInt())
+                            ],
                           ),
                         ),
-                      );
-                    }
-                  },
-                  child: Image.network(
-                    allImageUrls.isNotEmpty
-                        ? allImageUrls[_selectedImageIndex]
-                        : ApiUrl.defaultPlaceholderImage,
-                    fit: BoxFit.cover,
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return Shimmer.fromColors(
-                        baseColor: Colors.grey[300]!,
-                        highlightColor: Colors.grey[100]!,
-                        child: Container(
-                          color: Colors.grey[300],
-                        ),
-                      );
-                    },
-                    errorBuilder: (context, error, stackTrace) {
-                      return Image.network(
-                        ApiUrl.defaultPlaceholderImage,
-                        fit: BoxFit.cover,
-                      );
-                    },
-                  ),
-                ),
-                IgnorePointer(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.transparent,
-                          Colors.black.withAlpha((0.7 * 255).toInt())
+                      ),
+                    ),
+                    Positioned(
+                      top: 16,
+                      right: 16,
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 20,
+                            backgroundColor: Colors.white70,
+                            child: IconButton(
+                              iconSize: 25,
+                              icon: Icon(
+                                _isFav ? Icons.favorite : Icons.favorite_border,
+                                color: _isFav ? Colors.red : Colors.red,
+                              ),
+                              onPressed:
+                                  _favButtonDisabled ? null : _toggleFavorite,
+                            ),
+                          ),
                         ],
                       ),
                     ),
-                  ),
+                  ],
                 ),
-                Positioned(
-                  top: 16,
-                  right: 16,
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 20,
-                        backgroundColor: Colors.white70,
-                        child: IconButton(
-                          iconSize: 25,
-                          icon: Icon(
-                            _isFav ? Icons.favorite : Icons.favorite_border,
-                            color: _isFav ? Colors.red : Colors.red,
-                          ),
-                          onPressed:
-                              _favButtonDisabled ? null : _toggleFavorite,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        // Thumbnail strip for images (only when there are multiple images)
-        if (allImageUrls.length > 1)
-          SliverToBoxAdapter(
-            child: SizedBox(
-              height: 80,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: allImageUrls.length,
-                itemBuilder: (context, index) {
-                  final String thumbUrl = allImageUrls[index];
-                  return GestureDetector(
-                    onTap: () => setState(() => _selectedImageIndex = index),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8.0),
-                        child: Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: _selectedImageIndex == index
-                                  ? Theme.of(context).primaryColor
-                                  : Colors.transparent,
-                              width: 3,
-                            ),
-                          ),
-                          child: Image.network(
-                            thumbUrl,
-                            fit: BoxFit.cover,
-                            loadingBuilder: (context, child, loadingProgress) {
-                              if (loadingProgress == null) return child;
-                              return Shimmer.fromColors(
-                                baseColor: Colors.grey[300]!,
-                                highlightColor: Colors.grey[100]!,
-                                child: Container(
-                                  width: 80,
-                                  height: 80,
-                                  color: Colors.grey[300],
-                                ),
-                              );
-                            },
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                width: 80,
-                                height: 80,
-                                color: Colors.grey[300],
-                                child: Icon(Icons.broken_image,
-                                    color: Colors.grey[600]),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                },
               ),
             ),
-          ),
-        SliverList(
-          delegate: SliverChildBuilderDelegate(
-            (BuildContext context, int index) {
-              if (index == 0) {
-                return Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (!isApproved)
-                        Text(
-                          "Status: Pending Approval",
-                          style: context.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.orange),
-                        ),
-                      const SizedBox(height: 8),
-                      TitleText(
-                        title,
-                        style: context.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      if (status != 'N/A')
-                        _buildInfoRow(context, 'Status:', status, Colors.green),
-                      _buildInfoRow(
-                          context,
-                          isBikeRentalCategory ? 'Address: ' : "Where:",
-                          locationInfo),
-                      _buildInfoRow(
-                          context,
-                          isBikeRentalCategory ? 'Hours: ' : "When:",
-                          dateTimeInfo),
-                      if (capacityInfo != 'N/A')
-                        _buildInfoRow(context, 'Capacity:', capacityInfo),
-                      const SizedBox(height: 20),
-                      Text(
-                        'Description',
-                        style: context.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        description,
-                        style: context.bodyLarge,
-                      ),
-                      const SizedBox(height: 20),
-                      // Unified Details section: show any available API fields
-                      // (except the excluded ones) under a single header.
-                      if (allDetails.isNotEmpty) ...[
-                        Text(
-                          ProductUtils.getProductDescTitle(widget.category) ==
-                                  ''
-                              ? 'Details'
-                              : ProductUtils.getProductDescTitle(
-                                  widget.category),
-                          style: context.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
+            // Thumbnail strip for images (only when there are multiple images)
+            if (allImageUrls.length > 1)
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: 80,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: allImageUrls.length,
+                    itemBuilder: (context, index) {
+                      final String thumbUrl = allImageUrls[index];
+                      return GestureDetector(
+                        onTap: () => setState(() => _selectedImageIndex = index),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8.0),
+                            child: Container(
+                              width: 80,
+                              height: 80,
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: _selectedImageIndex == index
+                                      ? Theme.of(context).primaryColor
+                                      : Colors.transparent,
+                                  width: 3,
+                                ),
+                              ),
+                              child: Image.network(
+                                thumbUrl,
+                                fit: BoxFit.cover,
+                                loadingBuilder: (context, child, loadingProgress) {
+                                  if (loadingProgress == null) return child;
+                                  return Shimmer.fromColors(
+                                    baseColor: Colors.grey[300]!,
+                                    highlightColor: Colors.grey[100]!,
+                                    child: Container(
+                                      width: 80,
+                                      height: 80,
+                                      color: Colors.grey[300],
+                                    ),
+                                  );
+                                },
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    width: 80,
+                                    height: 80,
+                                    color: Colors.grey[300],
+                                    child: Icon(Icons.broken_image,
+                                        color: Colors.grey[600]),
+                                  );
+                                },
+                              ),
+                            ),
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        ...allDetails.entries.map((entry) =>
-                            _buildDetailRow(context, entry.key, entry.value)),
-                      ],
-                      const SizedBox(height: 20),
-                      ChatWithSellerCard(
-                        receiverUserName: contactName,
-                        receiverUserID: userId,
-                        productId: widget.serviceData['id'] ?? '',
-                        productTitle: title,
-                      ),
-                      const SizedBox(height: 20),
-                    ],
+                      );
+                    },
                   ),
-                );
-              }
-              return null;
-            },
-            childCount: 1,
-          ),
+                ),
+              ),
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (BuildContext context, int index) {
+                  if (index == 0) {
+                    return Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (!isApproved)
+                            Text(
+                              "Status: Pending Approval",
+                              style: context.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.orange),
+                            ),
+                          const SizedBox(height: 8),
+                          TitleText(
+                            title,
+                            style: context.headlineMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          if (status != 'N/A')
+                            _buildInfoRow(context, 'Status:', status, Colors.green),
+                          _buildInfoRow(
+                              context,
+                              isBikeRentalCategory ? 'Address: ' : "Where:",
+                              locationInfo),
+                          _buildInfoRow(
+                              context,
+                              isBikeRentalCategory ? 'Hours: ' : "When:",
+                              dateTimeInfo),
+                          if (capacityInfo != 'N/A')
+                            _buildInfoRow(context, 'Capacity:', capacityInfo),
+                          const SizedBox(height: 20),
+                          Text(
+                            'Description',
+                            style: context.titleLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            description,
+                            style: context.bodyLarge,
+                          ),
+                          const SizedBox(height: 20),
+                          // Unified Details section: show any available API fields
+                          // (except the excluded ones) under a single header.
+                          if (allDetails.isNotEmpty) ...[
+                            Text(
+                              ProductUtils.getProductDescTitle(widget.category) ==
+                                      ''
+                                  ? 'Details'
+                                  : ProductUtils.getProductDescTitle(
+                                      widget.category),
+                              style: context.titleLarge?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            ...allDetails.entries.map((entry) =>
+                                _buildDetailRow(context, entry.key, entry.value)),
+                          ],
+                          const SizedBox(height: 20),
+                          ChatWithSellerCard(
+                            receiverUserName: contactName,
+                            receiverUserID: userId,
+                            productId: widget.serviceData['id'] ?? '',
+                            productTitle: title,
+                          ),
+                          const SizedBox(height: 20),
+                        ],
+                      ),
+                    );
+                  }
+                  return null;
+                },
+                childCount: 1,
+              ),
+            ),
+            // Add bottom spacing so the content isn't flush with the screen bottom
+            const SliverToBoxAdapter(
+              child: SizedBox(height: 20),
+            ),
+          ],
         ),
-        // Add bottom spacing so the content isn't flush with the screen bottom
-        const SliverToBoxAdapter(
-          child: SizedBox(height: 20),
-        ),
-      ],
-    );
+      );
   }
 
   Widget _buildInfoRow(BuildContext context, String label, String value,

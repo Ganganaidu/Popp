@@ -8,6 +8,7 @@ import 'package:popp/src/utils/build_extensions.dart';
 import 'package:popp/src/widgets/app_dialogs.dart';
 import 'package:popp/src/widgets/loading_overlay.dart';
 import 'package:popp/src/widgets/title_text.dart';
+import 'package:popp/src/widgets/web_constrained_box.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
 
@@ -323,7 +324,8 @@ class _SellYourBikeState extends State<SellYourBike>
 
     return Scaffold(
       appBar: AppBar(title: const TitleText('Sell Your Bike')),
-      body: LoadingOverlay(
+      body: WebConstrainedBox(
+        child: LoadingOverlay(
         isLoading: _isLoading,
         child: Column(
           children: [
@@ -768,11 +770,18 @@ class _SellYourBikeState extends State<SellYourBike>
           ],
         ),
       ),
-      bottomNavigationBar: SafeArea(
+      ),
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          WebConstrainedBox(
+            child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: SizedBox(
             height: 50,
+            width: double.infinity,
             child: ElevatedButton(
               onPressed: _isLoading ? null : _submitForm,
               style: ElevatedButton.styleFrom(
@@ -809,6 +818,9 @@ class _SellYourBikeState extends State<SellYourBike>
             ),
           ),
         ),
+      ),
+      ),
+          ],
       ),
     );
   }

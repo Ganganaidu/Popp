@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:popp/src/utils/app_constants.dart';
+import 'package:popp/src/widgets/web_constrained_box.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../widgets/title_text.dart';
@@ -54,119 +55,124 @@ class _AboutUsScreenState extends State<AboutUsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Use WebConstrainedBox for web-friendly layout
     return Scaffold(
       appBar: AppBar(
         title: const TitleText('About Bikerverse'),
         elevation: 0,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(context),
-            const SizedBox(height: 32),
-            _buildSection(
-              title: 'Bikerverse',
-              content:
-                  "The all-in-one app built for motorcycle enthusiasts and bike businesses. Whether you're a rider looking to buy, sell, or explore, or a service provider wanting to reach the biking community, Bikerverse brings everything you need into one seamless experience.",
-            ),
-            const SizedBox(height: 32),
-            _buildSection(
-              title: 'For Riders',
-              child: Column(
-                children: [
-                  _buildFeatureTile(
-                    context: context,
-                    icon: Icons.sell_outlined,
-                    title: 'Sell Your Bike & Accessories',
-                    subtitle:
-                        'List your motorcycle, gear, or accessories to a wide audience of verified buyers.',
-                  ),
-                  _buildFeatureTile(
-                    context: context,
-                    icon: Icons.shield_moon_outlined,
-                    title: 'Premium Bike Inspection',
-                    subtitle:
-                        'Get expert verification before purchasing any listed bike for complete peace of mind.',
-                  ),
-                  _buildFeatureTile(
-                    context: context,
-                    icon: Icons.event_seat_outlined,
-                    title: 'Find Bike Rentals',
-                    subtitle:
-                        'Discover and compare a wide range of rental bikes for your next trip.',
-                  ),
-                  _buildFeatureTile(
-                    context: context,
-                    icon: Icons.engineering_outlined,
-                    title: 'Connect with Trusted Mechanics',
-                    subtitle:
-                        'Find certified mechanics and service centers.',
-                  ),
-                  _buildFeatureTile(
-                    context: context,
-                    icon: Icons.speed_outlined,
-                    title: 'Track Days & Rider Training',
-                    subtitle:
-                        'Find and book upcoming track day events and rider training programs in your area.',
-                  ),
-                  _buildFeatureTile(
-                    context: context,
-                    icon: Icons.explore_outlined,
-                    title: 'Explore Routes & Biking Events',
-                    subtitle:
-                        'Discover scenic routes, popular trails, and community events like group rides and rallies.',
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 32),
-            _buildSection(
-              title: 'For Businesses & Service Providers',
-              content:
-                  'Bikerverse gives you a powerful platform to list your offerings and connect with a growing community of riders.',
-              child: Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: _buildFeatureTile(
-                  context: context,
-                  icon: Icons.storefront_outlined,
-                  title: 'List Your Services',
-                  subtitle:
-                      'Promote Bike rentals, Track days a& Trainings, Repair services, Accessory store and Tyre stores.',
+      body: Center(
+        child: WebConstrainedBox(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHeader(context),
+                const SizedBox(height: 32),
+                _buildSection(
+                  title: 'Bikerverse',
+                  content:
+                      "The all-in-one app built for motorcycle enthusiasts and bike businesses. Whether you're a rider looking to buy, sell, or explore, or a service provider wanting to reach the biking community, Bikerverse brings everything you need into one seamless experience.",
                 ),
-              ),
-            ),
-            const SizedBox(height: 32),
-            _buildSection(
-              title: 'Get in Touch',
-              content:
-                  'Have questions, feedback, or suggestions? We\'d love to hear from you!',
-              child: Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: _buildFeatureTile(
-                  context: context,
-                  icon: Icons.email_outlined,
-                  title: 'support@bikerverse.in',
-                  subtitle: 'Tap to send us an email',
-                  onTap: _launchEmail,
+                const SizedBox(height: 32),
+                _buildSection(
+                  title: 'For Riders',
+                  child: Column(
+                    children: [
+                      _buildFeatureTile(
+                        context: context,
+                        icon: Icons.sell_outlined,
+                        title: 'Sell Your Bike & Accessories',
+                        subtitle:
+                            'List your motorcycle, gear, or accessories to a wide audience of verified buyers.',
+                      ),
+                      _buildFeatureTile(
+                        context: context,
+                        icon: Icons.shield_moon_outlined,
+                        title: 'Premium Bike Inspection',
+                        subtitle:
+                            'Get expert verification before purchasing any listed bike for complete peace of mind.',
+                      ),
+                      _buildFeatureTile(
+                        context: context,
+                        icon: Icons.event_seat_outlined,
+                        title: 'Find Bike Rentals',
+                        subtitle:
+                            'Discover and compare a wide range of rental bikes for your next trip.',
+                      ),
+                      _buildFeatureTile(
+                        context: context,
+                        icon: Icons.engineering_outlined,
+                        title: 'Connect with Trusted Mechanics',
+                        subtitle:
+                            'Find certified mechanics and service centers.',
+                      ),
+                      _buildFeatureTile(
+                        context: context,
+                        icon: Icons.speed_outlined,
+                        title: 'Track Days & Rider Training',
+                        subtitle:
+                            'Find and book upcoming track day events and rider training programs in your area.',
+                      ),
+                      _buildFeatureTile(
+                        context: context,
+                        icon: Icons.explore_outlined,
+                        title: 'Explore Routes & Biking Events',
+                        subtitle:
+                            'Discover scenic routes, popular trails, and community events like group rides and rallies.',
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+                const SizedBox(height: 32),
+                _buildSection(
+                  title: 'For Businesses & Service Providers',
+                  content:
+                      'Bikerverse gives you a powerful platform to list your offerings and connect with a growing community of riders.',
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: _buildFeatureTile(
+                      context: context,
+                      icon: Icons.storefront_outlined,
+                      title: 'List Your Services',
+                      subtitle:
+                          'Promote Bike rentals, Track days a& Trainings, Repair services, Accessory store and Tyre stores.',
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 32),
+                _buildSection(
+                  title: 'Get in Touch',
+                  content:
+                      'Have questions, feedback, or suggestions? We\'d love to hear from you!',
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: _buildFeatureTile(
+                      context: context,
+                      icon: Icons.email_outlined,
+                      title: 'support@bikerverse.in',
+                      subtitle: 'Tap to send us an email',
+                      onTap: _launchEmail,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 32),
+                _buildSection(
+                  title: 'Safe, Secure & Simple',
+                  content:
+                      'Your safety and privacy matter. All listings go through an approval process to maintain quality, and our support team is always here to help.',
+                ),
+                const SizedBox(height: 40),
+                Center(
+                  child: Text(
+                    'Version $_version',
+                  ),
+                ),
+                const SizedBox(height: 50),
+              ],
             ),
-            const SizedBox(height: 32),
-            _buildSection(
-              title: 'Safe, Secure & Simple',
-              content:
-                  'Your safety and privacy matter. All listings go through an approval process to maintain quality, and our support team is always here to help.',
-            ),
-            const SizedBox(height: 40),
-            Center(
-              child: Text(
-                'Version $_version',
-              ),
-            ),
-            const SizedBox(height: 50),
-          ],
+          ),
         ),
       ),
     );

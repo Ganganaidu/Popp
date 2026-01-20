@@ -10,6 +10,7 @@ import 'package:popp/src/utils/build_extensions.dart';
 import 'package:popp/src/widgets/category_selector.dart';
 import 'package:popp/src/widgets/loading_overlay.dart';
 import 'package:popp/src/widgets/title_text.dart';
+import 'package:popp/src/widgets/web_constrained_box.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
 
@@ -265,306 +266,316 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const TitleText('Sell Your Accessories')),
-      body: LoadingOverlay(
+      body: WebConstrainedBox(
+        child: LoadingOverlay(
         isLoading: _isLoading,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              children: [
-                buildPaddedField(CustomDropdownFormField<String>(
-                  enabled: true,
-                  value: sellerCategory,
-                  label: "Seller Category",
-                  hint: "Choose Category",
-                  items: sellerCategories
-                      .map((b) => DropdownMenuItem(value: b, child: Text(b)))
-                      .toList(),
-                  onChanged: (val) => setState(() => sellerCategory = val),
-                  validator: (val) =>
-                      isBikeSpecific && val == null ? "Required" : null,
-                )),
-                buildPaddedField(TextFormField(
-                  controller: sellerNameController,
-                  decoration: context.inputDecoration(
-                      "Seller Name", "Enter your full name"),
-                  validator: (val) => val!.isEmpty ? "Required" : null,
-                )),
-                buildPaddedField(Row(
-                  children: [
-                    DropdownButton<String>(
-                      value: selectedCountryCode,
-                      items: countryCodes
-                          .map((code) =>
-                              DropdownMenuItem(value: code, child: Text(code)))
-                          .toList(),
-                      onChanged: (val) =>
-                          setState(() => selectedCountryCode = val!),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: TextFormField(
-                        controller: sellerContactController,
-                        decoration: context.inputDecoration(
-                            "Contact Number", "Enter phone number"),
-                        validator: (val) => val!.isEmpty ? "Required" : null,
-                      ),
-                    ),
-                  ],
-                )),
-                buildPaddedField(CategorySelector(
-                  onCategoryChanged: (cat) => selectedCategory = cat,
-                  onSubcategoryChanged: (sub) => selectedSubcategory = sub,
-                )),
-                buildPaddedField(TextFormField(
-                  controller: accessoriesNameController,
-                  decoration: context.inputDecoration(
-                      "Accessories Name", "Enter your Accessories name"),
-                  validator: (val) => val!.isEmpty ? "Required" : null,
-                )),
-                buildPaddedField(TextFormField(
-                  controller: brandNameController,
-                  decoration: context.inputDecoration(
-                      "Brand Name", "Enter your Brand name"),
-                  validator: (val) => val!.isEmpty ? "Required" : null,
-                )),
-                buildPaddedField(SwitchListTile(
-                  title: const Text("Is your product bike specific?"),
-                  value: isBikeSpecific,
-                  activeColor: Colors.green,
-                  inactiveThumbColor: Colors.grey,
-                  inactiveTrackColor: Colors.grey.withOpacity(0.5),
-                  onChanged: (val) {
-                    setState(() {
-                      isBikeSpecific = val;
-                      if (!val) _clearBikeSpecificFields();
-                    });
-                  },
-                )),
-                buildPaddedField(CustomDropdownFormField<String>(
-                  enabled: isBikeSpecific,
-                  value: selectedBikeBrand,
-                  label: "Bike Brand Name",
-                  hint: "Choose brand",
-                  items: bikeBrands
-                      .map((b) => DropdownMenuItem(value: b, child: Text(b)))
-                      .toList(),
-                  onChanged: (val) => setState(() => selectedBikeBrand = val),
-                  validator: (val) =>
-                      isBikeSpecific && val == null ? "Required" : null,
-                )),
-                buildPaddedField(TextFormField(
-                  enabled: isBikeSpecific,
-                  controller: modelNameController,
-                  decoration: context.inputDecoration(
-                      "Bike Model Name", "e.g. TRIUMPH Tiger 1200"),
-                  validator: (val) =>
-                      isBikeSpecific && val == null ? "Required" : null,
-                )),
-                buildPaddedField(MonthYearPicker(
-                  enable: isBikeSpecific,
-                  label: "Bike Manufacture Date",
-                  hint: "Select month and year",
-                  selectOnlyMonthYear: true,
-                  selectedDate: _selectedManufactureDate,
-                  onDateSelected: (date) =>
-                      setState(() => _selectedManufactureDate = date),
-                )),
-                buildPaddedField(CustomDropdownFormField<String>(
-                  label: "State",
-                  hint: "Select your state",
-                  value: selectedState,
-                  items: stateNames
-                      .map((s) => DropdownMenuItem(value: s, child: Text(s)))
-                      .toList(),
-                  onChanged: (val) => setState(() => selectedState = val),
-                  validator: (val) => val == null ? "Required" : null,
-                )),
-                const SizedBox(height: 10),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 10.0),
-                  child: TextFormField(
-                    controller: addressController,
-                    decoration:
-                    context.inputDecoration("Address", "Enter address or locality"),
-                    maxLines: 2,
+            padding: const EdgeInsets.all(16.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  buildPaddedField(CustomDropdownFormField<String>(
+                    enabled: true,
+                    value: sellerCategory,
+                    label: "Seller Category",
+                    hint: "Choose Category",
+                    items: sellerCategories
+                        .map((b) => DropdownMenuItem(value: b, child: Text(b)))
+                        .toList(),
+                    onChanged: (val) => setState(() => sellerCategory = val),
+                    validator: (val) =>
+                        isBikeSpecific && val == null ? "Required" : null,
+                  )),
+                  buildPaddedField(TextFormField(
+                    controller: sellerNameController,
+                    decoration: context.inputDecoration(
+                        "Seller Name", "Enter your full name"),
                     validator: (val) => val!.isEmpty ? "Required" : null,
-                  ),
-                ),
-                AutocompleteSearchField(
-                  label: "Area",
-                  hint: "Enter Area name",
-                  controller: areaController,
-                  icon: null,
-                  lat: stateCoordinates[selectedState]?['lat'] ?? 0.0,
-                  lon: stateCoordinates[selectedState]?['lon'] ?? 0.0,
-                  onPlaceSelected: (suggestion) {
-                    // Update all location controllers when a place is selected
-                    setState(() {
-                      areaController.text = suggestion.text;
-                      cityController.text = suggestion.municipality ?? '';
-                      pinCodeController.text = suggestion.postalCode ?? '';
-                    });
-                  },
-                  validator: (val) => val!.isEmpty ? "Required" : null,
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 10.0),
-                  child: TextFormField(
-                    controller: cityController,
-                    decoration:
-                        context.inputDecoration("City", "Enter city name"),
-                    validator: (val) => val!.isEmpty ? "Required" : null,
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 10.0),
-                  child: TextFormField(
-                    controller: pinCodeController,
-                    decoration:
-                        context.inputDecoration("Pin Code", "Enter Pin code"),
-                  ),
-                ),
-                buildPaddedField(TextFormField(
-                  controller: productSizeController,
-                  decoration:
-                      context.inputDecoration("Product size", "If applicable"),
-                )),
-                buildPaddedField(CustomDropdownFormField<String>(
-                  label: 'Product condition',
-                  hint: "Tap to select",
-                  value: _productCondition,
-                  items: productConditionList
-                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                      .toList(),
-                  onChanged: (val) => setState(() => _productCondition = val),
-                  validator: (val) =>
-                      val == null ? 'Please select Product condition' : null,
-                )),
-                buildPaddedField(SwitchListTile(
-                  title: const Text("Bill available?"),
-                  activeColor: Colors.green,
-                  inactiveThumbColor: Colors.grey,
-                  inactiveTrackColor: Colors.grey.withOpacity(0.5),
-                  value: isBillAvailable,
-                  onChanged: (val) {
-                    setState(() {
-                      isBillAvailable = val;
-                      if (!val) _clearBillFields();
-                    });
-                  },
-                )),
-                buildPaddedField(MonthYearPicker(
-                  enable: isBillAvailable,
-                  label: "Bill Date",
-                  hint: "Select month and year",
-                  selectedDate: _selectedBillDate,
-                  onDateSelected: (date) {
-                    setState(() {
-                      _selectedBillDate = date;
-                      final age = AppUtils.calculateAge(_selectedBillDate);
-                      productAgingController.text =
-                          "${age['years']} years and ${age['months']} months";
-                    });
-                  },
-                )),
-                buildPaddedField(TextFormField(
-                  enabled: true,
-                  keyboardType: TextInputType.number,
-                  controller: productAgingController,
-                  decoration: context.inputDecoration(
-                      "Product aging", "Product age so far"),
-                )),
-                buildPaddedField(SwitchListTile(
-                  title: const Text("Warranty available?"),
-                  activeColor: Colors.green,
-                  inactiveThumbColor: Colors.grey,
-                  inactiveTrackColor: Colors.grey.withOpacity(0.5),
-                  value: isWarrantyAvailable,
-                  onChanged: (val) {
-                    setState(() {
-                      isWarrantyAvailable = val;
-                      if (!val) _clearWarrantyFields();
-                    });
-                  },
-                )),
-                buildPaddedField(TextFormField(
-                  enabled: isWarrantyAvailable,
-                  controller: warrantyLeftController,
-                  decoration: context.inputDecoration(
-                      "Warranty limit", "How many months/years warranty left?"),
-                )),
-                buildPaddedField(TextFormField(
-                  controller: priceController,
-                  decoration: context.inputDecoration(
-                      "Expected Price", "Enter expected price"),
-                  validator: (val) => val!.isEmpty ? "Required" : null,
-                )),
-                buildPaddedField(TextFormField(
-                  controller: additionalDetailsController,
-                  decoration: context.inputDecoration(
-                      "Additional Details", "Any extra info..."),
-                  maxLines: 3,
-                )),
-                buildPaddedField(ImagePickerSection(
-                  images: _images,
-                  isGalleryOnly: _enableGallery,
-                  onImagesChanged: (images) => setState(() {
-                    _images.clear();
-                    _images.addAll(images);
-                  }),
-                )),
-                buildPaddedField(
-                  Row(
+                  )),
+                  buildPaddedField(Row(
                     children: [
-                      Checkbox(
-                        value: _termsAccepted,
-                        onChanged: (bool? newValue) {
-                          setState(() {
-                            _termsAccepted = newValue ?? false;
-                          });
-                        },
-                        activeColor: Colors.green,
+                      DropdownButton<String>(
+                        value: selectedCountryCode,
+                        items: countryCodes
+                            .map((code) => DropdownMenuItem(
+                                value: code, child: Text(code)))
+                            .toList(),
+                        onChanged: (val) =>
+                            setState(() => selectedCountryCode = val!),
                       ),
+                      const SizedBox(width: 8),
                       Expanded(
-                        child: RichText(
-                          text: TextSpan(
-                            style: Theme.of(context).textTheme.bodyMedium,
-                            children: [
-                              const TextSpan(
-                                  text: 'I have read and agree to the '),
-                              TextSpan(
-                                text: 'Terms & Conditions',
-                                style: const TextStyle(
-                                  color: Colors.blue,
-                                  decoration: TextDecoration.underline,
-                                ),
-                                recognizer: TapGestureRecognizer()
-                                  ..onTap = _openTermsLink,
-                              ),
-                            ],
-                          ),
+                        child: TextFormField(
+                          controller: sellerContactController,
+                          decoration: context.inputDecoration(
+                              "Contact Number", "Enter phone number"),
+                          validator: (val) => val!.isEmpty ? "Required" : null,
                         ),
                       ),
                     ],
+                  )),
+                  buildPaddedField(CategorySelector(
+                    onCategoryChanged: (cat) => selectedCategory = cat,
+                    onSubcategoryChanged: (sub) => selectedSubcategory = sub,
+                  )),
+                  buildPaddedField(TextFormField(
+                    controller: accessoriesNameController,
+                    decoration: context.inputDecoration(
+                        "Accessories Name", "Enter your Accessories name"),
+                    validator: (val) => val!.isEmpty ? "Required" : null,
+                  )),
+                  buildPaddedField(TextFormField(
+                    controller: brandNameController,
+                    decoration: context.inputDecoration(
+                        "Brand Name", "Enter your Brand name"),
+                    validator: (val) => val!.isEmpty ? "Required" : null,
+                  )),
+                  buildPaddedField(SwitchListTile(
+                    title: const Text("Is your product bike specific?"),
+                    value: isBikeSpecific,
+                    activeColor: Colors.green,
+                    inactiveThumbColor: Colors.grey,
+                    inactiveTrackColor: Colors.grey.withOpacity(0.5),
+                    onChanged: (val) {
+                      setState(() {
+                        isBikeSpecific = val;
+                        if (!val) _clearBikeSpecificFields();
+                      });
+                    },
+                  )),
+                  buildPaddedField(CustomDropdownFormField<String>(
+                    enabled: isBikeSpecific,
+                    value: selectedBikeBrand,
+                    label: "Bike Brand Name",
+                    hint: "Choose brand",
+                    items: bikeBrands
+                        .map((b) => DropdownMenuItem(value: b, child: Text(b)))
+                        .toList(),
+                    onChanged: (val) => setState(() => selectedBikeBrand = val),
+                    validator: (val) =>
+                        isBikeSpecific && val == null ? "Required" : null,
+                  )),
+                  buildPaddedField(TextFormField(
+                    enabled: isBikeSpecific,
+                    controller: modelNameController,
+                    decoration: context.inputDecoration(
+                        "Bike Model Name", "e.g. TRIUMPH Tiger 1200"),
+                    validator: (val) =>
+                        isBikeSpecific && val == null ? "Required" : null,
+                  )),
+                  buildPaddedField(MonthYearPicker(
+                    enable: isBikeSpecific,
+                    label: "Bike Manufacture Date",
+                    hint: "Select month and year",
+                    selectOnlyMonthYear: true,
+                    selectedDate: _selectedManufactureDate,
+                    onDateSelected: (date) =>
+                        setState(() => _selectedManufactureDate = date),
+                  )),
+                  buildPaddedField(CustomDropdownFormField<String>(
+                    label: "State",
+                    hint: "Select your state",
+                    value: selectedState,
+                    items: stateNames
+                        .map((s) => DropdownMenuItem(value: s, child: Text(s)))
+                        .toList(),
+                    onChanged: (val) => setState(() => selectedState = val),
+                    validator: (val) => val == null ? "Required" : null,
+                  )),
+                  const SizedBox(height: 10),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10.0),
+                    child: TextFormField(
+                      controller: addressController,
+                      decoration: context.inputDecoration(
+                          "Address", "Enter address or locality"),
+                      maxLines: 2,
+                      validator: (val) => val!.isEmpty ? "Required" : null,
+                    ),
                   ),
-                ),
-              ],
+                  AutocompleteSearchField(
+                    label: "Area",
+                    hint: "Enter Area name",
+                    controller: areaController,
+                    icon: null,
+                    lat: stateCoordinates[selectedState]?['lat'] ?? 0.0,
+                    lon: stateCoordinates[selectedState]?['lon'] ?? 0.0,
+                    onPlaceSelected: (suggestion) {
+                      // Update all location controllers when a place is selected
+                      setState(() {
+                        areaController.text = suggestion.text;
+                        cityController.text = suggestion.municipality ?? '';
+                        pinCodeController.text = suggestion.postalCode ?? '';
+                      });
+                    },
+                    validator: (val) => val!.isEmpty ? "Required" : null,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10.0),
+                    child: TextFormField(
+                      controller: cityController,
+                      decoration:
+                          context.inputDecoration("City", "Enter city name"),
+                      validator: (val) => val!.isEmpty ? "Required" : null,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10.0),
+                    child: TextFormField(
+                      controller: pinCodeController,
+                      decoration:
+                          context.inputDecoration("Pin Code", "Enter Pin code"),
+                    ),
+                  ),
+                  buildPaddedField(TextFormField(
+                    controller: productSizeController,
+                    decoration: context.inputDecoration(
+                        "Product size", "If applicable"),
+                  )),
+                  buildPaddedField(CustomDropdownFormField<String>(
+                    label: 'Product condition',
+                    hint: "Tap to select",
+                    value: _productCondition,
+                    items: productConditionList
+                        .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                        .toList(),
+                    onChanged: (val) => setState(() => _productCondition = val),
+                    validator: (val) =>
+                        val == null ? 'Please select Product condition' : null,
+                  )),
+                  buildPaddedField(SwitchListTile(
+                    title: const Text("Bill available?"),
+                    activeColor: Colors.green,
+                    inactiveThumbColor: Colors.grey,
+                    inactiveTrackColor: Colors.grey.withOpacity(0.5),
+                    value: isBillAvailable,
+                    onChanged: (val) {
+                      setState(() {
+                        isBillAvailable = val;
+                        if (!val) _clearBillFields();
+                      });
+                    },
+                  )),
+                  buildPaddedField(MonthYearPicker(
+                    enable: isBillAvailable,
+                    label: "Bill Date",
+                    hint: "Select month and year",
+                    selectedDate: _selectedBillDate,
+                    onDateSelected: (date) {
+                      setState(() {
+                        _selectedBillDate = date;
+                        final age = AppUtils.calculateAge(_selectedBillDate);
+                        productAgingController.text =
+                            "${age['years']} years and ${age['months']} months";
+                      });
+                    },
+                  )),
+                  buildPaddedField(TextFormField(
+                    enabled: true,
+                    keyboardType: TextInputType.number,
+                    controller: productAgingController,
+                    decoration: context.inputDecoration(
+                        "Product aging", "Product age so far"),
+                  )),
+                  buildPaddedField(SwitchListTile(
+                    title: const Text("Warranty available?"),
+                    activeColor: Colors.green,
+                    inactiveThumbColor: Colors.grey,
+                    inactiveTrackColor: Colors.grey.withOpacity(0.5),
+                    value: isWarrantyAvailable,
+                    onChanged: (val) {
+                      setState(() {
+                        isWarrantyAvailable = val;
+                        if (!val) _clearWarrantyFields();
+                      });
+                    },
+                  )),
+                  buildPaddedField(TextFormField(
+                    enabled: isWarrantyAvailable,
+                    controller: warrantyLeftController,
+                    decoration: context.inputDecoration("Warranty limit",
+                        "How many months/years warranty left?"),
+                  )),
+                  buildPaddedField(TextFormField(
+                    controller: priceController,
+                    decoration: context.inputDecoration(
+                        "Expected Price", "Enter expected price"),
+                    validator: (val) => val!.isEmpty ? "Required" : null,
+                  )),
+                  buildPaddedField(TextFormField(
+                    controller: additionalDetailsController,
+                    decoration: context.inputDecoration(
+                        "Additional Details", "Any extra info..."),
+                    maxLines: 3,
+                  )),
+                  buildPaddedField(ImagePickerSection(
+                    images: _images,
+                    isGalleryOnly: _enableGallery,
+                    onImagesChanged: (images) => setState(() {
+                      _images.clear();
+                      _images.addAll(images);
+                    }),
+                  )),
+                  buildPaddedField(
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: _termsAccepted,
+                          onChanged: (bool? newValue) {
+                            setState(() {
+                              _termsAccepted = newValue ?? false;
+                            });
+                          },
+                          activeColor: Colors.green,
+                        ),
+                        Expanded(
+                          child: RichText(
+                            text: TextSpan(
+                              style: Theme.of(context).textTheme.bodyMedium,
+                              children: [
+                                const TextSpan(
+                                    text: 'I have read and agree to the '),
+                                TextSpan(
+                                  text: 'Terms & Conditions',
+                                  style: const TextStyle(
+                                    color: Colors.blue,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                  recognizer: TapGestureRecognizer()
+                                    ..onTap = _openTermsLink,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
       ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: ElevatedButton(
-            onPressed: submitForm,
-            style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(50)),
-            child: const Text("Submit"),
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          WebConstrainedBox(
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: ElevatedButton(
+                  onPressed: submitForm,
+                  style: ElevatedButton.styleFrom(
+                      minimumSize: const Size.fromHeight(50)),
+                  child: const Text("Submit"),
+                ),
+              ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

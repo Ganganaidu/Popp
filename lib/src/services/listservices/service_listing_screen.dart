@@ -5,6 +5,7 @@ import '../../api/firebase/firebase_api_service.dart';
 import '../../navigation/nav_router.dart';
 import '../../utils/product_utils.dart';
 import '../widgets/service_card.dart';
+import '../../widgets/web_constrained_box.dart';
 
 class ServiceListingScreen extends StatefulWidget {
   final String category;
@@ -85,26 +86,29 @@ class _ServiceListingScreenState extends State<ServiceListingScreen> {
             );
           } else {
             final services = snapshot.data!;
-            return ListView.separated(
-              padding: const EdgeInsets.all(16.0),
-              itemCount: services.length,
-              separatorBuilder: (context, index) => const SizedBox(height: 16),
-              itemBuilder: (context, index) {
-                final service = services[index];
-                return SizedBox(
-                  height: 220,
-                  child: ServiceCard(
-                    service: service,
-                    category: widget.category,
-                    width: double.infinity,
-                    onTap: () {
-                      onServiceDetailsScreenTap(
-                          context, service, widget.category);
-                    },
-                    isApproved: service['isApproved'] == true,
-                  ),
-                );
-              },
+            return WebConstrainedBox(
+                child: ListView.separated(
+                  padding: const EdgeInsets.all(16.0),
+                  itemCount: services.length,
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: 16),
+                  itemBuilder: (context, index) {
+                    final service = services[index];
+                    return SizedBox(
+                      height: 220,
+                      child: ServiceCard(
+                        service: service,
+                        category: widget.category,
+                        width: double.infinity,
+                        onTap: () {
+                          onServiceDetailsScreenTap(
+                              context, service, widget.category);
+                        },
+                        isApproved: service['isApproved'] == true,
+                      ),
+                    );
+                  },
+                ),
             );
           }
         },

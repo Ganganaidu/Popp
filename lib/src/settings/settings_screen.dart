@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:lottie/lottie.dart';
 import 'package:popp/src/utils/build_extensions.dart';
+import 'package:popp/src/widgets/web_constrained_box.dart';
 import 'package:provider/provider.dart';
 
 import '../../main.dart';
@@ -76,8 +77,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Consumer<SubscriptionProvider>(
         builder: (context, subscriptionProvider, _) {
           return Scaffold(
-            // Use a body with a bottom-aligned button
-            body: Column(
+            body: WebConstrainedBox(
+              child: Column(
               children: [
                 Expanded(
                   child: CustomScrollView(
@@ -97,6 +98,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 // This ensures the button is always at the bottom
                 _buildBottomButton(context, isLoggedIn),
               ],
+            ),
             ),
           );
         },

@@ -309,7 +309,7 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
               Positioned.fill(
                 child: ad.imageUrl.isEmpty
                     ? Image.asset(
-                        'assets/book_track_trainings.png',
+                        'assets/ads_default_image.png',
                         fit: BoxFit.cover,
                       )
                     : Image.network(

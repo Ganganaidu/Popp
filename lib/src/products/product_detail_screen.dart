@@ -4,6 +4,7 @@ import 'package:popp/src/api/currency_service.dart';
 import 'package:popp/src/utils/app_loger.dart';
 import 'package:popp/src/utils/product_utils.dart';
 import 'package:popp/src/widgets/title_text.dart';
+import '../widgets/web_constrained_box.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shimmer/shimmer.dart';
 

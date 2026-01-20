@@ -5,6 +5,7 @@ import 'package:popp/src/api/api_url.dart';
 import 'package:popp/src/login/model/user_data_model.dart'; // Adjust path to your UserData model
 import 'package:popp/src/utils/app_loger.dart';
 import 'package:popp/src/utils/build_extensions.dart';
+import 'package:popp/src/widgets/web_constrained_box.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../navigation/nav_router.dart';
@@ -151,7 +152,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
           ? const Center(child: CircularProgressIndicator())
           : _userData == null
               ? const Center(child: Text('Could not load profile.'))
-              : _buildProfileForm(),
+              : WebConstrainedBox(child: _buildProfileForm()),
     );
   }
 

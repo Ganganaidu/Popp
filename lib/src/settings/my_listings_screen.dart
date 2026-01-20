@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../api/api_url.dart';
 import '../widgets/title_text.dart';
+import 'package:popp/src/widgets/web_constrained_box.dart';
 import 'list_grid_view.dart';
 
 class MyListingsScreen extends StatefulWidget {
@@ -36,7 +37,8 @@ class _MyListingsScreenState extends State<MyListingsScreen>
     if (user == null) {
       return Scaffold(
         appBar: AppBar(title: const TitleText("My Listings")),
-        body: Center(
+        body: WebConstrainedBox(
+          child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -51,6 +53,7 @@ class _MyListingsScreenState extends State<MyListingsScreen>
               )
             ],
           ),
+        ),
         ),
       );
     }
@@ -69,7 +72,8 @@ class _MyListingsScreenState extends State<MyListingsScreen>
           ],
         ),
       ),
-      body: TabBarView(
+      body: WebConstrainedBox(
+        child: TabBarView(
         controller: _tabController,
         children: [
           // Using the reusable widget for Products
@@ -87,6 +91,7 @@ class _MyListingsScreenState extends State<MyListingsScreen>
             showOptionsMenu: true, // Show edit/delete options
           ),
         ],
+      ),
       ),
     );
   }

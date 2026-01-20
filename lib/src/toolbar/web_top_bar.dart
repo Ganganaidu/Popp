@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:popp/src/navigation/nav_router.dart';
 import 'package:popp/src/utils/build_extensions.dart';
 
@@ -129,23 +130,45 @@ class WebTopBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   Widget _buildActions(BuildContext context) {
-    return Row(
-      children: [
-        _buildActionButton(
-          context,
-          icon: Icons.favorite_border_outlined,
-          label: "Favorites",
-          onTap: () => onFavScreenTap(context),
-        ),
-        const SizedBox(width: 20),
-        _buildActionButton(
-          context,
-          icon: Icons.settings_outlined,
-          label: "Settings",
-          onTap: () => onSettingsTap(context),
-        ),
-      ],
-    );
+    return StreamBuilder<User?>(
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (context, snapshot) {
+          final user = snapshot.data;
+          return Row(
+            children: [
+              _buildActionButton(
+                context,
+                icon: Icons.favorite_border_outlined,
+                label: "Favorites",
+                onTap: () => onFavScreenTap(context),
+              ),
+              const SizedBox(width: 20),
+              _buildActionButton(
+                context,
+                icon: Icons.settings_outlined,
+                label: "Settings",
+                onTap: () => onSettingsTap(context),
+              ),
+              const SizedBox(width: 20),
+              if (user == null)
+                _buildActionButton(
+                  context,
+                  icon: Icons.login_outlined,
+                  label: "Login",
+                  onTap: () => onLoginTap(context),
+                )
+              else
+                _buildActionButton(
+                  context,
+                  icon: Icons.logout_outlined,
+                  label: "Logout",
+                  onTap: () async {
+                    await FirebaseAuth.instance.signOut();
+                  },
+                ),
+            ],
+          );
+        });
   }
 
   Widget _buildActionButton(

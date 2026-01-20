@@ -8,6 +8,7 @@ import '../navigation/nav_router.dart';
 import '../utils/product_utils.dart';
 import '../widgets/listing_card.dart';
 import '../widgets/title_text.dart';
+import '../widgets/web_constrained_box.dart';
 
 class CategoryDetailScreen extends StatefulWidget {
   final String categoryName;
@@ -214,49 +215,54 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
               ? Center(
                   child:
                       Text(_error!, style: const TextStyle(color: Colors.red)))
-              : Column(
-                  children: [
-                    FilterBar(
-                      filters: widget.filters,
-                      activeFilterCounts: const {},
-                      onFiltersChanged: _onFiltersChanged,
-                    ),
-                    Expanded(
-                      child: filteredProducts.isEmpty
-                          ? _buildEmptyProductsView(context)
-                          : Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: GridView.builder(
-                                itemCount: filteredProducts.length,
-                                gridDelegate:
-                                    const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
-                                  childAspectRatio: 0.65,
-                                  crossAxisSpacing: 12,
-                                  mainAxisSpacing: 12,
+              : WebConstrainedBox(
+                  child: Column(
+                      children: [
+                        FilterBar(
+                          filters: widget.filters,
+                          activeFilterCounts: const {},
+                          onFiltersChanged: _onFiltersChanged,
+                        ),
+                        Expanded(
+                          child: filteredProducts.isEmpty
+                              ? _buildEmptyProductsView(context)
+                              : Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: GridView.builder(
+                                    itemCount: filteredProducts.length,
+                                    gridDelegate:
+                                        SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount:
+                                          MediaQuery.of(context).size.width > 800
+                                              ? 4
+                                              : 2,
+                                      childAspectRatio: 0.65,
+                                      crossAxisSpacing: 12,
+                                      mainAxisSpacing: 12,
+                                    ),
+                                    itemBuilder: (context, index) {
+                                      final product = filteredProducts[index];
+                                      return ListingCard(
+                                          title:
+                                              ProductUtils.getServiceTitle(product),
+                                          imageUrl:
+                                              ProductUtils.extractAllImageUrls(
+                                                  product),
+                                          price: CurrencyService.getProductPrice(
+                                              product['expectedPrice'],
+                                              countryCode),
+                                          width: double.infinity,
+                                          showOptionsMenu: false,
+                                          onTap: () {
+                                            onProductDetailsTap(context, product);
+                                            // Navigate to detail screen
+                                          });
+                                    },
+                                  ),
                                 ),
-                                itemBuilder: (context, index) {
-                                  final product = filteredProducts[index];
-                                  return ListingCard(
-                                      title:
-                                          ProductUtils.getServiceTitle(product),
-                                      imageUrl:
-                                          ProductUtils.extractAllImageUrls(
-                                              product),
-                                      price: CurrencyService.getProductPrice(
-                                          product['expectedPrice'],
-                                          countryCode),
-                                      width: double.infinity,
-                                      showOptionsMenu: false,
-                                      onTap: () {
-                                        onProductDetailsTap(context, product);
-                                        // Navigate to detail screen
-                                      });
-                                },
-                              ),
-                            ),
+                        ),
+                      ],
                     ),
-                  ],
                 ),
     );
   }

@@ -101,22 +101,22 @@ class CategoryListWidget extends StatelessWidget {
     return InkWell(
       onTap: () => _navigateToCategoryPage(context),
       child: Padding(
-        padding: EdgeInsets.symmetric(vertical: isWeb ? 12.0 : 8.0),
+        padding: EdgeInsets.symmetric(vertical: isWeb ? 10.0 : 8.0),
         child: Row(
           children: [
             Expanded(
               child: Text(
                 categoryName,
-                style: TextStyle(
-                  fontSize: isWeb ? 24 : 20,
+                style: const TextStyle(
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ),
             IconButton(
-              icon: Icon(
+              icon: const Icon(
                 Icons.arrow_forward_ios,
-                size: isWeb ? 20 : 18,
+                size: 18,
               ),
               onPressed: () => _navigateToCategoryPage(context),
             ),
@@ -132,15 +132,15 @@ class CategoryListWidget extends StatelessWidget {
         // Responsive grid based on available width
         int crossAxisCount;
         int maxItems;
-        if (constraints.maxWidth > 1000) {
+        if (constraints.maxWidth > 500) {
+          crossAxisCount = 5;
+          maxItems = 10;
+        } else if (constraints.maxWidth > 400) {
           crossAxisCount = 4;
           maxItems = 8;
-        } else if (constraints.maxWidth > 700) {
-          crossAxisCount = 3;
-          maxItems = 6;
         } else {
-          crossAxisCount = 2;
-          maxItems = 4;
+          crossAxisCount = 4;
+          maxItems = 8;
         }
 
         return GridView.builder(

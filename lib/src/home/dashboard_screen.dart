@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../adbanner/ad_carousel_widget.dart';
-import '../dashboard/product_list_widget.dart';
-import '../dashboard/service_list_widget.dart';
+import '../dashboard/product_list_dashboard_screen.dart';
+import '../dashboard/service_list_dashboard_screen.dart';
 import '../dashboard/viewmodel/dashboard_viewmodel.dart';
 import '../dashboard/viewmodel/service_viewmodel.dart';
 import '../services/pop_services_widgets.dart';
@@ -39,7 +39,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final isWeb = kIsWeb && context.isDesktop;
-    
+
     if (isWeb) {
       return _buildWebLayout();
     } else {
@@ -80,10 +80,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
           SizedBox(height: 20.0),
           PopServicesWidgets(),
           // SizedBox(height: 20.0),
-          ProductListViewWidget(),
+          ProductListDashboardScreen(),
           // SizedBox(height: 20.0),
-          ServiceListWidget(),
-          // Disclaimers(),
+          ServiceListDashboardScreen(),
         ],
       ),
     );
@@ -165,7 +164,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   ],
                 ),
-                child: const ProductListViewWidget(),
+                child: const ProductListDashboardScreen(),
+              ),
+              const SizedBox(height: 24),
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardColor,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: const ServiceListDashboardScreen(),
               ),
             ],
           ),

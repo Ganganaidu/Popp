@@ -11,6 +11,7 @@ import 'package:popp/src/widgets/image_picker_selection.dart';
 import 'package:popp/src/widgets/loading_overlay.dart';
 import 'package:popp/src/widgets/month_year_picker.dart';
 import 'package:popp/src/widgets/title_text.dart';
+import 'package:popp/src/widgets/web_constrained_box.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../api/api_url.dart';
@@ -23,6 +24,7 @@ import '../../widgets/working_hours_picker.dart';
 
 class ListServiceFormScreen extends StatefulWidget {
   final String? category;
+
   const ListServiceFormScreen({super.key, this.category});
 
   @override
@@ -529,729 +531,745 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
               ),
           ],
         ),
-        body: LoadingOverlay(
-          isLoading: _isLoading,
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (_selectedCategory == null)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 20.0),
-                      child: Center(
-                        child: Text(
-                          "Please choose a service category to enable the form fields.",
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey[600],
-                            fontStyle: FontStyle.italic,
+        body: WebConstrainedBox(
+          child: LoadingOverlay(
+            isLoading: _isLoading,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (_selectedCategory == null)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 20.0),
+                        child: Center(
+                          child: Text(
+                            "Please choose a service category to enable the form fields.",
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey[600],
+                              fontStyle: FontStyle.italic,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
-                          textAlign: TextAlign.center,
                         ),
                       ),
-                    ),
-                  if (ProductUtils.isBikeAndOthersCategory(
-                      _selectedCategory)) ...[
-                    // Fields for Find Mechanic / Bike Rentals
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: TextFormField(
-                        controller: shopNameController,
-                        decoration: context.inputDecoration("Shop name",
-                            ProductUtils.getShopNameHint(_selectedCategory)),
-                        validator: (val) =>
-                            val!.isEmpty ? "Shop name is mandatory" : null,
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: TextFormField(
-                        controller: businessTitleController, // 1
-                        decoration: context.inputDecoration(
-                            "Business name", "As per GST or official records"),
-                        validator: (val) =>
-                            val!.isEmpty ? "Business Title is mandatory" : null,
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: TextFormField(
-                        controller: businessDescriptionController, // 8
-                        decoration: context.inputDecoration(
-                          "Business Description/Clauses",
-                          ProductUtils.getBusinessDescriptionHint(
-                              _selectedCategory),
-                        ),
-                        maxLines: 3,
-                        validator: (val) => val!.isEmpty
-                            ? "Business Description is mandatory"
-                            : null,
-                      ),
-                    ),
-                    if (_selectedCategory == ProductUtils.findMechanic)
+                    if (ProductUtils.isBikeAndOthersCategory(
+                        _selectedCategory)) ...[
+                      // Fields for Find Mechanic / Bike Rentals
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: CustomDropdownFormField<String>(
-                          label: "Premium Bike Inspection",
-                          hint: "Would you offer a premium bike inspection?",
-                          value: _doYouInspectPremiumBikes,
-                          items: yesNo
-                              .map((s) =>
-                                  DropdownMenuItem(value: s, child: Text(s)))
-                              .toList(),
-                          onChanged: (val) =>
-                              setState(() => _doYouInspectPremiumBikes = val),
+                        child: TextFormField(
+                          controller: shopNameController,
+                          decoration: context.inputDecoration("Shop name",
+                              ProductUtils.getShopNameHint(_selectedCategory)),
+                          validator: (val) =>
+                              val!.isEmpty ? "Shop name is mandatory" : null,
                         ),
                       ),
-                    if (_selectedCategory == ProductUtils.tyreShop)
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: CustomDropdownFormField<String>(
-                          label: "Tyre Fitment",
-                          hint: "Is Tyre fitment available in your shop?",
-                          value: _isTyreFitmentAvailable,
-                          items: yesNo
-                              .map((s) =>
-                                  DropdownMenuItem(value: s, child: Text(s)))
-                              .toList(),
-                          onChanged: (val) =>
-                              setState(() => _isTyreFitmentAvailable = val),
+                        child: TextFormField(
+                          controller: businessTitleController, // 1
+                          decoration: context.inputDecoration("Business name",
+                              "As per GST or official records"),
+                          validator: (val) => val!.isEmpty
+                              ? "Business Title is mandatory"
+                              : null,
                         ),
                       ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: Row(
-                        children: [
-                          DropdownButton<String>(
-                            value: selectedCountryCode,
-                            items: countryCodes
-                                .map((code) => DropdownMenuItem(
-                                    value: code, child: Text(code)))
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          controller: businessDescriptionController, // 8
+                          decoration: context.inputDecoration(
+                            "Business Description/Clauses",
+                            ProductUtils.getBusinessDescriptionHint(
+                                _selectedCategory),
+                          ),
+                          maxLines: 3,
+                          validator: (val) => val!.isEmpty
+                              ? "Business Description is mandatory"
+                              : null,
+                        ),
+                      ),
+                      if (_selectedCategory == ProductUtils.findMechanic)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: CustomDropdownFormField<String>(
+                            label: "Premium Bike Inspection",
+                            hint: "Would you offer a premium bike inspection?",
+                            value: _doYouInspectPremiumBikes,
+                            items: yesNo
+                                .map((s) =>
+                                    DropdownMenuItem(value: s, child: Text(s)))
                                 .toList(),
                             onChanged: (val) =>
-                                setState(() => selectedCountryCode = val!),
+                                setState(() => _doYouInspectPremiumBikes = val),
                           ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: TextFormField(
-                              controller: businessContactController, // 4
-                              keyboardType: TextInputType.phone,
-                              decoration: context.inputDecoration(
-                                  "Business Contact #",
-                                  "Enter business contact number"),
-                              validator: (val) =>
-                                  val!.isEmpty ? "Contact is mandatory" : null,
+                        ),
+                      if (_selectedCategory == ProductUtils.tyreShop)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: CustomDropdownFormField<String>(
+                            label: "Tyre Fitment",
+                            hint: "Is Tyre fitment available in your shop?",
+                            value: _isTyreFitmentAvailable,
+                            items: yesNo
+                                .map((s) =>
+                                    DropdownMenuItem(value: s, child: Text(s)))
+                                .toList(),
+                            onChanged: (val) =>
+                                setState(() => _isTyreFitmentAvailable = val),
+                          ),
+                        ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Row(
+                          children: [
+                            DropdownButton<String>(
+                              value: selectedCountryCode,
+                              items: countryCodes
+                                  .map((code) => DropdownMenuItem(
+                                      value: code, child: Text(code)))
+                                  .toList(),
+                              onChanged: (val) =>
+                                  setState(() => selectedCountryCode = val!),
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: TextFormField(
+                                controller: businessContactController, // 4
+                                keyboardType: TextInputType.phone,
+                                decoration: context.inputDecoration(
+                                    "Business Contact #",
+                                    "Enter business contact number"),
+                                validator: (val) => val!.isEmpty
+                                    ? "Contact is mandatory"
+                                    : null,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: TextFormField(
-                        controller: contactNameController, // 5
-                        decoration: context.inputDecoration(
-                            "Contact Name", "Enter contact person's name"),
-                        validator: (val) =>
-                            val!.isEmpty ? "Contact Name is mandatory" : null,
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          controller: contactNameController, // 5
+                          decoration: context.inputDecoration(
+                              "Contact Name", "Enter contact person's name"),
+                          validator: (val) =>
+                              val!.isEmpty ? "Contact Name is mandatory" : null,
+                        ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: CustomDropdownFormField<String>(
-                        label: "State",
-                        hint: "Select your state",
-                        value: _selectedState,
-                        items: stateNames
-                            .map((s) =>
-                                DropdownMenuItem(value: s, child: Text(s)))
-                            .toList(),
-                        onChanged: (val) =>
-                            setState(() => _selectedState = val),
-                        validator: (val) => val == null ? "Required" : null,
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: CustomDropdownFormField<String>(
+                          label: "State",
+                          hint: "Select your state",
+                          value: _selectedState,
+                          items: stateNames
+                              .map((s) =>
+                                  DropdownMenuItem(value: s, child: Text(s)))
+                              .toList(),
+                          onChanged: (val) =>
+                              setState(() => _selectedState = val),
+                          validator: (val) => val == null ? "Required" : null,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 10),
-                    AutocompleteSearchField(
-                      label: "Shop Address",
-                      hint: "Enter your Shop/Garage address",
-                      controller: businessAddressController,
-                      icon: null,
-                      lat: stateCoordinates[_selectedState]?['lat'] ?? 0.0,
-                      lon: stateCoordinates[_selectedState]?['lon'] ?? 0.0,
-                      onPlaceSelected: (suggestion) {
-                        // Update all location controllers when a place is selected
-                        setState(() {
-                          businessAddressController.text = suggestion.text;
-                          cityController.text = suggestion.municipality ?? '';
-                          pincodeController.text = suggestion.postalCode ?? '';
-                        });
-                      },
-                      validator: (val) => val!.isEmpty ? "Required" : null,
-                    ),
-                    const SizedBox(height: 10),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: TextFormField(
-                        controller: areaController, // 14
-                        decoration: context.inputDecoration(
-                            "Area", "Enter area details"),
-                        validator: (val) =>
-                            val!.isEmpty ? "Area is mandatory" : null,
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: TextFormField(
-                        controller: cityController, // 11
-                        decoration:
-                            context.inputDecoration("City", "Enter city name"),
-                        validator: (val) =>
-                            val!.isEmpty ? "City is mandatory" : null,
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: TextFormField(
-                        controller: pincodeController, // 13
-                        keyboardType: TextInputType.number,
-                        decoration: context.inputDecoration(
-                            "Pin code", "Enter pin code"),
-                        validator: (val) =>
-                            val!.isEmpty ? "Pin code is mandatory" : null,
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: TextFormField(
-                        controller: gstController, // 6
-                        decoration: context.inputDecoration(
-                            "GST #", "Enter GST number"),
-                        validator: (val) =>
-                            val!.isEmpty ? "GST number is mandatory" : null,
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: TextFormField(
-                        controller: googleMapLinkController, // 14
-                        decoration: context.inputDecoration("Google Map Link",
-                            "Enter Google Maps link (optional)"),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: TextFormField(
-                        controller: socialMediaLinkController, // 15
-                        decoration: context.inputDecoration("Social Media Link",
-                            "Enter social media link (optional)"),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: WorkingHoursPicker(
-                        label: "Business Working Days & Hours",
-                        hint: "Select working days and hours",
-                        controller: businessWorkingDaysHoursController,
-                        onChanged: (value) {
+                      const SizedBox(height: 10),
+                      AutocompleteSearchField(
+                        label: "Shop Address",
+                        hint: "Enter your Shop/Garage address",
+                        controller: businessAddressController,
+                        icon: null,
+                        lat: stateCoordinates[_selectedState]?['lat'] ?? 0.0,
+                        lon: stateCoordinates[_selectedState]?['lon'] ?? 0.0,
+                        onPlaceSelected: (suggestion) {
+                          // Update all location controllers when a place is selected
                           setState(() {
-                            // The controller text is updated internally by WorkingHoursPicker
-                            // You might want to trigger form validation here if necessary
-                            // _formKey.currentState?.validate();
+                            businessAddressController.text = suggestion.text;
+                            cityController.text = suggestion.municipality ?? '';
+                            pincodeController.text =
+                                suggestion.postalCode ?? '';
                           });
                         },
-                        validator: (val) => val!.isEmpty ||
-                                val == "No days selected, No time selected"
-                            ? "Working days and hours are mandatory"
-                            : null,
+                        validator: (val) => val!.isEmpty ? "Required" : null,
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: ImagePickerSection(
-                        title: "Upload pics for Business Promo or Adv Picture",
-                        isGalleryOnly: _enableGallery,
-                        images: _promoImages,
-                        onImagesChanged: (images) => setState(() {
-                          _promoImages.clear();
-                          _promoImages.addAll(images);
-                        }),
+                      const SizedBox(height: 10),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          controller: areaController, // 14
+                          decoration: context.inputDecoration(
+                              "Area", "Enter area details"),
+                          validator: (val) =>
+                              val!.isEmpty ? "Area is mandatory" : null,
+                        ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: ImagePickerSection(
-                        title: "Upload pics for Shop/Garage Pics",
-                        isGalleryOnly: _enableGallery,
-                        images: _shopGarageImages,
-                        onImagesChanged: (images) => setState(() {
-                          _shopGarageImages.clear();
-                          _shopGarageImages.addAll(images);
-                        }),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          controller: cityController, // 11
+                          decoration: context.inputDecoration(
+                              "City", "Enter city name"),
+                          validator: (val) =>
+                              val!.isEmpty ? "City is mandatory" : null,
+                        ),
                       ),
-                    ),
-                  ],
-                  if (ProductUtils.isTrackAndTrainingCategory(
-                      _selectedCategory)) ...[
-                    // Fields for Track Day / Training Day (from image_1a79f1.png)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: TextFormField(
-                        controller: eventNameController, // 1
-                        decoration: context.inputDecoration(
-                            "Event Name", "Enter the event name"),
-                        validator: (val) =>
-                            val!.isEmpty ? "Event Name is mandatory" : null,
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          controller: pincodeController, // 13
+                          keyboardType: TextInputType.number,
+                          decoration: context.inputDecoration(
+                              "Pin code", "Enter pin code"),
+                          validator: (val) =>
+                              val!.isEmpty ? "Pin code is mandatory" : null,
+                        ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: Row(
-                        children: [
-                          DropdownButton<String>(
-                            value: selectedCountryCode,
-                            items: countryCodes
-                                .map((code) => DropdownMenuItem(
-                                    value: code, child: Text(code)))
-                                .toList(),
-                            onChanged: (val) =>
-                                setState(() => selectedCountryCode = val!),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: TextFormField(
-                              controller: businessContactController,
-                              // 23 (Contact #)
-                              keyboardType: TextInputType.phone,
-                              decoration: context.inputDecoration(
-                                  "Contact #", "Enter contact number"),
-                              validator: (val) =>
-                                  val!.isEmpty ? "Contact is mandatory" : null,
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          controller: gstController, // 6
+                          decoration: context.inputDecoration(
+                              "GST #", "Enter GST number"),
+                          validator: (val) =>
+                              val!.isEmpty ? "GST number is mandatory" : null,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          controller: googleMapLinkController, // 14
+                          decoration: context.inputDecoration("Google Map Link",
+                              "Enter Google Maps link (optional)"),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          controller: socialMediaLinkController, // 15
+                          decoration: context.inputDecoration(
+                              "Social Media Link",
+                              "Enter social media link (optional)"),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: WorkingHoursPicker(
+                          label: "Business Working Days & Hours",
+                          hint: "Select working days and hours",
+                          controller: businessWorkingDaysHoursController,
+                          onChanged: (value) {
+                            setState(() {
+                              // The controller text is updated internally by WorkingHoursPicker
+                              // You might want to trigger form validation here if necessary
+                              // _formKey.currentState?.validate();
+                            });
+                          },
+                          validator: (val) => val!.isEmpty ||
+                                  val == "No days selected, No time selected"
+                              ? "Working days and hours are mandatory"
+                              : null,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: ImagePickerSection(
+                          title:
+                              "Upload pics for Business Promo or Adv Picture",
+                          isGalleryOnly: _enableGallery,
+                          images: _promoImages,
+                          onImagesChanged: (images) => setState(() {
+                            _promoImages.clear();
+                            _promoImages.addAll(images);
+                          }),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: ImagePickerSection(
+                          title: "Upload pics for Shop/Garage Pics",
+                          isGalleryOnly: _enableGallery,
+                          images: _shopGarageImages,
+                          onImagesChanged: (images) => setState(() {
+                            _shopGarageImages.clear();
+                            _shopGarageImages.addAll(images);
+                          }),
+                        ),
+                      ),
+                    ],
+                    if (ProductUtils.isTrackAndTrainingCategory(
+                        _selectedCategory)) ...[
+                      // Fields for Track Day / Training Day (from image_1a79f1.png)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          controller: eventNameController, // 1
+                          decoration: context.inputDecoration(
+                              "Event Name", "Enter the event name"),
+                          validator: (val) =>
+                              val!.isEmpty ? "Event Name is mandatory" : null,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Row(
+                          children: [
+                            DropdownButton<String>(
+                              value: selectedCountryCode,
+                              items: countryCodes
+                                  .map((code) => DropdownMenuItem(
+                                      value: code, child: Text(code)))
+                                  .toList(),
+                              onChanged: (val) =>
+                                  setState(() => selectedCountryCode = val!),
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: TextFormField(
-                        controller: contactNameController,
-                        // 24 (Point of Contact Name)
-                        decoration: context.inputDecoration(
-                            "Point of Contact Name",
-                            "Enter point of contact name"),
-                        validator: (val) => val!.isEmpty
-                            ? "Point of Contact Name is mandatory"
-                            : null,
-                      ),
-                    ),
-                    // Bike Type/Model (TextFormField as it's free text) - Not explicitly mapped to controller
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: TextFormField(
-                        // 3
-                        decoration: context.inputDecoration(
-                            "Bike Type/Model", "e.g., Any Superbike, 600cc+"),
-                        // No controller needed if just a display or optional input
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: CustomDropdownFormField<String>(
-                        label: 'Bike Provision',
-                        // 4
-                        hint: 'Self/Organizer',
-                        value: _bikeProvision,
-                        items: ['Self', 'Organizer']
-                            .map((provision) => DropdownMenuItem(
-                                  value: provision,
-                                  child: Text(provision),
-                                ))
-                            .toList(),
-                        onChanged: (val) =>
-                            setState(() => _bikeProvision = val),
-                        validator: (val) =>
-                            val == null ? 'Bike Provision is mandatory' : null,
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: CustomDropdownFormField<String>(
-                        label: 'Rider Skill Level',
-                        // 5
-                        hint: 'All/Beginner/Novice/Intermediate/Expert',
-                        value: _riderSkillLevel,
-                        items: riderSkillLevels
-                            .map((level) => DropdownMenuItem(
-                                  value: level,
-                                  child: Text(level),
-                                ))
-                            .toList(),
-                        onChanged: (val) =>
-                            setState(() => _riderSkillLevel = val),
-                        validator: (val) => val == null
-                            ? 'Rider Skill Level is mandatory'
-                            : null,
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: MonthYearPicker(
-                        // 6
-                        enable: true,
-                        label: "Event Start Date",
-                        hint: "Select start date",
-                        selectedDate: _eventStartDate,
-                        onDateSelected: (date) =>
-                            setState(() => _eventStartDate = date),
-                        validator: (date) => date == null
-                            ? "Event Start Date is mandatory"
-                            : null,
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: MonthYearPicker(
-                        // 7
-                        enable: true,
-                        label: "Event End Date",
-                        hint: "Select end date",
-                        selectedDate: _eventEndDate,
-                        onDateSelected: (date) =>
-                            setState(() => _eventEndDate = date),
-                        validator: (date) =>
-                            date == null ? "Event End Date is mandatory" : null,
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: FormField<TimeOfDay>(
-                        initialValue: _eventStartTime,
-                        validator: (value) {
-                          if (value == null) {
-                            return 'Event Start Time is mandatory';
-                          }
-                          return null;
-                        },
-                        builder: (FormFieldState<TimeOfDay> state) {
-                          return InkWell(
-                            onTap: () async {
-                              final TimeOfDay? picked = await showTimePicker(
-                                context: context,
-                                initialTime: state.value ?? TimeOfDay.now(),
-                              );
-                              if (picked != null && picked != state.value) {
-                                state.didChange(picked);
-                                setState(() {
-                                  _eventStartTime = picked;
-                                });
-                              }
-                            },
-                            child: InputDecorator(
-                              decoration: context
-                                  .inputDecoration(
-                                    "Event Start Time",
-                                    state.value?.format(context) ??
-                                        "Select start time",
-                                  )
-                                  .copyWith(
-                                    errorText: state.errorText,
-                                  ),
-                              child: Text(
-                                state.value?.format(context) ??
-                                    'Select start time',
-                                style: Theme.of(context).textTheme.titleMedium,
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: TextFormField(
+                                controller: businessContactController,
+                                // 23 (Contact #)
+                                keyboardType: TextInputType.phone,
+                                decoration: context.inputDecoration(
+                                    "Contact #", "Enter contact number"),
+                                validator: (val) => val!.isEmpty
+                                    ? "Contact is mandatory"
+                                    : null,
                               ),
                             ),
-                          );
-                        },
+                          ],
+                        ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: FormField<TimeOfDay>(
-                        initialValue: _eventEndTime,
-                        validator: (value) {
-                          if (value == null) {
-                            return 'Event End Time is mandatory';
-                          }
-                          return null;
-                        },
-                        builder: (FormFieldState<TimeOfDay> state) {
-                          return InkWell(
-                            onTap: () async {
-                              final TimeOfDay? picked = await showTimePicker(
-                                context: context,
-                                initialTime: state.value ?? TimeOfDay.now(),
-                              );
-                              if (picked != null && picked != state.value) {
-                                state.didChange(picked);
-                                setState(() {
-                                  _eventEndTime = picked;
-                                });
-                              }
-                            },
-                            child: InputDecorator(
-                              decoration: context
-                                  .inputDecoration(
-                                    "Event End Time",
-                                    state.value?.format(context) ??
-                                        "Select end time",
-                                  )
-                                  .copyWith(
-                                    errorText: state.errorText,
-                                  ),
-                              child: Text(
-                                state.value?.format(context) ??
-                                    'Select end time',
-                                style: Theme.of(context).textTheme.titleMedium,
-                              ),
-                            ),
-                          );
-                        },
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          controller: contactNameController,
+                          // 24 (Point of Contact Name)
+                          decoration: context.inputDecoration(
+                              "Point of Contact Name",
+                              "Enter point of contact name"),
+                          validator: (val) => val!.isEmpty
+                              ? "Point of Contact Name is mandatory"
+                              : null,
+                        ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: TextFormField(
-                        controller: maxSlotsController, // 10
-                        keyboardType: TextInputType.number,
-                        decoration: context.inputDecoration(
-                            "Max Slots", "Enter maximum slots available"),
-                        validator: (val) =>
-                            val!.isEmpty ? "Max Slots is mandatory" : null,
+                      // Bike Type/Model (TextFormField as it's free text) - Not explicitly mapped to controller
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          // 3
+                          decoration: context.inputDecoration(
+                              "Bike Type/Model", "e.g., Any Superbike, 600cc+"),
+                          // No controller needed if just a display or optional input
+                        ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: TextFormField(
-                        controller: eventDetailedDescriptionController, // 11
-                        decoration: context.inputDecoration(
-                            "Event Detailed Description",
-                            "Tell what you provide, rider briefing & requirements/clauses"),
-                        maxLines: 3,
-                        validator: (val) => val!.isEmpty
-                            ? "Event Description is mandatory"
-                            : null,
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: CustomDropdownFormField<String>(
+                          label: 'Bike Provision',
+                          // 4
+                          hint: 'Self/Organizer',
+                          value: _bikeProvision,
+                          items: ['Self', 'Organizer']
+                              .map((provision) => DropdownMenuItem(
+                                    value: provision,
+                                    child: Text(provision),
+                                  ))
+                              .toList(),
+                          onChanged: (val) =>
+                              setState(() => _bikeProvision = val),
+                          validator: (val) => val == null
+                              ? 'Bike Provision is mandatory'
+                              : null,
+                        ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: TextFormField(
-                        controller: locationNameController, // 12
-                        decoration: context.inputDecoration(
-                            "Location Name", "Enter name the location"),
-                        validator: (val) =>
-                            val!.isEmpty ? "Location Name is mandatory" : null,
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: CustomDropdownFormField<String>(
+                          label: 'Rider Skill Level',
+                          // 5
+                          hint: 'All/Beginner/Novice/Intermediate/Expert',
+                          value: _riderSkillLevel,
+                          items: riderSkillLevels
+                              .map((level) => DropdownMenuItem(
+                                    value: level,
+                                    child: Text(level),
+                                  ))
+                              .toList(),
+                          onChanged: (val) =>
+                              setState(() => _riderSkillLevel = val),
+                          validator: (val) => val == null
+                              ? 'Rider Skill Level is mandatory'
+                              : null,
+                        ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: CustomDropdownFormField<String>(
-                        label: "State",
-                        hint: "Select your state",
-                        value: _selectedState,
-                        items: stateNames
-                            .map((s) =>
-                                DropdownMenuItem(value: s, child: Text(s)))
-                            .toList(),
-                        onChanged: (val) =>
-                            setState(() => _selectedState = val),
-                        validator: (val) => val == null ? "Required" : null,
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: MonthYearPicker(
+                          // 6
+                          enable: true,
+                          label: "Event Start Date",
+                          hint: "Select start date",
+                          selectedDate: _eventStartDate,
+                          onDateSelected: (date) =>
+                              setState(() => _eventStartDate = date),
+                          validator: (date) => date == null
+                              ? "Event Start Date is mandatory"
+                              : null,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 10),
-                    AutocompleteSearchField(
-                      label: "Location Address",
-                      hint: "Enter location address with landmark",
-                      controller: locationAddressController,
-                      icon: null,
-                      lat: stateCoordinates[_selectedState]?['lat'] ?? 0.0,
-                      lon: stateCoordinates[_selectedState]?['lon'] ?? 0.0,
-                      onPlaceSelected: (suggestion) {
-                        // Update all location controllers when a place is selected
-                        setState(() {
-                          businessAddressController.text = suggestion.text;
-                          cityController.text = suggestion.municipality ?? '';
-                          pincodeController.text = suggestion.postalCode ?? '';
-                        });
-                      },
-                      validator: (val) => val!.isEmpty ? "Required" : null,
-                    ),
-                    const SizedBox(height: 10),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: TextFormField(
-                        controller: areaController, // 14
-                        decoration:
-                            context.inputDecoration("Area", "Enter area"),
-                        validator: (val) =>
-                            val!.isEmpty ? "Area is mandatory" : null,
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: MonthYearPicker(
+                          // 7
+                          enable: true,
+                          label: "Event End Date",
+                          hint: "Select end date",
+                          selectedDate: _eventEndDate,
+                          onDateSelected: (date) =>
+                              setState(() => _eventEndDate = date),
+                          validator: (date) => date == null
+                              ? "Event End Date is mandatory"
+                              : null,
+                        ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: TextFormField(
-                        controller: cityController, // 15
-                        decoration:
-                            context.inputDecoration("City", "Enter city name"),
-                        validator: (val) =>
-                            val!.isEmpty ? "City is mandatory" : null,
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: TextFormField(
-                        controller: pincodeController, // 17
-                        keyboardType: TextInputType.number,
-                        decoration: context.inputDecoration(
-                            "Pin code", "Enter pin code"),
-                        validator: (val) =>
-                            val!.isEmpty ? "Pin code is mandatory" : null,
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: TextFormField(
-                        controller: gstController, // 18
-                        decoration: context.inputDecoration(
-                            "GST #", "Enter GST number (optional)"),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: TextFormField(
-                        controller: googleMapLinkController, // 20
-                        decoration: context.inputDecoration("Google Map Link",
-                            "Enter Google Maps link (optional)"),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: TextFormField(
-                        controller: googleFormLinkController, // 21
-                        decoration: context.inputDecoration(
-                            "Google Form/Redirect Link",
-                            "Enter Google Form or redirect link (optional)"),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: TextFormField(
-                        controller: socialMediaLinkController, // 22
-                        decoration: context.inputDecoration("Social Media Link",
-                            "Enter social media link (optional)"),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: ImagePickerSection(
-                        title: "Event Promo Picture", // 2
-                        images: _promoImages,
-                        onImagesChanged: (images) => setState(() {
-                          _promoImages.clear();
-                          _promoImages.addAll(images);
-                        }),
-                      ),
-                    ),
-                  ],
-                  // Terms & Conditions (18/26 from images) - Only show if a category is selected
-                  if (_selectedCategory != null)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16.0),
-                      child: Row(
-                        children: [
-                          Checkbox(
-                            value: _termsAccepted,
-                            onChanged: (bool? newValue) {
-                              setState(() {
-                                _termsAccepted = newValue ?? false;
-                              });
-                            },
-                            activeColor: Colors.green,
-                          ),
-                          Expanded(
-                            child: RichText(
-                              text: TextSpan(
-                                style: Theme.of(context).textTheme.bodyMedium,
-                                children: [
-                                  const TextSpan(
-                                      text: 'I have read and agree to the '),
-                                  TextSpan(
-                                    text: 'Terms & Conditions',
-                                    style: const TextStyle(
-                                      color: Colors.blue,
-                                      decoration: TextDecoration.underline,
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: FormField<TimeOfDay>(
+                          initialValue: _eventStartTime,
+                          validator: (value) {
+                            if (value == null) {
+                              return 'Event Start Time is mandatory';
+                            }
+                            return null;
+                          },
+                          builder: (FormFieldState<TimeOfDay> state) {
+                            return InkWell(
+                              onTap: () async {
+                                final TimeOfDay? picked = await showTimePicker(
+                                  context: context,
+                                  initialTime: state.value ?? TimeOfDay.now(),
+                                );
+                                if (picked != null && picked != state.value) {
+                                  state.didChange(picked);
+                                  setState(() {
+                                    _eventStartTime = picked;
+                                  });
+                                }
+                              },
+                              child: InputDecorator(
+                                decoration: context
+                                    .inputDecoration(
+                                      "Event Start Time",
+                                      state.value?.format(context) ??
+                                          "Select start time",
+                                    )
+                                    .copyWith(
+                                      errorText: state.errorText,
                                     ),
-                                    recognizer: TapGestureRecognizer()
-                                      ..onTap = _openTermsLink,
-                                  ),
-                                ],
+                                child: Text(
+                                  state.value?.format(context) ??
+                                      'Select start time',
+                                  style:
+                                      Theme.of(context).textTheme.titleMedium,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: FormField<TimeOfDay>(
+                          initialValue: _eventEndTime,
+                          validator: (value) {
+                            if (value == null) {
+                              return 'Event End Time is mandatory';
+                            }
+                            return null;
+                          },
+                          builder: (FormFieldState<TimeOfDay> state) {
+                            return InkWell(
+                              onTap: () async {
+                                final TimeOfDay? picked = await showTimePicker(
+                                  context: context,
+                                  initialTime: state.value ?? TimeOfDay.now(),
+                                );
+                                if (picked != null && picked != state.value) {
+                                  state.didChange(picked);
+                                  setState(() {
+                                    _eventEndTime = picked;
+                                  });
+                                }
+                              },
+                              child: InputDecorator(
+                                decoration: context
+                                    .inputDecoration(
+                                      "Event End Time",
+                                      state.value?.format(context) ??
+                                          "Select end time",
+                                    )
+                                    .copyWith(
+                                      errorText: state.errorText,
+                                    ),
+                                child: Text(
+                                  state.value?.format(context) ??
+                                      'Select end time',
+                                  style:
+                                      Theme.of(context).textTheme.titleMedium,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          controller: maxSlotsController, // 10
+                          keyboardType: TextInputType.number,
+                          decoration: context.inputDecoration(
+                              "Max Slots", "Enter maximum slots available"),
+                          validator: (val) =>
+                              val!.isEmpty ? "Max Slots is mandatory" : null,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          controller: eventDetailedDescriptionController, // 11
+                          decoration: context.inputDecoration(
+                              "Event Detailed Description",
+                              "Tell what you provide, rider briefing & requirements/clauses"),
+                          maxLines: 3,
+                          validator: (val) => val!.isEmpty
+                              ? "Event Description is mandatory"
+                              : null,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          controller: locationNameController, // 12
+                          decoration: context.inputDecoration(
+                              "Location Name", "Enter name the location"),
+                          validator: (val) => val!.isEmpty
+                              ? "Location Name is mandatory"
+                              : null,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: CustomDropdownFormField<String>(
+                          label: "State",
+                          hint: "Select your state",
+                          value: _selectedState,
+                          items: stateNames
+                              .map((s) =>
+                                  DropdownMenuItem(value: s, child: Text(s)))
+                              .toList(),
+                          onChanged: (val) =>
+                              setState(() => _selectedState = val),
+                          validator: (val) => val == null ? "Required" : null,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      AutocompleteSearchField(
+                        label: "Location Address",
+                        hint: "Enter location address with landmark",
+                        controller: locationAddressController,
+                        icon: null,
+                        lat: stateCoordinates[_selectedState]?['lat'] ?? 0.0,
+                        lon: stateCoordinates[_selectedState]?['lon'] ?? 0.0,
+                        onPlaceSelected: (suggestion) {
+                          // Update all location controllers when a place is selected
+                          setState(() {
+                            businessAddressController.text = suggestion.text;
+                            cityController.text = suggestion.municipality ?? '';
+                            pincodeController.text =
+                                suggestion.postalCode ?? '';
+                          });
+                        },
+                        validator: (val) => val!.isEmpty ? "Required" : null,
+                      ),
+                      const SizedBox(height: 10),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          controller: areaController, // 14
+                          decoration:
+                              context.inputDecoration("Area", "Enter area"),
+                          validator: (val) =>
+                              val!.isEmpty ? "Area is mandatory" : null,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          controller: cityController, // 15
+                          decoration: context.inputDecoration(
+                              "City", "Enter city name"),
+                          validator: (val) =>
+                              val!.isEmpty ? "City is mandatory" : null,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          controller: pincodeController, // 17
+                          keyboardType: TextInputType.number,
+                          decoration: context.inputDecoration(
+                              "Pin code", "Enter pin code"),
+                          validator: (val) =>
+                              val!.isEmpty ? "Pin code is mandatory" : null,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          controller: gstController, // 18
+                          decoration: context.inputDecoration(
+                              "GST #", "Enter GST number (optional)"),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          controller: googleMapLinkController, // 20
+                          decoration: context.inputDecoration("Google Map Link",
+                              "Enter Google Maps link (optional)"),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          controller: googleFormLinkController, // 21
+                          decoration: context.inputDecoration(
+                              "Google Form/Redirect Link",
+                              "Enter Google Form or redirect link (optional)"),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          controller: socialMediaLinkController, // 22
+                          decoration: context.inputDecoration(
+                              "Social Media Link",
+                              "Enter social media link (optional)"),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: ImagePickerSection(
+                          title: "Event Promo Picture", // 2
+                          images: _promoImages,
+                          onImagesChanged: (images) => setState(() {
+                            _promoImages.clear();
+                            _promoImages.addAll(images);
+                          }),
+                        ),
+                      ),
+                    ],
+                    // Terms & Conditions (18/26 from images) - Only show if a category is selected
+                    if (_selectedCategory != null)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16.0),
+                        child: Row(
+                          children: [
+                            Checkbox(
+                              value: _termsAccepted,
+                              onChanged: (bool? newValue) {
+                                setState(() {
+                                  _termsAccepted = newValue ?? false;
+                                });
+                              },
+                              activeColor: Colors.green,
+                            ),
+                            Expanded(
+                              child: RichText(
+                                text: TextSpan(
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                  children: [
+                                    const TextSpan(
+                                        text: 'I have read and agree to the '),
+                                    TextSpan(
+                                      text: 'Terms & Conditions',
+                                      style: const TextStyle(
+                                        color: Colors.blue,
+                                        decoration: TextDecoration.underline,
+                                      ),
+                                      recognizer: TapGestureRecognizer()
+                                        ..onTap = _openTermsLink,
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  // Submit Button
-                  Center(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 20.0),
-                      child: SizedBox(
-                        width: double.infinity,
-                        height: 50,
-                        child: ElevatedButton(
-                          onPressed: (_isLoading || _selectedCategory == null)
-                              ? null
-                              : _submitForm,
-                          // Disabled if loading or no category selected
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                (_isLoading || _selectedCategory == null)
-                                    ? Colors.grey
-                                    : Theme.of(context).primaryColor,
-                            disabledBackgroundColor: Colors.grey,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8.0),
+                    // Submit Button
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 20.0),
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: 50,
+                          child: ElevatedButton(
+                            onPressed: (_isLoading || _selectedCategory == null)
+                                ? null
+                                : _submitForm,
+                            // Disabled if loading or no category selected
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  (_isLoading || _selectedCategory == null)
+                                      ? Colors.grey
+                                      : Theme.of(context).primaryColor,
+                              disabledBackgroundColor: Colors.grey,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
                             ),
-                          ),
-                          child: AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 300),
-                            child: _isLoading
-                                ? const Row(
-                                    key: ValueKey('loading'),
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      SizedBox(
-                                        height: 20,
-                                        width: 20,
-                                        child: CircularProgressIndicator(
-                                          color: Colors.white,
-                                          strokeWidth: 2,
+                            child: AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 300),
+                              child: _isLoading
+                                  ? const Row(
+                                      key: ValueKey('loading'),
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        SizedBox(
+                                          height: 20,
+                                          width: 20,
+                                          child: CircularProgressIndicator(
+                                            color: Colors.white,
+                                            strokeWidth: 2,
+                                          ),
                                         ),
-                                      ),
-                                      SizedBox(width: 12),
-                                      Text("Submitting...",
-                                          style:
-                                              TextStyle(color: Colors.white)),
-                                    ],
-                                  )
-                                : const Text(
-                                    "Submit",
-                                    key: ValueKey('submit'),
-                                    style: TextStyle(
-                                        color: Colors.white, fontSize: 18),
-                                  ),
+                                        SizedBox(width: 12),
+                                        Text("Submitting...",
+                                            style:
+                                                TextStyle(color: Colors.white)),
+                                      ],
+                                    )
+                                  : const Text(
+                                      "Submit",
+                                      key: ValueKey('submit'),
+                                      style: TextStyle(
+                                          color: Colors.white, fontSize: 18),
+                                    ),
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 50),
-                ],
+                    const SizedBox(height: 50),
+                  ],
+                ),
               ),
             ),
           ),

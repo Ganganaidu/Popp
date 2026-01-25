@@ -159,6 +159,7 @@ class ServiceCategoryListWidget extends StatelessWidget {
               onTap: () {
                 onServiceDetailsScreenTap(context, service, categoryName);
               },
+
               isApproved: service['isApproved'] == true,
             );
           },

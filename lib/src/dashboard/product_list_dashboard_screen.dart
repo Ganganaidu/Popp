@@ -1,33 +1,59 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
-
-import '../services/service_category_list_widget.dart';
+import '../products/category_list_widget.dart';
+import 'viewmodel/dashboard_viewmodel.dart';
 import 'viewmodel/service_viewmodel.dart';
 
-class ServiceListWidget extends StatefulWidget {
-  const ServiceListWidget({super.key});
+class ProductListDashboardScreen extends StatefulWidget {
+  const ProductListDashboardScreen({super.key});
 
   @override
-  State<ServiceListWidget> createState() => _ServiceListWidgetState();
+  State<ProductListDashboardScreen> createState() =>
+      _ProductListDashboardScreenState();
 }
 
-class _ServiceListWidgetState extends State<ServiceListWidget> {
+class _ProductListDashboardScreenState extends State<ProductListDashboardScreen> {
   @override
   Widget build(BuildContext context) {
-    return Consumer<ServiceViewModel>(
-      builder: (context, viewModel, _) {
-
+    String countryCode = Localizations.localeOf(context).countryCode ?? 'US';
+    return Consumer2<DashboardViewModel, ServiceViewModel>(
+      builder: (context, viewModel, serviceViewModel, _) {
         if (viewModel.isLoading) {
           return _shimmerLoading();
+        }
+
+        if (viewModel.error != null) {
+          return _buildMessageWidget(
+            icon: Icons.error_outline,
+            title: "Oops!",
+            message: "Something went wrong.\n${viewModel.error}",
+          );
+        }
+
+        if (viewModel.categories.isEmpty) {
+          // Only show "No Products Found" if BOTH products and services are empty.
+          // If services are present, we just return an empty container here,
+          // because the ServiceListWidget (which is separate) will show the services.
+          if (serviceViewModel.categories.isEmpty) {
+            return _buildMessageWidget(
+              icon: Icons.inventory_2_outlined,
+              title: "No Products Found",
+              message:
+                  "Your product list is waiting to grow. Get started by adding one using our services!",
+            );
+          } else {
+            return const SizedBox.shrink();
+          }
         }
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: viewModel.categories
-              .map((category) => ServiceCategoryListWidget(
+              .map((category) => CategoryListWidget(
                     categoryName: category.name,
-                    services: category.products ?? [],
+                    products: (category.products ?? []).reversed.toList(),
+                    countryCode: countryCode,
                   ))
               .toList(),
         );

@@ -190,261 +190,270 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           ),
         ],
       ),
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            expandedHeight: 300.0,
-            floating: false,
-            pinned: true,
-            automaticallyImplyLeading: false,
-            flexibleSpace: FlexibleSpaceBar(
-              background: Stack(
-                fit: StackFit.expand,
-                children: [
-                  ValueListenableBuilder<int>(
-                    valueListenable: selectedImageIndexNotifier,
-                    builder: (context, selectedImageIndex, _) {
-                      return PageView.builder(
-                        controller: _pageController,
-                        itemCount: imageUrls.length,
-                        onPageChanged: (index) {
-                          selectedImageIndexNotifier.value = index;
-                        },
-                        itemBuilder: (context, index) {
-                          final url =
-                              imageUrls.isNotEmpty ? imageUrls[index] : '';
-                          return GestureDetector(
-                            onTap: () {
-                              if (imageUrls.isNotEmpty) {
-                                FocusManager.instance.primaryFocus?.unfocus();
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    fullscreenDialog: true,
-                                    builder: (context) => FullScreenImageScreen(
-                                      imageUrls: imageUrls,
-                                      initialIndex: selectedImageIndexNotifier.value,
+      body: WebConstrainedBox(
+        child: CustomScrollView(
+          slivers: [
+            SliverAppBar(
+              expandedHeight: 300.0,
+              floating: false,
+              pinned: true,
+              automaticallyImplyLeading: false,
+              flexibleSpace: FlexibleSpaceBar(
+                background: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    ValueListenableBuilder<int>(
+                      valueListenable: selectedImageIndexNotifier,
+                      builder: (context, selectedImageIndex, _) {
+                        return PageView.builder(
+                          controller: _pageController,
+                          itemCount: imageUrls.length,
+                          onPageChanged: (index) {
+                            selectedImageIndexNotifier.value = index;
+                          },
+                          itemBuilder: (context, index) {
+                            final url =
+                                imageUrls.isNotEmpty ? imageUrls[index] : '';
+                            return GestureDetector(
+                              onTap: () {
+                                if (imageUrls.isNotEmpty) {
+                                  FocusManager.instance.primaryFocus?.unfocus();
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      fullscreenDialog: true,
+                                      builder: (context) =>
+                                          FullScreenImageScreen(
+                                        imageUrls: imageUrls,
+                                        initialIndex:
+                                            selectedImageIndexNotifier.value,
+                                      ),
                                     ),
+                                  );
+                                }
+                              },
+                              child: _buildImage(url, useHero: index == 0),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                    // --- NEW: Status Banner on the main image ---
+                    // if (widget.showStatus) _buildStatusBanner(),
+                    Positioned(
+                      top: 32,
+                      right: 16,
+                      child: Row(
+                        children: [
+                          GestureDetector(
+                            onTap: _favButtonDisabled ? null : _toggleFavorite,
+                            child: CircleAvatar(
+                              backgroundColor: Colors.white70,
+                              child: Icon(
+                                isFavorite
+                                    ? Icons.favorite
+                                    : Icons.favorite_border,
+                                color: Colors.red,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 32,
+                      left: 0,
+                      right: 0,
+                      child: Center(
+                        child: ValueListenableBuilder<int>(
+                          valueListenable: selectedImageIndexNotifier,
+                          builder: (context, selectedImageIndex, _) {
+                            return Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children:
+                                  List.generate(imageUrls.length, (index) {
+                                bool isActive = index == selectedImageIndex;
+                                return AnimatedContainer(
+                                  duration: const Duration(milliseconds: 300),
+                                  margin:
+                                      const EdgeInsets.symmetric(horizontal: 4),
+                                  width: isActive ? 20 : 12,
+                                  height: 4,
+                                  decoration: BoxDecoration(
+                                    color: isActive
+                                        ? Colors.white54
+                                        : Colors.black26,
+                                    borderRadius: BorderRadius.circular(4),
                                   ),
                                 );
-                              }
+                              }),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 20,
+                      right: 12,
+                      child: ValueListenableBuilder<int>(
+                        valueListenable: selectedImageIndexNotifier,
+                        builder: (context, selectedImageIndex, _) {
+                          return Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.black54,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              '${selectedImageIndex + 1} / ${imageUrls.length}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            if (imageUrls.length > 1)
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: 100,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: imageUrls.length,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    itemBuilder: (context, index) {
+                      final url = imageUrls[index];
+                      return ValueListenableBuilder<int>(
+                        valueListenable: selectedImageIndexNotifier,
+                        builder: (context, selectedImageIndex, _) {
+                          return GestureDetector(
+                            onTap: () {
+                              selectedImageIndexNotifier.value = index;
+                              _pageController.animateToPage(
+                                index,
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              );
                             },
-                            child: _buildImage(url, useHero: index == 0),
+                            child: Container(
+                              margin: const EdgeInsets.only(right: 10),
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: selectedImageIndex == index
+                                        ? Colors.blue
+                                        : Colors.transparent,
+                                    width: 2),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(6),
+                                child: Image.network(
+                                  url,
+                                  width: 100,
+                                  height: 100,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
                           );
                         },
                       );
                     },
                   ),
-                  // --- NEW: Status Banner on the main image ---
-                  // if (widget.showStatus) _buildStatusBanner(),
-                  Positioned(
-                    top: 32,
-                    right: 16,
-                    child: Row(
-                      children: [
-
-                        GestureDetector(
-                          onTap: _favButtonDisabled ? null : _toggleFavorite,
-                          child: CircleAvatar(
-                            backgroundColor: Colors.white70,
-                            child: Icon(
-                              isFavorite ? Icons.favorite : Icons.favorite_border,
-                              color: Colors.red,
-                            ),
-                          ),
-                        ),
-                      ],
+                ),
+              ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 12),
+                    // --- Product Title with expandable logic ---
+                    ExpandableText(
+                      text: ProductUtils.getTitle(product),
+                      style: theme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.bold),
+                      maxLines: 2,
                     ),
-                  ),
-                  Positioned(
-                    bottom: 32,
-                    left: 0,
-                    right: 0,
-                    child: Center(
-                      child: ValueListenableBuilder<int>(
-                        valueListenable: selectedImageIndexNotifier,
-                        builder: (context, selectedImageIndex, _) {
-                          return Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: List.generate(imageUrls.length, (index) {
-                              bool isActive = index == selectedImageIndex;
-                              return AnimatedContainer(
-                                duration: const Duration(milliseconds: 300),
-                                margin:
-                                    const EdgeInsets.symmetric(horizontal: 4),
-                                width: isActive ? 20 : 12,
-                                height: 4,
-                                decoration: BoxDecoration(
-                                  color: isActive
-                                      ? Colors.white54
-                                      : Colors.black26,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                              );
-                            }),
-                          );
-                        },
+                    const SizedBox(height: 10),
+                    Text(
+                      CurrencyService.getProductPrice(
+                          product['expectedPrice'], countryCode),
+                      style: theme.titleLarge?.copyWith(
+                        color: Theme.of(context).primaryColor,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                  ),
-                  Positioned(
-                    bottom: 20,
-                    right: 12,
-                    child: ValueListenableBuilder<int>(
-                      valueListenable: selectedImageIndexNotifier,
-                      builder: (context, selectedImageIndex, _) {
-                        return Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.black54,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            '${selectedImageIndex + 1} / ${imageUrls.length}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        );
-                      },
+                    const SizedBox(height: 10),
+                    ExpandableProductDetails(productJson: product),
+                    const SizedBox(height: 20),
+                    ChatWithSellerCard(
+                      receiverUserName: product['sellerName'],
+                      receiverUserID: product['userId'],
+                      productTitle: ProductUtils.getTitle(product),
+                      productId: product['id'],
                     ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          if (imageUrls.length > 1)
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: 100,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: imageUrls.length,
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  itemBuilder: (context, index) {
-                    final url = imageUrls[index];
-                    return ValueListenableBuilder<int>(
-                      valueListenable: selectedImageIndexNotifier,
-                      builder: (context, selectedImageIndex, _) {
-                        return GestureDetector(
-                          onTap: () {
-                            selectedImageIndexNotifier.value = index;
-                            _pageController.animateToPage(
-                              index,
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            );
-                          },
-                          child: Container(
-                            margin: const EdgeInsets.only(right: 10),
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                  color: selectedImageIndex == index
-                                      ? Colors.blue
-                                      : Colors.transparent,
-                                  width: 2),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(6),
-                              child: Image.network(
-                                url,
-                                width: 100,
-                                height: 100,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    );
-                  },
+                    const SizedBox(height: 50),
+                  ],
                 ),
               ),
             ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 12),
-                  // --- Product Title with expandable logic ---
-                  ExpandableText(
-                    text: ProductUtils.getTitle(product),
-                    style: theme.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.bold),
-                    maxLines: 2,
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    CurrencyService.getProductPrice(
-                        product['expectedPrice'], countryCode),
-                    style: theme.titleLarge?.copyWith(
-                      color: Theme.of(context).primaryColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  ExpandableProductDetails(productJson: product),
-                  const SizedBox(height: 20),
-                  ChatWithSellerCard(
-                    receiverUserName: product['sellerName'],
-                    receiverUserID: product['userId'],
-                    productTitle: ProductUtils.getTitle(product),
-                    productId: product['id'],
-                  ),
-                  const SizedBox(height: 50),
-                ],
-              ),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
       bottomNavigationBar: _isAdmin && !_isApproved
-          ? SafeArea(
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          _isApproved ? Colors.green : Colors.orange,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+          ? WebConstrainedBox(
+              child: SafeArea(
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            _isApproved ? Colors.green : Colors.orange,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
-                    ),
-                    onPressed: _isApproved
-                        ? null
-                        : () async {
-                            if (product['id'] != null) {
-                              await FirebaseApiService()
-                                  .updateProductApprovalStatus(
-                                      product['id'], true);
-                              if (!mounted) return;
-                              setState(() {
-                                _isApproved = true;
-                                _status = 'Approved';
-                              });
-                              if (_isApproved) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      'Product "${product['brandName'] ?? product['title']}" approved successfully!',
+                      onPressed: _isApproved
+                          ? null
+                          : () async {
+                              if (product['id'] != null) {
+                                await FirebaseApiService()
+                                    .updateProductApprovalStatus(
+                                        product['id'], true);
+                                if (!mounted) return;
+                                setState(() {
+                                  _isApproved = true;
+                                  _status = 'Approved';
+                                });
+                                if (_isApproved) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'Product "${product['brandName'] ?? product['title']}" approved successfully!',
+                                      ),
+                                      duration: const Duration(seconds: 2),
                                     ),
-                                    duration: const Duration(seconds: 2),
-                                  ),
-                                );
+                                  );
+                                }
                               }
-                            }
-                          },
-                    child: Text(_isApproved ? 'Approved' : 'Approve'),
+                            },
+                      child: Text(_isApproved ? 'Approved' : 'Approve'),
+                    ),
                   ),
                 ),
               ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:popp/src/utils/build_extensions.dart';
 import 'package:popp/src/utils/product_utils.dart';
 import 'package:popp/src/widgets/title_text.dart';
 
@@ -67,7 +68,7 @@ class ListServiceCategoryScreen extends StatelessWidget {
               child: Icon(
                 _getCategoryIcon(category),
                 size: 32,
-                color: randomColor,
+                color: context.primaryColor,
               ),
             ),
             const SizedBox(height: 16),

@@ -101,7 +101,7 @@ class AppDialogs {
     BuildContext context,
     VoidCallback callBack,
     VoidCallback homeCallBack, {
-    String title = "Product listed successfully",
+    String title = "Product listed successfully. Awaiting approval",
     String confirmText = "My Listing",
     String? cancelText = "Home",
   }) {

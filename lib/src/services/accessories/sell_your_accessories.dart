@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:popp/src/utils/app_loger.dart';
 import 'package:popp/src/utils/app_utils.dart';
@@ -68,7 +69,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
   Function(String?)? onBrandChanged;
   bool isBikeSpecific = false;
   bool isBillAvailable = false;
-  bool isWarrantyAvailable = false;
+  bool isWarrantyAvailable = true;
   bool _termsAccepted = false;
   bool _enableGallery = false;
 
@@ -258,6 +259,12 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
     pinCodeController.dispose();
     priceController.dispose();
     additionalDetailsController.dispose();
+    accessoriesNameController.dispose();
+    brandNameController.dispose();
+    modelNameController.dispose();
+    productSizeController.dispose();
+    productAgingController.dispose();
+    warrantyLeftController.dispose();
 
     super.dispose();
   }
@@ -390,10 +397,11 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
                       controller: addressController,
                       decoration: context.inputDecoration(
                           "Address", "Enter address or locality"),
-                      maxLines: 2,
+                      maxLines: 1,
                       validator: (val) => val!.isEmpty ? "Required" : null,
                     ),
                   ),
+                  const SizedBox(height: 10),
                   AutocompleteSearchField(
                     label: "Area",
                     hint: "Enter Area name",
@@ -411,6 +419,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
                     },
                     validator: (val) => val!.isEmpty ? "Required" : null,
                   ),
+                  const SizedBox(height: 10),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 10.0),
                     child: TextFormField(
@@ -423,6 +432,8 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 10.0),
                     child: TextFormField(
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                       controller: pinCodeController,
                       decoration:
                           context.inputDecoration("Pin Code", "Enter Pin code"),
@@ -430,6 +441,8 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
                   ),
                   buildPaddedField(TextFormField(
                     controller: productSizeController,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     decoration: context.inputDecoration(
                         "Product size", "If applicable"),
                   )),
@@ -493,12 +506,16 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
                   )),
                   buildPaddedField(TextFormField(
                     enabled: isWarrantyAvailable,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     controller: warrantyLeftController,
                     decoration: context.inputDecoration("Warranty limit",
                         "How many months/years warranty left?"),
                   )),
                   buildPaddedField(TextFormField(
                     controller: priceController,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     decoration: context.inputDecoration(
                         "Expected Price", "Enter expected price"),
                     validator: (val) => val!.isEmpty ? "Required" : null,
@@ -511,7 +528,8 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
                   )),
                   buildPaddedField(ImagePickerSection(
                     images: _images,
-                    isGalleryOnly: _enableGallery,
+                    allowGallery: _enableGallery,
+                    allowMultipleImages: _enableGallery,
                     onImagesChanged: (images) => setState(() {
                       _images.clear();
                       _images.addAll(images);

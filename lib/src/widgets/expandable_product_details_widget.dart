@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import '../models/product.dart';
+import '../utils/product_utils.dart';
 
 class ExpandableProductDetails extends StatefulWidget {
   final Map<String, dynamic> productJson;
@@ -83,8 +84,9 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
                   detailRow("Warranty Limit", product.warrantyLimit!, theme),
                 detailRow("Invoice Available",
                     product.invoiceAvailable != null ? "Yes" : "No", theme),
-                detailRow("NOC Available",
-                    product.nocAvailable != null ? "Yes" : "No", theme),
+                if (product.category.contains(ProductUtils.premiumBikes))
+                  detailRow("NOC Available",
+                      product.nocAvailable != null ? "Yes" : "No", theme),
                 if (product.batteryCondition != null)
                   detailRow(
                       "Battery Condition", product.batteryCondition!, theme),

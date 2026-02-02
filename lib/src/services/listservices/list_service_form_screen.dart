@@ -679,18 +679,28 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                           validator: (val) => val == null ? "Required" : null,
                         ),
                       ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          controller: businessAddressController, // 14
+                          decoration: context.inputDecoration(
+                              "Address", "Enter your Shop/Garage address"),
+                          validator: (val) =>
+                              val!.isEmpty ? "Address is mandatory" : null,
+                        ),
+                      ),
                       const SizedBox(height: 10),
                       AutocompleteSearchField(
-                        label: "Shop Address",
-                        hint: "Enter your Shop/Garage address",
-                        controller: businessAddressController,
+                        label: "Area",
+                        hint: "Enter area details",
+                        controller: areaController,
                         icon: null,
                         lat: stateCoordinates[_selectedState]?['lat'] ?? 0.0,
                         lon: stateCoordinates[_selectedState]?['lon'] ?? 0.0,
                         onPlaceSelected: (suggestion) {
                           // Update all location controllers when a place is selected
                           setState(() {
-                            businessAddressController.text = suggestion.text;
+                            areaController.text = suggestion.text;
                             cityController.text = suggestion.municipality ?? '';
                             pincodeController.text =
                                 suggestion.postalCode ?? '';
@@ -699,16 +709,6 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                         validator: (val) => val!.isEmpty ? "Required" : null,
                       ),
                       const SizedBox(height: 10),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: TextFormField(
-                          controller: areaController, // 14
-                          decoration: context.inputDecoration(
-                              "Area", "Enter area details"),
-                          validator: (val) =>
-                              val!.isEmpty ? "Area is mandatory" : null,
-                        ),
-                      ),
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
                         child: TextFormField(
@@ -781,7 +781,8 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                         child: ImagePickerSection(
                           title:
                               "Upload pics for Business Promo or Adv Picture",
-                          isGalleryOnly: _enableGallery,
+                          allowGallery: _enableGallery,
+                          allowMultipleImages: _enableGallery,
                           images: _promoImages,
                           onImagesChanged: (images) => setState(() {
                             _promoImages.clear();
@@ -793,7 +794,8 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
                         child: ImagePickerSection(
                           title: "Upload pics for Shop/Garage Pics",
-                          isGalleryOnly: _enableGallery,
+                          allowGallery: _enableGallery,
+                          allowMultipleImages: _enableGallery,
                           images: _shopGarageImages,
                           onImagesChanged: (images) => setState(() {
                             _shopGarageImages.clear();
@@ -1167,6 +1169,8 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                         child: ImagePickerSection(
                           title: "Event Promo Picture", // 2
                           images: _promoImages,
+                          allowGallery: _enableGallery,
+                          allowMultipleImages: _enableGallery,
                           onImagesChanged: (images) => setState(() {
                             _promoImages.clear();
                             _promoImages.addAll(images);

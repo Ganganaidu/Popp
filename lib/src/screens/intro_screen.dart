@@ -42,7 +42,7 @@ class IntroScreen extends StatelessWidget {
                       image: 'assets/app_icon_trans.png',
                       title: 'Welcome to ${Constants.appName}',
                       description:
-                          'Your one-stop destination for all motorcycle things',
+                          'Your one-stop destination for INDIA\'s First Unified Motorcycle Market Place',
                     ),
                     Positioned(
                       right: 20,

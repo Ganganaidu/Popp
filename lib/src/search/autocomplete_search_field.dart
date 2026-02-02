@@ -14,12 +14,14 @@ class PlaceSuggestion {
   final String text;
   final String? postalCode;
   final String? municipality;
+  final String? subDivision;
 
   PlaceSuggestion({
     required this.placeId,
     required this.text,
     this.postalCode,
     this.municipality,
+    this.subDivision,
   });
 
   factory PlaceSuggestion.fromJson(Map<String, dynamic> json) {
@@ -29,6 +31,7 @@ class PlaceSuggestion {
       text: address['freeformAddress'],
       postalCode: address['postalCode'],
       municipality: address['municipality'],
+      subDivision: address['municipalitySubdivision'],
     );
   }
 }
@@ -114,6 +117,7 @@ class _AutocompleteSearchFieldState extends State<AutocompleteSearchField> {
       urlString += '&lat=${widget.lat}&lon=${widget.lon}';
     }
     final url = Uri.parse(urlString);
+    // AppLogger.d("urlString $url");
 
     try {
       final response = await http.get(url);
@@ -168,12 +172,13 @@ class _AutocompleteSearchFieldState extends State<AutocompleteSearchField> {
               itemCount: _suggestions.length,
               itemBuilder: (context, index) {
                 final suggestion = _suggestions[index];
+                final addressText = suggestion.subDivision ?? suggestion.text;
                 return ListTile(
-                  title: Text(suggestion.text),
+                  title: Text(addressText),
                   onTap: () {
                     setState(() {
                       _isHandlingSelection = true;
-                      widget.controller.text = suggestion.text;
+                      widget.controller.text = addressText;
                       widget.onPlaceSelected(suggestion);
                       _suggestions = [];
                       _removeOverlay();

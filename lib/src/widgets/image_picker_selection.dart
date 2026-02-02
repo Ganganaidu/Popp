@@ -9,8 +9,8 @@ class ImagePickerSection extends StatefulWidget {
   final List<File> images;
   final ValueChanged<List<File>> onImagesChanged;
   final String title;
-  final bool isCameraOnly;
-  final bool isGalleryOnly;
+  final bool allowCamera;
+  final bool allowGallery;
   final bool allowMultipleImages;
 
   const ImagePickerSection({
@@ -18,8 +18,8 @@ class ImagePickerSection extends StatefulWidget {
     required this.images,
     required this.onImagesChanged,
     this.title = "Upload Pictures",
-    this.isCameraOnly = true,
-    this.isGalleryOnly = false,
+    this.allowCamera = true,
+    this.allowGallery = false,
     this.allowMultipleImages = false,
   });
 
@@ -123,20 +123,7 @@ class _ImagePickerSectionState extends State<ImagePickerSection> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              if (!widget.isGalleryOnly)
-                ListTile(
-                  leading: const Icon(Icons.camera_alt),
-                  title: const Text('Camera'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    if (widget.images.length >= _maxImages) {
-                      _showMaxImagesDialog();
-                      return;
-                    }
-                    _pickSingleImage(ImageSource.camera);
-                  },
-                ),
-              if (!widget.isCameraOnly)
+              if (widget.allowGallery)
                 ListTile(
                   leading: const Icon(Icons.photo_library),
                   title: const Text('Gallery'),
@@ -151,6 +138,19 @@ class _ImagePickerSectionState extends State<ImagePickerSection> {
                     } else {
                       _pickSingleImage(ImageSource.gallery);
                     }
+                  },
+                ),
+              if (widget.allowCamera)
+                ListTile(
+                  leading: const Icon(Icons.camera_alt),
+                  title: const Text('Camera'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    if (widget.images.length >= _maxImages) {
+                      _showMaxImagesDialog();
+                      return;
+                    }
+                    _pickSingleImage(ImageSource.camera);
                   },
                 ),
             ],
@@ -188,13 +188,13 @@ class _ImagePickerSectionState extends State<ImagePickerSection> {
                     }
 
                     // If gallery only, open gallery directly. If camera only, open camera. Otherwise show options.
-                    if (widget.isGalleryOnly) {
+                    if (widget.allowGallery) {
                       if (widget.allowMultipleImages) {
                         _pickMultipleImages();
                       } else {
                         _pickSingleImage(ImageSource.gallery);
                       }
-                    } else if (widget.isCameraOnly) {
+                    } else if (widget.allowCamera) {
                       _pickSingleImage(ImageSource.camera);
                     } else {
                       _showImageSourceActionSheet(context);

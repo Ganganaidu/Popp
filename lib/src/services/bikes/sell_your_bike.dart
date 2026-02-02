@@ -67,7 +67,7 @@ class _SellYourBikeState extends State<SellYourBike>
   String? selectedState;
   String? _areYouFirstOwner;
   String? _invoiceAvailable;
-  String? _nocAvailable;
+  String? _nocAvailable = "Yes";
   String? _batteryCondition;
   String? _tyreCondition;
   DateTime? _selectedManufactureDate;
@@ -263,7 +263,7 @@ class _SellYourBikeState extends State<SellYourBike>
           selectedState = null;
           _areYouFirstOwner = null;
           _invoiceAvailable = null;
-          _nocAvailable = null;
+          _nocAvailable = "Yes";
           _batteryCondition = null;
           _tyreCondition = null;
           _insuranceValidityTill = null;
@@ -528,7 +528,7 @@ class _SellYourBikeState extends State<SellYourBike>
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 10.0),
                         child: TextFormField(
-                          maxLines: 2,
+                          maxLines: 1,
                           controller: addressController,
                           decoration: context.inputDecoration(
                               "Address", "Enter Address name"),
@@ -554,6 +554,7 @@ class _SellYourBikeState extends State<SellYourBike>
                         },
                         validator: (val) => val!.isEmpty ? "Required" : null,
                       ),
+                      const SizedBox(height: 10),
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 10.0),
                         child: TextFormField(
@@ -719,7 +720,8 @@ class _SellYourBikeState extends State<SellYourBike>
                         padding: const EdgeInsets.symmetric(vertical: 10.0),
                         child: ImagePickerSection(
                           images: _images,
-                          isGalleryOnly: _enableGallery,
+                          allowGallery: _enableGallery,
+                          allowMultipleImages: _enableGallery,
                           onImagesChanged: (images) => setState(() {
                             _images.clear();
                             _images.addAll(images);

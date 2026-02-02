@@ -38,6 +38,7 @@ class _SignupScreenState extends State<SignupScreen> {
   final TextEditingController confirmPasswordController =
       TextEditingController();
   final TextEditingController addressController = TextEditingController();
+  final TextEditingController areaController = TextEditingController();
   final TextEditingController cityController = TextEditingController();
   final TextEditingController pinCodeController = TextEditingController();
 
@@ -63,6 +64,7 @@ class _SignupScreenState extends State<SignupScreen> {
     passwordController.dispose();
     confirmPasswordController.dispose();
     addressController.dispose();
+    areaController.dispose();
     cityController.dispose();
     pinCodeController.dispose();
 
@@ -178,6 +180,7 @@ class _SignupScreenState extends State<SignupScreen> {
         email: emailController.text,
         phoneNumber: phoneNumberController.text,
         address: addressController.text,
+        area: areaController.text,
         stateName: selectedState ?? "",
         city: cityController.text,
         pinCode: pinCodeController.text,
@@ -330,6 +333,8 @@ class _SignupScreenState extends State<SignupScreen> {
                     _buildSectionHeader("Your Location",
                         "Used to find rides and services near you."),
                     _buildDropdownField(),
+                    const SizedBox(height: 15),
+                    _buildAreaTextField(),
                     const SizedBox(height: 15),
                     _buildAutocompleteField(),
                     const SizedBox(height: 15),
@@ -947,17 +952,27 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
+  Widget _buildAreaTextField() {
+    return TextFormField(
+      controller: addressController,
+      decoration: context.inputDecoration("", "Enter address or locality",
+          icon: Icons.home),
+      maxLines: 1,
+      validator: (val) => val!.isEmpty ? "Required" : null,
+    );
+  }
+
   Widget _buildAutocompleteField() {
     return AutocompleteSearchField(
       label: "",
-      hint: "Start typing your address...",
-      controller: addressController,
-      icon: Icons.home_outlined,
+      hint: "Enter your area",
+      controller: areaController,
+      icon: Icons.area_chart,
       lat: stateCoordinates[selectedState]?['lat'] ?? 0.0,
       lon: stateCoordinates[selectedState]?['lon'] ?? 0.0,
       onPlaceSelected: (suggestion) {
         setState(() {
-          addressController.text = suggestion.text;
+          areaController.text = suggestion.text;
           cityController.text = suggestion.municipality ?? '';
           pinCodeController.text = suggestion.postalCode ?? '';
         });

@@ -176,8 +176,8 @@ class _AdsSubmissionScreenState extends State<AdsSubmissionScreen> {
                       });
                     },
                     title: 'Attache Advertisement/Promo Image',
-                    isGalleryOnly: true,
-                    allowMultipleImages: false,
+                    allowGallery: true,
+                    allowMultipleImages: true,
                   ),
 
                   const SizedBox(height: 40),

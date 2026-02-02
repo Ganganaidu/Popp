@@ -5,8 +5,6 @@ class UserData {
   String email;
   String? displayName;
   String? photoURL;
-
-  // FIX 1: Changed type from 'Timestamp?' to 'dynamic'.
   // This allows the field to hold a 'Timestamp' when read from Firestore,
   // or a 'FieldValue' when being prepared for a write operation.
   final dynamic createdAt;
@@ -16,6 +14,7 @@ class UserData {
   String? username;
   String? phoneNumber;
   String? address;
+  String? area;
   String? city;
   String? pinCode;
   String? stateName;
@@ -34,6 +33,7 @@ class UserData {
     this.username,
     this.phoneNumber,
     this.address,
+    this.area,
     this.city,
     this.pinCode,
     this.stateName,
@@ -59,6 +59,7 @@ class UserData {
       if (username != null) 'username': username,
       if (phoneNumber != null) 'phoneNumber': phoneNumber,
       if (address != null) 'address': address,
+      if (area != null) 'area': area,
       if (city != null) 'city': city,
       if (pinCode != null) 'pinCode': pinCode,
       if (stateName != null) 'stateName': stateName,
@@ -91,6 +92,7 @@ class UserData {
       username: data['username'],
       phoneNumber: data['phoneNumber'],
       address: data['address'],
+      area: data['area'],
       city: data['city'],
       pinCode: data['pinCode'],
       stateName: data['stateName'],

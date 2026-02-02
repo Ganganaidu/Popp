@@ -23,15 +23,6 @@ class WebTopBar extends StatelessWidget implements PreferredSizeWidget {
       child: SafeArea(
         child: Row(
           children: [
-            // Hamburger Menu
-            IconButton(
-              icon: Icon(Icons.menu, color: isDarkMode ? Colors.white : Colors.black),
-              onPressed: () {
-                Scaffold.of(context).openDrawer();
-              },
-            ),
-            const SizedBox(width: 20),
-
             // Branding / Logo
             _buildBrandLogo(context),
             const SizedBox(width: 40),
@@ -183,12 +174,12 @@ class WebTopBar extends StatelessWidget implements PreferredSizeWidget {
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: Colors.white, size: 26),
+          Icon(icon, color: context.primaryColor, size: 26),
           const SizedBox(height: 4),
           Text(
             label,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: context.primaryColor,
               fontSize: 12,
               fontWeight: FontWeight.w500,
             ),

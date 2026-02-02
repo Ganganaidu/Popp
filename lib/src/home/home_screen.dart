@@ -13,6 +13,7 @@ import 'package:popp/src/utils/app_loger.dart';
 import '../api/api_url.dart';
 import '../navigation/custom_bottom_nav_bar.dart';
 import '../navigation/nav_helper.dart';
+import '../toolbar/web_side_bar.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -209,11 +210,11 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       child: Scaffold(
         drawer: kIsWeb
-            ? WebMenuDrawer(
+            ? null
+            : WebMenuDrawer(
                 selectedIndex: _selectedIndex,
                 onItemTapped: _onItemTapped,
-              )
-            : null,
+              ),
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(kIsWeb ? 150 : kToolbarHeight),
           child: ValueListenableBuilder2<bool, String>(
@@ -235,10 +236,25 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           ),
         ),
-        body: IndexedStack(
-          index: _selectedIndex,
-          children: _navHelper.widgetOptions,
-        ),
+        body: kIsWeb
+            ? Row(
+                children: [
+                  WebSideBar(
+                    selectedIndex: _selectedIndex,
+                    onItemTapped: _onItemTapped,
+                  ),
+                  Expanded(
+                    child: IndexedStack(
+                      index: _selectedIndex,
+                      children: _navHelper.widgetOptions,
+                    ),
+                  ),
+                ],
+              )
+            : IndexedStack(
+                index: _selectedIndex,
+                children: _navHelper.widgetOptions,
+              ),
         bottomNavigationBar: kIsWeb
             ? null
             : CustomBottomNavBar(
@@ -246,6 +262,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 onItemTapped: _onItemTapped,
               ),
       ),
+
     );
   }
 }

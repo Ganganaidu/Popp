@@ -14,6 +14,8 @@ import '../../utils/app_constants.dart';
 import '../../utils/product_utils.dart';
 import '../../chat/chat_with_user_widget.dart';
 import '../../widgets/full_screen_image_screen.dart';
+import '../../widgets/web_image_gallery.dart';
+import 'package:flutter/foundation.dart';
 
 class ServiceDetailScreen extends StatefulWidget {
   final Map<String, dynamic> serviceData;
@@ -99,8 +101,8 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
           ),
         ],
       ),
-      body: _buildBody(context),
-      bottomNavigationBar: isAdmin && !_isApproved
+      body: kIsWeb ? _buildWebLayout(context) : _buildBody(context),
+      bottomNavigationBar: !kIsWeb && isAdmin && !_isApproved
           ? SafeArea(
               child: Container(
                 padding: const EdgeInsets.all(16),
@@ -147,6 +149,199 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
             )
           : null,
     );
+  }
+
+  Widget _buildWebLayout(BuildContext context) {
+    final serviceData = widget.serviceData;
+    // Prepare images
+    List<String> allImageUrls = [];
+    if (serviceData['promoImageUrls'] is List) {
+      allImageUrls.addAll((serviceData['promoImageUrls'] as List).cast<String>());
+    } else if (serviceData['promoImageUrls'] is String && (serviceData['promoImageUrls'] as String).isNotEmpty) {
+      allImageUrls.add(serviceData['promoImageUrls']);
+    }
+    if (serviceData['shopImageUrls'] is List) {
+       allImageUrls.addAll((serviceData['shopImageUrls'] as List).cast<String>());
+    }
+
+    String title = serviceData['businessTitle'] ?? serviceData['eventName'] ?? 'Service Details';
+    String description = serviceData['businessDescription'] ?? serviceData['eventDetailedDescription'] ?? 'No description available.';
+    
+    // Admin check for button
+    final isAdmin = FirebaseAuth.instance.currentUser?.uid == Constants.adminUserId;
+
+    return SingleChildScrollView(
+      child: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 1200),
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Top Section: Images and Info
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Left Column: Images
+                  Expanded(
+                    flex: 1,
+                    child: WebImageGallery(
+                      imageUrls: allImageUrls,
+                       selectedIndexNotifier: ValueNotifier<int>(_selectedImageIndex)..addListener((){}),
+                    ),
+                  ),
+                  const SizedBox(width: 40),
+                  
+                  // Right Column: Details
+                  Expanded(
+                    flex: 1,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Title and Share
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: TitleText(
+                                title,
+                                style: Theme.of(context).textTheme.displaySmall?.copyWith(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                             IconButton(
+                                icon: Icon(_isFav ? Icons.favorite : Icons.favorite_border, color: Colors.red),
+                                onPressed: _favButtonDisabled ? null : _toggleFavorite,
+                              ),
+                          ],
+                        ),
+                         const SizedBox(height: 8),
+                         Row(
+                          children: [
+                               if(!_isApproved) ...[
+                                   const Icon(Icons.info_outline, color: Colors.orange, size: 18),
+                                   const SizedBox(width: 4),
+                                   const Text("Pending Approval", style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
+                                   const SizedBox(width: 16),
+                               ],
+                          ],
+                        ),
+    
+                        const SizedBox(height: 32),
+    
+                        // Details Section (Status, Address, Hours, etc.)
+                        Container(
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).cardColor,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.grey.withOpacity(0.1)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                               _buildWebDetailRow(context, "Status", serviceData['status'] ?? 'N/A'),
+                               if(ProductUtils.isBikeAndOthersCategory(widget.category)) ...[
+                                  _buildWebDetailRow(context, "Address", serviceData['businessAddress'] ?? 'N/A', isLink: true, isMap: true),
+                                  _buildWebDetailRow(context, "Hours", serviceData['businessWorkingDaysHours'] ?? 'N/A'),
+                               ],
+                                // Additional Service Details could go here if extracted
+                            ],
+                          ),
+                        ),
+    
+                        const SizedBox(height: 24),
+    
+                         if (isAdmin && !_isApproved)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 16.0),
+                            child: SizedBox(
+                              width: double.infinity,
+                              height: 50,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                                onPressed: () async {
+                                    final serviceId = widget.serviceData['id'] ?? '';
+                                    if (serviceId != '') {
+                                      await _firebaseApiService.updateServiceApprovalStatus(serviceId, true);
+                                      setState(() { _isApproved = true; });
+                                    }
+                                },
+                                 child: const Text("Approve Service"),
+                              ),
+                            ),
+                          ),
+                          
+                        ChatWithSellerCard(
+                            receiverUserName: serviceData['contactName'] ?? serviceData['pointOfContactName'] ?? '',
+                            receiverUserID: serviceData['userId'] ?? '',
+                            productId: serviceData['id'] ?? '',
+                            productTitle: title,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              
+              const SizedBox(height: 48),
+              
+              // Bottom Section: About This Service
+              Container(
+                 width: double.infinity,
+                 padding: const EdgeInsets.all(32),
+                 decoration: BoxDecoration(
+                    color: Theme.of(context).cardColor,
+                    borderRadius: BorderRadius.circular(16),
+                     border: Border.all(color: Colors.grey.withOpacity(0.1)),
+                 ),
+                 child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                       const Text(
+                          "About This Service",
+                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                       ),
+                       const SizedBox(height: 16),
+                       Text(
+                          description,
+                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.6, fontSize: 16),
+                       ),
+                    ],
+                 ),
+              ),
+              const SizedBox(height: 48),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWebDetailRow(BuildContext context, String label, String value, {bool isLink = false, bool isMap = false}) {
+     if (value == 'N/A' || value.isEmpty) return const SizedBox.shrink();
+     return Padding(
+       padding: const EdgeInsets.symmetric(vertical: 8.0),
+       child: Row(
+         crossAxisAlignment: CrossAxisAlignment.start,
+         children: [
+           SizedBox(width: 100, child: Text("$label:", style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
+           Expanded(
+             child: isLink 
+                ? GestureDetector(
+                    onTap: () async {
+                       if (isMap) {
+                          final encoded = Uri.encodeComponent(value);
+                          launchUrlString('https://www.google.com/maps/search/?api=1&query=$encoded', mode: LaunchMode.externalApplication);
+                       }
+                    },
+                    child: Text(value, style: const TextStyle(color: Colors.blue, decoration: TextDecoration.underline)),
+                )
+                : Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
+           )
+         ],
+       ),
+     );
   }
 
   Widget _buildBody(BuildContext context) {

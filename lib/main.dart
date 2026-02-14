@@ -189,9 +189,10 @@ class _MyAppState extends State<MyApp> {
           navigatorKey: navigatorKey,
           title: 'BikerVerse',
           themeMode: currentThemeMode,
-          theme: kIsWeb ? poppLightTheme : bikerverseMobileTheme,
-          darkTheme: kIsWeb ? poppDarkTheme : bikerverseMobileTheme,
+          theme: bikerverseLightTheme,
+          darkTheme: bikerverseDarkTheme,
           home: const AuthWrapper(),
+
           routes: {
             '/login': (context) => const LoginScreen(),
             '/signup': (context) => const SignupScreen(),

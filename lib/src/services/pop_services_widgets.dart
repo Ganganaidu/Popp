@@ -8,16 +8,6 @@ import '../navigation/nav_router.dart';
 import '../theme/bikerverse_colors.dart';
 import '../utils/build_extensions.dart';
 
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-
-import '../deeplink/DeepLinkConfig.dart';
-import '../models/pop_service_item.dart';
-import '../navigation/nav_router.dart';
-import '../theme/bikerverse_colors.dart';
-import '../utils/build_extensions.dart';
-
 class PopServicesWidgets extends StatefulWidget {
   const PopServicesWidgets({super.key});
 

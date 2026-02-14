@@ -1,27 +1,24 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:popp/src/api/currency_service.dart';
 import 'package:popp/src/utils/app_loger.dart';
 import 'package:popp/src/utils/product_utils.dart';
-import 'package:popp/src/widgets/title_text.dart';
-import '../theme/bikerverse_colors.dart';
-import '../toolbar/AppBarIconButton.dart';
-import '../widgets/web_constrained_box.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../api/api_url.dart';
 import '../api/firebase/firebase_api_service.dart';
+import '../chat/chat_with_user_widget.dart';
+import '../toolbar/AppBarIconButton.dart';
 import '../utils/app_constants.dart';
 import '../widgets/app_dialogs.dart';
-import '../chat/chat_with_user_widget.dart';
 import '../widgets/expandable_product_details_widget.dart';
-import '../widgets/expandable_text_widget.dart';
 import '../widgets/full_screen_image_screen.dart';
+import '../widgets/web_constrained_box.dart';
 import '../widgets/web_image_gallery.dart';
 import '../widgets/web_product_specs.dart';
-import 'package:flutter/foundation.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final Map<String, dynamic> productJson;
@@ -423,7 +420,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               const SizedBox(width: 12),
               AppBarIconButton(
                   icon: isFavorite ? Icons.favorite : Icons.favorite_border,
-                  onTap: () => _favButtonDisabled ? null : _toggleFavorite,
+                  onTap: () {
+                    // Ensure we call the toggle function immediately.
+                    if (!_favButtonDisabled) _toggleFavorite();
+                  },
                   iconColor: isFavorite ? Colors.red : null),
               const SizedBox(width: 16),
             ],

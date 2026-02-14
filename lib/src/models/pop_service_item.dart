@@ -30,33 +30,39 @@ final List<PopServiceItem> items = [
     subTitle: "Bike",
     icon: Icons.motorcycle_outlined,
     action: sellYourBike,
-    color: const Color(0xFF1B4332), // Dark Green
+    color: const Color(0xFF2E7D32), // Green
   ),
   PopServiceItem(
     imageUrl: null,
     title: 'SELL',
     subTitle: "Accessory",
     action: sellAccessory,
-    icon: Icons.shopping_bag_outlined, // Bag icon
+    // Icon: Shopping Bag
+    icon: Icons.shopping_bag_outlined,
     customIconPainter: null,
-    color: const Color(0xFF1E3A5F), // Dark Blue
+    // Gradient: Dark Blue to Light Blue
+    color: const Color(0xFF1565C0), // Blue
   ),
   PopServiceItem(
     imageUrl: null,
     title: 'LIST',
     subTitle: "Business",
     action: listYourServices,
-    icon: Icons.store_outlined, // Building icon
+    // Icon: Briefcase / Business Center
+    icon: Icons.work_outline,
     customIconPainter: null,
-    color: const Color(0xFF4A1E5C), // Dark Purple
+    // Gradient: Purple to Pinkish
+    color: const Color(0xFF9006E3), // Purple
   ),
   PopServiceItem(
     imageUrl: null,
     title: 'FIND',
     subTitle: "Mechanic",
     action: findMechanic,
-    customIconPainter: SpeedometerIconPainter(color: Colors.white), // Keep custom if no good outline Icon
-    color: const Color(0xFF6B4423), // Dark Brown
+    icon: Icons.speed, 
+    customIconPainter: null, 
+    // Gradient: Brown/Orange
+    color: const Color(0xFFD84315), // Burnt Orange/Brown
   ),
   PopServiceItem(
     imageUrl: null,
@@ -64,7 +70,7 @@ final List<PopServiceItem> items = [
     subTitle: "Training",
     action: findTrackTraining,
     customIconPainter: FlagIconPainter(color: Colors.white),
-    color: const Color(0xFF6B1E2E), // Dark Red
+    color: const Color(0xFFC62828), // Red
   ),
   PopServiceItem(
     imageUrl: null,
@@ -72,7 +78,7 @@ final List<PopServiceItem> items = [
     subTitle: "Rentals",
     action: findBikeRentals,
     customIconPainter: CalendarIconPainter(color: Colors.white),
-    color: const Color(0xFF2E3A4A), // Dark Slate
+    color: const Color(0xFF455A64), // Blue Grey
   ),
   PopServiceItem(
     imageUrl: null,
@@ -80,7 +86,7 @@ final List<PopServiceItem> items = [
     subTitle: "Inspection",
     action: premiumBikeInspection,
     customIconPainter: VerifiedIconPainter(color: Colors.white),
-    color: const Color(0xFF1B4332), // Dark Green
+    color: const Color(0xFF064302), // Green
   ),
   PopServiceItem(
     imageUrl: null,
@@ -88,7 +94,7 @@ final List<PopServiceItem> items = [
     subTitle: "Shops",
     action: tyreShop,
     customIconPainter: TyreIconPainter(color: Colors.white),
-    color: const Color(0xFF1E3A5F), // Dark Blue
+    color: const Color(0xFF1565C0), // Blue
   ),
   PopServiceItem(
     imageUrl: null,
@@ -96,6 +102,6 @@ final List<PopServiceItem> items = [
     subTitle: "Store",
     action: accessoryStore,
     customIconPainter: StorefrontIconPainter(color: Colors.white),
-    color: const Color(0xFF4A1E5C), // Dark Purple
+    color: const Color(0xFF610283), // Purple
   ),
 ];

@@ -266,7 +266,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         const SizedBox(height: 24),
         _buildSettingsSectionTitle("App Settings"),
-        _buildDarkModeSwitch(),
+       // _buildDarkModeSwitch(),
         _buildListTile(
           context,
           icon: Icons.info_outline,

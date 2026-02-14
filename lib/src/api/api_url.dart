@@ -1,7 +1,7 @@
 class ApiUrl {
   static String baseUrl = "https://bikerverse.in/";
 
-  static const String _appId = 'popp-71efb'; // Hardcoded appId
+  // static const String _appId = 'popp-71efb'; // Hardcoded appId
   static const String userPath = 'users';
   static const String userToUserChatPath = 'user_to_user_chats';
   static const String agentToUserChatPath = 'agent_user_chats';

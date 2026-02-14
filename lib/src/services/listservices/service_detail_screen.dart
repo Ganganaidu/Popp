@@ -16,6 +16,8 @@ import '../../chat/chat_with_user_widget.dart';
 import '../../widgets/full_screen_image_screen.dart';
 import '../../widgets/web_image_gallery.dart';
 import 'package:flutter/foundation.dart';
+import 'package:intl/intl.dart';
+import '../../toolbar/AppBarIconButton.dart';
 
 class ServiceDetailScreen extends StatefulWidget {
   final Map<String, dynamic> serviceData;
@@ -88,19 +90,8 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     final isAdmin =
         FirebaseAuth.instance.currentUser?.uid == Constants.adminUserId;
     AppLogger.d("isAdmin $isAdmin and isApproved $_isApproved");
-    String appBarTitle = ProductUtils.getServiceAppBarTitle(widget.category);
+    // String appBarTitle = ProductUtils.getServiceAppBarTitle(widget.category);
     return Scaffold(
-      appBar: AppBar(
-        title: TitleText(appBarTitle),
-        automaticallyImplyLeading: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.share),
-            onPressed: _shareService,
-            tooltip: 'Share Service',
-          ),
-        ],
-      ),
       body: kIsWeb ? _buildWebLayout(context) : _buildBody(context),
       bottomNavigationBar: !kIsWeb && isAdmin && !_isApproved
           ? SafeArea(
@@ -156,19 +147,27 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     // Prepare images
     List<String> allImageUrls = [];
     if (serviceData['promoImageUrls'] is List) {
-      allImageUrls.addAll((serviceData['promoImageUrls'] as List).cast<String>());
-    } else if (serviceData['promoImageUrls'] is String && (serviceData['promoImageUrls'] as String).isNotEmpty) {
+      allImageUrls
+          .addAll((serviceData['promoImageUrls'] as List).cast<String>());
+    } else if (serviceData['promoImageUrls'] is String &&
+        (serviceData['promoImageUrls'] as String).isNotEmpty) {
       allImageUrls.add(serviceData['promoImageUrls']);
     }
     if (serviceData['shopImageUrls'] is List) {
-       allImageUrls.addAll((serviceData['shopImageUrls'] as List).cast<String>());
+      allImageUrls
+          .addAll((serviceData['shopImageUrls'] as List).cast<String>());
     }
 
-    String title = serviceData['businessTitle'] ?? serviceData['eventName'] ?? 'Service Details';
-    String description = serviceData['businessDescription'] ?? serviceData['eventDetailedDescription'] ?? 'No description available.';
-    
+    String title = serviceData['businessTitle'] ??
+        serviceData['eventName'] ??
+        'Service Details';
+    String description = serviceData['businessDescription'] ??
+        serviceData['eventDetailedDescription'] ??
+        'No description available.';
+
     // Admin check for button
-    final isAdmin = FirebaseAuth.instance.currentUser?.uid == Constants.adminUserId;
+    final isAdmin =
+        FirebaseAuth.instance.currentUser?.uid == Constants.adminUserId;
 
     return SingleChildScrollView(
       child: Center(
@@ -187,11 +186,13 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                     flex: 1,
                     child: WebImageGallery(
                       imageUrls: allImageUrls,
-                       selectedIndexNotifier: ValueNotifier<int>(_selectedImageIndex)..addListener((){}),
+                      selectedIndexNotifier:
+                          ValueNotifier<int>(_selectedImageIndex)
+                            ..addListener(() {}),
                     ),
                   ),
                   const SizedBox(width: 40),
-                  
+
                   // Right Column: Details
                   Expanded(
                     flex: 1,
@@ -206,109 +207,143 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                             Expanded(
                               child: TitleText(
                                 title,
-                                style: Theme.of(context).textTheme.displaySmall?.copyWith(fontWeight: FontWeight.bold),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .displaySmall
+                                    ?.copyWith(fontWeight: FontWeight.bold),
                               ),
                             ),
-                             IconButton(
-                                icon: Icon(_isFav ? Icons.favorite : Icons.favorite_border, color: Colors.red),
-                                onPressed: _favButtonDisabled ? null : _toggleFavorite,
-                              ),
+                            IconButton(
+                              icon: Icon(
+                                  _isFav
+                                      ? Icons.favorite
+                                      : Icons.favorite_border,
+                                  color: Colors.red),
+                              onPressed:
+                                  _favButtonDisabled ? null : _toggleFavorite,
+                            ),
                           ],
                         ),
-                         const SizedBox(height: 8),
-                         Row(
+                        const SizedBox(height: 8),
+                        Row(
                           children: [
-                               if(!_isApproved) ...[
-                                   const Icon(Icons.info_outline, color: Colors.orange, size: 18),
-                                   const SizedBox(width: 4),
-                                   const Text("Pending Approval", style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
-                                   const SizedBox(width: 16),
-                               ],
+                            if (!_isApproved) ...[
+                              const Icon(Icons.info_outline,
+                                  color: Colors.orange, size: 18),
+                              const SizedBox(width: 4),
+                              const Text("Pending Approval",
+                                  style: TextStyle(
+                                      color: Colors.orange,
+                                      fontWeight: FontWeight.bold)),
+                              const SizedBox(width: 16),
+                            ],
                           ],
                         ),
-    
+
                         const SizedBox(height: 32),
-    
+
                         // Details Section (Status, Address, Hours, etc.)
                         Container(
                           padding: const EdgeInsets.all(24),
                           decoration: BoxDecoration(
                             color: Theme.of(context).cardColor,
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: Colors.grey.withOpacity(0.1)),
+                            border:
+                                Border.all(color: Colors.grey.withOpacity(0.1)),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                               _buildWebDetailRow(context, "Status", serviceData['status'] ?? 'N/A'),
-                               if(ProductUtils.isBikeAndOthersCategory(widget.category)) ...[
-                                  _buildWebDetailRow(context, "Address", serviceData['businessAddress'] ?? 'N/A', isLink: true, isMap: true),
-                                  _buildWebDetailRow(context, "Hours", serviceData['businessWorkingDaysHours'] ?? 'N/A'),
-                               ],
-                                // Additional Service Details could go here if extracted
+                              _buildWebDetailRow(context, "Status",
+                                  serviceData['status'] ?? 'N/A'),
+                              if (ProductUtils.isBikeAndOthersCategory(
+                                  widget.category)) ...[
+                                _buildWebDetailRow(context, "Address",
+                                    serviceData['businessAddress'] ?? 'N/A',
+                                    isLink: true, isMap: true),
+                                _buildWebDetailRow(
+                                    context,
+                                    "Hours",
+                                    serviceData['businessWorkingDaysHours'] ??
+                                        'N/A'),
+                              ],
+                              // Additional Service Details could go here if extracted
                             ],
                           ),
                         ),
-    
+
                         const SizedBox(height: 24),
-    
-                         if (isAdmin && !_isApproved)
+
+                        if (isAdmin && !_isApproved)
                           Padding(
                             padding: const EdgeInsets.only(bottom: 16.0),
                             child: SizedBox(
                               width: double.infinity,
                               height: 50,
                               child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                                style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.green),
                                 onPressed: () async {
-                                    final serviceId = widget.serviceData['id'] ?? '';
-                                    if (serviceId != '') {
-                                      await _firebaseApiService.updateServiceApprovalStatus(serviceId, true);
-                                      setState(() { _isApproved = true; });
-                                    }
+                                  final serviceId =
+                                      widget.serviceData['id'] ?? '';
+                                  if (serviceId != '') {
+                                    await _firebaseApiService
+                                        .updateServiceApprovalStatus(
+                                            serviceId, true);
+                                    setState(() {
+                                      _isApproved = true;
+                                    });
+                                  }
                                 },
-                                 child: const Text("Approve Service"),
+                                child: const Text("Approve Service"),
                               ),
                             ),
                           ),
-                          
+
                         ChatWithSellerCard(
-                            receiverUserName: serviceData['contactName'] ?? serviceData['pointOfContactName'] ?? '',
-                            receiverUserID: serviceData['userId'] ?? '',
-                            productId: serviceData['id'] ?? '',
-                            productTitle: title,
+                          receiverUserName: serviceData['contactName'] ??
+                              serviceData['pointOfContactName'] ??
+                              '',
+                          receiverUserID: serviceData['userId'] ?? '',
+                          productId: serviceData['id'] ?? '',
+                          productTitle: title,
+                          isOwner: true,
                         ),
                       ],
                     ),
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: 48),
-              
+
               // Bottom Section: About This Service
               Container(
-                 width: double.infinity,
-                 padding: const EdgeInsets.all(32),
-                 decoration: BoxDecoration(
-                    color: Theme.of(context).cardColor,
-                    borderRadius: BorderRadius.circular(16),
-                     border: Border.all(color: Colors.grey.withOpacity(0.1)),
-                 ),
-                 child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                       const Text(
-                          "About This Service",
-                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                       ),
-                       const SizedBox(height: 16),
-                       Text(
-                          description,
-                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.6, fontSize: 16),
-                       ),
-                    ],
-                 ),
+                width: double.infinity,
+                padding: const EdgeInsets.all(32),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardColor,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.grey.withOpacity(0.1)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "About This Service",
+                      style:
+                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      description,
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyLarge
+                          ?.copyWith(height: 1.6, fontSize: 16),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 48),
             ],
@@ -318,36 +353,117 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     );
   }
 
-  Widget _buildWebDetailRow(BuildContext context, String label, String value, {bool isLink = false, bool isMap = false}) {
-     if (value == 'N/A' || value.isEmpty) return const SizedBox.shrink();
-     return Padding(
-       padding: const EdgeInsets.symmetric(vertical: 8.0),
-       child: Row(
-         crossAxisAlignment: CrossAxisAlignment.start,
-         children: [
-           SizedBox(width: 100, child: Text("$label:", style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey))),
-           Expanded(
-             child: isLink 
+  Widget _buildWebDetailRow(BuildContext context, String label, String value,
+      {bool isLink = false, bool isMap = false}) {
+    if (value == 'N/A' || value.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+              width: 100,
+              child: Text("$label:",
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, color: Colors.grey))),
+          Expanded(
+            child: isLink
                 ? GestureDetector(
                     onTap: () async {
-                       if (isMap) {
-                          final encoded = Uri.encodeComponent(value);
-                          launchUrlString('https://www.google.com/maps/search/?api=1&query=$encoded', mode: LaunchMode.externalApplication);
-                       }
+                      if (isMap) {
+                        final encoded = Uri.encodeComponent(value);
+                        launchUrlString(
+                            'https://www.google.com/maps/search/?api=1&query=$encoded',
+                            mode: LaunchMode.externalApplication);
+                      }
                     },
-                    child: Text(value, style: const TextStyle(color: Colors.blue, decoration: TextDecoration.underline)),
-                )
-                : Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
-           )
-         ],
-       ),
-     );
+                    child: Text(value,
+                        style: const TextStyle(
+                            color: Colors.blue,
+                            decoration: TextDecoration.underline)),
+                  )
+                : Text(value,
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(BuildContext context, String label, String value) {
+    IconData? icon;
+    VoidCallback? onTap;
+    bool isLink = false;
+
+    if (label.toLowerCase().contains('address') ||
+        label.toLowerCase().contains('map')) {
+      icon = Icons.map;
+      isLink = true;
+      onTap = () {
+        final encoded = Uri.encodeComponent(value);
+        launchUrlString(
+            'https://www.google.com/maps/search/?api=1&query=$encoded',
+            mode: LaunchMode.externalApplication);
+      };
+    } else if (label.toLowerCase().contains('phone') ||
+        label.toLowerCase().contains('contact')) {
+      icon = Icons.phone;
+      isLink = true;
+      onTap = () => launchUrlString('tel:$value');
+    } else if (label.toLowerCase().contains('link') ||
+        value.startsWith('http')) {
+      icon = Icons.link;
+      isLink = true;
+      onTap =
+          () => launchUrlString(value, mode: LaunchMode.externalApplication);
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 2,
+            child: Text(label,
+                style: const TextStyle(
+                    color: Colors.grey,
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold)),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            flex: 3,
+            child: GestureDetector(
+              onTap: onTap,
+              child: Row(
+                children: [
+                  Expanded(
+                      child: Text(value,
+                          style: TextStyle(
+                              color: isLink ? Colors.blue : Colors.white,
+                              fontSize: 13,
+                              decoration:
+                                  isLink ? TextDecoration.underline : null))),
+                  if (icon != null) ...[
+                    const SizedBox(width: 4),
+                    Icon(icon,
+                        color: isLink ? Colors.blue : Colors.grey, size: 14)
+                  ]
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildBody(BuildContext context) {
     final serviceData = widget.serviceData;
     final category = widget.category;
 
+    // Prepare images
     List<String> allImageUrls = [];
     List<dynamic>? promoImages;
 
@@ -356,9 +472,8 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     } else if (serviceData['promoImageUrls'] is String &&
         (serviceData['promoImageUrls'] as String).isNotEmpty) {
       promoImages = [(serviceData['promoImageUrls'] as String)];
-    } else {
-      promoImages = null;
     }
+
     List<dynamic>? shopGarageImages = serviceData['shopImageUrls'] is List
         ? serviceData['shopImageUrls'] as List<dynamic>?
         : null;
@@ -370,13 +485,10 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
       allImageUrls.addAll(shopGarageImages.cast<String>());
     }
 
+    // Prepare Data
     String title = serviceData['businessTitle'] ??
         serviceData['eventName'] ??
         'Service Details';
-    String status = serviceData['status'] ?? 'N/A';
-    String dateTimeInfo = 'N/A';
-    String locationInfo = 'N/A';
-    String capacityInfo = 'N/A';
     String description = serviceData['businessDescription'] ??
         serviceData['eventDetailedDescription'] ??
         'No description available.';
@@ -386,7 +498,15 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
       contactName = (serviceData['pointOfContactName'] ?? '') as String;
     }
     String userId = (serviceData['userId'] ?? '') as String;
-    final isApproved = serviceData['isApproved'] == true;
+
+    // Data for Highlights & Details
+    String city = serviceData['city'] ?? 'N/A';
+    String status = serviceData['status'] ?? 'Open';
+
+    // Address & Hours
+    String fullAddress = 'N/A';
+    String hoursInfo = 'N/A';
+    String closedDaysInfo = '';
 
     final isBikeRentalCategory =
         (ProductUtils.isBikeAndOthersCategory(category));
@@ -394,42 +514,389 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
         (ProductUtils.isTrackAndTrainingCategory(category));
 
     if (isBikeRentalCategory) {
-      locationInfo = serviceData['businessAddress'];
-      dateTimeInfo = serviceData['businessWorkingDaysHours'] ?? 'N/A';
+      fullAddress = serviceData['businessAddress'] ??
+          serviceData['locationAddress'] ??
+          'N/A';
+
+      final rawHours = serviceData['businessWorkingDaysHours'] ?? 'N/A';
+      final parsed = _parseBusinessHours(rawHours);
+      hoursInfo = parsed['hours']!;
+      closedDaysInfo = parsed['closed']!;
     } else if (isTrackOrTrainingDay) {
-      locationInfo =
+      fullAddress =
           '${serviceData['locationAddress'] ?? ''}, ${serviceData['city'] ?? ''}, ${serviceData['state'] ?? ''}';
 
       String startDate = serviceData['eventStartDate'] != null
-          ? DateTime.parse(serviceData['eventStartDate'])
-              .toLocal()
-              .toIso8601String()
-              .split('T')[0]
-          : 'N/A';
-      String endDate = serviceData['eventEndDate'] != null
-          ? DateTime.parse(serviceData['eventEndDate'])
-              .toLocal()
-              .toIso8601String()
-              .split('T')[0]
-          : 'N/A';
-      String startTime = serviceData['eventStartTime'] ?? 'N/A';
-      String endTime = serviceData['eventEndTime'] ?? 'N/A';
+          ? DateFormat('MMM d')
+              .format(DateTime.parse(serviceData['eventStartDate']))
+          : '';
+      String startTime = serviceData['eventStartTime'] ?? '';
 
-      dateTimeInfo = '$startDate at $startTime - $endDate at $endTime';
-
-      if (serviceData['maxSlots'] != null &&
-          serviceData['maxSlots'].isNotEmpty) {
-        capacityInfo = '${serviceData['maxSlots']} riders(Max slots)';
+      if (startDate.isNotEmpty) {
+        hoursInfo = '$startDate, $startTime';
+      } else {
+        hoursInfo = serviceData['eventStartTime'] ?? 'N/A';
       }
+      if (hoursInfo == 'N/A' || hoursInfo.trim().isEmpty)
+        hoursInfo = 'Check details';
+    } else {
+      // Fallback
+      fullAddress =
+          serviceData['businessAddress'] ?? serviceData['address'] ?? 'N/A';
+
+      final rawHours = serviceData['workingHours'] ?? 'N/A';
+      final parsed = _parseBusinessHours(rawHours);
+      hoursInfo = parsed['hours']!;
+      closedDaysInfo = parsed['closed']!;
     }
 
-    // Build a unified details map from all available fields returned by the API.
-    // We exclude a small set of keys that are already displayed separately
-    // (title, description, images, ids, location/time fields etc.) to avoid
-    // duplication. Any other non-empty field from the API will be shown.
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    return Scaffold(
+      backgroundColor: const Color(0xFF121212), // Dark background
+      body: Stack(
+        children: [
+          CustomScrollView(
+            slivers: [
+              SliverAppBar(
+                backgroundColor: const Color(0xFF121212),
+                expandedHeight: screenHeight * 0.45,
+                pinned: true,
+                leading: Center(
+                  child: AppBarIconButton(
+                    icon: Icons.arrow_back,
+                    onTap: () => Navigator.of(context).pop(),
+                  ),
+                ),
+                actions: [
+                  AppBarIconButton(
+                    icon: Icons.share,
+                    onTap: _shareService,
+                  ),
+                  const SizedBox(width: 12),
+                  AppBarIconButton(
+                      icon: _isFav ? Icons.favorite : Icons.favorite_border,
+                      onTap: () {
+                        if (!_favButtonDisabled) _toggleFavorite();
+                      },
+                      iconColor: _isFav ? Colors.red : null),
+                  const SizedBox(width: 16),
+                ],
+                flexibleSpace: FlexibleSpaceBar(
+                  background: Stack(
+                    children: [
+                      if (allImageUrls.isNotEmpty)
+                        PageView.builder(
+                          itemCount: allImageUrls.length,
+                          onPageChanged: (index) {
+                            setState(() {
+                              _selectedImageIndex = index;
+                            });
+                          },
+                          itemBuilder: (context, index) {
+                            return GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    fullscreenDialog: true,
+                                    builder: (context) => FullScreenImageScreen(
+                                      imageUrls: allImageUrls,
+                                      initialIndex: index,
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: Image.network(
+                                allImageUrls[index],
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Container(color: Colors.grey[900]),
+                              ),
+                            );
+                          },
+                        )
+                      else
+                        Container(
+                          color: Colors.grey[900],
+                          child: const Center(
+                            child: Icon(Icons.image_not_supported,
+                                color: Colors.white24, size: 50),
+                          ),
+                        ),
+
+                      // Gradient for top icon visibility
+                      Positioned(
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: 100,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.black.withOpacity(0.7),
+                                Colors.transparent
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // Gradient for bottom indicator visibility
+                      Positioned(
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        child: Container(
+                          padding: const EdgeInsets.only(top: 80, bottom: 20),
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.bottomCenter,
+                              end: Alignment.topCenter,
+                              colors: [Color(0xFF121212), Colors.transparent],
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children:
+                                List.generate(allImageUrls.length, (index) {
+                              return Container(
+                                margin:
+                                    const EdgeInsets.symmetric(horizontal: 3),
+                                width: _selectedImageIndex == index ? 24 : 6,
+                                height: 6,
+                                decoration: BoxDecoration(
+                                  color: _selectedImageIndex == index
+                                      ? const Color(0xFF2ECC71)
+                                      : Colors.grey,
+                                  borderRadius: BorderRadius.circular(3),
+                                ),
+                              );
+                            }),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 15),
+                      // // Category Tag
+                      // Text(category.toUpperCase(),
+                      //     style: const TextStyle(
+                      //         color: Color(0xFF2ECC71),
+                      //         fontSize: 12,
+                      //         fontWeight: FontWeight.bold,
+                      //         letterSpacing: 1.2)),
+                      // const SizedBox(height: 8),
+                      // Title
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          height: 1.1,
+                          fontFamily: 'Orbitron',
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+
+                      const SizedBox(height: 32),
+
+                      // 1. Highlight Cards Row (Location, Category, Status)
+                      _buildHighlightsRow(city, category, status),
+
+                      const SizedBox(height: 24),
+
+                      // 2. Address Block
+                      if (fullAddress != 'N/A' && fullAddress.isNotEmpty)
+                        _buildInfoBlock(
+                            Icons.location_on_outlined, "ADDRESS", fullAddress),
+
+                      const SizedBox(height: 16),
+
+                      // 3. Business Hours Block
+                      if (hoursInfo != 'N/A' && hoursInfo.isNotEmpty)
+                        _buildInfoBlock(
+                            Icons.access_time, "BUSINESS HOURS", hoursInfo,
+                            subText: closedDaysInfo.isNotEmpty
+                                ? closedDaysInfo
+                                : null),
+
+                      const SizedBox(height: 32),
+
+                      // Description
+                      const Text("DESCRIPTION",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              fontStyle: FontStyle.italic)),
+                      const SizedBox(height: 16),
+                      Text(
+                        description,
+                        style: const TextStyle(
+                            color: Colors.white, fontSize: 14, height: 1.5),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // Other Details
+                      _buildServiceInfoSection(context, serviceData, category),
+
+                      const SizedBox(height: 32),
+
+                      // Chat With Seller Card (original place)
+                      ChatWithSellerCard(
+                        receiverUserName: contactName,
+                        receiverUserID: userId,
+                        productId: widget.serviceData['id'] ?? '',
+                        productTitle: title,
+                      ),
+
+                      const SizedBox(height: 100), // Spacing for bottom overlay
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHighlightsRow(String city, String category, String status) {
+    return Row(
+      children: [
+        Expanded(
+            child: _buildHighlightCard(
+                Icons.location_on_outlined, "LOCATION", city)),
+        const SizedBox(width: 12),
+        Expanded(
+            child:
+                _buildHighlightCard(Icons.star_border, "CATEGORY", category)),
+        const SizedBox(width: 12),
+        Expanded(
+            child: _buildHighlightCard(Icons.access_time, "STATUS", status)),
+      ],
+    );
+  }
+
+  Widget _buildInfoBlock(IconData icon, String title, String content,
+      {String? subText}) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: const BoxDecoration(
+        color: Colors.transparent,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E1E1E),
+              borderRadius: BorderRadius.circular(50),
+            ),
+            child: Icon(icon, color: const Color(0xFF2ECC71), size: 24),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title,
+                    style: const TextStyle(
+                        color: Colors.grey,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.0)),
+                const SizedBox(height: 8),
+                Text(content,
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        height: 1.3)),
+                if (subText != null) ...[
+                  const SizedBox(height: 4),
+                  Text(subText,
+                      style: const TextStyle(
+                          color: Colors.redAccent,
+                          fontSize: 14,
+                          fontWeight: FontWeight.normal)),
+                ]
+              ],
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHighlightCard(IconData icon, String label, String value) {
+    return Container(
+      height: 120,
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E1E1E),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: const Color(0xFF2ECC71), size: 22),
+          const SizedBox(height: 8),
+          Text(label,
+              style: const TextStyle(
+                  color: Colors.grey,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.5)),
+          const SizedBox(height: 4),
+          Text(value,
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildServiceInfoSection(
+      BuildContext context, Map<String, dynamic> serviceData, String category) {
     Map<String, String> allDetails = {};
 
-    // Keys to exclude from the details section because they're shown elsewhere
+    // Explicitly add items that were removed from highlights or need priority
+    // Status, Address, Hours are now handled elsewhere.
+
+    if (ProductUtils.isTrackAndTrainingCategory(category)) {
+      if (serviceData['maxSlots'] != null) {
+        allDetails['Max Slots'] = serviceData['maxSlots'].toString();
+      }
+
+      final startDate = serviceData['eventStartDate'];
+      if (startDate != null) allDetails['Start Date'] = startDate;
+      final endDate = serviceData['eventEndDate'];
+      if (endDate != null) allDetails['End Date'] = endDate;
+    }
+
+    // Remove Address/Hours manual additions from here if they exist in standard loop
     final excludeKeys = {
       'searchKeywords',
       'shopName',
@@ -449,16 +916,28 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
       'eventDetailedDescription',
       'eventName',
       'businessWorkingDaysHours',
-      'businessAddress',
+      // Explicitly excluded as shown in blocks
       'businessPromoPicture',
       'shopImageUrls',
       'promoImageUrls',
       'shopGaragePics',
       'category',
+      'status',
+      // Shown in highlights
+      'businessAddress',
+      // Shown in blocks
+      'promoImage',
+      'locationAddress',
+      'city',
+      'state',
+      'eventStartDate',
+      'eventEndDate',
+      'eventStartTime',
+      'eventEndTime',
+      'maxSlots'
     };
 
     String formatKeyToLabel(String key) {
-      // Replace underscores with spaces, split camel case and capitalize words.
       final withSpaces = key.replaceAll('_', ' ').replaceAllMapped(
           RegExp(r'([a-z])([A-Z])'), (m) => '${m[1]} ${m[2]}');
       final parts = withSpaces.split(' ');
@@ -472,415 +951,123 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
       try {
         if (excludeKeys.contains(rawKey)) return;
         if (rawValue == null) return;
-        String valueStr;
-        if (rawValue is List) {
-          // Join list values into a comma-separated string
-          valueStr = rawValue.map((e) => e.toString()).join(', ');
-        } else {
-          valueStr = rawValue.toString();
-        }
-        if (valueStr.trim().isEmpty) return;
-        if (valueStr.trim().toLowerCase() == 'n/a') return;
+        String valueStr =
+            rawValue is List ? rawValue.join(', ') : rawValue.toString();
+        if (valueStr.trim().isEmpty || valueStr.toLowerCase() == 'n/a') return;
 
-        final label = formatKeyToLabel(rawKey.toString());
-        allDetails[label] = valueStr;
+        final label = formatKeyToLabel(rawKey);
+        if (!allDetails.containsKey(label)) {
+          allDetails[label] = valueStr;
+        }
       } catch (e) {
-        // ignore individual conversion errors
+        /* ignore */
       }
     });
 
-    return WebConstrainedBox(
-        child: CustomScrollView(
-          slivers: [
-            SliverAppBar(
-              expandedHeight: 250.0,
-              floating: false,
-              pinned: true,
-              automaticallyImplyLeading: false,
-              flexibleSpace: FlexibleSpaceBar(
-                background: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    Shimmer.fromColors(
-                      baseColor: Colors.grey[300]!,
-                      highlightColor: Colors.grey[100]!,
-                      child: Container(
-                        color: Colors.grey[300],
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        if (allImageUrls.isNotEmpty) {
-                          FocusManager.instance.primaryFocus?.unfocus();
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              fullscreenDialog: true,
-                              builder: (context) => FullScreenImageScreen(
-                                imageUrls: allImageUrls,
-                                initialIndex: _selectedImageIndex,
-                              ),
-                            ),
-                          );
-                        }
-                      },
-                      child: Image.network(
-                        allImageUrls.isNotEmpty
-                            ? allImageUrls[_selectedImageIndex]
-                            : ApiUrl.defaultPlaceholderImage,
-                        fit: BoxFit.cover,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return Shimmer.fromColors(
-                            baseColor: Colors.grey[300]!,
-                            highlightColor: Colors.grey[100]!,
-                            child: Container(
-                              color: Colors.grey[300],
-                            ),
-                          );
-                        },
-                        errorBuilder: (context, error, stackTrace) {
-                          return Image.network(
-                            ApiUrl.defaultPlaceholderImage,
-                            fit: BoxFit.cover,
-                          );
-                        },
-                      ),
-                    ),
-                    IgnorePointer(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.transparent,
-                              Colors.black.withAlpha((0.7 * 255).toInt())
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      top: 16,
-                      right: 16,
-                      child: Row(
-                        children: [
-                          CircleAvatar(
-                            radius: 20,
-                            backgroundColor: Colors.white70,
-                            child: IconButton(
-                              iconSize: 25,
-                              icon: Icon(
-                                _isFav ? Icons.favorite : Icons.favorite_border,
-                                color: _isFav ? Colors.red : Colors.red,
-                              ),
-                              onPressed:
-                                  _favButtonDisabled ? null : _toggleFavorite,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            // Thumbnail strip for images (only when there are multiple images)
-            if (allImageUrls.length > 1)
-              SliverToBoxAdapter(
-                child: SizedBox(
-                  height: 80,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: allImageUrls.length,
-                    itemBuilder: (context, index) {
-                      final String thumbUrl = allImageUrls[index];
-                      return GestureDetector(
-                        onTap: () => setState(() => _selectedImageIndex = index),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8.0),
-                            child: Container(
-                              width: 80,
-                              height: 80,
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                  color: _selectedImageIndex == index
-                                      ? Theme.of(context).primaryColor
-                                      : Colors.transparent,
-                                  width: 3,
-                                ),
-                              ),
-                              child: Image.network(
-                                thumbUrl,
-                                fit: BoxFit.cover,
-                                loadingBuilder: (context, child, loadingProgress) {
-                                  if (loadingProgress == null) return child;
-                                  return Shimmer.fromColors(
-                                    baseColor: Colors.grey[300]!,
-                                    highlightColor: Colors.grey[100]!,
-                                    child: Container(
-                                      width: 80,
-                                      height: 80,
-                                      color: Colors.grey[300],
-                                    ),
-                                  );
-                                },
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Container(
-                                    width: 80,
-                                    height: 80,
-                                    color: Colors.grey[300],
-                                    child: Icon(Icons.broken_image,
-                                        color: Colors.grey[600]),
-                                  );
-                                },
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (BuildContext context, int index) {
-                  if (index == 0) {
-                    return Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (!isApproved)
-                            Text(
-                              "Status: Pending Approval",
-                              style: context.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.orange),
-                            ),
-                          const SizedBox(height: 8),
-                          TitleText(
-                            title,
-                            style: context.headlineMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          if (status != 'N/A')
-                            _buildInfoRow(context, 'Status:', status, Colors.green),
-                          _buildInfoRow(
-                              context,
-                              isBikeRentalCategory ? 'Address: ' : "Where:",
-                              locationInfo),
-                          _buildInfoRow(
-                              context,
-                              isBikeRentalCategory ? 'Hours: ' : "When:",
-                              dateTimeInfo),
-                          if (capacityInfo != 'N/A')
-                            _buildInfoRow(context, 'Capacity:', capacityInfo),
-                          const SizedBox(height: 20),
-                          Text(
-                            'Description',
-                            style: context.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            description,
-                            style: context.bodyLarge,
-                          ),
-                          const SizedBox(height: 20),
-                          // Unified Details section: show any available API fields
-                          // (except the excluded ones) under a single header.
-                          if (allDetails.isNotEmpty) ...[
-                            Text(
-                              ProductUtils.getProductDescTitle(widget.category) ==
-                                      ''
-                                  ? 'Details'
-                                  : ProductUtils.getProductDescTitle(
-                                      widget.category),
-                              style: context.titleLarge?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            ...allDetails.entries.map((entry) =>
-                                _buildDetailRow(context, entry.key, entry.value)),
-                          ],
-                          const SizedBox(height: 20),
-                          ChatWithSellerCard(
-                            receiverUserName: contactName,
-                            receiverUserID: userId,
-                            productId: widget.serviceData['id'] ?? '',
-                            productTitle: title,
-                          ),
-                          const SizedBox(height: 20),
-                        ],
-                      ),
-                    );
-                  }
-                  return null;
-                },
-                childCount: 1,
-              ),
-            ),
-            // Add bottom spacing so the content isn't flush with the screen bottom
-            const SliverToBoxAdapter(
-              child: SizedBox(height: 20),
-            ),
-          ],
-        ),
-      );
-  }
-
-  Widget _buildInfoRow(BuildContext context, String label, String value,
-      [Color? valueColor]) {
-    if (label.toLowerCase().contains('where') &&
-        value.isNotEmpty &&
-        value != 'N/A') {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4.0),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              width: 80,
-              child: Text(
-                label,
-                style: context.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
-              ),
-            ),
-            Expanded(
-              child: GestureDetector(
-                onTap: () async {
-                  final encodedLocation = Uri.encodeComponent(value);
-                  final url =
-                      'https://www.google.com/maps/search/?api=1&query=$encodedLocation';
-                  await launchUrlString(url,
-                      mode: LaunchMode.externalApplication);
-                },
-                child: Text(
-                  value,
-                  style: context.bodyLarge?.copyWith(
-                    color: Colors.blue,
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 80,
-            child: Text(
-              label,
-              style: context.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
-            ),
+    if (allDetails.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(" DETAILS ",
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                fontStyle: FontStyle.italic)),
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: allDetails.entries
+                .map((e) => _buildDetailRow(context, e.key, e.value))
+                .toList(),
           ),
-          Expanded(
-            child: Text(
-              value,
-              style: context.bodyLarge?.copyWith(color: valueColor),
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  Widget _buildDetailRow(BuildContext context, String label, String value) {
-    bool isLink = false;
-    VoidCallback? onTap;
-
-    if ((label.toLowerCase().contains('google map link') ||
-            label.toLowerCase().contains('social media link')) &&
-        value.isNotEmpty &&
-        value != 'N/A') {
-      isLink = true;
-      onTap = () async {
-        final url = value.startsWith('http') ? value : 'https://$value';
-        await launchUrlString(url, mode: LaunchMode.externalApplication);
-      };
-    } else if ((label.toLowerCase().contains('phone') ||
-            label.toLowerCase().contains('mobile') ||
-            label.toLowerCase().contains('contact')) &&
-        !label.toLowerCase().contains('name') &&
-        value.isNotEmpty &&
-        value != 'N/A') {
-      isLink = true;
-      onTap = () async {
-        final Uri launchUri = Uri(
-          scheme: 'tel',
-          path: value,
-        );
-        await launchUrlString(launchUri.toString());
-      };
+  Map<String, String> _parseBusinessHours(String raw) {
+    if (raw == 'N/A' || raw.isEmpty) {
+      return {'hours': 'N/A', 'closed': ''};
     }
 
-    if (isLink) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4.0),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              flex: 2,
-              child: Text(
-                '$label:',
-                style:
-                    context.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
-              ),
-            ),
-            Expanded(
-              flex: 3,
-              child: GestureDetector(
-                onTap: onTap,
-                child: Text(
-                  value,
-                  style: context.bodyMedium?.copyWith(
-                    color: Colors.blue,
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
+    // 1. Process Time: Convert 24h to 12h
+    // Match HH:mm only if NOT followed by am or pm
+    // logic verified in test_business_hours.dart
+    final timeRegex = RegExp(r'(\d{1,2}):(\d{2})(?!\s*[aApP][mM])');
+    String processedHours = raw.replaceAllMapped(timeRegex, (match) {
+      int h = int.parse(match.group(1)!);
+      int m = int.parse(match.group(2)!);
+
+      final dt = DateTime(2022, 1, 1, h, m);
+      return DateFormat('h:mm a').format(dt);
+    });
+
+    // 2. Calculate Closed Days
+    final daysMap = {
+      'mon': 'Monday',
+      'tue': 'Tuesday',
+      'wed': 'Wednesday',
+      'thu': 'Thursday',
+      'fri': 'Friday',
+      'sat': 'Saturday',
+      'sun': 'Sunday'
+    };
+    final allDaysSeq = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+    Set<String> presentDays = {};
+    String lowerRaw = raw.toLowerCase();
+
+    // Check ranges "Mon-Fri"
+    final rangeRegex = RegExp(
+        r'(mon|tue|wed|thu|fri|sat|sun)[a-z]*\s*-\s*(mon|tue|wed|thu|fri|sat|sun)[a-z]*');
+    final rangeMatch = rangeRegex.firstMatch(lowerRaw);
+    if (rangeMatch != null) {
+      int startIdx = allDaysSeq.indexOf(rangeMatch.group(1)!);
+      int endIdx = allDaysSeq.indexOf(rangeMatch.group(2)!);
+      if (startIdx != -1 && endIdx != -1) {
+        if (startIdx <= endIdx) {
+          for (int i = startIdx; i <= endIdx; i++) {
+            presentDays.add(allDaysSeq[i]);
+          }
+        } else {
+          for (int i = startIdx; i < 7; i++) {
+            presentDays.add(allDaysSeq[i]);
+          }
+          for (int i = 0; i <= endIdx; i++) {
+            presentDays.add(allDaysSeq[i]);
+          }
+        }
+      }
     }
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            flex: 2,
-            child: Text(
-              '$label:',
-              style: context.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
-            ),
-          ),
-          Expanded(
-            flex: 3,
-            child: Text(
-              value,
-              style: context.bodyMedium,
-            ),
-          ),
-        ],
-      ),
-    );
+
+    // Check individual days
+    daysMap.forEach((k, v) {
+      if (lowerRaw.contains(k)) presentDays.add(k);
+    });
+
+    // Check specific "everyday" keywords
+    if (lowerRaw.contains("daily") ||
+        lowerRaw.contains("everyday") ||
+        lowerRaw.contains("7 days")) {
+      for (var d in allDaysSeq) {
+        presentDays.add(d);
+      }
+    }
+
+    // Calculate closed
+    List<String> closedList = [];
+    if (presentDays.isNotEmpty && presentDays.length < 7) {
+      for (var d in allDaysSeq) {
+        if (!presentDays.contains(d)) closedList.add(daysMap[d]!);
+      }
+    }
+
+    String closedStr = '';
+    if (closedList.isNotEmpty) {
+      closedStr = '${closedList.join(", ")}: Closed';
+    }
+
+    return {'hours': processedHours, 'closed': closedStr};
   }
 }

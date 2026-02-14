@@ -24,7 +24,7 @@ class ServiceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isWeb = kIsWeb;
+    const isWeb = kIsWeb;
     // Determine the background image
     String? imageUrl;
     List<dynamic>? promoImages;

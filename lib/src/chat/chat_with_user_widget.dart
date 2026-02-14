@@ -13,14 +13,15 @@ class ChatWithSellerCard extends StatefulWidget {
   final String receiverUserID;
   final String productId;
   final String productTitle;
+  final bool isOwner;
 
-  const ChatWithSellerCard({
-    super.key,
-    required this.receiverUserName,
-    required this.receiverUserID,
-    required this.productId,
-    required this.productTitle,
-  });
+  const ChatWithSellerCard(
+      {super.key,
+      required this.receiverUserName,
+      required this.receiverUserID,
+      required this.productId,
+      required this.productTitle,
+      this.isOwner = false});
 
   @override
   State<ChatWithSellerCard> createState() => _ChatWithSellerCardState();
@@ -82,8 +83,11 @@ class _ChatWithSellerCardState extends State<ChatWithSellerCard> {
                               color: Colors.green,
                               fontWeight: FontWeight.bold,
                               fontSize: 16))
-                      : const Text("Chat with Seller",
-                          style: TextStyle(color: Colors.grey)),
+                      : Text(
+                          widget.isOwner
+                              ? "Chat with Seller"
+                              : "Chat with Provider",
+                          style: const TextStyle(color: Colors.grey)),
                 ],
               ),
             ),

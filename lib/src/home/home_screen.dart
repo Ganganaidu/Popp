@@ -210,11 +210,11 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       child: Scaffold(
         drawer: kIsWeb
-            ? null
-            : WebMenuDrawer(
+            ? WebMenuDrawer(
                 selectedIndex: _selectedIndex,
                 onItemTapped: _onItemTapped,
-              ),
+              )
+            : null,
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(kIsWeb ? 150 : kToolbarHeight),
           child: ValueListenableBuilder2<bool, String>(

@@ -37,6 +37,7 @@ class SystemAlertsApiServices {
   Future<SystemMessage?> getPriorityMessage() async {
     // 1. Check for a global message first.
     final globalMessage = await _getGlobalMessage();
+    AppLogger.d("global message : ${globalMessage?.isActive} and priority : ${globalMessage?.priority}");
     if (globalMessage != null &&
         globalMessage.isActive &&
         globalMessage.priority == MessagePriority.high) {
@@ -154,6 +155,9 @@ class SystemAlertsApiServices {
     if (hasBeenShown) return false;
 
     final packageInfo = await PackageInfo.fromPlatform();
+    AppLogger.d("packageInfo.buildNumber ${packageInfo.buildNumber}");
+    AppLogger.d("versionCode ${message.versionCode}");
+
     return packageInfo.buildNumber != message.versionCode;
   }
 }

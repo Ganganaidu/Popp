@@ -82,7 +82,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
               }
 
               final message = messageSnapshot.data;
-
+              AppLogger.d("message ${message?.message}");
               // If there is an active message, check if it's been shown before
               if (message != null && message.isActive) {
                 return FutureBuilder<bool>(

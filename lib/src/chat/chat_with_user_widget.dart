@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:popp/src/utils/build_extensions.dart';
 import 'package:provider/provider.dart';
 
 import '../api/firebase/remote_config_service.dart';
@@ -61,10 +62,10 @@ class _ChatWithSellerCardState extends State<ChatWithSellerCard> {
         padding: const EdgeInsets.all(16.0),
         child: Row(
           children: [
-            const CircleAvatar(
+            CircleAvatar(
               radius: 28,
-              backgroundColor: Colors.blue,
-              child: Icon(Icons.person, color: Colors.white, size: 30),
+              backgroundColor: context.primaryColor,
+              child: const Icon(Icons.person, color: Colors.white, size: 30),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -81,7 +82,7 @@ class _ChatWithSellerCardState extends State<ChatWithSellerCard> {
                               color: Colors.green,
                               fontWeight: FontWeight.bold,
                               fontSize: 16))
-                      : const Text("Chat with Provider",
+                      : const Text("Chat with Seller",
                           style: TextStyle(color: Colors.grey)),
                 ],
               ),

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:popp/src/navigation/nav_router.dart';
+import 'package:popp/src/theme/bikerverse_colors.dart';
+
+import 'AppBarIconButton.dart';
 
 class PopAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -21,7 +24,7 @@ class PopAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
-      color: Colors.white,
+      color: BikerverseColors.background,
       child: AppBar(
         elevation: 0,
         automaticallyImplyLeading: false,
@@ -49,7 +52,8 @@ class PopAppBar extends StatelessWidget implements PreferredSizeWidget {
                         tag: 'backButtonHero',
                         child: IconButton(
                           key: const ValueKey('backButton'),
-                          icon: const Icon(Icons.arrow_back),
+                          icon: const Icon(Icons.arrow_back,
+                              color: BikerverseColors.textPrimary),
                           onPressed: () {
                             navigatorKeys[selectedIndex].currentState?.pop();
                           },
@@ -57,17 +61,18 @@ class PopAppBar extends StatelessWidget implements PreferredSizeWidget {
                       )
                     : const SizedBox.shrink(key: ValueKey('emptySpace')),
               ),
-              Row(children: [
+              const Row(children: [
                 Text("Biker",
                     style: TextStyle(
                         fontSize: 25,
-                        color: Theme.of(context).primaryColor,
+                        color: BikerverseColors.accent,
                         fontWeight: FontWeight.bold,
                         fontFamily: 'Orbitron')),
-                const Text("verse",
+                Text("verse",
                     style: TextStyle(
                         fontSize: 25,
                         fontWeight: FontWeight.bold,
+                        color: BikerverseColors.textPrimary,
                         fontFamily: 'Orbitron'))
               ]),
             ],
@@ -75,23 +80,18 @@ class PopAppBar extends StatelessWidget implements PreferredSizeWidget {
         ),
         centerTitle: false,
         actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              onSearchTap(context);
-            },
+          AppBarIconButton(
+            icon: Icons.search,
+            onTap: () => onSearchTap(context),
           ),
-          IconButton(
-            icon: const Icon(Icons.favorite_border_outlined),
-            onPressed: () {
-              onFavScreenTap(context);
-            },
+          AppBarIconButton(
+            icon: Icons.favorite_border_outlined,
+            onTap: () => onFavScreenTap(context),
           ),
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              onSettingsTap(context);
-            },
+          AppBarIconButton(
+            icon: Icons.person_outline,
+            accent: true,
+            onTap: () => onSettingsTap(context),
           ),
         ],
       ),

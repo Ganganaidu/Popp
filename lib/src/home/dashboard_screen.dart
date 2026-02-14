@@ -76,13 +76,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return const SingleChildScrollView(
       child: Column(
         children: [
-          AdCarouselWidget(),
-          SizedBox(height: 20.0),
-          PopServicesWidgets(),
-          // SizedBox(height: 20.0),
+          _MobileHeroStack(),
+          SizedBox(height: 12.0),
           ProductListDashboardScreen(),
-          // SizedBox(height: 20.0),
-          ServiceListDashboardScreen(),
+          // ServiceListDashboardScreen(),
         ],
       ),
     );
@@ -185,6 +182,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _MobileHeroStack extends StatelessWidget {
+  const _MobileHeroStack();
+
+  @override
+  Widget build(BuildContext context) {
+    return const SizedBox(
+      height: 500, // Reduced height to fit the new design
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned.fill(
+            bottom: 50, // Leave space at bottom so image doesn't go all the way down behind the list
+            child: AdCarouselWidget(),
+          ),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0, // Align to bottom of the sized box
+            child: PopServicesWidgets(),
+          ),
+        ],
       ),
     );
   }

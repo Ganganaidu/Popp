@@ -23,7 +23,7 @@ class ProductUtils {
   ];
 
   static String getTitle(Map<String, dynamic>? product) {
-    return "${product?['brandName']} ${product?['modelName']} - ${product?['city']}";
+    return "${product?['brandName']} ${product?['modelName']}";
   }
 
   static String getBrandAndModelName(Map<String, dynamic>? product) {

@@ -13,6 +13,7 @@ import 'package:popp/src/utils/app_constants.dart';
 
 import '../deeplink/DeepLinkConfig.dart';
 import '../navigation/nav_router.dart';
+import '../theme/bikerverse_colors.dart';
 
 class AdCarouselWidget extends StatefulWidget {
   const AdCarouselWidget({super.key});
@@ -72,7 +73,7 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
       builder: (context, viewModel, _) {
         if (viewModel.isLoading) {
           return SizedBox(
-            height: isWeb ? 500 : 350,
+            height: isWeb ? 500 : 420,
             child: Shimmer.fromColors(
               baseColor: Colors.grey[300]!,
               highlightColor: Colors.grey[100]!,
@@ -91,7 +92,7 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
 
         if (viewModel.ads.length == 1) {
           return SizedBox(
-            height: isWeb ? 500 : 350,
+            height: isWeb ? 500 : 420,
             child: buildAdSlide(viewModel.ads.first, isWeb: isWeb),
           );
         }
@@ -105,9 +106,10 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
                   .map((ad) => buildAdSlide(ad, isWeb: isWeb))
                   .toList(),
               options: CarouselOptions(
-                height: isWeb ? 500 : 350,
+                height: isWeb ? 500 : 420,
                 viewportFraction: 1.0,
                 autoPlay: true,
+                autoPlayInterval: const Duration(seconds: 4),
                 onPageChanged: (index, reason) =>
                     setState(() => _current = index),
               ),
@@ -464,172 +466,186 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
           AppLogger.e('Could not launch ${ad.buttonLink}');
         }
       },
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          if (ad.imageUrl.isEmpty)
-            // If no image URL is provided, show a placeholder
-            Image.asset(
-              'assets/ads_default_image.png',
-              fit: BoxFit.cover,
-              width: double.infinity,
-              height: double.infinity,
-            )
-          else
-            Image.network(
-              ad.imageUrl,
-              fit: BoxFit.cover,
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) return child;
-                return Shimmer.fromColors(
-                  baseColor: Colors.grey[300]!,
-                  highlightColor: Colors.grey[100]!,
-                  child: Container(color: Colors.white),
-                );
-              },
-              errorBuilder: (context, error, stackTrace) {
-                // If a single image fails to load, show a placeholder
-                return Image.asset(
-                  'assets/ads_default_image.png',
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  height: double.infinity,
-                );
-              },
+      child: Container(
+        decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.6),
+              blurRadius: 24,
+              offset: const Offset(0, 12),
             ),
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color.fromARGB(200, 0, 0, 0),
-                  // Increased opacity for better contrast
-                  Colors.black87,
-                ],
-                stops: [0.0, 0.8],
+          ],
+        ),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            if (ad.imageUrl.isEmpty)
+              Image.asset(
+                'assets/book_track_trainings.png',
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: double.infinity,
+              )
+            else
+              Image.network(
+                ad.imageUrl,
+                fit: BoxFit.cover,
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Shimmer.fromColors(
+                    baseColor: Colors.grey[300]!,
+                    highlightColor: Colors.grey[100]!,
+                    child: Container(color: Colors.white),
+                  );
+                },
+                errorBuilder: (context, error, stackTrace) {
+                  return Image.asset(
+                    'assets/book_track_trainings.png',
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: double.infinity,
+                  );
+                },
+              ),
+            // Darker overlay for better text contrast
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withOpacity(0.7),
+                      Colors.black.withOpacity(0.8),
+                      Colors.black.withOpacity(0.9),
+                      Colors.black.withOpacity(0.95),
+                    ],
+                    stops: const [0.0, 0.4, 0.7, 1.0],
+                  ),
+                ),
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 24,
-              vertical: 20,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Text(
-                  ad.title,
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      shadows: [
-                        Shadow(
-                          color: Colors.black.withOpacity(0.7),
-                          offset: const Offset(0, 2),
-                          blurRadius: 4,
-                        ),
-                      ]),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  ad.highlight,
-                  style: TextStyle(
-                      color: context.primaryColor,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Orbitron',
-                      shadows: [
-                        Shadow(
-                          color: Colors.black.withOpacity(0.7),
-                          offset: const Offset(0, 2),
-                          blurRadius: 4,
-                        ),
-                      ]),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  ad.subtitle,
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withOpacity(0.7),
-                        offset: const Offset(0, 2),
-                        blurRadius: 4,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 8,
-                  children: ad.points
-                      .map((point) => Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.check_circle_outline,
-                                color: context.primaryColor,
-                                size: 18,
-                                shadows: [
-                                  Shadow(
-                                    color: Colors.black.withOpacity(0.7),
-                                    offset: const Offset(0, 2),
-                                    blurRadius: 4,
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                point,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 14,
-                                  shadows: [
-                                    Shadow(
-                                      color: Colors.black.withOpacity(0.7),
-                                      offset: const Offset(0, 2),
-                                      blurRadius: 4,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ))
-                      .toList(),
-                ),
-                const SizedBox(height: 20),
-                if (ad.buttonText.isNotEmpty && ad.buttonLink.isNotEmpty)
-                  ElevatedButton(
-                    onPressed: () async {
-                      deepLinkToTarget(ad.buttonLink);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: context.primaryColor,
-                      foregroundColor: Colors.white,
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24,
+                vertical: 32,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center, // Centered vertically in available space
+                children: [
+                  const Spacer(flex: 2), // Push content down explicitly
+                  if (ad.highlight.isNotEmpty)
+                    Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
+                          horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1B4332).withOpacity(0.8), // Dark Green background
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: const Color(0xFF2D6A4F), width: 1),
                       ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
+                      child: Text(
+                        ad.highlight.toUpperCase(),
+                        style: const TextStyle(
+                          color: Color(0xFF4ADE80), // Bright Green text
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.2,
+                          fontSize: 11,
+                        ),
                       ),
                     ),
-                    child: Text(
-                      ad.buttonText,
-                      style: const TextStyle(fontSize: 14),
+                  if (ad.title.isNotEmpty)
+                  const SizedBox(height: 16),
+                  Text(
+                    ad.title.toUpperCase(),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 32,
+                      fontFamily: 'Orbitron', // Assuming this font is available or fallback
+                      fontWeight: FontWeight.w900,
+                      fontStyle: FontStyle.italic,
+                      height: 1.0,
+                      letterSpacing: -0.5,
+                      shadows: [
+                        Shadow(
+                          offset: Offset(0, 2),
+                          blurRadius: 4,
+                          color: Colors.black54,
+                        ),
+                      ],
                     ),
                   ),
-              ],
+                  if (ad.subtitle.isNotEmpty)
+                  const SizedBox(height: 12),
+                  Text(
+                    ad.subtitle,
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.8),
+                      fontSize: 14,
+                      height: 1.5,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  if (ad.buttonText.isNotEmpty && ad.buttonLink.isNotEmpty)
+                    _buildMobileCta(ad),
+                  const Spacer(flex: 3), // Leave space for PopServicesWidgets at bottom
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMobileCta(AdBanner ad) {
+    return InkWell(
+      onTap: () async {
+        deepLinkToTarget(ad.buttonLink);
+      },
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(24, 12, 12, 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              ad.buttonText.toUpperCase(),
+              style: const TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.5,
+                fontSize: 13,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Container(
+              width: 26,
+              height: 26,
+              decoration: const BoxDecoration(
+                color: Color(0xFFF0F0F0),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.arrow_forward,
+                size: 16,
+                color: Colors.black,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

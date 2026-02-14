@@ -5,6 +5,17 @@ import 'package:flutter/material.dart';
 import '../deeplink/DeepLinkConfig.dart';
 import '../models/pop_service_item.dart';
 import '../navigation/nav_router.dart';
+import '../theme/bikerverse_colors.dart';
+import '../utils/build_extensions.dart';
+
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+
+import '../deeplink/DeepLinkConfig.dart';
+import '../models/pop_service_item.dart';
+import '../navigation/nav_router.dart';
+import '../theme/bikerverse_colors.dart';
 import '../utils/build_extensions.dart';
 
 class PopServicesWidgets extends StatefulWidget {
@@ -30,17 +41,9 @@ class _PopServicesWidgetsState extends State<PopServicesWidgets> {
     config.action?.call(context);
   }
 
-  void _scrollLeft() {
+  void _scroll(double offset) {
     _scrollController.animateTo(
-      _scrollController.offset - 300,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOut,
-    );
-  }
-
-  void _scrollRight() {
-    _scrollController.animateTo(
-      _scrollController.offset + 300,
+      _scrollController.offset + offset,
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeOut,
     );
@@ -59,7 +62,7 @@ class _PopServicesWidgetsState extends State<PopServicesWidgets> {
     if (isWeb) {
       return _buildWebLayout();
     } else {
-      return _buildMobileLayout(context);
+      return _buildMobileLayout();
     }
   }
 
@@ -68,236 +71,153 @@ class _PopServicesWidgetsState extends State<PopServicesWidgets> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Padding(
-          padding: EdgeInsets.all(25),
+          padding: EdgeInsets.symmetric(horizontal: 25, vertical: 20),
           child: Text(
             'Would you like to',
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
+              color: BikerverseColors.textPrimary,
             ),
           ),
         ),
         SizedBox(
-          height: 200, // Fixed height for the container
-        child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          height: 200,
+          child: Row(
             children: [
-              // Left Arrow
-              Container(
-                height: 120,
-                width: 40,
-                decoration: BoxDecoration(
-                  color: Colors.black45,
-                  borderRadius: const BorderRadius.only(
-                    topRight: Radius.circular(8),
-                    bottomRight: Radius.circular(8),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 8,
-                      offset: const Offset(2, 0), // Shadow to right
-                    ),
-                  ],
-                ),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: _scrollLeft,
-                    borderRadius: const BorderRadius.only(
-                      topRight: Radius.circular(8),
-                      bottomRight: Radius.circular(8),
-                    ),
-                    child: const Icon(
-                      Icons.arrow_back_ios_new,
-                      color: Colors.green,
-                      size: 24,
-                    ),
-                  ),
-                ),
-              ),
-              
-              // Scrollable List
+              _buildScrollButton(Icons.arrow_back_ios_new, () => _scroll(-300)),
               Expanded(
                 child: ListView.separated(
                   controller: _scrollController,
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount: items.length,
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(width: 32),
-                  itemBuilder: (context, index) {
-                    final popServices = items[index];
-                    return Align(
-                      alignment: Alignment.topCenter,
-                      child: _buildServiceCard(context, popServices, isWeb: true),
-                    );
-                  },
+                  separatorBuilder: (_, __) => const SizedBox(width: 20),
+                  itemBuilder: (context, index) =>
+                      _buildServiceItem(context, items[index], isWeb: true),
                 ),
               ),
+              _buildScrollButton(Icons.arrow_forward_ios, () => _scroll(300)),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
 
-              // Right Arrow
-              Container(
-                height: 120,
-                width: 40,
-                decoration: BoxDecoration(
-                  color: Colors.black45,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(8),
-                    bottomLeft: Radius.circular(8),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 8,
-                      offset: const Offset(-2, 0), // Shadow to left
-                    ),
+  Widget _buildScrollButton(IconData icon, VoidCallback onTap) {
+    return Container(
+      width: 40,
+      height: 120,
+      margin: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        color: Colors.black45,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: IconButton(
+        icon: Icon(icon, color: BikerverseColors.accent),
+        onPressed: onTap,
+      ),
+    );
+  }
+
+  Widget _buildMobileLayout() {
+    return SizedBox(
+      height: 140, // Reduced height as items are compact
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 20), // More padding
+        itemCount: items.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 20), // Details from screenshot
+        itemBuilder: (context, index) =>
+            _buildServiceItem(context, items[index], isWeb: false),
+      ),
+    );
+  }
+
+
+  Widget _buildServiceItem(BuildContext context, PopServiceItem item,
+      {required bool isWeb}) {
+    final double containerSize = isWeb ? 120 : 90; // Smaller, punchy icons (matches screenshot)
+    final double iconSize = isWeb ? 50 : 32;
+
+    return GestureDetector(
+      onTap: () => _handleAction(context, item.action),
+      child: SizedBox(
+        width: containerSize, // Constraint width
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: containerSize,
+              height: containerSize,
+              decoration: BoxDecoration(
+                // Gradient Background
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    item.color?.withOpacity(0.8) ?? const Color(0xFF1E1E1E),
+                    item.color?.withOpacity(0.4) ?? const Color(0xFF1E1E1E),
                   ],
                 ),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: _scrollRight,
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(8),
-                      bottomLeft: Radius.circular(8),
-                    ),
-                    child: const Icon(
-                      Icons.arrow_forward_ios,
-                      color: Colors.green,
-                      size: 24,
-                    ),
-                  ),
+                borderRadius: BorderRadius.circular(24), // Soft rounded corners (Squircle-ish)
+                // Colored Shadow / Glow
+                boxShadow: item.color != null
+                    ? [
+                        BoxShadow(
+                          color: item.color!.withOpacity(0.4),
+                          blurRadius: 12,
+                          offset: const Offset(0, 8),
+                          spreadRadius: -2,
+                        ),
+                      ]
+                    : [],
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.1),
+                  width: 1,
                 ),
               ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMobileLayout(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(
-          height: 150,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: items.length,
-            itemBuilder: (context, index) {
-              final popServices = items[index];
-              return Padding(
-                padding: EdgeInsets.only(
-                  left: index == 0 ? 16.0 : 0.0,
-                  right: 16.0,
-                ),
-                child: _buildServiceCard(context, popServices, isWeb: false),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildServiceCard(BuildContext context, PopServiceItem popServices,
-      {required bool isWeb}) {
-    if (isWeb) {
-      // Simplified Web Design
-      return InkWell(
-        onTap: () => _handleAction(context, popServices.action),
-        borderRadius: BorderRadius.circular(12),
-        hoverColor: Colors.transparent, // Disable default hover color
-        child: SizedBox( // Use SizedBox to constrain width
-          width: 100,
-          // Removed fixed height to prevent overflow
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 100, // Slightly smaller icon container
-                height: 120,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade50, // Very subtle background
-                  borderRadius: BorderRadius.circular(12), // Rounded corners
-                ),
-                padding: const EdgeInsets.all(12),
-                child: Image.asset(
-                  popServices.assetImageUrl,
-                  fit: BoxFit.contain,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                popServices.title,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600, // Semi-bold for clean look
-                  color: context.primaryColorLight, // Use primary color for text to match theme
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    // Existing Mobile Design
-    return InkWell(
-      onTap: () => _handleAction(context, popServices.action),
-      splashColor: Colors.grey.shade300,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Hero(
-              tag: 'service-image-${popServices.title}',
-              child: Container(
-                width: 100,
-                height: 100,
-                decoration: const BoxDecoration(
-                  color: Colors.white70,
-                  shape: BoxShape.circle,
-                ),
-                padding: const EdgeInsets.all(12),
-                child: Image.asset(
-                  popServices.assetImageUrl,
-                  fit: BoxFit.contain,
-                ),
+              child: Center(
+                child: item.customIconPainter != null
+                    ? CustomPaint(
+                        size: Size(iconSize, iconSize),
+                        painter: item.customIconPainter,
+                      )
+                    : item.icon != null
+                        ? Icon(
+                            item.icon,
+                            size: iconSize,
+                            color: Colors.white.withOpacity(0.95),
+                          )
+                        : const SizedBox(),
               ),
             ),
-            const SizedBox(height: 8),
-            SizedBox(
-                height: 40,
-                // Give the text container a fixed height
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 0),
-                  child: Center(
-                    // Center the text vertically
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 100),
-                      child: Text(
-                        popServices.title,
-                        textAlign: TextAlign.center,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                )),
+            const SizedBox(height: 12),
+            Text(
+              item.title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w800, // Bold top text
+                color: Color(0xFFE0E0E0),
+                letterSpacing: 0.8,
+                height: 1.0,
+              ),
+              maxLines: 1,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              item.subTitle, // Using this as subtitle based on existing code mapping
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                color: Colors.grey,
+                height: 1.0,
+              ),
+              maxLines: 1,
+            ),
           ],
         ),
       ),

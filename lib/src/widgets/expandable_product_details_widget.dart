@@ -54,8 +54,8 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (product.kmDriven?.isNotEmpty ?? false)
-                  detailRow("KM Driven", product.kmDriven!, theme),
+                // if (product.kmDriven?.isNotEmpty ?? false)
+                //   detailRow("KM Driven", product.kmDriven!, theme),
                 if (product.registrationDate != null)
                   detailRow("Registration Date",
                       _formatDate(product.registrationDate, true), theme),
@@ -92,9 +92,9 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
                       "Battery Condition", product.batteryCondition!, theme),
                 if (product.tyreCondition != null)
                   detailRow("Tyre Condition", product.tyreCondition!, theme),
-                if (product.additionalDetails.isNotEmpty)
-                  detailRow(
-                      "Additional Details", product.additionalDetails, theme),
+                // if (product.additionalDetails.isNotEmpty)
+                //   detailRow(
+                //       "Additional Details", product.additionalDetails, theme),
               ],
             ),
           ),
@@ -128,17 +128,13 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
     final isRegistrationPlace =
         title.toLowerCase().contains('registration place');
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6.0),
+      padding: const EdgeInsets.only(bottom: 16.0),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          Text("$title:",
+              style: const TextStyle(color: Colors.grey, fontSize: 14)),
           Expanded(
-              flex: 3,
-              child: Text("$title:",
-                  style:
-                      theme.titleSmall?.copyWith(fontWeight: FontWeight.w600))),
-          Expanded(
-            flex: 5,
             child: isRegistrationPlace && value.isNotEmpty
                 ? GestureDetector(
                     onTap: () async {
@@ -154,9 +150,18 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
                         color: Colors.blue,
                         decoration: TextDecoration.underline,
                       ),
+                      textAlign: TextAlign.right,
                     ),
                   )
-                : Text(value),
+                : Text(
+                    value.isEmpty ? "-" : value,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    textAlign: TextAlign.right,
+                  ),
           ),
         ],
       ),
@@ -170,5 +175,3 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
     return DateFormat(displayFormat).format(date);
   }
 }
-
-//  const TextStyle(fontWeight: FontWeight.w600)

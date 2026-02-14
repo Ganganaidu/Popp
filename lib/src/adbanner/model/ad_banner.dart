@@ -10,6 +10,7 @@ class AdBanner {
   final String buttonText;
   final String buttonLink;
   final bool isActive;
+  final bool hideOverlay;
 
   AdBanner({
     this.id,
@@ -21,6 +22,7 @@ class AdBanner {
     required this.buttonText,
     required this.buttonLink,
     required this.isActive,
+    required this.hideOverlay,
   });
 
   factory AdBanner.fromJson(Map<String, dynamic> json) {
@@ -33,6 +35,7 @@ class AdBanner {
       buttonText: json['buttonText'] ?? 'Learn More',
       buttonLink: json['buttonLink'] ?? '',
       isActive: json['isActive'] ?? true,
+      hideOverlay: json['hideOverlay'] ?? false,
     );
   }
 
@@ -49,6 +52,7 @@ class AdBanner {
       buttonText: data['buttonText'] ?? 'Learn More',
       buttonLink: data['buttonLink'] ?? '',
       isActive: data['isActive'] ?? true,
+      hideOverlay: data['hideOverlay'] ?? false,
     );
   }
 }

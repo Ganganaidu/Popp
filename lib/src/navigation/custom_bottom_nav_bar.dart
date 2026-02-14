@@ -3,6 +3,7 @@ import 'package:popp/src/utils/build_extensions.dart';
 import 'package:provider/provider.dart';
 import '../chat/chat_service.dart';
 import '../utils/app_constants.dart';
+import '../theme/bikerverse_colors.dart';
 
 class CustomBottomNavBar extends StatelessWidget {
   final int selectedIndex;
@@ -21,19 +22,31 @@ class CustomBottomNavBar extends StatelessWidget {
       alignment: Alignment.bottomCenter,
       children: [
         Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
+            color: isDarkMode ? BikerverseColors.background : Colors.grey[50],
+            border: Border(
+              top: BorderSide(
+                color:
+                    isDarkMode ? BikerverseColors.outline : Colors.grey.shade300,
+              ),
+            ),
             boxShadow: [
-              BoxShadow(color: Colors.black12, blurRadius: 5),
+              BoxShadow(
+                color: Colors.black.withOpacity(0.35),
+                blurRadius: 24,
+                offset: const Offset(0, -6),
+              ),
             ],
           ),
-          padding: const EdgeInsets.only(bottom: 5),
+          padding: const EdgeInsets.only(bottom: 6, top: 4),
           child: BottomNavigationBar(
             type: BottomNavigationBarType.fixed,
-            backgroundColor: isDarkMode ? null : Colors.grey[50],
+            backgroundColor: Colors.transparent,
             elevation: 0,
             currentIndex: selectedIndex,
             selectedItemColor: context.primaryColor,
-            unselectedItemColor: Colors.grey,
+            unselectedItemColor:
+                isDarkMode ? BikerverseColors.textMuted : Colors.grey,
             onTap: onItemTapped,
             showSelectedLabels: true,
             showUnselectedLabels: true,

@@ -8,6 +8,7 @@ import '../utils/build_extensions.dart';
 import '../utils/product_utils.dart';
 import '../widgets/listing_card.dart';
 import 'category_detail_screen.dart';
+import '../theme/bikerverse_colors.dart';
 
 class CategoryListWidget extends StatelessWidget {
   final String categoryName;
@@ -77,9 +78,9 @@ class CategoryListWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildCategoryHeader(context, theme, isWeb: false),
-          const SizedBox(height: 8),
+          const SizedBox(height: 15),
           SizedBox(
-            height: itemWidth + 50,
+            height: itemWidth + 100,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: products.length,
@@ -91,6 +92,7 @@ class CategoryListWidget extends StatelessWidget {
               },
             ),
           ),
+          const SizedBox(height: 25),
         ],
       ),
     );
@@ -98,6 +100,68 @@ class CategoryListWidget extends StatelessWidget {
 
   Widget _buildCategoryHeader(BuildContext context, TextTheme theme,
       {required bool isWeb}) {
+    if (!isWeb) {
+      return InkWell(
+        onTap: () => _navigateToCategoryPage(context),
+        child: Padding(
+          padding: const EdgeInsets.only(top: 6, bottom: 4),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      categoryName.toUpperCase(),
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        fontStyle: FontStyle.italic,
+                        color: BikerverseColors.textPrimary,
+                        letterSpacing: 0.6,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Container(
+                      width: 44,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: BikerverseColors.accent,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              InkWell(
+                onTap: () => _navigateToCategoryPage(context),
+                borderRadius: BorderRadius.circular(20),
+                child: const Row(
+                  children: [
+                    Text(
+                      'VIEW ALL',
+                      style: TextStyle(
+                        color: BikerverseColors.textSecondary,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 1.1,
+                        fontSize: 12,
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    Icon(
+                      Icons.arrow_forward_ios,
+                      size: 14,
+                      color: BikerverseColors.accent,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return InkWell(
       onTap: () => _navigateToCategoryPage(context),
       child: Padding(

@@ -189,8 +189,8 @@ class _MyAppState extends State<MyApp> {
           navigatorKey: navigatorKey,
           title: 'BikerVerse',
           themeMode: currentThemeMode,
-          theme: poppLightTheme,
-          darkTheme: poppDarkTheme,
+          theme: kIsWeb ? poppLightTheme : bikerverseMobileTheme,
+          darkTheme: kIsWeb ? poppDarkTheme : bikerverseMobileTheme,
           home: const AuthWrapper(),
           routes: {
             '/login': (context) => const LoginScreen(),
@@ -210,4 +210,3 @@ class _MyAppState extends State<MyApp> {
     );
   }
 }
-

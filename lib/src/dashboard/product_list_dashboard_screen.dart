@@ -97,6 +97,10 @@ class _ProductListDashboardScreenState extends State<ProductListDashboardScreen>
   }
 
   Widget _shimmerLoading() {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final base = isDarkMode ? Colors.grey[800]! : Colors.grey[300]!;
+    final highlight = isDarkMode ? Colors.grey[700]! : Colors.grey[100]!;
+    final blockColor = isDarkMode ? Colors.grey[850]! : Colors.white;
     return SizedBox(
       height: 200,
       child: ListView.separated(
@@ -105,13 +109,13 @@ class _ProductListDashboardScreenState extends State<ProductListDashboardScreen>
         separatorBuilder: (context, index) => const SizedBox(height: 12),
         itemBuilder: (context, index) {
           return Shimmer.fromColors(
-            baseColor: Colors.grey[300]!,
-            highlightColor: Colors.grey[100]!,
+            baseColor: base,
+            highlightColor: highlight,
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 12),
               child: Row(
                 children: [
-                  Container(width: 60, height: 60, color: Colors.white),
+                  Container(width: 60, height: 60, color: blockColor),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -120,9 +124,9 @@ class _ProductListDashboardScreenState extends State<ProductListDashboardScreen>
                         Container(
                             height: 16,
                             width: double.infinity,
-                            color: Colors.white),
+                            color: blockColor),
                         const SizedBox(height: 8),
-                        Container(height: 14, width: 150, color: Colors.white),
+                        Container(height: 14, width: 150, color: blockColor),
                       ],
                     ),
                   ),

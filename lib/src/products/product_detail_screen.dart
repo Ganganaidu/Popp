@@ -1,9 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:popp/src/api/currency_service.dart';
 import 'package:popp/src/utils/app_loger.dart';
 import 'package:popp/src/utils/product_utils.dart';
 import 'package:popp/src/widgets/title_text.dart';
+import '../theme/bikerverse_colors.dart';
+import '../toolbar/AppBarIconButton.dart';
 import '../widgets/web_constrained_box.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shimmer/shimmer.dart';
@@ -175,30 +178,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         (product['thumbImageUrls'] as List<dynamic>? ?? []).cast<String>();
 
     return Scaffold(
-      appBar: AppBar(
-        title: TitleText(
-            product['subCategory'] != null &&
-                    product['subCategory'].toString().isNotEmpty
-                ? '${product['subCategory']}'
-                : product['category'],
-            style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Orbitron')),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.share),
-            onPressed: () => _shareProduct(product),
-            tooltip: 'Share Product',
-          ),
-        ],
-      ),
       body: kIsWeb
           ? _buildWebLayout(context, imageUrls, product, theme)
           : _buildMobileLayout(context, imageUrls, product, theme),
-      bottomNavigationBar: !kIsWeb && _isAdmin && !_isApproved
-          ? _buildAdminBottomBar()
-          : null,
+      bottomNavigationBar:
+          !kIsWeb && _isAdmin && !_isApproved ? _buildAdminBottomBar() : null,
     );
   }
 
@@ -259,7 +243,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           ],
                         ),
                         const SizedBox(height: 8),
-                         // Status and Location
+                        // Status and Location
                         Row(
                           children: [
                             if (widget.showStatus) ...[
@@ -335,15 +319,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         const SizedBox(height: 24),
 
                         // Chat Button
-                         ChatWithSellerCard(
+                        ChatWithSellerCard(
                           receiverUserName: product['sellerName'],
                           receiverUserID: product['userId'],
                           productTitle: ProductUtils.getTitle(product),
                           productId: product['id'],
                         ),
-                        
+
                         const SizedBox(height: 16),
-                        
+
                         // Admin Approve Button
                         if (_isAdmin && !_isApproved)
                           Padding(
@@ -375,34 +359,37 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: 48),
-              
+
               // Bottom Section: About This Product
               Container(
-                 width: double.infinity,
-                 padding: const EdgeInsets.all(32),
-                 decoration: BoxDecoration(
-                    color: Theme.of(context).cardColor,
-                    borderRadius: BorderRadius.circular(16),
-                     border: Border.all(color: Colors.grey.withOpacity(0.1)),
-                 ),
-                 child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                       const Text(
-                          "About This Product",
-                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                       ),
-                       const SizedBox(height: 16),
-                       Text(
-                          product['additionalDetails'] ?? 'No description available.',
-                          style: theme.bodyLarge?.copyWith(height: 1.6, fontSize: 16),
-                       ),
-                    ],
-                 ),
+                width: double.infinity,
+                padding: const EdgeInsets.all(32),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardColor,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.grey.withOpacity(0.1)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "About This Product",
+                      style:
+                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      product['additionalDetails'] ??
+                          'No description available.',
+                      style:
+                          theme.bodyLarge?.copyWith(height: 1.6, fontSize: 16),
+                    ),
+                  ],
+                ),
               ),
-               const SizedBox(height: 48),
+              const SizedBox(height: 48),
             ],
           ),
         ),
@@ -412,98 +399,119 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   Widget _buildMobileLayout(BuildContext context, List<String> imageUrls,
       Map<String, dynamic> product, TextTheme theme) {
-    return WebConstrainedBox(
-      child: CustomScrollView(
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    return Scaffold(
+      backgroundColor: const Color(0xFF121212), // Dark background
+      body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            expandedHeight: 300.0,
-            floating: false,
+            backgroundColor: const Color(0xFF121212),
+            expandedHeight: screenHeight * 0.45,
             pinned: true,
-            automaticallyImplyLeading: false,
+            leading: Center(
+              child: AppBarIconButton(
+                icon: Icons.arrow_back,
+                onTap: () => Navigator.of(context).pop(),
+              ),
+            ),
+            actions: [
+              AppBarIconButton(
+                icon: Icons.share,
+                onTap: () => _shareProduct(product),
+              ),
+              const SizedBox(width: 12),
+              AppBarIconButton(
+                  icon: isFavorite ? Icons.favorite : Icons.favorite_border,
+                  onTap: () => _favButtonDisabled ? null : _toggleFavorite,
+                  iconColor: isFavorite ? Colors.red : null),
+              const SizedBox(width: 16),
+            ],
             flexibleSpace: FlexibleSpaceBar(
               background: Stack(
-                fit: StackFit.expand,
                 children: [
-                  ValueListenableBuilder<int>(
-                    valueListenable: selectedImageIndexNotifier,
-                    builder: (context, selectedImageIndex, _) {
-                      return PageView.builder(
-                        controller: _pageController,
-                        itemCount: imageUrls.length,
-                        onPageChanged: (index) {
-                          selectedImageIndexNotifier.value = index;
+                  PageView.builder(
+                    controller: _pageController,
+                    itemCount: imageUrls.length,
+                    onPageChanged: (index) {
+                      selectedImageIndexNotifier.value = index;
+                    },
+                    itemBuilder: (context, index) {
+                      return GestureDetector(
+                        onTap: () {
+                          if (imageUrls.isNotEmpty) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                fullscreenDialog: true,
+                                builder: (context) => FullScreenImageScreen(
+                                  imageUrls: imageUrls,
+                                  initialIndex: index,
+                                ),
+                              ),
+                            );
+                          }
                         },
-                        itemBuilder: (context, index) {
-                          final url =
-                              imageUrls.isNotEmpty ? imageUrls[index] : '';
-                          return GestureDetector(
-                            onTap: () {
-                              if (imageUrls.isNotEmpty) {
-                                FocusManager.instance.primaryFocus?.unfocus();
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    fullscreenDialog: true,
-                                    builder: (context) => FullScreenImageScreen(
-                                      imageUrls: imageUrls,
-                                      initialIndex:
-                                          selectedImageIndexNotifier.value,
-                                    ),
-                                  ),
-                                );
-                              }
-                            },
-                            child: _buildImage(url, useHero: index == 0),
-                          );
-                        },
+                        child: Image.network(
+                          imageUrls[index],
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              Container(color: Colors.grey[900]),
+                        ),
                       );
                     },
                   ),
-                  // --- NEW: Status Banner on the main image ---
-                  // if (widget.showStatus) _buildStatusBanner(),
+                  // Gradient for better icon visibility on bright images
                   Positioned(
-                    top: 32,
-                    right: 16,
-                    child: Row(
-                      children: [
-                        GestureDetector(
-                          onTap: _favButtonDisabled ? null : _toggleFavorite,
-                          child: CircleAvatar(
-                            backgroundColor: Colors.white70,
-                            child: Icon(
-                              isFavorite
-                                  ? Icons.favorite
-                                  : Icons.favorite_border,
-                              color: Colors.red,
-                            ),
-                          ),
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: 100,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.black.withOpacity(0.7),
+                            Colors.transparent,
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                   ),
                   Positioned(
-                    bottom: 32,
+                    bottom: 0,
                     left: 0,
                     right: 0,
-                    child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.only(top: 80, bottom: 20),
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.topCenter,
+                          colors: [
+                            Color(0xFF121212),
+                            Colors.transparent,
+                          ],
+                        ),
+                      ),
                       child: ValueListenableBuilder<int>(
                         valueListenable: selectedImageIndexNotifier,
-                        builder: (context, selectedImageIndex, _) {
+                        builder: (context, selectedIndex, _) {
                           return Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: List.generate(imageUrls.length, (index) {
-                              bool isActive = index == selectedImageIndex;
-                              return AnimatedContainer(
-                                duration: const Duration(milliseconds: 300),
+                              return Container(
                                 margin:
-                                    const EdgeInsets.symmetric(horizontal: 4),
-                                width: isActive ? 20 : 12,
-                                height: 4,
+                                    const EdgeInsets.symmetric(horizontal: 3),
+                                width: selectedIndex == index ? 24 : 6,
+                                height: 6,
                                 decoration: BoxDecoration(
-                                  color: isActive
-                                      ? Colors.white54
-                                      : Colors.black26,
-                                  borderRadius: BorderRadius.circular(4),
+                                  color: selectedIndex == index
+                                      ? const Color(0xFF2ECC71)
+                                      : Colors.grey,
+                                  borderRadius: BorderRadius.circular(3),
                                 ),
                               );
                             }),
@@ -512,121 +520,151 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       ),
                     ),
                   ),
-                  Positioned(
-                    bottom: 20,
-                    right: 12,
-                    child: ValueListenableBuilder<int>(
-                      valueListenable: selectedImageIndexNotifier,
-                      builder: (context, selectedImageIndex, _) {
-                        return Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.black54,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            '${selectedImageIndex + 1} / ${imageUrls.length}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
                 ],
               ),
             ),
           ),
-          if (imageUrls.length > 1)
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: 100,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: imageUrls.length,
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  itemBuilder: (context, index) {
-                    final url = imageUrls[index];
-                    return ValueListenableBuilder<int>(
-                      valueListenable: selectedImageIndexNotifier,
-                      builder: (context, selectedImageIndex, _) {
-                        return GestureDetector(
-                          onTap: () {
-                            selectedImageIndexNotifier.value = index;
-                            _pageController.animateToPage(
-                              index,
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            );
-                          },
-                          child: Container(
-                            margin: const EdgeInsets.only(right: 10),
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                  color: selectedImageIndex == index
-                                      ? Colors.blue
-                                      : Colors.transparent,
-                                  width: 2),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(6),
-                              child: Image.network(
-                                url,
-                                width: 100,
-                                height: 100,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    );
-                  },
-                ),
-              ),
-            ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 12),
-                  // --- Product Title with expandable logic ---
-                  ExpandableText(
-                    text: ProductUtils.getTitle(product),
-                    style: theme.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.bold),
-                    maxLines: 2,
+                  const SizedBox(height: 15),
+                  // Title
+                  Text(
+                    ProductUtils.getTitle(product),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      height: 1.1,
+                      fontFamily: 'Orbitron',
+                    ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 8),
+                  // Price
                   Text(
                     CurrencyService.getProductPrice(
                         product['expectedPrice'], countryCode),
-                    style: theme.titleLarge?.copyWith(
-                      color: Theme.of(context).primaryColor,
+                    style: const TextStyle(
+                      color: Color(0xFF2ECC71), // Bright Green
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 10),
+
+                  const SizedBox(height: 32),
+                  // Highlights Row
+                  _buildHighlightsRow(product),
+
+                  const SizedBox(height: 32),
+
+                  const Text(" DETAILS ",
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          fontStyle: FontStyle.italic)),
+                  const SizedBox(height: 24),
+
                   ExpandableProductDetails(productJson: product),
+
+                  if (product['additionalDetails'].isNotEmpty)
+                    const Text("DESCRIPTION",
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            fontStyle: FontStyle.italic)),
+                  const SizedBox(height: 16),
+                  Text(
+                    product['additionalDetails'],
+                    style: const TextStyle(
+                        color: Colors.white, fontSize: 14, height: 1.5),
+                  ),
+
                   const SizedBox(height: 20),
+
                   ChatWithSellerCard(
                     receiverUserName: product['sellerName'],
                     receiverUserID: product['userId'],
                     productTitle: ProductUtils.getTitle(product),
                     productId: product['id'],
                   ),
-                  const SizedBox(height: 50),
+
+                  const SizedBox(height: 100), // Space for bottom button
                 ],
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHighlightsRow(Map<String, dynamic> product) {
+    final cards = <Widget>[];
+
+    final mfgDate = _formatDate(product['mfgDate'], true);
+    if (mfgDate != "-") {
+      cards.add(Expanded(
+          child: _buildHighlightCard(
+              Icons.calendar_today_outlined, "MANUFACTURING", mfgDate)));
+    }
+
+    final kmDriven = product['kmDriven'];
+    if (kmDriven != null && kmDriven.toString() != '-') {
+      cards.add(Expanded(
+          child: _buildHighlightCard(Icons.history, "DRIVEN", "$kmDriven KM")));
+    }
+
+    final firstOwner = product['firstOwner'];
+    if (firstOwner != null && firstOwner.toString() != '-') {
+      cards.add(Expanded(
+          child: _buildHighlightCard(
+              Icons.settings_outlined, "OWNERSHIP", "$firstOwner Owner")));
+    }
+
+    if (cards.isEmpty) return const SizedBox.shrink();
+
+    final children = <Widget>[];
+    for (int i = 0; i < cards.length; i++) {
+      children.add(cards[i]);
+      if (i < cards.length - 1) {
+        children.add(const SizedBox(width: 12));
+      }
+    }
+
+    return Row(children: children);
+  }
+
+  Widget _buildHighlightCard(IconData icon, String label, String value) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E1E1E),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: Colors.green, size: 20),
+          const SizedBox(height: 8),
+          Text(label,
+              style: const TextStyle(
+                  color: Colors.grey,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600)),
+          const SizedBox(height: 4),
+          Text(value,
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis),
         ],
       ),
     );
@@ -640,7 +678,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           child: SizedBox(
             width: double.infinity,
             height: 50,
-
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: _isApproved ? Colors.green : Colors.orange,
@@ -682,25 +719,19 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   String _formatDate(dynamic date, bool selectOnlyMonthYear) {
     if (date == null) return "-";
-    // Handle Timestamp or DateTime
     DateTime dt;
     if (date is DateTime) {
       dt = date;
     } else {
-      // Assume Firestore Timestamp
       try {
         dt = date.toDate();
       } catch (e) {
         return "-";
       }
     }
-    // Simple date formatting helper for this class locally, as reusing logic from utils might be better or copying small helper
-    // Ideally move to utils but let's keep it simple here as the original code didn't show the helper.
-    // Wait, original code didn't have _formatDate method in this file?
-    // Checking original file... _formatDate was NOT in `ProductDetailScreen`. It might have been using something else or I missed it.
-    // Ah, `ExpandableProductDetails` had it.
-    // Implementing basic one here.
-    return "${dt.day}/${dt.month}/${dt.year}";
+    final String displayFormat =
+        selectOnlyMonthYear ? 'MMMM yyyy' : 'd MMMM yyyy';
+    return DateFormat(displayFormat).format(dt);
   }
 
   Widget _buildStatusBanner() {

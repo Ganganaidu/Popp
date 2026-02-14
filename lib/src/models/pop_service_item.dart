@@ -1,64 +1,101 @@
+import 'package:flutter/material.dart';
+
 import '../deeplink/DeepLinkConfig.dart';
-import '../utils/product_utils.dart';
+import '../services/shortcuts/shortcut_widgets.dart';
 
 class PopServiceItem {
   final String? imageUrl;
   final String title;
-  final String assetImageUrl;
+  final String subTitle;
   final String action;
+  final IconData? icon;
+  final Color? color;
+  final CustomPainter? customIconPainter;
 
   PopServiceItem({
     this.imageUrl,
     required this.title,
-    required this.assetImageUrl,
+    required this.subTitle,
     required this.action,
+    this.icon,
+    this.color,
+    this.customIconPainter,
   });
 }
 
 final List<PopServiceItem> items = [
   PopServiceItem(
-      imageUrl: null,
-      title: 'Sell Bike',
-      assetImageUrl: "assets/sell_your_bike.png",
-      action: sellYourBike),
+    imageUrl: null,
+    title: 'SELL',
+    subTitle: "Bike",
+    icon: Icons.motorcycle_outlined,
+    action: sellYourBike,
+    color: const Color(0xFF1B4332), // Dark Green
+  ),
   PopServiceItem(
-      imageUrl: null,
-      title: 'Sell Accessory',
-      assetImageUrl: "assets/sell_your_accessories.png",
-      action: sellAccessory),
+    imageUrl: null,
+    title: 'SELL',
+    subTitle: "Accessory",
+    action: sellAccessory,
+    icon: Icons.shopping_bag_outlined, // Bag icon
+    customIconPainter: null,
+    color: const Color(0xFF1E3A5F), // Dark Blue
+  ),
   PopServiceItem(
-      imageUrl: null,
-      title: 'List your Business',
-      assetImageUrl: "assets/list_your_services.png",
-      action: listYourServices),
+    imageUrl: null,
+    title: 'LIST',
+    subTitle: "Business",
+    action: listYourServices,
+    icon: Icons.store_outlined, // Building icon
+    customIconPainter: null,
+    color: const Color(0xFF4A1E5C), // Dark Purple
+  ),
   PopServiceItem(
-      imageUrl: null,
-      title: 'Find Mechanic',
-      assetImageUrl: "assets/book_your_services.png",
-      action: findMechanic),
+    imageUrl: null,
+    title: 'FIND',
+    subTitle: "Mechanic",
+    action: findMechanic,
+    customIconPainter: SpeedometerIconPainter(color: Colors.white), // Keep custom if no good outline Icon
+    color: const Color(0xFF6B4423), // Dark Brown
+  ),
   PopServiceItem(
-      imageUrl: null,
-      title: 'Track day & Training ',
-      assetImageUrl: "assets/book_track_trainings.png",
-      action: findTrackTraining),
+    imageUrl: null,
+    title: 'TRACK DAY',
+    subTitle: "Training",
+    action: findTrackTraining,
+    customIconPainter: FlagIconPainter(color: Colors.white),
+    color: const Color(0xFF6B1E2E), // Dark Red
+  ),
   PopServiceItem(
-      imageUrl: null,
-      title: 'Bike rentals',
-      assetImageUrl: "assets/find_bike_rentals.png",
-      action: findBikeRentals),
+    imageUrl: null,
+    title: 'BIKE',
+    subTitle: "Rentals",
+    action: findBikeRentals,
+    customIconPainter: CalendarIconPainter(color: Colors.white),
+    color: const Color(0xFF2E3A4A), // Dark Slate
+  ),
   PopServiceItem(
-      imageUrl: null,
-      title: 'Premium Bike Inspection',
-      assetImageUrl: "assets/premium_bike_inspections.png",
-      action: premiumBikeInspection),
+    imageUrl: null,
+    title: 'PREMIUM',
+    subTitle: "Inspection",
+    action: premiumBikeInspection,
+    customIconPainter: VerifiedIconPainter(color: Colors.white),
+    color: const Color(0xFF1B4332), // Dark Green
+  ),
   PopServiceItem(
-      imageUrl: null,
-      title: ProductUtils.tyreShop,
-      assetImageUrl: "assets/tyre_shop.png",
-      action: tyreShop),
+    imageUrl: null,
+    title: 'TYRE',
+    subTitle: "Shops",
+    action: tyreShop,
+    customIconPainter: TyreIconPainter(color: Colors.white),
+    color: const Color(0xFF1E3A5F), // Dark Blue
+  ),
   PopServiceItem(
-      imageUrl: null,
-      title: ProductUtils.accessoryStore,
-      assetImageUrl: "assets/accessories_shop.png",
-      action: accessoryStore),
+    imageUrl: null,
+    title: 'ACCESSORY',
+    subTitle: "Store",
+    action: accessoryStore,
+    customIconPainter: StorefrontIconPainter(color: Colors.white),
+    color: const Color(0xFF4A1E5C), // Dark Purple
+  ),
 ];

@@ -37,6 +37,7 @@ class AdCarouselViewModel extends ChangeNotifier {
     }
 
     final newStatus = !ad.isActive;
+    final hideBlackOverlay = (ad.title.isEmpty && ad.subtitle.isEmpty);
     isLoading = true;
     notifyListeners();
 
@@ -55,6 +56,7 @@ class AdCarouselViewModel extends ChangeNotifier {
           buttonText: ad.buttonText,
           buttonLink: ad.buttonLink,
           isActive: newStatus,
+          hideOverlay: hideBlackOverlay,
         );
       }
       error = null;

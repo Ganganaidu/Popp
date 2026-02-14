@@ -5,6 +5,7 @@ import '../api/api_url.dart';
 import '../models/shortcut_category.dart';
 import '../navigation/nav_router.dart';
 import '../utils/product_utils.dart';
+import '../widgets/app_network_image.dart';
 
 class ExploreProductsScreen extends StatefulWidget {
   const ExploreProductsScreen({super.key});
@@ -155,15 +156,14 @@ class _ExploreProductsScreenState extends State<ExploreProductsScreen> {
                     return ListTile(
                       leading: ClipRRect(
                         borderRadius: BorderRadius.circular(8),
-                        child: Image.network(
-                          imageUrl,
+                        child: AppNetworkImage(
+                          imageUrl: imageUrl,
                           width: 60,
                           height: 60,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Icon(
-                              item['type'] == 'product'
-                                  ? Icons.shopping_bag
-                                  : Icons.miscellaneous_services),
+                          errorWidget: Icon(item['type'] == 'product'
+                              ? Icons.shopping_bag
+                              : Icons.miscellaneous_services),
                         ),
                       ),
                       title: Text(item['businessTitle'] ??

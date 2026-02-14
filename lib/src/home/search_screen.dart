@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../api/api_url.dart';
 import '../navigation/nav_router.dart';
+import '../widgets/app_network_image.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -144,18 +145,17 @@ class _SearchScreenState extends State<SearchScreen> {
                 Expanded(
                   child: ClipRRect(
                     borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                    child: Image.network(
-                      imageUrl,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) =>
-                          Icon(
-                            item['type'] == 'product'
-                                ? Icons.shopping_bag
-                                : Icons.miscellaneous_services,
-                            size: 30,
-                          ),
-                    ),
+                      child: AppNetworkImage(
+                        imageUrl: imageUrl,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorWidget: Icon(
+                          item['type'] == 'product'
+                              ? Icons.shopping_bag
+                              : Icons.miscellaneous_services,
+                          size: 30,
+                        ),
+                      ),
                   ),
                 ),
                 Padding(

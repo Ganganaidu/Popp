@@ -19,6 +19,7 @@ import '../widgets/full_screen_image_screen.dart';
 import '../widgets/web_constrained_box.dart';
 import '../widgets/web_image_gallery.dart';
 import '../widgets/web_product_specs.dart';
+import '../widgets/app_network_image.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final Map<String, dynamic> productJson;
@@ -109,31 +110,26 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   Widget _buildImage(String url, {bool useHero = false}) {
-    final imageWidget = Image.network(
-      url,
+    final imageWidget = AppNetworkImage(
+      imageUrl: url,
       fit: BoxFit.cover,
       width: double.infinity,
       height: 400,
-      loadingBuilder: (context, child, loadingProgress) {
-        if (loadingProgress == null) return child;
-        return Shimmer.fromColors(
-          baseColor: Colors.grey[300]!,
-          highlightColor: Colors.grey[100]!,
-          child: Container(
-            color: Colors.white,
-            width: double.infinity,
-            height: 400,
-          ),
-        );
-      },
-      errorBuilder: (context, error, stackTrace) {
-        return Container(
-          color: Colors.grey[200],
+      placeholder: Shimmer.fromColors(
+        baseColor: Colors.grey[300]!,
+        highlightColor: Colors.grey[100]!,
+        child: Container(
+          color: Colors.white,
           width: double.infinity,
           height: 400,
-          child: const Icon(Icons.broken_image, color: Colors.grey, size: 50),
-        );
-      },
+        ),
+      ),
+      errorWidget: Container(
+        color: Colors.grey[200],
+        width: double.infinity,
+        height: 400,
+        child: const Icon(Icons.broken_image, color: Colors.grey, size: 50),
+      ),
     );
 
     return useHero
@@ -452,10 +448,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             );
                           }
                         },
-                        child: Image.network(
-                          imageUrls[index],
+                        child: AppNetworkImage(
+                          imageUrl: imageUrls[index],
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
+                          errorWidget:
                               Container(color: Colors.grey[900]),
                         ),
                       );

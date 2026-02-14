@@ -5,6 +5,7 @@ import 'package:shimmer/shimmer.dart';
 import '../../api/api_url.dart';
 import '../../utils/product_utils.dart';
 import '../../theme/bikerverse_colors.dart';
+import '../../widgets/app_network_image.dart';
 
 class ServiceCard extends StatelessWidget {
   final Map<String, dynamic> service;
@@ -144,31 +145,26 @@ class ServiceCard extends StatelessWidget {
                           color: Colors.grey[300],
                         ),
                       ),
-                      Image.network(
-                        imageUrl ?? ApiUrl.defaultPlaceholderImage,
+                      AppNetworkImage(
+                        imageUrl: imageUrl ?? ApiUrl.defaultPlaceholderImage,
                         width: double.infinity,
                         height: double.infinity,
                         fit: BoxFit.cover,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return Shimmer.fromColors(
-                            baseColor: Colors.grey[300]!,
-                            highlightColor: Colors.grey[100]!,
-                            child: Container(
-                              width: double.infinity,
-                              height: double.infinity,
-                              color: Colors.grey[300],
-                            ),
-                          );
-                        },
-                        errorBuilder: (context, error, stackTrace) {
-                          return Image.network(
-                            ApiUrl.defaultPlaceholderImage,
+                        placeholder: Shimmer.fromColors(
+                          baseColor: Colors.grey[300]!,
+                          highlightColor: Colors.grey[100]!,
+                          child: Container(
                             width: double.infinity,
                             height: double.infinity,
-                            fit: BoxFit.cover,
-                          );
-                        },
+                            color: Colors.grey[300],
+                          ),
+                        ),
+                        errorWidget: AppNetworkImage(
+                          imageUrl: ApiUrl.defaultPlaceholderImage,
+                          width: double.infinity,
+                          height: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ],
                   ),
@@ -292,31 +288,26 @@ class ServiceCard extends StatelessWidget {
                         color: Colors.grey[300],
                       ),
                     ),
-                    Image.network(
-                      imageUrl ?? ApiUrl.defaultPlaceholderImage,
+                    AppNetworkImage(
+                      imageUrl: imageUrl ?? ApiUrl.defaultPlaceholderImage,
                       width: double.infinity,
                       height: double.infinity,
                       fit: BoxFit.cover,
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return Shimmer.fromColors(
-                          baseColor: Colors.grey[300]!,
-                          highlightColor: Colors.grey[100]!,
-                          child: Container(
-                            width: double.infinity,
-                            height: double.infinity,
-                            color: Colors.grey[300],
-                          ),
-                        );
-                      },
-                      errorBuilder: (context, error, stackTrace) {
-                        return Image.network(
-                          ApiUrl.defaultPlaceholderImage,
+                      placeholder: Shimmer.fromColors(
+                        baseColor: Colors.grey[300]!,
+                        highlightColor: Colors.grey[100]!,
+                        child: Container(
                           width: double.infinity,
                           height: double.infinity,
-                          fit: BoxFit.cover,
-                        );
-                      },
+                          color: Colors.grey[300],
+                        ),
+                      ),
+                      errorWidget: AppNetworkImage(
+                        imageUrl: ApiUrl.defaultPlaceholderImage,
+                        width: double.infinity,
+                        height: double.infinity,
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ],
                 ),

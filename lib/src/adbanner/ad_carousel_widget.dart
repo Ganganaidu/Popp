@@ -13,6 +13,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../deeplink/DeepLinkConfig.dart';
 import '../navigation/nav_router.dart';
+import '../widgets/app_network_image.dart';
 
 class AdCarouselWidget extends StatefulWidget {
   const AdCarouselWidget({super.key});
@@ -313,23 +314,18 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
                         'assets/ads_default_image.png',
                         fit: BoxFit.cover,
                       )
-                    : Image.network(
-                        ad.imageUrl,
+                    : AppNetworkImage(
+                        imageUrl: ad.imageUrl,
                         fit: BoxFit.cover,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return Shimmer.fromColors(
-                            baseColor: Colors.grey[300]!,
-                            highlightColor: Colors.grey[100]!,
-                            child: Container(color: Colors.white),
-                          );
-                        },
-                        errorBuilder: (context, error, stackTrace) {
-                          return Image.asset(
-                            'assets/ads_default_image.png',
-                            fit: BoxFit.cover,
-                          );
-                        },
+                        placeholder: Shimmer.fromColors(
+                          baseColor: Colors.grey[300]!,
+                          highlightColor: Colors.grey[100]!,
+                          child: Container(color: Colors.white),
+                        ),
+                        errorWidget: Image.asset(
+                          'assets/ads_default_image.png',
+                          fit: BoxFit.cover,
+                        ),
                       ),
               ),
 
@@ -352,10 +348,12 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
 
               // LAYER 3: Content
               Positioned(
-                left: 60, // Indent content slightly
+                left: 60,
+                // Indent content slightly
                 top: 0,
                 bottom: 0,
-                width: 600, // Fixed max width for content
+                width: 600,
+                // Fixed max width for content
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -376,7 +374,8 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
                       ad.title,
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 48, // Larger title
+                        fontSize: 48,
+                        // Larger title
                         fontWeight: FontWeight.bold,
                         fontFamily: 'Orbitron',
                         height: 1.1,
@@ -421,21 +420,22 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
                       ),
                     ],
                     const SizedBox(height: 32),
-                    if (ad.buttonText.isNotEmpty &&
-                        ad.buttonLink.isNotEmpty)
+                    if (ad.buttonText.isNotEmpty && ad.buttonLink.isNotEmpty)
                       ElevatedButton(
                         onPressed: () async {
                           deepLinkToTarget(ad.buttonLink);
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: context.primaryColor, // Theme Green
+                          backgroundColor: context.primaryColor,
+                          // Theme Green
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(
                             horizontal: 40,
                             vertical: 20,
                           ),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8), // Less rounded for modern look
+                            borderRadius: BorderRadius.circular(
+                                8), // Less rounded for modern look
                           ),
                           elevation: 4,
                           textStyle: const TextStyle(
@@ -486,25 +486,20 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
                 height: double.infinity,
               )
             else
-              Image.network(
-                ad.imageUrl,
+              AppNetworkImage(
+                imageUrl: ad.imageUrl,
                 fit: BoxFit.cover,
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return Shimmer.fromColors(
-                    baseColor: Colors.grey[300]!,
-                    highlightColor: Colors.grey[100]!,
-                    child: Container(color: Colors.white),
-                  );
-                },
-                errorBuilder: (context, error, stackTrace) {
-                  return Image.asset(
-                    'assets/book_track_trainings.png',
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                    height: double.infinity,
-                  );
-                },
+                placeholder: Shimmer.fromColors(
+                  baseColor: Colors.grey[300]!,
+                  highlightColor: Colors.grey[100]!,
+                  child: Container(color: Colors.white),
+                ),
+                errorWidget: Image.asset(
+                  'assets/book_track_trainings.png',
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: double.infinity,
+                ),
               ),
             // Darker overlay for better text contrast
             Positioned.fill(
@@ -531,17 +526,21 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center, // Centered vertically in available space
+                mainAxisAlignment: MainAxisAlignment.center,
+                // Centered vertically in available space
                 children: [
-                  const Spacer(flex: 2), // Push content down explicitly
+                  const Spacer(flex: 2),
+                  // Push content down explicitly
                   if (ad.highlight.isNotEmpty)
                     Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF1B4332).withOpacity(0.8), // Dark Green background
+                        color: const Color(0xFF1B4332).withOpacity(0.8),
+                        // Dark Green background
                         borderRadius: BorderRadius.circular(24),
-                        border: Border.all(color: const Color(0xFF2D6A4F), width: 1),
+                        border: Border.all(
+                            color: const Color(0xFF2D6A4F), width: 1),
                       ),
                       child: Text(
                         ad.highlight.toUpperCase(),
@@ -553,14 +552,14 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
                         ),
                       ),
                     ),
-                  if (ad.title.isNotEmpty)
-                  const SizedBox(height: 16),
+                  if (ad.title.isNotEmpty) const SizedBox(height: 16),
                   Text(
                     ad.title.toUpperCase(),
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 32,
-                      fontFamily: 'Orbitron', // Assuming this font is available or fallback
+                      fontFamily: 'Orbitron',
+                      // Assuming this font is available or fallback
                       fontWeight: FontWeight.w900,
                       fontStyle: FontStyle.italic,
                       height: 1.0,
@@ -574,8 +573,7 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
                       ],
                     ),
                   ),
-                  if (ad.subtitle.isNotEmpty)
-                  const SizedBox(height: 12),
+                  if (ad.subtitle.isNotEmpty) const SizedBox(height: 12),
                   Text(
                     ad.subtitle,
                     style: TextStyle(
@@ -586,9 +584,12 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  if (ad.buttonText.isNotEmpty && ad.buttonLink.isNotEmpty)
+                  if (ad.subtitle.isNotEmpty &&
+                      ad.buttonText.isNotEmpty &&
+                      ad.buttonLink.isNotEmpty)
                     _buildMobileCta(ad),
-                  const Spacer(flex: 3), // Leave space for PopServicesWidgets at bottom
+                  const Spacer(flex: 3),
+                  // Leave space for PopServicesWidgets at bottom
                 ],
               ),
             ),

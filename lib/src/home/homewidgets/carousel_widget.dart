@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import '../../widgets/app_network_image.dart';
 
 class CarouselWidget extends StatefulWidget {
   const CarouselWidget({super.key});
@@ -85,8 +86,8 @@ final List<Widget> imageSliders = imgList
             child: Stack(
               fit: StackFit.expand,
               children: <Widget>[
-                Image.network(
-                  item,
+                AppNetworkImage(
+                  imageUrl: item,
                   fit: BoxFit.cover,
                 ),
                 Container(

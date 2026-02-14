@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:popp/src/api/api_url.dart';
 import 'package:popp/src/widgets/full_screen_image_screen.dart';
 import 'package:shimmer/shimmer.dart';
+import 'app_network_image.dart';
 
 class WebImageGallery extends StatefulWidget {
   final List<String> imageUrls;
@@ -55,20 +56,17 @@ class _WebImageGalleryState extends State<WebImageGallery> {
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(16),
-                  child: Image.network(
-                    currentImageUrl,
+                  child: AppNetworkImage(
+                    imageUrl: currentImageUrl,
                     fit: BoxFit.cover,
-                    loadingBuilder: (context, child, loadingProgress) {
-                       if (loadingProgress == null) return child;
-                        return Shimmer.fromColors(
-                          baseColor: Colors.grey[300]!,
-                          highlightColor: Colors.grey[100]!,
-                          child: Container(color: Colors.grey[300]),
-                        );
-                    },
-                    errorBuilder: (context, error, stackTrace) {
-                      return const Center(child: Icon(Icons.broken_image, size: 50, color: Colors.grey));
-                    },
+                    placeholder: Shimmer.fromColors(
+                      baseColor: Colors.grey[300]!,
+                      highlightColor: Colors.grey[100]!,
+                      child: Container(color: Colors.grey[300]),
+                    ),
+                    errorWidget: const Center(
+                        child: Icon(Icons.broken_image,
+                            size: 50, color: Colors.grey)),
                   ),
                 ),
               ),
@@ -100,11 +98,11 @@ class _WebImageGalleryState extends State<WebImageGallery> {
                         ),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(10), // slightly less than container to account for border
-                          child: Image.network(
-                            widget.imageUrls[index],
+                          child: AppNetworkImage(
+                            imageUrl: widget.imageUrls[index],
                             fit: BoxFit.cover,
-                             errorBuilder: (context, error, stackTrace) =>
-                                const Icon(Icons.broken_image, size: 20, color: Colors.grey),
+                            errorWidget: const Icon(Icons.broken_image,
+                                size: 20, color: Colors.grey),
                           ),
                         ),
                       ),

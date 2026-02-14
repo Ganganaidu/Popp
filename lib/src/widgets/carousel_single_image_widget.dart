@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'app_network_image.dart';
 
 class CarouselSingleImageWidget extends StatefulWidget {
   final List<String> imageUrls;
@@ -25,8 +26,8 @@ class _CarouselSingleImageWidgetState extends State<CarouselSingleImageWidget> {
             });
           },
           itemBuilder: (context, index) {
-            return Image.network(
-              widget.imageUrls[index],
+            return AppNetworkImage(
+              imageUrl: widget.imageUrls[index],
               fit: BoxFit.cover,
               width: double.infinity,
               height: double.infinity,

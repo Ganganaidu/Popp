@@ -76,7 +76,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return const SingleChildScrollView(
       child: Column(
         children: [
-          _MobileHeroStack(),
+          AdCarouselWidget(),
+          PopServicesWidgets(),
           SizedBox(height: 12.0),
           ProductListDashboardScreen(),
           // ServiceListDashboardScreen(),

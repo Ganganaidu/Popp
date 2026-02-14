@@ -18,6 +18,7 @@ import '../../widgets/web_image_gallery.dart';
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import '../../toolbar/AppBarIconButton.dart';
+import '../../widgets/app_network_image.dart';
 
 class ServiceDetailScreen extends StatefulWidget {
   final Map<String, dynamic> serviceData;
@@ -400,10 +401,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
       icon = Icons.map;
       isLink = true;
       onTap = () {
-        final encoded = Uri.encodeComponent(value);
-        launchUrlString(
-            'https://www.google.com/maps/search/?api=1&query=$encoded',
-            mode: LaunchMode.externalApplication);
+        launchUrlString(value, mode: LaunchMode.externalApplication);
       };
     } else if (label.toLowerCase().contains('phone') ||
         label.toLowerCase().contains('contact')) {
@@ -607,10 +605,11 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                                   ),
                                 );
                               },
-                              child: Image.network(
-                                allImageUrls[index],
+
+                              child: AppNetworkImage(
+                                imageUrl: allImageUrls[index],
                                 fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) =>
+                                errorWidget:
                                     Container(color: Colors.grey[900]),
                               ),
                             );
@@ -690,14 +689,14 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 15),
-                      // // Category Tag
-                      // Text(category.toUpperCase(),
-                      //     style: const TextStyle(
-                      //         color: Color(0xFF2ECC71),
-                      //         fontSize: 12,
-                      //         fontWeight: FontWeight.bold,
-                      //         letterSpacing: 1.2)),
-                      // const SizedBox(height: 8),
+                      // Category Tag
+                      Text(category.toUpperCase(),
+                          style: const TextStyle(
+                              color: Color(0xFF2ECC71),
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.2)),
+                      const SizedBox(height: 8),
                       // Title
                       Text(
                         title,
@@ -711,19 +710,19 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                         ),
                       ),
 
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 30),
 
-                      // 1. Highlight Cards Row (Location, Category, Status)
-                      _buildHighlightsRow(city, category, status),
+                      // 1. Highlight Cards Row (Location, Map, Social Links)
+                      _buildHighlightsRow(city, serviceData),
 
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 15),
 
                       // 2. Address Block
                       if (fullAddress != 'N/A' && fullAddress.isNotEmpty)
                         _buildInfoBlock(
                             Icons.location_on_outlined, "ADDRESS", fullAddress),
 
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 10),
 
                       // 3. Business Hours Block
                       if (hoursInfo != 'N/A' && hoursInfo.isNotEmpty)
@@ -733,13 +732,13 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                                 ? closedDaysInfo
                                 : null),
 
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 20),
 
                       // Description
                       const Text("DESCRIPTION",
                           style: TextStyle(
                               color: Colors.white,
-                              fontSize: 18,
+                              fontSize: 20,
                               fontWeight: FontWeight.bold,
                               fontStyle: FontStyle.italic)),
                       const SizedBox(height: 16),
@@ -776,21 +775,102 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     );
   }
 
-  Widget _buildHighlightsRow(String city, String category, String status) {
+  Widget _buildHighlightsRow(String city, Map<String, dynamic> serviceData) {
+    // 1. Always show Location
+    List<Widget> cards = [
+      Expanded(
+        child: _buildHighlightCard(
+          Icons.location_on_outlined,
+          "LOCATION",
+          city,
+        ),
+      ),
+    ];
+
+    // 2. Get Map and Social Links
+    final links = _getMapAndSocialLinks(serviceData);
+    // 3. Add Links to cards (max 2 more cards to fit row of 3)
+    // We prioritize Map > Instagram > Facebook > Others
+    for (var link in links.take(2)) {
+      cards.add(const SizedBox(width: 12));
+      cards.add(
+        Expanded(
+          child: _buildHighlightCard(
+            link['icon'] as IconData,
+            link['label'] as String,
+            link['value'] as String,
+            onTap: () {
+              final url = link['url'] as String;
+              launchUrlString(url, mode: LaunchMode.externalApplication);
+            },
+          ),
+        ),
+      );
+    }
+
     return Row(
-      children: [
-        Expanded(
-            child: _buildHighlightCard(
-                Icons.location_on_outlined, "LOCATION", city)),
-        const SizedBox(width: 12),
-        Expanded(
-            child:
-                _buildHighlightCard(Icons.star_border, "CATEGORY", category)),
-        const SizedBox(width: 12),
-        Expanded(
-            child: _buildHighlightCard(Icons.access_time, "STATUS", status)),
-      ],
+      children: cards,
     );
+  }
+
+  List<Map<String, dynamic>> _getMapAndSocialLinks(
+      Map<String, dynamic> serviceData) {
+    List<Map<String, dynamic>> links = [];
+
+    serviceData.forEach((key, value) {
+      if (value is! String || value.isEmpty || value == 'N/A') return;
+
+      final lowerKey = key.toLowerCase();
+      final lowerValue = value.toLowerCase();
+
+      AppLogger.d("lowerValue $lowerKey - $lowerValue");
+
+      // Check for Map/Location links
+      if (lowerKey.contains('googlemaplink')) {
+        links.add({
+          'label': 'MAP',
+          'value': 'Address',
+          'icon': Icons.map_outlined,
+          'url': value,
+          'priority': 1,
+        });
+      }
+      // Check for Social Links
+      else if (lowerValue.contains('instagram.com')) {
+        links.add({
+          'label': 'SOCIAL',
+          'value': 'Instagram',
+          'icon': Icons.camera_alt_outlined, // Or custom icon if available
+          'url': value,
+          'priority': 2,
+        });
+      } else if (lowerValue.contains('facebook.com')) {
+        links.add({
+          'label': 'SOCIAL',
+          'value': 'Facebook',
+          'icon': Icons.facebook,
+          'url': value,
+          'priority': 3,
+        });
+      }
+      // General links if explicit keys present, though user emphasized social/map
+      // We can add more specific detections if needed.
+    });
+
+    // Sort by priority
+    links
+        .sort((a, b) => (a['priority'] as int).compareTo(b['priority'] as int));
+
+    // De-duplicate URLs just in case
+    final uniqueLinks = <String>{};
+    final distinctLinks = <Map<String, dynamic>>[];
+    for (var link in links) {
+      if (uniqueLinks.add(link['url'] as String)) {
+        distinctLinks.add(link);
+      }
+    }
+
+    return distinctLinks;
   }
 
   Widget _buildInfoBlock(IconData icon, String title, String content,
@@ -845,35 +925,42 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     );
   }
 
-  Widget _buildHighlightCard(IconData icon, String label, String value) {
-    return Container(
-      height: 120,
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E1E1E),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: const Color(0xFF2ECC71), size: 22),
-          const SizedBox(height: 8),
-          Text(label,
-              style: const TextStyle(
-                  color: Colors.grey,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.5)),
-          const SizedBox(height: 4),
-          Text(value,
-              style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis),
-        ],
+  Widget _buildHighlightCard(IconData icon, String label, String value,
+      {VoidCallback? onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 120,
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E1E1E),
+          borderRadius: BorderRadius.circular(16),
+          border: onTap != null
+              ? Border.all(color: const Color(0xFF2ECC71).withOpacity(0.3))
+              : null,
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: const Color(0xFF2ECC71), size: 22),
+            const SizedBox(height: 8),
+            Text(label,
+                style: const TextStyle(
+                    color: Colors.grey,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.5)),
+            const SizedBox(height: 4),
+            Text(value,
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis),
+          ],
+        ),
       ),
     );
   }
@@ -898,6 +985,8 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
 
     // Remove Address/Hours manual additions from here if they exist in standard loop
     final excludeKeys = {
+      'socialMediaLink',
+      'googleMapLink',
       'searchKeywords',
       'shopName',
       'isActive',

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../repository/ad_carousel_viewmodel.dart';
 import '../model/ad_banner.dart';
 import 'ads_submission_screen.dart';
+import '../../widgets/app_network_image.dart';
 
 class AdListPage extends StatefulWidget {
   const AdListPage({super.key});
@@ -154,19 +155,15 @@ class _AdListPageState extends State<AdListPage> {
       height: 64,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(6),
-        child: Image.network(
-          ad.imageUrl,
+        child: AppNetworkImage(
+          imageUrl: ad.imageUrl,
           fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) =>
-              const Center(child: Icon(Icons.broken_image)),
-          loadingBuilder: (context, child, loadingProgress) {
-            if (loadingProgress == null) return child;
-            return const Center(
-                child: SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2)));
-          },
+          errorWidget: const Center(child: Icon(Icons.broken_image)),
+          placeholder: const Center(
+              child: SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2))),
         ),
       ),
     );

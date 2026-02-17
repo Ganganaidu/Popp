@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:popp/src/login/model/user_data_model.dart';
 import 'package:popp/src/settings/about_us.dart';
 import 'package:popp/src/settings/favorites_screen.dart';
+import 'package:popp/src/settings/more_screen.dart';
 import 'package:popp/src/settings/settings_screen.dart';
 import 'package:popp/src/utils/app_constants.dart';
 
@@ -80,7 +81,7 @@ void onSettingsTap(BuildContext context) {
   Navigator.push(
     context,
     MaterialPageRoute(
-      builder: (context) => const SettingsScreen(),
+      builder: (context) => const MoreScreen(),
     ),
   );
 }

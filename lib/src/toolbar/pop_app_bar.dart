@@ -1,6 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:popp/src/navigation/nav_router.dart';
 import 'package:popp/src/theme/bikerverse_colors.dart';
+import 'package:popp/src/widgets/app_dialogs.dart';
 
 import 'AppBarIconButton.dart';
 
@@ -91,7 +93,17 @@ class PopAppBar extends StatelessWidget implements PreferredSizeWidget {
           AppBarIconButton(
             icon: Icons.person_outline,
             accent: true,
-            onTap: () => onSettingsTap(context),
+            onTap: () {
+              if (FirebaseAuth.instance.currentUser != null) {
+                onProfileDetailsTap(context);
+              } else {
+                AppDialogs.showUserLoginDialog(context, () {
+                  if (context.mounted) {
+                    onLoginTap(context);
+                  }
+                }, "login to view profile");
+              }
+            },
           ),
         ],
       ),

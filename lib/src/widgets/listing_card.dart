@@ -199,7 +199,7 @@ class ListingCard extends StatelessWidget {
                             price!,
                             style: Theme.of(context)
                                 .textTheme
-                                .titleLarge
+                                .titleMedium
                                 ?.copyWith(
                                   color: BikerverseColors.priceGreen,
                                   fontWeight: FontWeight.w800,
@@ -207,8 +207,8 @@ class ListingCard extends StatelessWidget {
                           ),
                         ),
                         Container(
-                          width: 42,
-                          height: 42,
+                          width: 30,
+                          height: 30,
                           decoration: const BoxDecoration(
                             color: BikerverseColors.textPrimary,
                             shape: BoxShape.circle,

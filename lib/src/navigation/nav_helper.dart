@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:popp/src/home/explore_screen.dart';
 
+import 'package:popp/src/settings/more_screen.dart';
+
 import '../chat/chat_list_screen.dart';
 import '../home/dashboard_screen.dart';
-import '../home/help_screen.dart';
 import '../toolbar/tab_navigator_observer.dart';
 import '../utils/app_constants.dart';
 import 'nav_router.dart';
@@ -46,7 +47,7 @@ class NavHelper {
       const DashboardScreen(),
       const ExploreScreen(),
       const ChatListScreen(agentId: Constants.adminUserId),
-      const HelpScreen(),
+      const MoreScreen(),
     ];
   }
 
@@ -57,8 +58,8 @@ class NavHelper {
   //     buildNavigator(0, const DashboardScreen()),
   //     // buildNavigator(1, const OurServices()),
   //     buildNavigator(2, const ExploreProductsScreen()),
-  //     buildNavigator(3, const HelpScreen()),
-  //     buildNavigator(4, const HelpScreen()),
+  //     buildNavigator(3, const MoreScreen()),
+  //     buildNavigator(4, const MoreScreen()),
   //   ];
   // }
 

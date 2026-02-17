@@ -86,10 +86,10 @@ class CustomBottomNavBar extends StatelessWidget {
               BottomNavigationBarItem(
                 icon: Icon(
                   selectedIndex == 3
-                      ? Icons.help_center_rounded
-                      : Icons.help_center_outlined,
+                      ? Icons.more
+                      : Icons.more_horiz,
                 ),
-                label: Constants.help,
+                label: Constants.more,
               ),
             ],
           ),

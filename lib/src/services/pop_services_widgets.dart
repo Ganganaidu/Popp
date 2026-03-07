@@ -116,20 +116,22 @@ class _PopServicesWidgetsState extends State<PopServicesWidgets> {
       height: 140, // Reduced height as items are compact
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 20), // More padding
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        // More padding
         itemCount: items.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 20), // Details from screenshot
+        separatorBuilder: (_, __) => const SizedBox(width: 20),
+        // Details from screenshot
         itemBuilder: (context, index) =>
             _buildServiceItem(context, items[index], isWeb: false),
       ),
     );
   }
 
-
   Widget _buildServiceItem(BuildContext context, PopServiceItem item,
       {required bool isWeb}) {
-    final double containerSize = isWeb ? 120 : 90; // Smaller, punchy icons (matches screenshot)
-    final double iconSize = isWeb ? 50 : 32;
+    final double containerSize =
+        isWeb ? 120 : 90; // Smaller, punchy icons (matches screenshot)
+    final double iconSize = isWeb ? 50 : 50;
 
     return GestureDetector(
       onTap: () => _handleAction(context, item.action),
@@ -151,7 +153,8 @@ class _PopServicesWidgetsState extends State<PopServicesWidgets> {
                     item.color?.withOpacity(0.4) ?? const Color(0xFF1E1E1E),
                   ],
                 ),
-                borderRadius: BorderRadius.circular(24), // Soft rounded corners (Squircle-ish)
+                borderRadius: BorderRadius.circular(24),
+                // Soft rounded corners (Squircle-ish)
                 // Colored Shadow / Glow
                 boxShadow: item.color != null
                     ? [
@@ -169,18 +172,25 @@ class _PopServicesWidgetsState extends State<PopServicesWidgets> {
                 ),
               ),
               child: Center(
-                child: item.customIconPainter != null
-                    ? CustomPaint(
-                        size: Size(iconSize, iconSize),
-                        painter: item.customIconPainter,
+                child: item.imageUrl != null
+                    ? Image.asset(
+                        item.imageUrl!,
+                        width: item.width,
+                        height: item.height,
+                        fit: BoxFit.cover,
                       )
-                    : item.icon != null
-                        ? Icon(
-                            item.icon,
-                            size: iconSize,
-                            color: Colors.white.withOpacity(0.95),
+                    : item.customIconPainter != null
+                        ? CustomPaint(
+                            size: Size(iconSize, iconSize),
+                            painter: item.customIconPainter,
                           )
-                        : const SizedBox(),
+                        : item.icon != null
+                            ? Icon(
+                                item.icon,
+                                size: iconSize,
+                                color: Colors.white.withOpacity(0.95),
+                              )
+                            : const SizedBox(),
               ),
             ),
             const SizedBox(height: 12),
@@ -189,7 +199,8 @@ class _PopServicesWidgetsState extends State<PopServicesWidgets> {
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 12,
-                fontWeight: FontWeight.w800, // Bold top text
+                fontWeight: FontWeight.w800,
+                // Bold top text
                 color: Color(0xFFE0E0E0),
                 letterSpacing: 0.8,
                 height: 1.0,
@@ -198,7 +209,8 @@ class _PopServicesWidgetsState extends State<PopServicesWidgets> {
             ),
             const SizedBox(height: 4),
             Text(
-              item.subTitle, // Using this as subtitle based on existing code mapping
+              item.subTitle,
+              // Using this as subtitle based on existing code mapping
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 11,

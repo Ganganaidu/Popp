@@ -20,9 +20,9 @@ class ListServiceCategoryScreen extends StatelessWidget {
         child: GridView.builder(
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
-            crossAxisSpacing: 16.0,
-            mainAxisSpacing: 16.0,
-            childAspectRatio: 1.1, 
+            crossAxisSpacing: 10.0,
+            mainAxisSpacing: 10.0,
+            childAspectRatio: 1.0,
           ),
           itemCount: ProductUtils.listYourServiceCategories.length,
           itemBuilder: (context, index) {
@@ -36,12 +36,8 @@ class ListServiceCategoryScreen extends StatelessWidget {
 
   Widget _buildCategoryCard(BuildContext context, String category) {
     // Generate a consistent color based on category name
-    final randomColor = Colors
-        .accents[category.hashCode.abs() % Colors.accents.length];
-
     return Card(
       elevation: 6, // Slightly increased elevation for better shadow visibility
-      shadowColor: randomColor.withOpacity(0.5), // Use the colored shadow
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         // Border removed as per request
@@ -59,24 +55,21 @@ class ListServiceCategoryScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: randomColor.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                _getCategoryIcon(category),
-                size: 32,
-                color: context.primaryColor,
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: _getCategoryIcon(category, context),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 4),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              padding:
+                  const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 20.0),
               child: Text(
                 category,
                 textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -89,13 +82,33 @@ class ListServiceCategoryScreen extends StatelessWidget {
     );
   }
 
-  IconData _getCategoryIcon(String category) {
-    if (category == ProductUtils.findMechanic) return Icons.build_circle_outlined;
-    if (category == ProductUtils.bikeRentals) return Icons.two_wheeler_outlined;
-    if (category == ProductUtils.trackDay) return Icons.track_changes;
-    if (category == ProductUtils.trainingDay) return Icons.gradient_rounded;
-    if (category == ProductUtils.accessoryStore) return Icons.shopping_bag_outlined;
-    if (category == ProductUtils.tyreShop) return Icons.tire_repair;
-    return Icons.category_outlined;
+  Widget _getCategoryIcon(String category, BuildContext context) {
+    String assetPath;
+
+    if (category == ProductUtils.findMechanic) {
+      assetPath = 'assets/find_mechanic.png';
+    } else if (category == ProductUtils.bikeRentals) {
+      assetPath = 'assets/bike_rentals.png';
+    } else if (category == ProductUtils.trackDay) {
+      assetPath = 'assets/track_training_day.png';
+    } else if (category == ProductUtils.trainingDay) {
+      assetPath = 'assets/track_training_day.png';
+    } else if (category == ProductUtils.accessoryStore) {
+      assetPath = 'assets/accessory_store.png';
+    } else if (category == ProductUtils.tyreShop) {
+      assetPath = 'assets/tyre_shops.png';
+    } else {
+      return Icon(
+        Icons.category_outlined,
+        size: 32,
+        color: context.primaryColor,
+      );
+    }
+
+    return Image.asset(
+      assetPath,
+      width: 200,
+      height: 200,
+    );
   }
 }

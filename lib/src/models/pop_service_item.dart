@@ -11,6 +11,8 @@ class PopServiceItem {
   final IconData? icon;
   final Color? color;
   final CustomPainter? customIconPainter;
+  final double width;
+  final double height;
 
   PopServiceItem({
     this.imageUrl,
@@ -20,12 +22,14 @@ class PopServiceItem {
     this.icon,
     this.color,
     this.customIconPainter,
+    this.width = 80,
+    this.height = 80,
   });
 }
 
 final List<PopServiceItem> items = [
   PopServiceItem(
-    imageUrl: null,
+    imageUrl: "assets/sell_your_bike.png",
     title: 'SELL',
     subTitle: "Bike",
     icon: Icons.motorcycle_outlined,
@@ -33,18 +37,20 @@ final List<PopServiceItem> items = [
     color: const Color(0xFF2E7D32), // Green
   ),
   PopServiceItem(
-    imageUrl: null,
-    title: 'SELL',
-    subTitle: "Accessory",
-    action: sellAccessory,
-    // Icon: Shopping Bag
-    icon: Icons.shopping_bag_outlined,
-    customIconPainter: null,
-    // Gradient: Dark Blue to Light Blue
-    color: const Color(0xFF1565C0), // Blue
-  ),
+      imageUrl: "assets/sell_your_accessory.png",
+      title: 'SELL',
+      subTitle: "Accessory",
+      action: sellAccessory,
+      // Icon: Shopping Bag
+      icon: Icons.shopping_bag_outlined,
+      customIconPainter: null,
+      // Gradient: Dark Blue to Light Blue
+      color: const Color(0xFF1565C0),
+      // Blue
+      width: 90,
+      height: 90),
   PopServiceItem(
-    imageUrl: null,
+    imageUrl: "assets/list_your_business.png",
     title: 'LIST',
     subTitle: "Business",
     action: listYourServices,
@@ -55,33 +61,38 @@ final List<PopServiceItem> items = [
     color: const Color(0xFF9006E3), // Purple
   ),
   PopServiceItem(
-    imageUrl: null,
-    title: 'FIND',
-    subTitle: "Mechanic",
-    action: findMechanic,
-    icon: Icons.speed, 
-    customIconPainter: null, 
-    // Gradient: Brown/Orange
-    color: const Color(0xFFD84315), // Burnt Orange/Brown
-  ),
+      imageUrl: "assets/find_mechanic.png",
+      title: 'FIND',
+      subTitle: "Mechanic",
+      action: findMechanic,
+      icon: Icons.speed,
+      customIconPainter: null,
+      // Gradient: Brown/Orange
+      color: const Color(0xFFD84315),
+      // Burnt Orange/Brown
+      width: 120,
+      height: 120),
   PopServiceItem(
-    imageUrl: null,
-    title: 'TRACK DAY',
-    subTitle: "Training",
-    action: findTrackTraining,
-    customIconPainter: FlagIconPainter(color: Colors.white),
-    color: const Color(0xFFC62828), // Red
-  ),
+      imageUrl: 'assets/track_training_day.png',
+      title: 'TRACK DAY',
+      subTitle: "Training",
+      action: findTrackTraining,
+      customIconPainter: FlagIconPainter(color: Colors.white),
+      color: const Color(0xFFC62828),
+      // Red
+      width: 120,
+      height: 120),
   PopServiceItem(
-    imageUrl: null,
-    title: 'BIKE',
-    subTitle: "Rentals",
-    action: findBikeRentals,
-    customIconPainter: CalendarIconPainter(color: Colors.white),
-    color: const Color(0xFF455A64), // Blue Grey
-  ),
+      imageUrl: 'assets/bike_rentals.png',
+      title: 'BIKE',
+      subTitle: "Rentals",
+      action: findBikeRentals,
+      color: const Color(0xFF455A64),
+      // Blue Grey
+      width: 120,
+      height: 120),
   PopServiceItem(
-    imageUrl: null,
+    imageUrl: "assets/premium_bike_inspection.png",
     title: 'PREMIUM',
     subTitle: "Inspection",
     action: premiumBikeInspection,
@@ -89,7 +100,7 @@ final List<PopServiceItem> items = [
     color: const Color(0xFF064302), // Green
   ),
   PopServiceItem(
-    imageUrl: null,
+    imageUrl: "assets/tyre_shops.png",
     title: 'TYRE',
     subTitle: "Shops",
     action: tyreShop,
@@ -97,7 +108,7 @@ final List<PopServiceItem> items = [
     color: const Color(0xFF1565C0), // Blue
   ),
   PopServiceItem(
-    imageUrl: null,
+    imageUrl: "assets/accessory_store.png",
     title: 'ACCESSORY',
     subTitle: "Store",
     action: accessoryStore,

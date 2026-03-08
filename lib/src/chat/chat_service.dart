@@ -344,6 +344,7 @@ class ChatService extends ChangeNotifier {
             'productId': data['productId'],
             // Display last message if needed
             'timestamp': data['lastMessageTimestamp'],
+            'unreadCount': data['unreadCount'] ?? 0,
             // For sorting or display
           });
         }
@@ -388,6 +389,7 @@ class ChatService extends ChangeNotifier {
             'productId': data['productId'],
             // Display last message if needed
             'timestamp': data['lastMessageTimestamp'],
+            'unreadCount': data['unreadCount'] ?? 0,
             // For sorting or display
           });
         }

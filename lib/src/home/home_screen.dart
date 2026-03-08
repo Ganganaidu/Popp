@@ -11,6 +11,7 @@ import 'package:popp/src/utils/app_constants.dart';
 import 'package:popp/src/utils/app_loger.dart';
 
 import '../api/api_url.dart';
+import '../chat/active_chat_provider.dart';
 import '../navigation/custom_bottom_nav_bar.dart';
 import '../navigation/nav_helper.dart';
 import '../toolbar/web_side_bar.dart';
@@ -123,6 +124,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
       AppLogger.d('Got a message whilst in the foreground!');
       AppLogger.d('Message data: ${message.data}');
+      
+      // Extract chatRoomId from incoming data payload if it exists
+      final String? incomingChatRoomId = message.data['chatRoomId'];
+      
+      // Check if the user is actively viewing this specific chat room
+      if (incomingChatRoomId != null && incomingChatRoomId == ActiveChatProvider.activeChatRoomId.value) {
+        AppLogger.d('Suppressing notification because user is actively viewing this chat room: $incomingChatRoomId');
+        return; // Skip showing the local notification
+      }
 
       if (notification != null) {
         AppLogger.d(

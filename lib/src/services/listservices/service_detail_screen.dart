@@ -1,24 +1,21 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:popp/src/utils/app_loger.dart';
-import 'package:popp/src/utils/build_extensions.dart';
 import 'package:popp/src/widgets/title_text.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher_string.dart';
-import '../../widgets/web_constrained_box.dart';
 
 import '../../api/api_url.dart';
 import '../../api/firebase/firebase_api_service.dart';
+import '../../chat/chat_with_seller_card.dart';
+import '../../toolbar/AppBarIconButton.dart';
 import '../../utils/app_constants.dart';
 import '../../utils/product_utils.dart';
-import '../../chat/chat_with_user_widget.dart';
+import '../../widgets/app_network_image.dart';
 import '../../widgets/full_screen_image_screen.dart';
 import '../../widgets/web_image_gallery.dart';
-import 'package:flutter/foundation.dart';
-import 'package:intl/intl.dart';
-import '../../toolbar/AppBarIconButton.dart';
-import '../../widgets/app_network_image.dart';
 
 class ServiceDetailScreen extends StatefulWidget {
   final Map<String, dynamic> serviceData;
@@ -605,12 +602,10 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                                   ),
                                 );
                               },
-
                               child: AppNetworkImage(
                                 imageUrl: allImageUrls[index],
                                 fit: BoxFit.cover,
-                                errorWidget:
-                                    Container(color: Colors.grey[900]),
+                                errorWidget: Container(color: Colors.grey[900]),
                               ),
                             );
                           },

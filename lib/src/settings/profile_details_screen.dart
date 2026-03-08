@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:popp/src/api/api_url.dart';
 import 'package:popp/src/login/model/user_data_model.dart'; // Adjust path to your UserData model
+import 'package:popp/src/theme/bikerverse_colors.dart';
 import 'package:popp/src/utils/app_loger.dart';
-import 'package:popp/src/utils/build_extensions.dart';
 import 'package:popp/src/widgets/web_constrained_box.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -12,7 +12,6 @@ import '../navigation/nav_router.dart';
 import '../utils/product_content_data.dart';
 import '../widgets/custom_dropdown_form_field.dart';
 import '../widgets/title_text.dart';
-import 'package:popp/src/theme/bikerverse_colors.dart';
 
 class ProfileDetailsScreen extends StatefulWidget {
   const ProfileDetailsScreen({super.key});
@@ -450,46 +449,106 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
     );
   }
 
+  Future<void> _logout() async {
+    try {
+      await FirebaseAuth.instance.signOut();
+      if (mounted) {
+        // Navigate to login screen or splash screen after logout
+        // Replace '/login' with your actual login route
+        Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+      }
+    } catch (e) {
+      AppLogger.e("Error logging out: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to logout.')),
+        );
+      }
+    }
+  }
+
   Widget _buildSaveButton() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
-      child: SizedBox(
-        width: double.infinity,
-        height: 56,
-        child: ElevatedButton(
-          onPressed: _isSaving ? null : _updateUserData,
-          style: ElevatedButton.styleFrom(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-            backgroundColor: BikerverseColors.accent,
-            foregroundColor: Colors.black,
-            elevation: 0,
-          ),
-          child: _isSaving
-              ? const SizedBox(
-                  height: 24,
-                  width: 24,
-                  child: CircularProgressIndicator(
-                      color: Colors.black, strokeWidth: 3),
-                )
-              : const Row(
+      child: Row(
+        children: [
+          // Logout Button
+          Expanded(
+            flex: 1,
+            child: SizedBox(
+              height: 56,
+              child: ElevatedButton(
+                onPressed: _logout,
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  backgroundColor: const Color(0xFFE25C5C), // Red color
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                ),
+                child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.save_outlined, color: Colors.black),
+                    Icon(Icons.logout, color: Colors.white, size: 20),
                     SizedBox(width: 8),
                     Text(
-                      'SAVE CHANGES',
+                      'LOGOUT',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         fontWeight: FontWeight.w900,
                         letterSpacing: 1.0,
-                        color: Colors.black,
+                        color: Colors.white,
                       ),
                     ),
                   ],
                 ),
-        ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          // Save Button
+          Expanded(
+            flex: 1,
+            child: SizedBox(
+              height: 56,
+              child: ElevatedButton(
+                onPressed: _isSaving ? null : _updateUserData,
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  backgroundColor: BikerverseColors.accent,
+                  foregroundColor: Colors.black,
+                  elevation: 0,
+                ),
+                child: _isSaving
+                    ? const SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(
+                            color: Colors.black, strokeWidth: 3),
+                      )
+                    : const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.save_outlined, color: Colors.black, size: 20),
+                          SizedBox(width: 8),
+                          Text(
+                            'SAVE',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 1.0,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

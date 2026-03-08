@@ -1,8 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
-import 'package:popp/src/utils/build_extensions.dart';
 import 'package:popp/src/widgets/web_constrained_box.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -11,7 +9,6 @@ import '../navigation/nav_router.dart';
 import '../utils/app_constants.dart';
 import '../utils/app_loger.dart';
 import '../widgets/app_dialogs.dart';
-import '../widgets/title_text.dart';
 
 class MoreScreen extends StatefulWidget {
   const MoreScreen({super.key});

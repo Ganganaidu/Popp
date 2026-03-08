@@ -69,14 +69,37 @@ class _ChatListScreenState extends State<ChatListScreen> {
                 child: ListTile(
                   title: Text(user['name'] ?? 'User ID: [1m${user['id']}[0m'),
                   subtitle: Text('Email: [1m${user['email']}[0m'),
-                  trailing: user['lastMessage'] != null
-                      ? Text(
-                    user['lastMessage'],
-                    style:
-                    const TextStyle(fontSize: 12, color: Colors.grey),
-                    overflow: TextOverflow.ellipsis,
-                  )
-                      : null,
+                  trailing: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (user['lastMessage'] != null)
+                        Text(
+                          user['lastMessage'],
+                          style:
+                              const TextStyle(fontSize: 12, color: Colors.grey),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      if (user['unreadCount'] != null &&
+                          user['unreadCount'] > 0)
+                        Container(
+                          margin: const EdgeInsets.only(top: 4.0),
+                          padding: const EdgeInsets.all(6.0),
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.red,
+                          ),
+                          child: Text(
+                            '${user['unreadCount']}',
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                    ],
+                  ),
                   onTap: () {
                     Navigator.push(
                       context,
@@ -144,7 +167,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
                     const SizedBox(height: 5),
                     const Text(
                       'Explore our Products and services, '
-                          'and connect with sellers for more details!',
+                      'and connect with sellers for more details!',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                           color: Colors.grey, fontWeight: FontWeight.bold),
@@ -167,8 +190,8 @@ class _ChatListScreenState extends State<ChatListScreen> {
                 final DateTime messageDate = timestamp.toDate();
                 final DateTime now = DateTime.now();
                 final DateFormat formatter = messageDate.day == now.day &&
-                    messageDate.month == now.month &&
-                    messageDate.year == now.year
+                        messageDate.month == now.month &&
+                        messageDate.year == now.year
                     ? DateFormat.jm() // 2:30 PM
                     : DateFormat.yMd(); // 10/25/2024
                 timeDisplay = formatter.format(messageDate);
@@ -180,12 +203,14 @@ class _ChatListScreenState extends State<ChatListScreen> {
                 elevation: 1, // Slight elevation for better separation
                 child: ListTile(
                   contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
 
                   // Use a leading icon or avatar placeholder
                   leading: CircleAvatar(
-                    backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
-                    child: Icon(Icons.person, color: Theme.of(context).primaryColor),
+                    backgroundColor:
+                        Theme.of(context).primaryColor.withOpacity(0.1),
+                    child: Icon(Icons.person,
+                        color: Theme.of(context).primaryColor),
                   ),
 
                   // Main content area
@@ -195,21 +220,49 @@ class _ChatListScreenState extends State<ChatListScreen> {
                       Expanded(
                         child: Text(
                           msg['name'] ?? 'Unknown User',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context).primaryColor),
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleMedium
+                              ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).primaryColor),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
 
-                      // Timestamp (Right aligned)
-                      if (timeDisplay.isNotEmpty)
+                      // Timestamp and Unread Badge (Right aligned)
+                      if (timeDisplay.isNotEmpty ||
+                          (msg['unreadCount'] != null &&
+                              msg['unreadCount'] > 0))
                         Padding(
                           padding: const EdgeInsets.only(left: 8.0),
-                          child: Text(
-                            timeDisplay,
-                            style: const TextStyle(
-                                fontSize: 12, color: Colors.grey),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              if (timeDisplay.isNotEmpty)
+                                Text(
+                                  timeDisplay,
+                                  style: const TextStyle(
+                                      fontSize: 12, color: Colors.grey),
+                                ),
+                              if (msg['unreadCount'] != null &&
+                                  msg['unreadCount'] > 0)
+                                Container(
+                                  margin: const EdgeInsets.only(top: 4.0),
+                                  padding: const EdgeInsets.all(6.0),
+                                  decoration: const BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.red,
+                                  ),
+                                  child: Text(
+                                    '${msg['unreadCount']}',
+                                    style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                            ],
                           ),
                         ),
                     ],
@@ -224,16 +277,19 @@ class _ChatListScreenState extends State<ChatListScreen> {
                       Text(
                         msg['productTitle'] ?? 'General Chat',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.white70,
-                          fontWeight: FontWeight.w500,
-                        ),
+                              color: Colors.white70,
+                              fontWeight: FontWeight.w500,
+                            ),
                         overflow: TextOverflow.ellipsis,
+                        maxLines: 4,
                       ),
                       const SizedBox(height: 2),
+
                       // Last Message
                       Text(
                         msg['lastMessage'] ?? 'Tap to view conversation...',
-                        style: const TextStyle(color: Colors.grey, fontSize: 14),
+                        style:
+                            const TextStyle(color: Colors.white60, fontSize: 14),
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
                       ),

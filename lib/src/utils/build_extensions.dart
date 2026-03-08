@@ -123,7 +123,7 @@ extension BuildContextEntension<T> on BuildContext {
         // Change fill color when disabled
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(borderRadius),
-          borderSide: BorderSide(color: Colors.grey.withOpacity(0.4)),
+          borderSide: const BorderSide(color: Colors.grey),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(borderRadius),
@@ -136,7 +136,7 @@ extension BuildContextEntension<T> on BuildContext {
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(borderRadius),
-          borderSide: const BorderSide(color: Colors.grey),
+          borderSide: const BorderSide(color: Colors.white),
         ),
       );
 }

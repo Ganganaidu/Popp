@@ -121,10 +121,14 @@ class _WorkingHoursPickerState extends State<WorkingHoursPicker> {
       isScrollControlled: true, // Allows content to take full height
       builder: (BuildContext context) {
         return StatefulBuilder(
+
           builder: (BuildContext context, StateSetter modalSetState) {
             return Padding(
+              // include both viewInsets (keyboard) and viewPadding (system UI like nav bar)
               padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).viewInsets.bottom),
+                  bottom: MediaQuery.of(context).viewInsets.bottom +
+                      MediaQuery.of(context).viewPadding.bottom +
+                      8.0),
               child: Container(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(

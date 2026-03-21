@@ -12,6 +12,7 @@ class ProductUtils {
   static const String trackDay = "Track day";
   static const String trainingDay = "Training day";
   static const String premiumInspection = 'Premium Inspection';
+  static const String towingService = 'Towing Service';
 
   static List<String> listYourServiceCategories = [
     findMechanic,
@@ -20,6 +21,7 @@ class ProductUtils {
     trainingDay,
     accessoryStore,
     tyreShop,
+    towingService
   ];
 
   static String getTitle(Map<String, dynamic>? product) {
@@ -79,6 +81,8 @@ class ProductUtils {
       return "Please provide detailed list of Accessories & different Brands you sell in the store. Ex., Helmets, Luggage, LS2, KYT,  Rynox, Viaterra, SWmotech, Rhinowalk ...";
     } else if (selectedCategory == tyreShop) {
       return "Please provide detailed list of Tyre Brands & Sizes you offer to the customers. Also provide if you offer any other Tyre related services.";
+    } else if (selectedCategory == towingService) {
+      return "Please provide detailed desc about your services";
     }
     return "";
   }
@@ -86,6 +90,8 @@ class ProductUtils {
   static String getShopNameHint(String? selectedCategory) {
     if (selectedCategory == findMechanic) {
       return "Enter Shop/Garage name";
+    } else if (selectedCategory == towingService) {
+      return "Enter Towing Service Name";
     }
     return "Enter Shop name";
   }
@@ -99,6 +105,8 @@ class ProductUtils {
       return "Store Details";
     } else if (selectedCategory == tyreShop) {
       return "Shop Details";
+    } else if (selectedCategory == towingService) {
+      return "Towing Service Details";
     }
     return "Event Details";
   }
@@ -108,7 +116,8 @@ class ProductUtils {
         selectedCategory == ProductUtils.bikeRentals ||
         selectedCategory == ProductUtils.accessoryStore ||
         selectedCategory == ProductUtils.tyreShop ||
-        selectedCategory == ProductUtils.premiumInspection;
+        selectedCategory == ProductUtils.premiumInspection ||
+        selectedCategory == ProductUtils.towingService;
   }
 
   static bool isTrackAndTrainingCategory(String? selectedCategory) {

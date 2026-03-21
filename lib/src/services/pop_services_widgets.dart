@@ -81,10 +81,10 @@ class _PopServicesWidgetsState extends State<PopServicesWidgets> {
                   controller: _scrollController,
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: items.length,
+                  itemCount: popServiceItemList.length,
                   separatorBuilder: (_, __) => const SizedBox(width: 20),
                   itemBuilder: (context, index) =>
-                      _buildServiceItem(context, items[index], isWeb: true),
+                      _buildServiceItem(context, popServiceItemList[index], isWeb: true),
                 ),
               ),
               _buildScrollButton(Icons.arrow_forward_ios, () => _scroll(300)),
@@ -118,11 +118,11 @@ class _PopServicesWidgetsState extends State<PopServicesWidgets> {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 20),
         // More padding
-        itemCount: items.length,
+        itemCount: popServiceItemList.length,
         separatorBuilder: (_, __) => const SizedBox(width: 20),
         // Details from screenshot
         itemBuilder: (context, index) =>
-            _buildServiceItem(context, items[index], isWeb: false),
+            _buildServiceItem(context, popServiceItemList[index], isWeb: false),
       ),
     );
   }

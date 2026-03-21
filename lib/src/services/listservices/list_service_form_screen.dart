@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:popp/src/navigation/nav_router.dart';
 import 'package:popp/src/utils/build_extensions.dart';
 import 'package:popp/src/utils/product_utils.dart';
+import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:popp/src/widgets/app_dialogs.dart';
 import 'package:popp/src/widgets/custom_dropdown_form_field.dart';
 import 'package:popp/src/widgets/image_picker_selection.dart';
@@ -65,6 +66,14 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
       TextEditingController();
   final TextEditingController googleFormLinkController =
       TextEditingController();
+
+  // --- Towing Service specific controllers ---
+  final TextEditingController bikeRSAController = TextEditingController();
+  final TextEditingController customTowingServiceTypeController =
+      TextEditingController();
+
+  final List<String> _selectedTowingServiceTypes = [];
+  String? _serviceCoverageArea;
 
   String? _selectedCategory;
   String selectedCountryCode = "+91";
@@ -128,6 +137,8 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
     locationNameController.dispose();
     locationAddressController.dispose();
     googleFormLinkController.dispose();
+    bikeRSAController.dispose();
+    customTowingServiceTypeController.dispose();
     super.dispose();
   }
 
@@ -176,6 +187,8 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
     locationNameController.clear();
     locationAddressController.clear();
     googleFormLinkController.clear();
+    bikeRSAController.clear();
+    customTowingServiceTypeController.clear();
 
     // Clear all dropdown selections and dates
     setState(() {
@@ -189,6 +202,8 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
       _eventStartTime = null;
       _eventEndTime = null;
       _termsAccepted = false;
+      _selectedTowingServiceTypes.clear();
+      _serviceCoverageArea = null;
     });
   }
 
@@ -233,6 +248,13 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
           'gstNumber': gstController.text,
           'doYouInspectPremiumBikes': _doYouInspectPremiumBikes,
           'isTyreFitmentAvailable': _isTyreFitmentAvailable,
+          'bikeRSA': bikeRSAController.text,
+          'towingServiceType': _selectedTowingServiceTypes
+              .map((type) => type == 'Others'
+                  ? customTowingServiceTypeController.text
+                  : type)
+              .toList(),
+          'serviceCoverageArea': _serviceCoverageArea,
           'googleMapLink': googleMapLinkController.text,
           'socialMediaLink': socialMediaLinkController.text,
           'businessWorkingDaysHours': businessWorkingDaysHoursController.text,
@@ -429,6 +451,8 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
       locationNameController,
       locationAddressController,
       googleFormLinkController,
+      bikeRSAController,
+      customTowingServiceTypeController,
     ];
 
     for (final c in textControllers) {
@@ -443,6 +467,8 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
     if (_selectedState != null) return true;
     if (_bikeProvision != null) return true;
     if (_riderSkillLevel != null) return true;
+    if (_selectedTowingServiceTypes.isNotEmpty) return true;
+    if (_serviceCoverageArea != null) return true;
 
     // Dates / times / terms
     if (_eventStartDate != null || _eventEndDate != null) return true;
@@ -556,7 +582,9 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                           ),
                         ),
                       ),
-                    if (ProductUtils.isBikeAndOthersCategory(
+                    if (_selectedCategory == ProductUtils.towingService)
+                      ..._buildTowingServiceFields(context)
+                    else if (ProductUtils.isBikeAndOthersCategory(
                         _selectedCategory)) ...[
                       // Fields for Find Mechanic / Bike Rentals
                       Padding(
@@ -1167,7 +1195,8 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
                         child: ImagePickerSection(
-                          title: "Event Promo Picture", // 2
+                          title: "Event Promo Picture",
+                          // 2
                           images: _promoImages,
                           allowGallery: _enableGallery,
                           allowMultipleImages: _enableGallery,
@@ -1280,5 +1309,336 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
         ),
       ),
     );
+  }
+
+  List<Widget> _buildTowingServiceFields(BuildContext context) {
+    return [
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: TextFormField(
+          controller: bikeRSAController,
+          decoration:
+              context.inputDecoration("Bike RSA", "Enter Bike RSA details"),
+          validator: (val) => val!.isEmpty ? "Bike RSA is mandatory" : null,
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: TextFormField(
+          controller: shopNameController,
+          decoration: context.inputDecoration("Towing Service Name",
+              ProductUtils.getShopNameHint(_selectedCategory)),
+          validator: (val) =>
+              val!.isEmpty ? "Towing Service Name is mandatory" : null,
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: TextFormField(
+          controller: businessTitleController,
+          decoration: context.inputDecoration(
+              "Business name", "As per GST or official records"),
+          validator: (val) =>
+              val!.isEmpty ? "Business Title is mandatory" : null,
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16.0),
+        child: ImagePickerSection(
+          title: "Upload pics for Towing Vehicle Pics",
+          allowGallery: _enableGallery,
+          allowMultipleImages: _enableGallery,
+          images: _shopGarageImages,
+          onImagesChanged: (images) => setState(() {
+            _shopGarageImages.clear();
+            _shopGarageImages.addAll(images);
+          }),
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10.0),
+        child: DropdownButtonFormField2<String>(
+          isExpanded: true,
+          decoration: context.inputDecoration(
+            "List of towing services",
+            "Select towing service",
+          ),
+          hint: const Text('Select towing service'),
+          items: [
+            "Flatbed Tow Truck",
+            "Hydraulic Lift Tow Truck",
+            "Pickup Truck",
+            "Motorcycle Trailer",
+            "Wheel Clamp Towing",
+            "Others"
+          ].map((item) {
+            return DropdownMenuItem<String>(
+              value: item,
+              enabled: false,
+              child: StatefulBuilder(
+                builder: (context, menuSetState) {
+                  final isSelected = _selectedTowingServiceTypes.contains(item);
+                  return InkWell(
+                    onTap: () {
+                      isSelected
+                          ? _selectedTowingServiceTypes.remove(item)
+                          : _selectedTowingServiceTypes.add(item);
+                      setState(() {});
+                      menuSetState(() {});
+                    },
+                    child: Container(
+                      height: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Row(
+                        children: [
+                          if (isSelected)
+                            const Icon(Icons.check_box_outlined)
+                          else
+                            const Icon(Icons.check_box_outline_blank),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Text(
+                              item,
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            );
+          }).toList(),
+          value: _selectedTowingServiceTypes.isEmpty
+              ? null
+              : _selectedTowingServiceTypes.last,
+          onChanged: (value) {},
+          selectedItemBuilder: (context) {
+            return [
+              "Flatbed Tow Truck",
+              "Hydraulic Lift Tow Truck",
+              "Pickup Truck",
+              "Motorcycle Trailer",
+              "Wheel Clamp Towing",
+              "Others"
+            ].map(
+              (item) {
+                return Container(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: Text(
+                    _selectedTowingServiceTypes.join(', '),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    maxLines: 1,
+                  ),
+                );
+              },
+            ).toList();
+          },
+          validator: (value) {
+            if (_selectedTowingServiceTypes.isEmpty) {
+              return 'Required';
+            }
+            return null;
+          },
+          dropdownStyleData: DropdownStyleData(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              color: Theme.of(context).colorScheme.surface,
+            ),
+          ),
+          iconStyleData: const IconStyleData(
+            icon: Icon(
+              Icons.keyboard_arrow_down,
+              color: Colors.grey,
+            ),
+          ),
+        ),
+      ),
+      if (_selectedTowingServiceTypes.contains('Others'))
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: TextFormField(
+            controller: customTowingServiceTypeController,
+            decoration: context.inputDecoration(
+                "Custom Towing Service", "Enter your custom towing service"),
+            validator: (val) =>
+                val!.isEmpty ? "Custom towing service is mandatory" : null,
+          ),
+        ),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: TextFormField(
+          controller: businessDescriptionController,
+          decoration: context.inputDecoration(
+            "Business Description/Clauses",
+            ProductUtils.getBusinessDescriptionHint(_selectedCategory),
+          ),
+          maxLines: 3,
+          validator: (val) =>
+              val!.isEmpty ? "Business Description is mandatory" : null,
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: CustomDropdownFormField<String>(
+          label: "Service Coverage Area",
+          hint: "Select coverage area",
+          value: _serviceCoverageArea,
+          items: ["City", "Highway", "District"]
+              .map((s) => DropdownMenuItem(value: s, child: Text(s)))
+              .toList(),
+          onChanged: (val) => setState(() => _serviceCoverageArea = val),
+          validator: (val) => val == null ? "Required" : null,
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: TextFormField(
+          controller: businessAddressController,
+          decoration: context.inputDecoration(
+              "Address", "Enter your Shop/Garage address"),
+          validator: (val) => val!.isEmpty ? "Address is mandatory" : null,
+        ),
+      ),
+      const SizedBox(height: 10),
+      AutocompleteSearchField(
+        label: "Area",
+        hint: "Enter area details",
+        controller: areaController,
+        icon: null,
+        lat: stateCoordinates[_selectedState]?['lat'] ?? 0.0,
+        lon: stateCoordinates[_selectedState]?['lon'] ?? 0.0,
+        onPlaceSelected: (suggestion) {
+          setState(() {
+            areaController.text = suggestion.text;
+            cityController.text = suggestion.municipality ?? '';
+            pincodeController.text = suggestion.postalCode ?? '';
+          });
+        },
+        validator: (val) => val!.isEmpty ? "Required" : null,
+      ),
+      const SizedBox(height: 10),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: TextFormField(
+          controller: cityController,
+          decoration: context.inputDecoration("City", "Enter city name"),
+          validator: (val) => val!.isEmpty ? "City is mandatory" : null,
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: CustomDropdownFormField<String>(
+          label: "State",
+          hint: "Select your state",
+          value: _selectedState,
+          items: stateNames
+              .map((s) => DropdownMenuItem(value: s, child: Text(s)))
+              .toList(),
+          onChanged: (val) => setState(() => _selectedState = val),
+          validator: (val) => val == null ? "Required" : null,
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: TextFormField(
+          controller: pincodeController,
+          keyboardType: TextInputType.number,
+          decoration: context.inputDecoration("Pin code", "Enter pin code"),
+          validator: (val) => val!.isEmpty ? "Pin code is mandatory" : null,
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: TextFormField(
+          controller: contactNameController,
+          decoration: context.inputDecoration(
+              "Contact Name", "Enter contact person's name"),
+          validator: (val) => val!.isEmpty ? "Contact Name is mandatory" : null,
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: Row(
+          children: [
+            DropdownButton<String>(
+              value: selectedCountryCode,
+              items: countryCodes
+                  .map((code) =>
+                      DropdownMenuItem(value: code, child: Text(code)))
+                  .toList(),
+              onChanged: (val) => setState(() => selectedCountryCode = val!),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: TextFormField(
+                controller: businessContactController,
+                keyboardType: TextInputType.phone,
+                decoration: context.inputDecoration(
+                    "Business Contact #", "Enter business contact number"),
+                validator: (val) =>
+                    val!.isEmpty ? "Contact is mandatory" : null,
+              ),
+            ),
+          ],
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: TextFormField(
+          controller: gstController,
+          decoration: context.inputDecoration("GST #", "Enter GST number"),
+          validator: (val) => val!.isEmpty ? "GST number is mandatory" : null,
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: TextFormField(
+          controller: googleMapLinkController,
+          decoration: context.inputDecoration(
+              "Google Map Link", "Enter Google Maps link (optional)"),
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: TextFormField(
+          controller: socialMediaLinkController,
+          decoration: context.inputDecoration(
+              "Social Media Link", "Enter social media link (optional)"),
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: WorkingHoursPicker(
+          label: "Business Working Days & Hours",
+          hint: "Select working days and hours",
+          controller: businessWorkingDaysHoursController,
+          onChanged: (value) {
+            setState(() {});
+          },
+          validator: (val) =>
+              val!.isEmpty || val == "No days selected, No time selected"
+                  ? "Working days and hours are mandatory"
+                  : null,
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: ImagePickerSection(
+          title: "Upload pics for Business Promo or Adv Picture",
+          allowGallery: _enableGallery,
+          allowMultipleImages: _enableGallery,
+          images: _promoImages,
+          onImagesChanged: (images) => setState(() {
+            _promoImages.clear();
+            _promoImages.addAll(images);
+          }),
+        ),
+      ),
+    ];
   }
 }

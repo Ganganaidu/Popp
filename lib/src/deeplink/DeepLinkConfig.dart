@@ -74,7 +74,13 @@ final deepLinkConfigs = {
     requiresAuth: true,
     loginMessage: 'About Us',
     action: (context) => onAboutUsTap(context),
-  )
+  ),
+  towingService: DeepLinkConfig(
+    requiresAuth: true,
+    loginMessage: 'Towing service',
+    action: (context) =>
+        onServiceListingTap(context, ProductUtils.towingService, null, false),
+  ),
 };
 
 const String sellYourBike = 'sellBike';
@@ -86,4 +92,5 @@ const String findBikeRentals = 'findBikeRentals';
 const String findMechanic = 'findMechanic';
 const String tyreShop = 'tyreShop';
 const String accessoryStore = 'accessoryStore';
+const String towingService = 'towingService';
 const aboutUs = 'aboutUs';

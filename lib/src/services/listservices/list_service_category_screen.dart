@@ -97,6 +97,8 @@ class ListServiceCategoryScreen extends StatelessWidget {
       assetPath = 'assets/accessory_store.png';
     } else if (category == ProductUtils.tyreShop) {
       assetPath = 'assets/tyre_shops.png';
+    } else if (category == ProductUtils.towingService) {
+      assetPath = 'assets/towing_service.png';
     } else {
       return Icon(
         Icons.category_outlined,

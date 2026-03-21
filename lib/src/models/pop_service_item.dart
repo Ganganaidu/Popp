@@ -27,7 +27,7 @@ class PopServiceItem {
   });
 }
 
-final List<PopServiceItem> items = [
+final List<PopServiceItem> popServiceItemList = [
   PopServiceItem(
     imageUrl: "assets/sell_your_bike.png",
     title: 'SELL',
@@ -67,9 +67,7 @@ final List<PopServiceItem> items = [
       action: findMechanic,
       icon: Icons.speed,
       customIconPainter: null,
-      // Gradient: Brown/Orange
       color: const Color(0xFFD84315),
-      // Burnt Orange/Brown
       width: 120,
       height: 120),
   PopServiceItem(
@@ -115,4 +113,13 @@ final List<PopServiceItem> items = [
     customIconPainter: StorefrontIconPainter(color: Colors.white),
     color: const Color(0xFF610283), // Purple
   ),
+  PopServiceItem(
+      imageUrl: "assets/towing_service.png",
+      title: 'TOWING',
+      subTitle: "service",
+      action: towingService,
+      customIconPainter: StorefrontIconPainter(color: Colors.white),
+      color: const Color(0xFFB2F603),
+      width: 120,
+      height: 120),
 ];

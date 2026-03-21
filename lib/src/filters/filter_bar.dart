@@ -11,12 +11,18 @@ class FilterBar extends StatefulWidget {
   final List<String> filters;
   final Map<String, int> activeFilterCounts;
   final void Function(Map<String, dynamic>) onFiltersChanged;
+  final List<String>? dynamicStates;
+  final List<String>? dynamicCities;
+  final List<String>? dynamicAreas;
 
   const FilterBar({
     super.key,
     required this.filters,
     this.activeFilterCounts = const {},
     required this.onFiltersChanged,
+    this.dynamicStates,
+    this.dynamicCities,
+    this.dynamicAreas,
   });
 
   @override
@@ -37,12 +43,16 @@ class _FilterBarState extends State<FilterBar> {
   };
   String selectedBrand = 'Brand / Model';
   String selectedState = 'By State';
+  String selectedCity = 'By City';
+  String selectedArea = 'By Area';
   String selectedCategory = 'By Category';
   String selectedSubCategory = 'By SubCategory';
   String selectedYear = "By Year";
 
   List<String> _selectedBrands = [];
   List<String> _selectedStates = [];
+  List<String> _selectedCities = [];
+  List<String> _selectedAreas = [];
   List<String> _selectedCategories = [];
   List<String> _selectedSubCategories = [];
 
@@ -81,6 +91,8 @@ class _FilterBarState extends State<FilterBar> {
                 Map<String, RangeValues>.from(rangeFilterValues);
             List<String> selectedBrands = List<String>.from(_selectedBrands);
             List<String> selectedStates = List<String>.from(_selectedStates);
+            List<String> selectedCities = List<String>.from(_selectedCities);
+            List<String> selectedAreas = List<String>.from(_selectedAreas);
             List<String> selectedCategories =
                 List<String>.from(_selectedCategories);
             List<String> selectedSubCategories =
@@ -100,6 +112,8 @@ class _FilterBarState extends State<FilterBar> {
                     rangeFilterValues.addAll(tempValues);
                     _selectedBrands = [];
                     _selectedStates = [];
+                    _selectedCities = [];
+                    _selectedAreas = [];
                     _selectedCategories = [];
                     _selectedSubCategories = [];
                     _yearFrom = DateTime.now().year - 1;
@@ -111,6 +125,8 @@ class _FilterBarState extends State<FilterBar> {
                       'By KM Driven': const RangeValues(0, 200000),
                       'Brand / Model': [],
                       'By State': [],
+                      'By City': [],
+                      'By Area': [],
                       'By Category': [],
                       'By SubCategory': [],
                       // Do not include 'By Year' on reset
@@ -125,6 +141,8 @@ class _FilterBarState extends State<FilterBar> {
                     rangeFilterValues.addAll(tempValues);
                     _selectedBrands = List<String>.from(selectedBrands);
                     _selectedStates = List<String>.from(selectedStates);
+                    _selectedCities = List<String>.from(selectedCities);
+                    _selectedAreas = List<String>.from(selectedAreas);
                     _selectedCategories = List<String>.from(selectedCategories);
                     _selectedSubCategories =
                         List<String>.from(selectedSubCategories);
@@ -137,6 +155,8 @@ class _FilterBarState extends State<FilterBar> {
                     ...tempValues,
                     'Brand / Model': selectedBrands,
                     'By State': selectedStates,
+                    'By City': selectedCities,
+                    'By Area': selectedAreas,
                     'By Category': selectedCategories,
                     'By SubCategory': selectedSubCategories,
                   };
@@ -243,6 +263,18 @@ class _FilterBarState extends State<FilterBar> {
                                       selectedStates = states;
                                     });
                                   },
+                                  selectedCities,
+                                  (cities) {
+                                    setSheetState(() {
+                                      selectedCities = cities;
+                                    });
+                                  },
+                                  selectedAreas,
+                                  (areas) {
+                                    setSheetState(() {
+                                      selectedAreas = areas;
+                                    });
+                                  },
                                   selectedCategories,
                                   (categories) {
                                     setSheetState(() {
@@ -309,6 +341,10 @@ class _FilterBarState extends State<FilterBar> {
       void Function(int)? onYearToChanged,
       List<String>? selectedStates,
       void Function(List<String>)? onStatesChanged,
+      List<String>? selectedCities,
+      void Function(List<String>)? onCitiesChanged,
+      List<String>? selectedAreas,
+      void Function(List<String>)? onAreasChanged,
       List<String>? selectedCategories,
       void Function(List<String>)? onCategoriesChanged,
       List<String>? selectedSubCategories,
@@ -360,12 +396,40 @@ class _FilterBarState extends State<FilterBar> {
     if (selectedState.contains(filterName.trim())) {
       AppLogger.d("selectedState  $filterName");
       return CheckboxFilterWidget(
-        displayList: stateNames, // You need to define statesList somewhere
+        displayList: widget.dynamicStates ?? stateNames,
         selectedItems: selectedStates ?? [],
         key: ValueKey(selectedStates?.join(',')),
         onSelectionChanged: (updatedSet) {
           if (onStatesChanged != null) {
             onStatesChanged(List<String>.from(updatedSet));
+          }
+        },
+      );
+    }
+
+    if (selectedCity.contains(filterName.trim())) {
+      AppLogger.d("selectedCity  $filterName");
+      return CheckboxFilterWidget(
+        displayList: widget.dynamicCities ?? [],
+        selectedItems: selectedCities ?? [],
+        key: ValueKey(selectedCities?.join(',')),
+        onSelectionChanged: (updatedSet) {
+          if (onCitiesChanged != null) {
+            onCitiesChanged(List<String>.from(updatedSet));
+          }
+        },
+      );
+    }
+
+    if (selectedArea.contains(filterName.trim())) {
+      AppLogger.d("selectedArea  $filterName");
+      return CheckboxFilterWidget(
+        displayList: widget.dynamicAreas ?? [],
+        selectedItems: selectedAreas ?? [],
+        key: ValueKey(selectedAreas?.join(',')),
+        onSelectionChanged: (updatedSet) {
+          if (onAreasChanged != null) {
+            onAreasChanged(List<String>.from(updatedSet));
           }
         },
       );
@@ -405,6 +469,10 @@ class _FilterBarState extends State<FilterBar> {
       count = _selectedBrands.length;
     } else if (filterName == 'By State') {
       count = _selectedStates.length;
+    } else if (filterName == 'By City') {
+      count = _selectedCities.length;
+    } else if (filterName == 'By Area') {
+      count = _selectedAreas.length;
     } else if (filterName == 'By Category') {
       count = _selectedCategories.length;
     } else if (filterName == 'By SubCategory') {

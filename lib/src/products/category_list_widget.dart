@@ -114,9 +114,8 @@ class CategoryListWidget extends StatelessWidget {
                     Text(
                       categoryName.toUpperCase(),
                       style: const TextStyle(
-                        fontSize: 20,
+                        fontSize: 18,
                         fontWeight: FontWeight.w800,
-                        fontStyle: FontStyle.italic,
                         color: BikerverseColors.textPrimary,
                         letterSpacing: 0.6,
                       ),

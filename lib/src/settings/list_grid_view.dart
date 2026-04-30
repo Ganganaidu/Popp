@@ -101,11 +101,16 @@ class _ListingsGridViewState extends State<ListingsGridView> {
             final price = data['expectedPrice']?.toString();
             bool isApproved = data['isApproved'] ?? false;
             bool isSold = data['isSold'] ?? false;
+            final docStatus = data['status'] as String?;
             final status = isSold
                 ? 'Sold'
                 : isApproved
                     ? 'Approved'
-                    : 'Pending';
+                    : docStatus == 'sent_back'
+                        ? 'Sent Back'
+                        : docStatus == 'rejected'
+                            ? 'Rejected'
+                            : 'Pending';
 
             return ListingCard(
               title: title,

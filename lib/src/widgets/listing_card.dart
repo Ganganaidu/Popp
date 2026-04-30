@@ -35,6 +35,10 @@ class ListingCard extends StatelessWidget {
         return (Colors.grey.shade700, Icons.money_off_outlined);
       case 'approved':
         return (Colors.green.shade600, Icons.check_circle_outline);
+      case 'sent back':
+        return (Colors.blue.shade600, Icons.undo_outlined);
+      case 'rejected':
+        return (Colors.red.shade700, Icons.cancel_outlined);
       default: // 'Pending' or any other status
         return (Colors.orange.shade700, Icons.hourglass_top_outlined);
     }

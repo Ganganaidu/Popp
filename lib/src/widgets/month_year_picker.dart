@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:month_year_picker/month_year_picker.dart';
 import 'package:popp/src/utils/app_loger.dart';
 import 'package:popp/src/utils/build_extensions.dart';
+import 'package:popp/src/widgets/custom_month_year_picker_dialog.dart';
 
 class MonthYearPicker extends StatelessWidget {
   final String label;
@@ -42,12 +43,15 @@ class MonthYearPicker extends StatelessWidget {
               ? () async {
                   // --- UPDATED: Conditional picker logic ---
                   if (selectOnlyMonthYear) {
-                    // Show Month/Year Picker
-                    final DateTime? picked = await showMonthYearPicker(
+                    // Show custom Month/Year Picker
+                    final DateTime? picked = await showDialog<DateTime>(
                       context: context,
-                      initialDate: selectedDate ?? DateTime.now(),
-                      firstDate: DateTime(1900),
-                      lastDate: DateTime(2100),
+                      builder: (BuildContext context) =>
+                          CustomMonthYearPickerDialog(
+                        initialDate: selectedDate ?? DateTime.now(),
+                        firstDate: DateTime(1900),
+                        lastDate: DateTime(2100),
+                      ),
                     );
                     if (picked != null) {
                       AppLogger.d("picked $picked");

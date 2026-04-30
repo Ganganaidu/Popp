@@ -91,7 +91,7 @@ final List<PopServiceItem> popServiceItemList = [
       height: 120),
   PopServiceItem(
     imageUrl: "assets/premium_bike_inspection.png",
-    title: 'PREMIUM',
+    title: 'SUPER BIKE',
     subTitle: "Inspection",
     action: premiumBikeInspection,
     customIconPainter: VerifiedIconPainter(color: Colors.white),

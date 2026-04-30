@@ -16,7 +16,6 @@ class AdminDashboardScreen extends StatefulWidget {
 
 class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     with SingleTickerProviderStateMixin {
-  // final FirebaseApiService _firebaseApiService = FirebaseApiService();
   late TabController _tabController;
 
   bool get _isAdmin =>
@@ -78,22 +77,19 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
       body: TabBarView(
         controller: _tabController,
         children: [
-          // Using the reusable widget for Products
           ListingsGridView(
             query: FirebaseFirestore.instance
                 .collection(ApiUrl.productsPath)
                 .where('isApproved', isEqualTo: false),
-            showOptionsMenu: false, // Show edit/delete options
+            showOptionsMenu: false,
           ),
-          // Using the reusable widget for Services
           ListingsGridView(
             query: FirebaseFirestore.instance
                 .collection(ApiUrl.servicePath)
                 .where('isApproved', isEqualTo: false),
-            showOptionsMenu: false, // Show edit/delete options
+            showOptionsMenu: false,
           ),
-          // Ads submission form for admins
-          const AdListPage()
+          const AdListPage(),
         ],
       ),
     );

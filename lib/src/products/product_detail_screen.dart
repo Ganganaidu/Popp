@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'package:popp/src/utils/product_utils.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../admin/admin_notification_service.dart';
 import '../api/api_url.dart';
 import '../api/firebase/firebase_api_service.dart';
 import '../chat/chat_with_seller_card.dart';
@@ -57,10 +59,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
     _isApproved = widget.productJson['isApproved'] == true;
     _isSold = widget.productJson['isSold'] == true;
+    final docStatus = widget.productJson['status'] as String?;
     if (_isSold) {
       _status = 'Sold';
     } else if (_isApproved) {
       _status = 'Approved';
+    } else if (docStatus == 'sent_back') {
+      _status = 'Sent Back';
+    } else if (docStatus == 'rejected') {
+      _status = 'Rejected';
     } else {
       _status = 'Pending';
     }
@@ -158,6 +165,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         return (Colors.grey.shade700, Icons.money_off_outlined);
       case 'approved':
         return (Colors.green.shade600, Icons.check_circle_outline);
+      case 'sent back':
+        return (Colors.blue.shade600, Icons.undo_outlined);
+      case 'rejected':
+        return (Colors.red.shade700, Icons.cancel_outlined);
       default:
         return (Colors.orange.shade700, Icons.hourglass_top_outlined);
     }
@@ -174,8 +185,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       body: kIsWeb
           ? _buildWebLayout(context, imageUrls, product, theme)
           : _buildMobileLayout(context, imageUrls, product, theme),
-      bottomNavigationBar:
-          !kIsWeb && _isAdmin && !_isApproved ? _buildAdminBottomBar() : null,
+      bottomNavigationBar: !kIsWeb && _isAdmin && _status != 'Approved' && _status != 'Rejected' && _status != 'Sold'
+          ? _buildAdminBottomBar()
+          : null,
     );
   }
 
@@ -321,31 +333,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
                         const SizedBox(height: 16),
 
-                        // Admin Approve Button
-                        if (_isAdmin && !_isApproved)
+                        if (_isAdmin && _status != 'Approved' && _status != 'Rejected' && _status != 'Sold')
                           Padding(
                             padding: const EdgeInsets.only(top: 16.0),
-                            child: SizedBox(
-                              width: double.infinity,
-                              height: 50,
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.green,
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8)),
-                                ),
-                                onPressed: () async {
-                                  await FirebaseApiService()
-                                      .updateProductApprovalStatus(
-                                          product['id'], true);
-                                  setState(() {
-                                    _isApproved = true;
-                                    _status = 'Approved';
-                                  });
-                                },
-                                child: const Text("Approve Product"),
-                              ),
-                            ),
+                            child: _buildAdminActionRow(),
                           ),
                       ],
                     ),
@@ -669,48 +660,177 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   Widget _buildAdminBottomBar() {
     return WebConstrainedBox(
       child: SafeArea(
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          child: SizedBox(
-            width: double.infinity,
-            height: 50,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _isApproved ? Colors.green : Colors.orange,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              onPressed: _isApproved
-                  ? null
-                  : () async {
-                      if (widget.productJson['id'] != null) {
-                        await FirebaseApiService().updateProductApprovalStatus(
-                            widget.productJson['id'], true);
-                        if (!mounted) return;
-                        setState(() {
-                          _isApproved = true;
-                          _status = 'Approved';
-                        });
-                        if (_isApproved) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'Product "${widget.productJson['brandName'] ?? widget.productJson['title']}" approved successfully!',
-                              ),
-                              duration: const Duration(seconds: 2),
-                            ),
-                          );
-                        }
-                      }
-                    },
-              child: Text(_isApproved ? 'Approved' : 'Approve'),
-            ),
-          ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: _buildAdminActionRow(),
         ),
       ),
     );
+  }
+
+  Widget _buildAdminActionRow() {
+    return Row(
+      children: [
+        Expanded(
+          child: ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () => _handleAdminAction('approved'),
+            icon: const Icon(Icons.check_circle_outline, size: 18),
+            label: const Text('Approve'),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () => _handleAdminAction('sent_back'),
+            icon: const Icon(Icons.undo_outlined, size: 18),
+            label: const Text('Send Back'),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () => _handleAdminAction('rejected'),
+            icon: const Icon(Icons.cancel_outlined, size: 18),
+            label: const Text('Reject'),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _handleAdminAction(String action) async {
+    final productId = widget.productJson['id'] as String? ?? '';
+    if (productId.isEmpty) return;
+
+    String? reason;
+    if (action == 'sent_back' || action == 'rejected') {
+      reason = await _showReasonDialog(action);
+      if (reason == null) return;
+    }
+
+    final listingRef = FirebaseFirestore.instance
+        .collection(ApiUrl.productsPath)
+        .doc(productId);
+
+    try {
+      switch (action) {
+        case 'approved':
+          await AdminNotificationService.approveListing(
+              listingRef: listingRef);
+          if (!mounted) return;
+          setState(() {
+            _isApproved = true;
+            _status = 'Approved';
+          });
+        case 'sent_back':
+          await AdminNotificationService.sendBackListing(
+              listingRef: listingRef, feedback: reason);
+          if (!mounted) return;
+          setState(() => _status = 'Sent Back');
+        case 'rejected':
+          await AdminNotificationService.rejectListing(
+              listingRef: listingRef, reason: reason);
+          if (!mounted) return;
+          setState(() => _status = 'Rejected');
+      }
+      if (mounted) {
+        final msg = switch (action) {
+          'approved' => 'Product approved. User will be notified.',
+          'sent_back' => 'Sent back to user for corrections.',
+          _ => 'Listing rejected. User will be notified.',
+        };
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(msg), backgroundColor: Colors.green),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Action failed: $e'),
+              backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  Future<String?> _showReasonDialog(String action) async {
+    final controller = TextEditingController();
+    final isSendBack = action == 'sent_back';
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(isSendBack ? 'Send Back for Corrections' : 'Reject Listing'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(isSendBack
+                  ? 'Provide feedback so the user knows what to correct:'
+                  : 'Provide a reason why this listing is not eligible for Bikerverse:'),
+              const SizedBox(height: 12),
+              TextField(
+                controller: controller,
+                maxLines: 3,
+                autofocus: true,
+                decoration: InputDecoration(
+                  hintText: isSendBack
+                      ? 'e.g. Please upload clearer photos of the item.'
+                      : 'e.g. Does not meet Bikerverse guidelines.',
+                  border: const OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: isSendBack ? Colors.orange : Colors.red,
+            ),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(
+              isSendBack ? 'Send Back' : 'Reject',
+              style: const TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    // Read text before any cleanup — do NOT dispose here because the dialog's
+    // exit animation may still be running and the TextField listener would fire
+    // on an already-disposed controller.
+    final text = controller.text;
+    if (confirmed != true) return null;
+    return text;
   }
 
   String _formatDate(dynamic date, bool selectOnlyMonthYear) {

@@ -558,10 +558,8 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 32,
-                      fontFamily: 'Orbitron',
                       // Assuming this font is available or fallback
                       fontWeight: FontWeight.w900,
-                      fontStyle: FontStyle.italic,
                       height: 1.0,
                       letterSpacing: -0.5,
                       shadows: [

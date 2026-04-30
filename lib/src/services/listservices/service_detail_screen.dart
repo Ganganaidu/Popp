@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +8,7 @@ import 'package:popp/src/widgets/title_text.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
+import '../../admin/admin_notification_service.dart';
 import '../../api/api_url.dart';
 import '../../api/firebase/firebase_api_service.dart';
 import '../../chat/chat_with_seller_card.dart';
@@ -33,8 +35,9 @@ class ServiceDetailScreen extends StatefulWidget {
 
 class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
   late bool _isApproved;
+  String _status = 'Pending';
   int _selectedImageIndex = 0;
-  bool _isFav = false; // Track favorite state
+  bool _isFav = false;
   bool _favButtonDisabled = false;
   final FirebaseApiService _firebaseApiService = FirebaseApiService();
 
@@ -42,6 +45,16 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
   void initState() {
     super.initState();
     _isApproved = widget.serviceData['isApproved'] == true;
+    final docStatus = widget.serviceData['status'] as String?;
+    if (_isApproved) {
+      _status = 'Approved';
+    } else if (docStatus == 'sent_back') {
+      _status = 'Sent Back';
+    } else if (docStatus == 'rejected') {
+      _status = 'Rejected';
+    } else {
+      _status = 'Pending';
+    }
     final favoritedBy = widget.serviceData['favoritedBy'] as List<dynamic>?;
     final currentUser = FirebaseAuth.instance.currentUser;
     if (favoritedBy != null && currentUser != null) {
@@ -91,49 +104,11 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     // String appBarTitle = ProductUtils.getServiceAppBarTitle(widget.category);
     return Scaffold(
       body: kIsWeb ? _buildWebLayout(context) : _buildBody(context),
-      bottomNavigationBar: !kIsWeb && isAdmin && !_isApproved
+      bottomNavigationBar: !kIsWeb && isAdmin && _status != 'Approved' && _status != 'Rejected'
           ? SafeArea(
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          _isApproved ? Colors.green : Colors.orange,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    onPressed: _isApproved
-                        ? null
-                        : () async {
-                            final serviceId = widget.serviceData['id'] ?? '';
-                            AppLogger.d("serviceId $serviceId");
-                            if (serviceId != '') {
-                              await _firebaseApiService
-                                  .updateServiceApprovalStatus(serviceId, true);
-                              if (!mounted) return;
-                              setState(() {
-                                _isApproved = true;
-                              });
-                              if (_isApproved) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'Product approved successfully!',
-                                    ),
-                                    duration: Duration(seconds: 2),
-                                  ),
-                                );
-                              }
-                            }
-                          },
-                    child: Text(_isApproved ? 'Approved' : 'Approve'),
-                  ),
-                ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: _buildAdminActionRow(),
               ),
             )
           : null,
@@ -272,30 +247,10 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
 
                         const SizedBox(height: 24),
 
-                        if (isAdmin && !_isApproved)
+                        if (isAdmin && _status != 'Approved' && _status != 'Rejected')
                           Padding(
                             padding: const EdgeInsets.only(bottom: 16.0),
-                            child: SizedBox(
-                              width: double.infinity,
-                              height: 50,
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.green),
-                                onPressed: () async {
-                                  final serviceId =
-                                      widget.serviceData['id'] ?? '';
-                                  if (serviceId != '') {
-                                    await _firebaseApiService
-                                        .updateServiceApprovalStatus(
-                                            serviceId, true);
-                                    setState(() {
-                                      _isApproved = true;
-                                    });
-                                  }
-                                },
-                                child: const Text("Approve Service"),
-                              ),
-                            ),
+                            child: _buildAdminActionRow(),
                           ),
 
                         ChatWithSellerCard(
@@ -1153,5 +1108,171 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     }
 
     return {'hours': processedHours, 'closed': closedStr};
+  }
+
+  Widget _buildAdminActionRow() {
+    return Row(
+      children: [
+        Expanded(
+          child: ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () => _handleAdminAction('approved'),
+            icon: const Icon(Icons.check_circle_outline, size: 18),
+            label: const Text('Approve'),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () => _handleAdminAction('sent_back'),
+            icon: const Icon(Icons.undo_outlined, size: 18),
+            label: const Text('Send Back'),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () => _handleAdminAction('rejected'),
+            icon: const Icon(Icons.cancel_outlined, size: 18),
+            label: const Text('Reject'),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _handleAdminAction(String action) async {
+    final serviceId = widget.serviceData['id'] as String? ?? '';
+    if (serviceId.isEmpty) return;
+
+    String? reason;
+    if (action == 'sent_back' || action == 'rejected') {
+      reason = await _showReasonDialog(action);
+      if (reason == null) return;
+    }
+
+    final listingRef = FirebaseFirestore.instance
+        .collection(ApiUrl.servicePath)
+        .doc(serviceId);
+
+    try {
+      switch (action) {
+        case 'approved':
+          await AdminNotificationService.approveListing(
+              listingRef: listingRef);
+          if (!mounted) return;
+          setState(() {
+            _isApproved = true;
+            _status = 'Approved';
+          });
+        case 'sent_back':
+          await AdminNotificationService.sendBackListing(
+              listingRef: listingRef, feedback: reason);
+          if (!mounted) return;
+          setState(() => _status = 'Sent Back');
+        case 'rejected':
+          await AdminNotificationService.rejectListing(
+              listingRef: listingRef, reason: reason);
+          if (!mounted) return;
+          setState(() => _status = 'Rejected');
+      }
+      if (mounted) {
+        final msg = switch (action) {
+          'approved' => 'Service approved. User will be notified.',
+          'sent_back' => 'Sent back to user for corrections.',
+          _ => 'Listing rejected. User will be notified.',
+        };
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(msg), backgroundColor: Colors.green),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Action failed: $e'),
+              backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  Future<String?> _showReasonDialog(String action) async {
+    final controller = TextEditingController();
+    final isSendBack = action == 'sent_back';
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title:
+            Text(isSendBack ? 'Send Back for Corrections' : 'Reject Listing'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(isSendBack
+                  ? 'Provide feedback so the user knows what to correct:'
+                  : 'Provide a reason why this listing is not eligible for Bikerverse:'),
+              const SizedBox(height: 12),
+              TextField(
+                controller: controller,
+                maxLines: 3,
+                autofocus: true,
+                decoration: InputDecoration(
+                  hintText: isSendBack
+                      ? 'e.g. Please upload clearer photos of the service.'
+                      : 'e.g. Does not meet Bikerverse guidelines.',
+                  border: const OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: isSendBack ? Colors.orange : Colors.red,
+            ),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(
+              isSendBack ? 'Send Back' : 'Reject',
+              style: const TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    // Read text before any cleanup — do NOT dispose here because the dialog's
+    // exit animation may still be running and the TextField listener would fire
+    // on an already-disposed controller.
+    final text = controller.text;
+    if (confirmed != true) return null;
+    return text;
   }
 }

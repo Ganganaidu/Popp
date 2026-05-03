@@ -12,6 +12,7 @@ import 'package:popp/src/utils/app_loger.dart';
 
 import '../api/api_url.dart';
 import '../chat/active_chat_provider.dart';
+import '../notifications/notification_service.dart';
 import '../navigation/custom_bottom_nav_bar.dart';
 import '../navigation/nav_helper.dart';
 import '../toolbar/web_side_bar.dart';
@@ -124,10 +125,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
       AppLogger.d('Got a message whilst in the foreground!');
       AppLogger.d('Message data: ${message.data}');
-      
+
       // Extract chatRoomId from incoming data payload if it exists
       final String? incomingChatRoomId = message.data['chatRoomId'];
-      
+
       // Check if the user is actively viewing this specific chat room
       if (incomingChatRoomId != null && incomingChatRoomId == ActiveChatProvider.activeChatRoomId.value) {
         AppLogger.d('Suppressing notification because user is actively viewing this chat room: $incomingChatRoomId');
@@ -137,6 +138,18 @@ class _HomeScreenState extends State<HomeScreen> {
       if (notification != null) {
         AppLogger.d(
             'Message also contained a notification: ${notification.title}');
+
+        // Save to Firestore notification history
+        final uid = FirebaseAuth.instance.currentUser?.uid;
+        if (uid != null) {
+          NotificationService.saveNotification(
+            uid: uid,
+            title: notification.title ?? '',
+            body: notification.body ?? '',
+            type: message.data['type'] as String?,
+            relatedId: message.data['relatedId'] as String?,
+          );
+        }
 
         // If you're on Android, you need to display the notification manually
         // using flutter_local_notifications.
@@ -161,8 +174,17 @@ class _HomeScreenState extends State<HomeScreen> {
     // Also handle when a user taps a notification that opened the app from a background state.
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       AppLogger.d('A new onMessageOpenedApp event was published!');
-      // You can add logic here to navigate to a specific page
-      // based on the message data.
+      final notification = message.notification;
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (notification != null && uid != null) {
+        NotificationService.saveNotification(
+          uid: uid,
+          title: notification.title ?? '',
+          body: notification.body ?? '',
+          type: message.data['type'] as String?,
+          relatedId: message.data['relatedId'] as String?,
+        );
+      }
     });
 
     // Handle messages when the app is terminated or in the background

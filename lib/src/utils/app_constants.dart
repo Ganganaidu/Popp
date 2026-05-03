@@ -13,6 +13,7 @@ class Constants {
   static const String explore = 'Explore';
   static const String search = 'Search';
   static const String more = 'More';
+  static const String settings = 'Settings';
 
   static const String contactNumber = '+91 995 9958 899';
   static const String contactEmail = 'preownedpremiumproducts@gmail.com';

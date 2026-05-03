@@ -56,8 +56,6 @@ class _MoreScreenState extends State<MoreScreen> {
             Expanded(
               child: CustomScrollView(
                 slivers: [
-                  // _buildAnimatedAppBar(
-                  //     context, isLoggedIn, user, backgroundImage),
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -67,8 +65,14 @@ class _MoreScreenState extends State<MoreScreen> {
                 ],
               ),
             ),
-            // This ensures the button is always at the bottom
-            // _buildBottomButton(context, isLoggedIn),
+            // Always-visible login/logout button fixed at the bottom
+            SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                child: _buildBottomButton(context, isLoggedIn),
+              ),
+            ),
           ],
         ),
       ),
@@ -172,7 +176,33 @@ class _MoreScreenState extends State<MoreScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionTitle("SUPPORT & HELP"),
+        _buildSectionTitle("APP SETTINGS"),
+        _buildListTile(
+          title: "Profile",
+          icon: Icons.person_outline,
+          onTap: () {
+            if (isLoggedIn) {
+              onProfileDetailsTap(context);
+            } else {
+              AppDialogs.showUserLoginDialog(context, () {
+                if (context.mounted) onLoginTap(context);
+              }, "login to view profile");
+            }
+          },
+        ),
+        if (isLoggedIn && isAdmin)
+          _buildListTile(
+            title: "Admin Dashboard",
+            icon: Icons.admin_panel_settings_outlined,
+            isHighlight: true,
+            onTap: () => onAdminDashboardTap(context),
+          ),
+        _buildListTile(
+          title: "My Listings",
+          icon: Icons.list_alt,
+          enabled: isLoggedIn,
+          onTap: () => onMyListingScreenTap(context, false),
+        ),
         if (isAdmin)
           _buildListTile(
             title: 'Chat user list',
@@ -199,6 +229,13 @@ class _MoreScreenState extends State<MoreScreen> {
               }
             },
           ),
+        const SizedBox(height: 24),
+        _buildSectionTitle("SUPPORT & HELP"),
+        _buildListTile(
+          title: "About Us",
+          icon: Icons.info_outline,
+          onTap: () => onAboutUsTap(context),
+        ),
         _buildListTile(
           title: 'Call us',
           icon: Icons.call_outlined,
@@ -234,29 +271,7 @@ class _MoreScreenState extends State<MoreScreen> {
             launchUrl(Uri.parse(ApiUrl.customersTermsLink));
           },
         ),
-        const SizedBox(height: 24),
-        _buildSectionTitle("APP SETTINGS"),
-        if (isLoggedIn && isAdmin)
-          _buildListTile(
-            title: "Admin Dashboard",
-            icon: Icons.admin_panel_settings_outlined,
-            isHighlight: true,
-            onTap: () => onAdminDashboardTap(context),
-          ),
-        _buildListTile(
-          title: "My Listings",
-          icon: Icons.list_alt,
-          enabled: isLoggedIn,
-          onTap: () => onMyListingScreenTap(context, false),
-        ),
-        _buildListTile(
-          title: "About Us",
-          icon: Icons.info_outline,
-          onTap: () => onAboutUsTap(context),
-        ),
-        const SizedBox(height: 20),
-        _buildBottomButton(context, isLoggedIn),
-        const SizedBox(height: 30),
+        const SizedBox(height: 16),
       ],
     );
   }

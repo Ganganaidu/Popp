@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:popp/src/login/model/user_data_model.dart';
+import 'package:popp/src/notifications/notification_screen.dart';
 import 'package:popp/src/settings/about_us.dart';
 import 'package:popp/src/settings/favorites_screen.dart';
 import 'package:popp/src/settings/more_screen.dart';
@@ -290,6 +291,15 @@ void onProfileDetailsTap(BuildContext context) {
     context,
     MaterialPageRoute(
       builder: (context) => const ProfileDetailsScreen(),
+    ),
+  );
+}
+
+void onNotificationsTap(BuildContext context) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => const NotificationScreen(),
     ),
   );
 }

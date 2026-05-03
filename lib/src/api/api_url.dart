@@ -9,6 +9,7 @@ class ApiUrl {
   static const String adsPath = 'ads';
   static const String servicePath = 'services';
   static const String globalMessagesPath = 'global_messages';
+  static const String notificationsSubPath = 'notifications';
 
   static String privacyLink = '${baseUrl}privacy-policy.html';
 

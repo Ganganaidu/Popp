@@ -29,7 +29,7 @@ class MonthYearPicker extends StatelessWidget {
   Widget build(BuildContext context) {
     // --- UPDATED: Conditional date formatting ---
     final String displayFormat =
-        selectOnlyMonthYear ? 'MMMM yyyy' : 'MM/dd/yyyy';
+        selectOnlyMonthYear ? 'MMMM yyyy' : 'dd/MM/yyyy';
     final String formattedDate = selectedDate != null
         ? DateFormat(displayFormat).format(selectedDate!)
         : ""; // Show nothing if no date is selected, hint will be in the label

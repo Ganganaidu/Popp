@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:url_launcher/url_launcher_string.dart';
 import '../models/product.dart';
 import '../utils/product_utils.dart';
 
@@ -16,10 +15,17 @@ class WebProductSpecs extends StatelessWidget {
 
     // List of all specs to display
     final specs = <Widget>[
+        if (product.isProductBikeSpecific == true) ...[
+          if (product.bikeBrandName?.isNotEmpty ?? false)
+            _buildSpecRow("Bike Brand", product.bikeBrandName!, theme),
+          if (product.bikeModelName?.isNotEmpty ?? false)
+            _buildSpecRow("Bike Model", product.bikeModelName!, theme),
+          if (product.bikeMfgDate != null)
+            _buildSpecRow("Bike MFG Date",
+                _formatDate(product.bikeMfgDate, true), theme),
+        ],
         if (product.mfgDate != null)
           _buildSpecRow("Manufacturing Date", _formatDate(product.mfgDate, true), theme),
-        if (product.registrationPlace?.isNotEmpty ?? false)
-          _buildSpecRow("Registration Place", product.registrationPlace!, theme),
         if (product.city.isNotEmpty) _buildSpecRow("City", product.city, theme),
         if (product.area.isNotEmpty) _buildSpecRow("Area", product.area, theme),
         if (product.state.isNotEmpty) _buildSpecRow("State", product.state, theme),
@@ -27,8 +33,6 @@ class WebProductSpecs extends StatelessWidget {
           _buildSpecRow("KM Driven", product.kmDriven!, theme),
         if (product.registrationDate != null)
           _buildSpecRow("Registration Date", _formatDate(product.registrationDate, true), theme),
-        if (product.registrationDate != null)
-          _buildSpecRow("Bill Date", _formatDate(product.billDate, false), theme),
         if (product.firstOwner != null)
           _buildSpecRow("Current Ownership Number", product.firstOwner!, theme),
         if (product.productAging?.isNotEmpty ?? false)
@@ -38,15 +42,14 @@ class WebProductSpecs extends StatelessWidget {
         if (product.productCondition?.isNotEmpty ?? false)
           _buildSpecRow("Product Condition", product.productCondition!, theme),
         if (product.insuranceAvailable != null)
-          _buildSpecRow("Insurance Available", product.insuranceAvailable != null ? "Yes" : "No", theme),
+          _buildSpecRow("Insurance Available", product.insuranceAvailable!, theme),
         if (product.insuranceValidTill != null)
           _buildSpecRow("Insurance valid till", _formatDate(product.insuranceValidTill, false), theme),
-        _buildSpecRow("Warranty Available", product.warrantyLimit != null ? "Yes" : "No", theme),
-        if (product.warrantyLimit?.isNotEmpty ?? false)
-          _buildSpecRow("Warranty Limit", product.warrantyLimit!, theme),
-        _buildSpecRow("Invoice Available", product.invoiceAvailable != null ? "Yes" : "No", theme),
-        if (product.category.contains(ProductUtils.premiumBikes))
-          _buildSpecRow("NOC Available", product.nocAvailable != null ? "Yes" : "No", theme),
+        if (product.invoiceAvailable != null)
+          _buildSpecRow("Invoice Available", product.invoiceAvailable!, theme),
+        if (product.category.contains(ProductUtils.premiumBikes) &&
+            product.nocAvailable != null)
+          _buildSpecRow("NOC Available", product.nocAvailable!, theme),
         if (product.batteryCondition != null)
           _buildSpecRow("Battery Condition", product.batteryCondition!, theme),
         if (product.tyreCondition != null)
@@ -62,7 +65,6 @@ class WebProductSpecs extends StatelessWidget {
   }
 
   Widget _buildSpecRow(String title, String value, TextTheme theme) {
-     final isRegistrationPlace = title.toLowerCase().contains('registration place');
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
@@ -74,37 +76,20 @@ class WebProductSpecs extends StatelessWidget {
               "$title:",
               style: const TextStyle(
                 fontSize: 14,
-                color: Colors.grey, // Label color
+                color: Colors.grey,
                 fontWeight: FontWeight.w500,
               ),
             ),
           ),
           Expanded(
             flex: 3,
-            child: isRegistrationPlace && value.isNotEmpty
-                ? GestureDetector(
-                    onTap: () async {
-                      final encoded = Uri.encodeComponent(value);
-                      final url = 'https://www.google.com/maps/search/?api=1&query=$encoded';
-                      await launchUrlString(url, mode: LaunchMode.externalApplication);
-                    },
-                    child: Text(
-                      value,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blue,
-                        decoration: TextDecoration.underline,
-                      ),
-                    ),
-                  )
-                : Text(
-                    value,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold, // Value bold as per design
-                    ),
-                  ),
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),
@@ -113,7 +98,7 @@ class WebProductSpecs extends StatelessWidget {
 
   String _formatDate(DateTime? date, bool selectOnlyMonthYear) {
     if (date == null) return "-";
-    final String displayFormat = selectOnlyMonthYear ? 'MMMM yyyy' : 'MMMM dd yyyy';
+    final String displayFormat = selectOnlyMonthYear ? 'MMMM yyyy' : 'dd/MM/yyyy';
     return DateFormat(displayFormat).format(date);
   }
 }

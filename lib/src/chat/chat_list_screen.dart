@@ -193,7 +193,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
                         messageDate.month == now.month &&
                         messageDate.year == now.year
                     ? DateFormat.jm() // 2:30 PM
-                    : DateFormat.yMd(); // 10/25/2024
+                    : DateFormat('dd/MM/yyyy');
                 timeDisplay = formatter.format(messageDate);
               }
 

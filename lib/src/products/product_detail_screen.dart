@@ -593,11 +593,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   Widget _buildHighlightsRow(Map<String, dynamic> product) {
     final cards = <Widget>[];
 
-    final mfgDate = _formatDate(product['mfgDate'], true);
-    if (mfgDate != "-") {
+    final sellerCategory = product['sellerCategory']?.toString();
+    if (sellerCategory != null && sellerCategory.isNotEmpty) {
       cards.add(Expanded(
           child: _buildHighlightCard(
-              Icons.calendar_today_outlined, "MANUFACTURING", mfgDate)));
+              Icons.person_outline, "SELLER TYPE", sellerCategory)));
     }
 
     final kmDriven = product['kmDriven'];
@@ -846,7 +846,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       }
     }
     final String displayFormat =
-        selectOnlyMonthYear ? 'MMMM yyyy' : 'd MMMM yyyy';
+        selectOnlyMonthYear ? 'MMMM yyyy' : 'dd/MM/yyyy';
     return DateFormat(displayFormat).format(dt);
   }
 

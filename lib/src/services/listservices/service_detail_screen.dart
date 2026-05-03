@@ -477,7 +477,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
           '${serviceData['locationAddress'] ?? ''}, ${serviceData['city'] ?? ''}, ${serviceData['state'] ?? ''}';
 
       String startDate = serviceData['eventStartDate'] != null
-          ? DateFormat('MMM d')
+          ? DateFormat('d MMM')
               .format(DateTime.parse(serviceData['eventStartDate']))
           : '';
       String startTime = serviceData['eventStartTime'] ?? '';

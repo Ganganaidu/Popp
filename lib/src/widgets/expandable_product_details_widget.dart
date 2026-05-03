@@ -29,11 +29,18 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
       children: [
         // Always Visible Important Fields
         // detailRow("Features", product.additionalDetails, theme),
+        if (product.isProductBikeSpecific == true) ...[
+          if (product.bikeBrandName?.isNotEmpty ?? false)
+            detailRow("Bike Brand", product.bikeBrandName!, theme),
+          if (product.bikeModelName?.isNotEmpty ?? false)
+            detailRow("Bike Model", product.bikeModelName!, theme),
+          if (product.bikeMfgDate != null)
+            detailRow("Bike MFG Date",
+                _formatDate(product.bikeMfgDate, true), theme),
+        ],
         if (product.mfgDate != null)
           detailRow(
               "Manufacturing Date", _formatDate(product.mfgDate, true), theme),
-        if (product.registrationPlace?.isNotEmpty ?? false)
-          detailRow("Registration Place", product.registrationPlace!, theme),
         if (product.city.isNotEmpty) detailRow("City", product.city, theme),
         if (product.area.isNotEmpty) detailRow("Area", product.area, theme),
         if (product.state.isNotEmpty)
@@ -59,9 +66,6 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
                 if (product.registrationDate != null)
                   detailRow("Registration Date",
                       _formatDate(product.registrationDate, true), theme),
-                if (product.registrationDate != null)
-                  detailRow(
-                      "Bill Date", _formatDate(product.billDate, false), theme),
                 if (product.firstOwner != null)
                   detailRow(
                       "Current Ownership Number", product.firstOwner!, theme),
@@ -74,7 +78,7 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
                       "Product Condition", product.productCondition!, theme),
                 if (product.insuranceAvailable != null)
                   detailRow("Insurance Available",
-                      product.insuranceAvailable != null ? "Yes" : "No", theme),
+                      product.insuranceAvailable!, theme),
                 if (product.insuranceValidTill != null)
                   detailRow("Insurance valid till",
                       _formatDate(product.insuranceValidTill, false), theme),
@@ -82,11 +86,12 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
                     product.warrantyLimit != null ? "Yes" : "No", theme),
                 if (product.warrantyLimit?.isNotEmpty ?? false)
                   detailRow("Warranty Limit", product.warrantyLimit!, theme),
-                detailRow("Invoice Available",
-                    product.invoiceAvailable != null ? "Yes" : "No", theme),
-                if (product.category.contains(ProductUtils.premiumBikes))
-                  detailRow("NOC Available",
-                      product.nocAvailable != null ? "Yes" : "No", theme),
+                if (product.invoiceAvailable != null)
+                  detailRow("Invoice Available",
+                      product.invoiceAvailable!, theme),
+                if (product.category.contains(ProductUtils.premiumBikes) &&
+                    product.nocAvailable != null)
+                  detailRow("NOC Available", product.nocAvailable!, theme),
                 if (product.batteryCondition != null)
                   detailRow(
                       "Battery Condition", product.batteryCondition!, theme),
@@ -171,7 +176,7 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
   String _formatDate(DateTime? date, bool selectOnlyMonthYear) {
     if (date == null) return "-";
     final String displayFormat =
-        selectOnlyMonthYear ? 'MMMM yyyy' : 'MMMM dd yyyy';
+        selectOnlyMonthYear ? 'MMMM yyyy' : 'dd/MM/yyyy';
     return DateFormat(displayFormat).format(date);
   }
 }

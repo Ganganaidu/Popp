@@ -49,7 +49,6 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
   final TextEditingController additionalDetailsController =
       TextEditingController();
   final TextEditingController productSizeController = TextEditingController();
-  final TextEditingController productAgingController = TextEditingController();
   final TextEditingController warrantyLeftController = TextEditingController();
 
   final TextEditingController addressController = TextEditingController();
@@ -72,6 +71,8 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
   bool isWarrantyAvailable = true;
   bool _termsAccepted = false;
   bool _enableGallery = false;
+  int _productAgingMonths = 0;
+  int _productAgingYears = 0;
 
   void _clearBikeSpecificFields() {
     selectedBikeBrand = null;
@@ -81,7 +82,8 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
 
   void _clearBillFields() {
     _selectedBillDate = null;
-    productAgingController.clear();
+    _productAgingMonths = 0;
+    _productAgingYears = 0;
   }
 
   void _clearWarrantyFields() {
@@ -165,7 +167,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
         productSize: productSizeController.text,
         productCondition: _productCondition,
         billDate: _selectedBillDate,
-        productAging: productAgingController.text,
+        productAging: '$_productAgingMonths months $_productAgingYears years',
         warrantyLimit: warrantyLeftController.text,
         expectedPrice: priceController.text,
         price: priceController.text,
@@ -185,7 +187,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
           addressController.text,
           productSizeController.text,
           _productCondition ?? "",
-          productAgingController.text,
+          '$_productAgingMonths months $_productAgingYears years',
           warrantyLeftController.text,
           priceController.text,
           additionalDetailsController.text,
@@ -198,7 +200,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
           ...addressController.text.toLowerCase().split(' '),
           ...productSizeController.text.toLowerCase().split(' '),
           ..._productCondition?.toLowerCase().split(' ') ?? [],
-          ...productAgingController.text.toLowerCase().split(' '),
+          ...'$_productAgingMonths months $_productAgingYears years'.split(' '),
           ...warrantyLeftController.text.toLowerCase().split(' '),
           ...priceController.text.toLowerCase().split(' '),
           ...'accessories'.toLowerCase().split(' '),
@@ -226,7 +228,10 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
         pinCodeController.clear();
         priceController.clear();
         additionalDetailsController.clear();
-        productAgingController.clear();
+        setState(() {
+          _productAgingMonths = 0;
+          _productAgingYears = 0;
+        });
         productSizeController.clear();
         warrantyLeftController.clear();
 
@@ -263,7 +268,6 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
     brandNameController.dispose();
     modelNameController.dispose();
     productSizeController.dispose();
-    productAgingController.dispose();
     warrantyLeftController.dispose();
 
     super.dispose();
@@ -479,17 +483,47 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
                       setState(() {
                         _selectedBillDate = date;
                         final age = AppUtils.calculateAge(_selectedBillDate);
-                        productAgingController.text =
-                            "${age['years']} years and ${age['months']} months";
+                        _productAgingYears = age['years'] ?? 0;
+                        _productAgingMonths = age['months'] ?? 0;
                       });
                     },
                   )),
-                  buildPaddedField(TextFormField(
-                    enabled: true,
-                    keyboardType: TextInputType.number,
-                    controller: productAgingController,
-                    decoration: context.inputDecoration(
-                        "Product aging", "Product age so far"),
+                  buildPaddedField(Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8.0),
+                        child: Text(
+                          "Product Aging",
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: Colors.grey,
+                              ),
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildAgingPicker(
+                              "Months",
+                              _productAgingMonths,
+                              0,
+                              11,
+                              (val) => setState(() => _productAgingMonths = val),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildAgingPicker(
+                              "Years",
+                              _productAgingYears,
+                              0,
+                              50,
+                              (val) => setState(() => _productAgingYears = val),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   )),
                   buildPaddedField(SwitchListTile(
                     title: const Text("Warranty available?"),
@@ -509,7 +543,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
                     keyboardType: TextInputType.number,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     controller: warrantyLeftController,
-                    decoration: context.inputDecoration("Warranty limit",
+                    decoration: context.inputDecoration("Remaining Warranty Period",
                         "How many months/years warranty left?"),
                   )),
                   buildPaddedField(TextFormField(
@@ -592,6 +626,48 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
                 ),
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAgingPicker(
+      String label, int value, int min, int max, ValueChanged<int> onChanged) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey.shade400),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        children: [
+          Text(label,
+              style: const TextStyle(color: Colors.grey, fontSize: 12)),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.remove),
+                onPressed:
+                    value > min ? () => onChanged(value - 1) : null,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+              Text(
+                '$value',
+                style: const TextStyle(
+                    fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              IconButton(
+                icon: const Icon(Icons.add),
+                onPressed:
+                    value < max ? () => onChanged(value + 1) : null,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+            ],
           ),
         ],
       ),

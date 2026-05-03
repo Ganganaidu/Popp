@@ -80,7 +80,7 @@ class CategoryListWidget extends StatelessWidget {
           _buildCategoryHeader(context, theme, isWeb: false),
           const SizedBox(height: 15),
           SizedBox(
-            height: itemWidth + 100,
+            height: itemWidth * 1.2, // Adjust height based on aspect ratio of product cards
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: products.length,

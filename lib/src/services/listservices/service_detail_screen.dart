@@ -18,6 +18,7 @@ import '../../utils/product_utils.dart';
 import '../../widgets/app_network_image.dart';
 import '../../widgets/full_screen_image_screen.dart';
 import '../../widgets/web_image_gallery.dart';
+import 'list_service_form_screen.dart';
 
 class ServiceDetailScreen extends StatefulWidget {
   final Map<String, dynamic> serviceData;
@@ -104,14 +105,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     // String appBarTitle = ProductUtils.getServiceAppBarTitle(widget.category);
     return Scaffold(
       body: kIsWeb ? _buildWebLayout(context) : _buildBody(context),
-      bottomNavigationBar: !kIsWeb && isAdmin && _status != 'Approved' && _status != 'Rejected'
-          ? SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: _buildAdminActionRow(),
-              ),
-            )
-          : null,
+      bottomNavigationBar: _buildServiceBottomBar(isAdmin),
     );
   }
 
@@ -251,6 +245,35 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                           Padding(
                             padding: const EdgeInsets.only(bottom: 16.0),
                             child: _buildAdminActionRow(),
+                          ),
+                        if (!isAdmin &&
+                            _status == 'Sent Back' &&
+                            widget.serviceData['userId'] ==
+                                FirebaseAuth.instance.currentUser?.uid)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 16.0),
+                            child: ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blue.shade700,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10)),
+                              ),
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => ListServiceFormScreen(
+                                      category: widget.category,
+                                      existingData: widget.serviceData,
+                                    ),
+                                  ),
+                                );
+                              },
+                              icon: const Icon(Icons.edit_outlined, size: 18),
+                              label: const Text('Edit & Resubmit'),
+                            ),
                           ),
 
                         ChatWithSellerCard(
@@ -943,6 +966,9 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
       'createdAt',
       'updatedAt',
       'approvedAt',
+      'statusUpdatedAt',
+      'adminFeedback',
+      'status',
       'isFavorite',
       'id',
       'isApproved',
@@ -1108,6 +1134,49 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     }
 
     return {'hours': processedHours, 'closed': closedStr};
+  }
+
+  Widget? _buildServiceBottomBar(bool isAdmin) {
+    if (kIsWeb) return null;
+    final currentUid = FirebaseAuth.instance.currentUser?.uid;
+    final isOwner = !isAdmin && widget.serviceData['userId'] == currentUid;
+    if (isOwner && _status == 'Sent Back') {
+      return SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue.shade700,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ListServiceFormScreen(
+                    category: widget.category,
+                    existingData: widget.serviceData,
+                  ),
+                ),
+              );
+            },
+            icon: const Icon(Icons.edit_outlined, size: 18),
+            label: const Text('Edit & Resubmit'),
+          ),
+        ),
+      );
+    }
+    if (isAdmin && _status != 'Approved' && _status != 'Rejected') {
+      return SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: _buildAdminActionRow(),
+        ),
+      );
+    }
+    return null;
   }
 
   Widget _buildAdminActionRow() {

@@ -15,6 +15,7 @@ import 'package:uuid/uuid.dart';
 import '../../api/api_url.dart';
 import '../../api/firebase/firebase_api_service.dart';
 import '../../api/firebase/remote_config_service.dart';
+import '../../gallery/pic_image_gallery.dart';
 import '../../models/pop_category.dart';
 import '../../models/product.dart';
 import '../../navigation/nav_router.dart';
@@ -26,7 +27,9 @@ import '../../widgets/image_picker_selection.dart';
 import '../../widgets/month_year_picker.dart';
 
 class SellYourBike extends StatefulWidget {
-  const SellYourBike({super.key});
+  final Map<String, dynamic>? existingData;
+
+  const SellYourBike({super.key, this.existingData});
 
   @override
   State<SellYourBike> createState() => _SellYourBikeState();
@@ -82,10 +85,72 @@ class _SellYourBikeState extends State<SellYourBike>
   final List<File> _images = [];
   var productId = const Uuid().v4();
 
+  bool get _isEditing => widget.existingData != null;
+
+  DateTime? _toDateTime(dynamic v) {
+    if (v == null) return null;
+    if (v is DateTime) return v;
+    try { return v.toDate(); } catch (_) { return null; }
+  }
+
+  void _initFromExistingData(Map<String, dynamic> data) {
+    sellerCategory = data['sellerCategory'] as String?;
+    sellerNameController.text = data['sellerName'] ?? '';
+
+    final contact = (data['sellerContactNumber'] as String? ?? '');
+    final spaceIdx = contact.indexOf(' ');
+    if (spaceIdx > 0) {
+      selectedCountryCode = contact.substring(0, spaceIdx);
+      sellerContactController.text = contact.substring(spaceIdx + 1);
+    } else {
+      sellerContactController.text = contact;
+    }
+
+    final brand = (data['brandName'] as String? ?? '');
+    if (bikeBrands.contains(brand)) {
+      selectedBrand = brand;
+      final model = (data['modelName'] as String? ?? '');
+      final models = bikeBrandModels[brand] ?? [];
+      if (models.contains(model)) {
+        selectedModel = model;
+      } else if (model.isNotEmpty) {
+        selectedModel = 'Others';
+        modelController.text = model;
+      }
+    } else if (brand.isNotEmpty) {
+      selectedBrand = 'Others';
+      brandController.text = brand;
+      modelController.text = data['modelName'] ?? '';
+    }
+
+    _selectedManufactureDate = _toDateTime(data['mfgDate']);
+    _selectedRegistrationDate = _toDateTime(data['registrationDate']);
+    _insuranceValidityTill = _toDateTime(data['insuranceValidTill']);
+
+    selectedState = data['state'] as String?;
+    addressController.text = data['address'] ?? '';
+    areaController.text = data['area'] ?? '';
+    cityController.text = data['city'] ?? '';
+    pinCodeController.text = data['pinCode'] ?? '';
+    kmDrivenController.text = data['kmDriven'] ?? '';
+    priceController.text = data['expectedPrice'] ?? '';
+    _areYouFirstOwner = data['firstOwner'] as String?;
+    _invoiceAvailable = data['invoiceAvailable'] as String?;
+    _nocAvailable = data['nocAvailable'] as String?;
+    _insuranceAvailable = data['insuranceAvailable'] as String?;
+    _batteryCondition = data['batteryCondition'] as String?;
+    _tyreCondition = data['tyreCondition'] as String?;
+    additionalDetailsController.text = data['additionalDetails'] ?? '';
+    _termsAccepted = true;
+  }
+
   @override
   void initState() {
     super.initState();
     _loadConfig();
+    if (widget.existingData != null) {
+      _initFromExistingData(widget.existingData!);
+    }
     _isCollapsedNotifier = ValueNotifier(false);
     _scrollController.addListener(() {
       final offset = _scrollController.offset;
@@ -147,141 +212,207 @@ class _SellYourBikeState extends State<SellYourBike>
   }
 
   void _submitForm() async {
-    if (_formKey.currentState!.validate()) {
-      String countryCode = Localizations.localeOf(context).countryCode ?? "IN";
-
-      if (!_termsAccepted) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please accept the Terms & Conditions')),
-        );
-        return;
-      }
-
-      // Updated logic to determine final brand and model names
-      String finalBrand;
-      String finalModel;
-
-      if (selectedBrand == 'Others') {
-        finalBrand = brandController.text;
-        finalModel = modelController.text;
-      } else {
-        finalBrand = selectedBrand ?? '';
-        if (selectedModel == 'Others') {
-          finalModel = modelController.text;
-        } else {
-          finalModel = selectedModel ?? '';
-        }
-      }
-
-      Product newProduct = Product(
-        id: productId,
-        isApproved: false,
-        isSold: false,
-        countryCode: countryCode,
-        userId: FirebaseAuth.instance.currentUser?.uid,
-        categoryId: catList[0].categoryId,
-        category: catList[0].name,
-        subCategory: catList[0].name,
-        sellerCategory: sellerCategory ?? "Individual",
-        sellerName: sellerNameController.text,
-        sellerContactNumber:
-            '$selectedCountryCode ${sellerContactController.text}',
-        brandName: finalBrand,
-        modelName: finalModel,
-        state: selectedState ?? "",
-        city: cityController.text,
-        area: areaController.text,
-        address: addressController.text,
-        pinCode: pinCodeController.text,
-        kmDriven: kmDrivenController.text,
-        expectedPrice: priceController.text,
-        price: priceController.text,
-        additionalDetails: additionalDetailsController.text,
-        firstOwner: _areYouFirstOwner,
-        invoiceAvailable: _invoiceAvailable,
-        nocAvailable: _nocAvailable,
-        insuranceAvailable: _insuranceAvailable,
-        insuranceValidTill: _insuranceValidityTill,
-        registrationDate: _selectedRegistrationDate,
-        registrationPlace: "",
-        mfgDate: _selectedManufactureDate,
-        createdAt: FieldValue.serverTimestamp(),
-        batteryCondition: _batteryCondition,
-        tyreCondition: _tyreCondition,
-        searchKeywords: [
-          sellerNameController.text,
-          finalModel,
-          addressController.text,
-          kmDrivenController.text,
-          priceController.text,
-          catList[0].name,
-          finalBrand,
-          selectedState ?? "",
-          _batteryCondition ?? "",
-          additionalDetailsController.text,
-          ...sellerNameController.text.toLowerCase().split(' '),
-          ...finalModel.toLowerCase().split(' '),
-          ...addressController.text.toLowerCase().split(' '),
-          ...catList[0].name.toLowerCase().split(' '),
-          ...finalBrand.toLowerCase().split(' '),
-          ...selectedState?.toLowerCase().split(' ') ?? [],
-          ...additionalDetailsController.text.toLowerCase().split(' '),
-          ...kmDrivenController.text.toLowerCase().split(' '),
-          ..._batteryCondition?.toLowerCase().split(' ') ?? [],
-          if (_batteryCondition != null && _batteryCondition!.isNotEmpty)
-            'batterycondition${_batteryCondition!.toLowerCase()}',
-          ..."bikes".toLowerCase().split(' '),
-          ...priceController.text.toLowerCase().split(' '),
-        ],
-      );
-
-      bool success = await _firebaseService.submitProductForm(
-        context: context,
-        product: newProduct,
-        images: _images,
-        onLoading: _handleLoading,
-      );
-
-      if (success) {
-        _formKey.currentState?.reset();
-        sellerNameController.clear();
-        sellerContactController.clear();
-        brandController.clear();
-        modelController.clear();
-        cityController.clear();
-        areaController.clear();
-        addressController.clear();
-        pinCodeController.clear();
-        kmDrivenController.clear();
-        priceController.clear();
-        additionalDetailsController.clear();
-        setState(() {
-          _images.clear();
-          selectedBrand = null;
-          selectedModel = null;
-          selectedState = null;
-          _areYouFirstOwner = null;
-          _invoiceAvailable = null;
-          _nocAvailable = "Yes";
-          _batteryCondition = null;
-          _tyreCondition = null;
-          _insuranceValidityTill = null;
-          _selectedManufactureDate = null;
-          _selectedRegistrationDate = null;
-          _termsAccepted = false;
-        });
-        if (!mounted) return;
-        AppDialogs.showProductSuccessDialog(context, () {
-          onMyListingScreenTap(context, true);
-        }, () {
-          Navigator.pushReplacementNamed(context, '/home');
-        });
-      }
-    } else {
+    if (!_formKey.currentState!.validate()) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please fill in all required fields')),
       );
+      return;
+    }
+
+    if (!_termsAccepted) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please accept the Terms & Conditions')),
+      );
+      return;
+    }
+
+    String finalBrand;
+    String finalModel;
+    if (selectedBrand == 'Others') {
+      finalBrand = brandController.text;
+      finalModel = modelController.text;
+    } else {
+      finalBrand = selectedBrand ?? '';
+      finalModel = selectedModel == 'Others' ? modelController.text : (selectedModel ?? '');
+    }
+
+    final List<String> keywords = [
+      sellerNameController.text,
+      finalModel,
+      addressController.text,
+      kmDrivenController.text,
+      priceController.text,
+      catList[0].name,
+      finalBrand,
+      selectedState ?? "",
+      _batteryCondition ?? "",
+      additionalDetailsController.text,
+      ...sellerNameController.text.toLowerCase().split(' '),
+      ...finalModel.toLowerCase().split(' '),
+      ...addressController.text.toLowerCase().split(' '),
+      ...catList[0].name.toLowerCase().split(' '),
+      ...finalBrand.toLowerCase().split(' '),
+      ...selectedState?.toLowerCase().split(' ') ?? [],
+      ...additionalDetailsController.text.toLowerCase().split(' '),
+      ...kmDrivenController.text.toLowerCase().split(' '),
+      ..._batteryCondition?.toLowerCase().split(' ') ?? [],
+      if (_batteryCondition != null && _batteryCondition!.isNotEmpty)
+        'batterycondition${_batteryCondition!.toLowerCase()}',
+      ..."bikes".toLowerCase().split(' '),
+      ...priceController.text.toLowerCase().split(' '),
+    ];
+
+    if (_isEditing) {
+      final String existingId = widget.existingData!['id'];
+      final existingImageUrls =
+          (widget.existingData!['thumbImageUrls'] as List? ?? []).cast<String>();
+
+      List<String> imageUrls = existingImageUrls;
+      if (_images.isNotEmpty) {
+        await _handleLoading(true);
+        imageUrls = await uploadMultipleImages(_images);
+        if (imageUrls.isEmpty) {
+          await _handleLoading(false);
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Image upload failed. Please try again.')),
+          );
+          return;
+        }
+      }
+
+      final Map<String, dynamic> updateData = {
+        'sellerCategory': sellerCategory ?? "Individual",
+        'sellerName': sellerNameController.text,
+        'sellerContactNumber': '$selectedCountryCode ${sellerContactController.text}',
+        'brandName': finalBrand,
+        'modelName': finalModel,
+        'state': selectedState ?? "",
+        'city': cityController.text,
+        'area': areaController.text,
+        'address': addressController.text,
+        'pinCode': pinCodeController.text,
+        'kmDriven': kmDrivenController.text,
+        'expectedPrice': priceController.text,
+        'price': priceController.text,
+        'firstOwner': _areYouFirstOwner,
+        'invoiceAvailable': _invoiceAvailable,
+        'nocAvailable': _nocAvailable,
+        'insuranceAvailable': _insuranceAvailable,
+        'insuranceValidTill': _insuranceValidityTill,
+        'registrationDate': _selectedRegistrationDate,
+        'registrationPlace': "",
+        'mfgDate': _selectedManufactureDate,
+        'batteryCondition': _batteryCondition,
+        'tyreCondition': _tyreCondition,
+        'additionalDetails': additionalDetailsController.text,
+        'imageUrl': imageUrls.isNotEmpty ? imageUrls.first : null,
+        'thumbImageUrls': imageUrls,
+        'status': 'pending',
+        'isApproved': false,
+        'adminFeedback': FieldValue.delete(),
+        'searchKeywords': keywords,
+      };
+
+      await _handleLoading(true);
+      final bool success = await _firebaseService.updateProduct(existingId, updateData);
+      await _handleLoading(false);
+
+      if (!mounted) return;
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Listing updated! It is under review.')),
+        );
+        Navigator.pop(context);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Update failed. Please try again.')),
+        );
+      }
+      return;
+    }
+
+    // Create mode
+    String countryCode = Localizations.localeOf(context).countryCode ?? "IN";
+    Product newProduct = Product(
+      id: productId,
+      isApproved: false,
+      isSold: false,
+      countryCode: countryCode,
+      userId: FirebaseAuth.instance.currentUser?.uid,
+      categoryId: catList[0].categoryId,
+      category: catList[0].name,
+      subCategory: catList[0].name,
+      sellerCategory: sellerCategory ?? "Individual",
+      sellerName: sellerNameController.text,
+      sellerContactNumber: '$selectedCountryCode ${sellerContactController.text}',
+      brandName: finalBrand,
+      modelName: finalModel,
+      state: selectedState ?? "",
+      city: cityController.text,
+      area: areaController.text,
+      address: addressController.text,
+      pinCode: pinCodeController.text,
+      kmDriven: kmDrivenController.text,
+      expectedPrice: priceController.text,
+      price: priceController.text,
+      additionalDetails: additionalDetailsController.text,
+      firstOwner: _areYouFirstOwner,
+      invoiceAvailable: _invoiceAvailable,
+      nocAvailable: _nocAvailable,
+      insuranceAvailable: _insuranceAvailable,
+      insuranceValidTill: _insuranceValidityTill,
+      registrationDate: _selectedRegistrationDate,
+      registrationPlace: "",
+      mfgDate: _selectedManufactureDate,
+      createdAt: FieldValue.serverTimestamp(),
+      batteryCondition: _batteryCondition,
+      tyreCondition: _tyreCondition,
+      searchKeywords: keywords,
+    );
+
+    bool success = await _firebaseService.submitProductForm(
+      context: context,
+      product: newProduct,
+      images: _images,
+      onLoading: _handleLoading,
+    );
+
+    if (success) {
+      _formKey.currentState?.reset();
+      sellerNameController.clear();
+      sellerContactController.clear();
+      brandController.clear();
+      modelController.clear();
+      cityController.clear();
+      areaController.clear();
+      addressController.clear();
+      pinCodeController.clear();
+      kmDrivenController.clear();
+      priceController.clear();
+      additionalDetailsController.clear();
+      setState(() {
+        _images.clear();
+        selectedBrand = null;
+        selectedModel = null;
+        selectedState = null;
+        _areYouFirstOwner = null;
+        _invoiceAvailable = null;
+        _nocAvailable = "Yes";
+        _batteryCondition = null;
+        _tyreCondition = null;
+        _insuranceValidityTill = null;
+        _selectedManufactureDate = null;
+        _selectedRegistrationDate = null;
+        _termsAccepted = false;
+      });
+      if (!mounted) return;
+      AppDialogs.showProductSuccessDialog(context, () {
+        onMyListingScreenTap(context, true);
+      }, () {
+        Navigator.pushReplacementNamed(context, '/home');
+      });
     }
   }
 
@@ -323,7 +454,7 @@ class _SellYourBikeState extends State<SellYourBike>
         modelsForBrand.isNotEmpty ? [...modelsForBrand, 'Others'] : <String>[];
 
     return Scaffold(
-      appBar: AppBar(title: const TitleText('Sell Your Bike')),
+      appBar: AppBar(title: TitleText(_isEditing ? 'Edit Your Bike' : 'Sell Your Bike')),
       body: WebConstrainedBox(
         child: LoadingOverlay(
         isLoading: _isLoading,
@@ -811,10 +942,10 @@ class _SellYourBikeState extends State<SellYourBike>
                               style: TextStyle(color: Colors.white)),
                         ],
                       )
-                    : const Text(
-                        "Submit",
-                        key: ValueKey('submit'),
-                        style: TextStyle(color: Colors.white),
+                    : Text(
+                        _isEditing ? "Update" : "Submit",
+                        key: const ValueKey('submit'),
+                        style: const TextStyle(color: Colors.white),
                       ),
               ),
             ),

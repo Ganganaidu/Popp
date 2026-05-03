@@ -12,7 +12,6 @@ import 'package:popp/src/utils/app_loger.dart';
 
 import '../api/api_url.dart';
 import '../chat/active_chat_provider.dart';
-import '../notifications/notification_service.dart';
 import '../navigation/custom_bottom_nav_bar.dart';
 import '../navigation/nav_helper.dart';
 import '../toolbar/web_side_bar.dart';
@@ -139,18 +138,6 @@ class _HomeScreenState extends State<HomeScreen> {
         AppLogger.d(
             'Message also contained a notification: ${notification.title}');
 
-        // Save to Firestore notification history
-        final uid = FirebaseAuth.instance.currentUser?.uid;
-        if (uid != null) {
-          NotificationService.saveNotification(
-            uid: uid,
-            title: notification.title ?? '',
-            body: notification.body ?? '',
-            type: message.data['type'] as String?,
-            relatedId: message.data['relatedId'] as String?,
-          );
-        }
-
         // If you're on Android, you need to display the notification manually
         // using flutter_local_notifications.
         if (android != null && !kIsWeb) {
@@ -174,17 +161,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // Also handle when a user taps a notification that opened the app from a background state.
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       AppLogger.d('A new onMessageOpenedApp event was published!');
-      final notification = message.notification;
-      final uid = FirebaseAuth.instance.currentUser?.uid;
-      if (notification != null && uid != null) {
-        NotificationService.saveNotification(
-          uid: uid,
-          title: notification.title ?? '',
-          body: notification.body ?? '',
-          type: message.data['type'] as String?,
-          relatedId: message.data['relatedId'] as String?,
-        );
-      }
+      // Notification already saved server-side by Cloud Functions.
     });
 
     // Handle messages when the app is terminated or in the background

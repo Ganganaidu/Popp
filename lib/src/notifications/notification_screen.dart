@@ -117,6 +117,8 @@ class _NotificationTile extends StatelessWidget {
         return Icons.cancel_outlined;
       case 'chat':
         return Icons.chat_bubble_outline;
+      case 'new_submission':
+        return Icons.assignment_outlined;
       default:
         return Icons.notifications_outlined;
     }
@@ -132,6 +134,8 @@ class _NotificationTile extends StatelessWidget {
         return Colors.red;
       case 'chat':
         return Colors.blue;
+      case 'new_submission':
+        return Colors.purple;
       default:
         return Theme.of(context).colorScheme.primary;
     }

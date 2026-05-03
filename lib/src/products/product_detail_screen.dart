@@ -13,6 +13,8 @@ import '../admin/admin_notification_service.dart';
 import '../api/api_url.dart';
 import '../api/firebase/firebase_api_service.dart';
 import '../chat/chat_with_seller_card.dart';
+import '../services/accessories/sell_your_accessories.dart';
+import '../services/bikes/sell_your_bike.dart';
 import '../toolbar/AppBarIconButton.dart';
 import '../utils/app_constants.dart';
 import '../widgets/app_dialogs.dart';
@@ -185,9 +187,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       body: kIsWeb
           ? _buildWebLayout(context, imageUrls, product, theme)
           : _buildMobileLayout(context, imageUrls, product, theme),
-      bottomNavigationBar: !kIsWeb && _isAdmin && _status != 'Approved' && _status != 'Rejected' && _status != 'Sold'
-          ? _buildAdminBottomBar()
-          : null,
+      bottomNavigationBar: _buildBottomBar(),
     );
   }
 
@@ -337,6 +337,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           Padding(
                             padding: const EdgeInsets.only(top: 16.0),
                             child: _buildAdminActionRow(),
+                          ),
+                        if (!_isAdmin &&
+                            _status == 'Sent Back' &&
+                            widget.productJson['userId'] ==
+                                FirebaseAuth.instance.currentUser?.uid)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 16.0),
+                            child: _buildUserEditButton(),
                           ),
                       ],
                     ),
@@ -653,6 +661,57 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               maxLines: 1,
               overflow: TextOverflow.ellipsis),
         ],
+      ),
+    );
+  }
+
+  Widget? _buildBottomBar() {
+    if (kIsWeb) return null;
+    final currentUid = FirebaseAuth.instance.currentUser?.uid;
+    final isOwner = !_isAdmin && widget.productJson['userId'] == currentUid;
+    if (isOwner && _status == 'Sent Back') {
+      return _buildUserEditButton();
+    }
+    if (_isAdmin && _status != 'Approved' && _status != 'Rejected' && _status != 'Sold') {
+      return _buildAdminBottomBar();
+    }
+    return null;
+  }
+
+  Widget _buildUserEditButton() {
+    return WebConstrainedBox(
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue.shade700,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () {
+              final category = widget.productJson['category'] as String? ?? '';
+              if (category == ProductUtils.premiumBikes) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => SellYourBike(existingData: widget.productJson),
+                  ),
+                );
+              } else {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => SellYourAccessories(existingData: widget.productJson),
+                  ),
+                );
+              }
+            },
+            icon: const Icon(Icons.edit_outlined, size: 18),
+            label: const Text('Edit & Resubmit'),
+          ),
+        ),
       ),
     );
   }

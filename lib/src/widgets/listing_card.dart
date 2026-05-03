@@ -126,11 +126,11 @@ class ListingCard extends StatelessWidget {
   Widget _buildMobileCard(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(26),
+      borderRadius: BorderRadius.circular(15),
       child: Container(
         decoration: BoxDecoration(
           color: BikerverseColors.card,
-          borderRadius: BorderRadius.circular(26),
+          borderRadius: BorderRadius.circular(15),
           border: Border.all(color: BikerverseColors.outline),
           boxShadow: [
             BoxShadow(

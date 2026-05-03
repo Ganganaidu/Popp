@@ -18,6 +18,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../api/api_url.dart';
 import '../../api/firebase/firebase_api_service.dart';
 import '../../api/firebase/remote_config_service.dart';
+import '../../gallery/pic_image_gallery.dart';
 import '../../search/autocomplete_search_field.dart';
 import '../../utils/app_loger.dart';
 import '../../utils/product_content_data.dart';
@@ -25,8 +26,9 @@ import '../../widgets/working_hours_picker.dart';
 
 class ListServiceFormScreen extends StatefulWidget {
   final String? category;
+  final Map<String, dynamic>? existingData;
 
-  const ListServiceFormScreen({super.key, this.category});
+  const ListServiceFormScreen({super.key, this.category, this.existingData});
 
   @override
   State<ListServiceFormScreen> createState() => _ListServiceFormScreenState();
@@ -93,11 +95,93 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
   bool _termsAccepted = false;
   bool _enableGallery = false;
 
+  bool get _isEditing => widget.existingData != null;
+
+  TimeOfDay? _parseTime(String? s) {
+    if (s == null || s.isEmpty) return null;
+    final parts = s.split(':');
+    if (parts.length < 2) return null;
+    int h = int.tryParse(parts[0]) ?? 0;
+    final minPart = parts[1].replaceAll(RegExp(r'[^0-9]'), '');
+    int m = int.tryParse(minPart) ?? 0;
+    final lower = s.toLowerCase();
+    if (lower.contains('pm') && h != 12) h += 12;
+    if (lower.contains('am') && h == 12) h = 0;
+    return TimeOfDay(hour: h, minute: m);
+  }
+
+  void _initFromExistingData(Map<String, dynamic> data) {
+    businessTitleController.text = data['businessTitle'] ?? '';
+    shopNameController.text = data['shopName'] ?? '';
+    businessDescriptionController.text =
+        data['businessDescription'] ?? data['eventDetailedDescription'] ?? '';
+    contactNameController.text =
+        data['contactName'] ?? data['pointOfContactName'] ?? '';
+    gstController.text = data['gstNumber'] ?? '';
+    businessAddressController.text =
+        data['businessAddress'] ?? data['locationAddress'] ?? '';
+    areaController.text = data['area'] ?? '';
+    cityController.text = data['city'] ?? '';
+    pincodeController.text = data['pincode'] ?? '';
+    googleMapLinkController.text = data['googleMapLink'] ?? '';
+    socialMediaLinkController.text = data['socialMediaLink'] ?? '';
+    businessWorkingDaysHoursController.text =
+        data['businessWorkingDaysHours'] ?? data['workingHours'] ?? '';
+
+    final contact = (data['businessContact'] ?? data['contact'] ?? '') as String;
+    final spaceIdx = contact.indexOf(' ');
+    if (spaceIdx > 0) {
+      selectedCountryCode = contact.substring(0, spaceIdx);
+      businessContactController.text = contact.substring(spaceIdx + 1);
+    } else {
+      businessContactController.text = contact;
+    }
+
+    _selectedState = data['state'] as String?;
+    _doYouInspectPremiumBikes = data['doYouInspectPremiumBikes'] as String?;
+    _isTyreFitmentAvailable = data['isTyreFitmentAvailable'] as String?;
+    bikeRSAController.text = data['bikeRSA'] ?? '';
+    _serviceCoverageArea = data['serviceCoverageArea'] as String?;
+
+    final towingTypes = data['towingServiceType'];
+    if (towingTypes is List) {
+      _selectedTowingServiceTypes.addAll(towingTypes.cast<String>());
+    }
+
+    // Track / Training Day fields
+    eventNameController.text = data['eventName'] ?? '';
+    maxSlotsController.text = data['maxSlots'] ?? '';
+    eventDetailedDescriptionController.text =
+        data['eventDetailedDescription'] ?? '';
+    locationNameController.text = data['locationName'] ?? '';
+    locationAddressController.text = data['locationAddress'] ?? '';
+    googleFormLinkController.text = data['googleFormLink'] ?? '';
+    _bikeProvision = data['bikeProvision'] as String?;
+    _riderSkillLevel = data['riderSkillLevel'] as String?;
+
+    final startDateStr = data['eventStartDate'] as String?;
+    if (startDateStr != null) {
+      try { _eventStartDate = DateTime.parse(startDateStr); } catch (_) {}
+    }
+    final endDateStr = data['eventEndDate'] as String?;
+    if (endDateStr != null) {
+      try { _eventEndDate = DateTime.parse(endDateStr); } catch (_) {}
+    }
+    _eventStartTime = _parseTime(data['eventStartTime'] as String?);
+    _eventEndTime = _parseTime(data['eventEndTime'] as String?);
+
+    _termsAccepted = true;
+  }
+
   @override
   void initState() {
     super.initState();
     if (widget.category != null) {
       _selectedCategory = widget.category;
+    }
+    if (widget.existingData != null) {
+      _selectedCategory ??= widget.existingData!['category'] as String?;
+      _initFromExistingData(widget.existingData!);
     }
     _loadConfig();
     // Show category selection bottom sheet on first load ONLY if no category passed
@@ -307,6 +391,49 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
           'contact': businessContactController.text,
           'pointOfContactName': contactNameController.text,
         });
+      }
+
+      if (_isEditing) {
+        final String serviceId = widget.existingData!['id'];
+        final existingPromo =
+            (widget.existingData!['promoImageUrls'] as List? ?? []).cast<String>();
+        final existingShop =
+            (widget.existingData!['shopImageUrls'] as List? ?? []).cast<String>();
+
+        List<String> promoUrls = existingPromo;
+        if (_promoImages.isNotEmpty) {
+          final uploaded = await uploadMultipleImages(_promoImages);
+          if (uploaded.isNotEmpty) promoUrls = uploaded;
+        }
+
+        List<String> shopUrls = existingShop;
+        if (_shopGarageImages.isNotEmpty) {
+          final uploaded = await uploadMultipleImages(_shopGarageImages);
+          if (uploaded.isNotEmpty) shopUrls = uploaded;
+        }
+
+        formData['promoImageUrls'] = promoUrls;
+        formData['shopImageUrls'] = shopUrls;
+        formData['status'] = 'pending';
+        formData['isApproved'] = false;
+
+        await _handleLoading(true);
+        final bool success =
+            await _productsService.updateService(serviceId, formData);
+        await _handleLoading(false);
+
+        if (!mounted) return;
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Service updated! It is under review.')),
+          );
+          Navigator.pop(context);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Update failed. Please try again.')),
+          );
+        }
+        return;
       }
 
       bool success = await _productsService.submitListServicesForm(

@@ -454,6 +454,41 @@ class FirebaseApiService {
     }
   }
 
+  Future<bool> updateService(
+      String serviceId, Map<String, dynamic> dataToUpdate) async {
+    final user = currentUser;
+    if (user == null) {
+      AppLogger.d("User not logged in to update service.");
+      return false;
+    }
+
+    try {
+      DocumentSnapshot serviceDoc =
+          await _db.collection(ApiUrl.servicePath).doc(serviceId).get();
+      if (!serviceDoc.exists) {
+        AppLogger.d("Service $serviceId does not exist, cannot update.");
+        return false;
+      }
+
+      final serviceData = serviceDoc.data() as Map<String, dynamic>?;
+      if (serviceData == null || serviceData['userId'] != user.uid) {
+        AppLogger.e(
+            "User ${user.uid} is not authorized to update service $serviceId.");
+        return false;
+      }
+
+      Map<String, dynamic> updatePayload = Map.from(dataToUpdate);
+      updatePayload['updatedAt'] = FieldValue.serverTimestamp();
+
+      await _db.collection(ApiUrl.servicePath).doc(serviceId).update(updatePayload);
+      AppLogger.d("Service $serviceId updated successfully.");
+      return true;
+    } catch (e) {
+      AppLogger.d("Error updating service $serviceId: $e");
+      return false;
+    }
+  }
+
   Future<bool> updateServiceApprovalStatus(
       String serviceId, bool isApproved) async {
     try {

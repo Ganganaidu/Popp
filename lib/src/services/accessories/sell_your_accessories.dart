@@ -18,6 +18,7 @@ import 'package:uuid/uuid.dart';
 import '../../api/api_url.dart';
 import '../../api/firebase/firebase_api_service.dart';
 import '../../api/firebase/remote_config_service.dart';
+import '../../gallery/pic_image_gallery.dart';
 import '../../models/pop_category.dart';
 import '../../models/product.dart';
 import '../../navigation/nav_router.dart';
@@ -29,7 +30,9 @@ import '../../widgets/image_picker_selection.dart';
 import '../../widgets/month_year_picker.dart';
 
 class SellYourAccessories extends StatefulWidget {
-  const SellYourAccessories({super.key});
+  final Map<String, dynamic>? existingData;
+
+  const SellYourAccessories({super.key, this.existingData});
 
   @override
   State<SellYourAccessories> createState() => _SellYourAccessoriesState();
@@ -94,10 +97,73 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
   var productId = const Uuid().v4();
   bool _isLoading = false;
 
+  bool get _isEditing => widget.existingData != null;
+
+  DateTime? _toDateTime(dynamic v) {
+    if (v == null) return null;
+    if (v is DateTime) return v;
+    try { return v.toDate(); } catch (_) { return null; }
+  }
+
+  void _initFromExistingData(Map<String, dynamic> data) {
+    sellerCategory = data['sellerCategory'] as String?;
+    sellerNameController.text = data['sellerName'] ?? '';
+
+    final contact = (data['sellerContactNumber'] as String? ?? '');
+    final spaceIdx = contact.indexOf(' ');
+    if (spaceIdx > 0) {
+      selectedCountryCode = contact.substring(0, spaceIdx);
+      sellerContactController.text = contact.substring(spaceIdx + 1);
+    } else {
+      sellerContactController.text = contact;
+    }
+
+    final categoryName = data['category'] as String? ?? '';
+    final matches = catList.where((c) => c.name == categoryName);
+    selectedCategory = matches.isNotEmpty ? matches.first : null;
+    selectedSubcategory = data['subCategory'] as String?;
+
+    accessoriesNameController.text = data['modelName'] ?? '';
+    brandNameController.text = data['brandName'] ?? '';
+
+    isBikeSpecific = data['isProductBikeSpecific'] == true;
+    selectedBikeBrand = data['bikeBrandName'] as String?;
+    modelNameController.text = data['bikeModelName'] ?? '';
+    _selectedManufactureDate = _toDateTime(data['bikeMfgDate']);
+
+    selectedState = data['state'] as String?;
+    addressController.text = data['address'] ?? '';
+    areaController.text = data['area'] ?? '';
+    cityController.text = data['city'] ?? '';
+    pinCodeController.text = data['pinCode'] ?? '';
+    productSizeController.text = data['productSize'] ?? '';
+    _productCondition = data['productCondition'] as String?;
+
+    _selectedBillDate = _toDateTime(data['billDate']);
+    isBillAvailable = _selectedBillDate != null;
+
+    // Parse productAging string e.g. "3 months 2 years"
+    final agingStr = data['productAging'] as String? ?? '';
+    final mMatch = RegExp(r'(\d+)\s*month').firstMatch(agingStr);
+    final yMatch = RegExp(r'(\d+)\s*year').firstMatch(agingStr);
+    _productAgingMonths = int.tryParse(mMatch?.group(1) ?? '0') ?? 0;
+    _productAgingYears = int.tryParse(yMatch?.group(1) ?? '0') ?? 0;
+
+    warrantyLeftController.text = data['warrantyLimit'] ?? '';
+    isWarrantyAvailable = warrantyLeftController.text.isNotEmpty;
+
+    priceController.text = data['expectedPrice'] ?? '';
+    additionalDetailsController.text = data['additionalDetails'] ?? '';
+    _termsAccepted = true;
+  }
+
   @override
   void initState() {
     super.initState();
     _loadConfig();
+    if (widget.existingData != null) {
+      _initFromExistingData(widget.existingData!);
+    }
   }
 
   void _loadConfig() async {
@@ -130,17 +196,127 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
   }
 
   void submitForm() async {
-    if (_formKey.currentState!.validate()) {
-      if (!_termsAccepted) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please accept the Terms & Conditions')),
-        );
-        return;
+    if (!_formKey.currentState!.validate()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill all required fields.')),
+      );
+      return;
+    }
+
+    if (!_termsAccepted) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please accept the Terms & Conditions')),
+      );
+      return;
+    }
+
+    final List<String> keywords = [
+      selectedCategory?.name ?? "",
+      selectedSubcategory ?? "",
+      accessoriesNameController.text,
+      brandNameController.text,
+      selectedBikeBrand ?? "",
+      modelNameController.text,
+      _selectedManufactureDate != null ? _selectedManufactureDate!.year.toString() : "",
+      selectedState ?? "",
+      addressController.text,
+      productSizeController.text,
+      _productCondition ?? "",
+      '$_productAgingMonths months $_productAgingYears years',
+      warrantyLeftController.text,
+      priceController.text,
+      additionalDetailsController.text,
+      ...selectedCategory?.name.toLowerCase().split(' ') ?? [],
+      ...selectedSubcategory?.toLowerCase().split(' ') ?? [],
+      ...accessoriesNameController.text.toLowerCase().split(' '),
+      ...brandNameController.text.toLowerCase().split(' '),
+      ...selectedBikeBrand?.toLowerCase().split(' ') ?? [],
+      ...modelNameController.text.toLowerCase().split(' '),
+      ...addressController.text.toLowerCase().split(' '),
+      ...productSizeController.text.toLowerCase().split(' '),
+      ..._productCondition?.toLowerCase().split(' ') ?? [],
+      ...'$_productAgingMonths months $_productAgingYears years'.split(' '),
+      ...warrantyLeftController.text.toLowerCase().split(' '),
+      ...priceController.text.toLowerCase().split(' '),
+      ...'accessories'.toLowerCase().split(' '),
+      ...additionalDetailsController.text.toLowerCase().split(' '),
+    ];
+
+    if (_isEditing) {
+      final String existingId = widget.existingData!['id'];
+      final existingImageUrls =
+          (widget.existingData!['thumbImageUrls'] as List? ?? []).cast<String>();
+
+      List<String> imageUrls = existingImageUrls;
+      if (_images.isNotEmpty) {
+        await _handleLoading(true);
+        imageUrls = await uploadMultipleImages(_images);
+        if (imageUrls.isEmpty) {
+          await _handleLoading(false);
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Image upload failed. Please try again.')),
+          );
+          return;
+        }
       }
 
-      String countryCode = Localizations.localeOf(context).countryCode ?? "IN";
-      Product newProduct = Product(
+      final Map<String, dynamic> updateData = {
+        'sellerCategory': sellerCategory ?? "Individual",
+        'sellerName': sellerNameController.text,
+        'sellerContactNumber': '$selectedCountryCode ${sellerContactController.text}',
+        'categoryId': selectedCategory?.categoryId ?? "",
+        'category': selectedCategory?.name ?? "",
+        'subCategory': selectedSubcategory,
+        'modelName': accessoriesNameController.text,
+        'brandName': brandNameController.text,
+        'isProductBikeSpecific': isBikeSpecific,
+        'bikeBrandName': selectedBikeBrand ?? "",
+        'bikeModelName': modelNameController.text,
+        'bikeMfgDate': _selectedManufactureDate,
+        'state': selectedState ?? "",
+        'city': cityController.text,
+        'area': areaController.text,
+        'address': addressController.text,
+        'pinCode': pinCodeController.text,
+        'productSize': productSizeController.text,
+        'productCondition': _productCondition,
+        'billDate': _selectedBillDate,
+        'productAging': '$_productAgingMonths months $_productAgingYears years',
+        'warrantyLimit': warrantyLeftController.text,
+        'expectedPrice': priceController.text,
+        'price': priceController.text,
+        'additionalDetails': additionalDetailsController.text,
+        'imageUrl': imageUrls.isNotEmpty ? imageUrls.first : null,
+        'thumbImageUrls': imageUrls,
+        'status': 'pending',
+        'isApproved': false,
+        'adminFeedback': FieldValue.delete(),
+        'searchKeywords': keywords,
+      };
+
+      await _handleLoading(true);
+      final bool success = await _firebaseApiService.updateProduct(existingId, updateData);
+      await _handleLoading(false);
+
+      if (!mounted) return;
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Listing updated! It is under review.')),
+        );
+        Navigator.pop(context);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Update failed. Please try again.')),
+        );
+      }
+      return;
+    }
+
+    // Create mode
+    String countryCode = Localizations.localeOf(context).countryCode ?? "IN";
+    Product newProduct = Product(
         id: productId,
         isApproved: false,
         isSold: false,
@@ -173,39 +349,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
         price: priceController.text,
         additionalDetails: additionalDetailsController.text,
         createdAt: FieldValue.serverTimestamp(),
-        searchKeywords: [
-          selectedCategory?.name ?? "",
-          selectedSubcategory ?? "",
-          accessoriesNameController.text,
-          brandNameController.text,
-          selectedBikeBrand ?? "",
-          modelNameController.text,
-          _selectedManufactureDate != null
-              ? _selectedManufactureDate!.year.toString()
-              : "",
-          selectedState ?? "",
-          addressController.text,
-          productSizeController.text,
-          _productCondition ?? "",
-          '$_productAgingMonths months $_productAgingYears years',
-          warrantyLeftController.text,
-          priceController.text,
-          additionalDetailsController.text,
-          ...selectedCategory?.name.toLowerCase().split(' ') ?? [],
-          ...selectedSubcategory?.toLowerCase().split(' ') ?? [],
-          ...accessoriesNameController.text.toLowerCase().split(' '),
-          ...brandNameController.text.toLowerCase().split(' '),
-          ...selectedBikeBrand?.toLowerCase().split(' ') ?? [],
-          ...modelNameController.text.toLowerCase().split(' '),
-          ...addressController.text.toLowerCase().split(' '),
-          ...productSizeController.text.toLowerCase().split(' '),
-          ..._productCondition?.toLowerCase().split(' ') ?? [],
-          ...'$_productAgingMonths months $_productAgingYears years'.split(' '),
-          ...warrantyLeftController.text.toLowerCase().split(' '),
-          ...priceController.text.toLowerCase().split(' '),
-          ...'accessories'.toLowerCase().split(' '),
-          ...additionalDetailsController.text.toLowerCase().split(' '),
-        ],
+        searchKeywords: keywords,
       );
 
       AppLogger.d("Product data to be submitted: ${newProduct.toJson()}");
@@ -247,11 +391,6 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
           });
         }
       }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all required fields.')),
-      );
-    }
   }
 
   @override
@@ -276,7 +415,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const TitleText('Sell Your Accessories')),
+      appBar: AppBar(title: TitleText(_isEditing ? 'Edit Your Accessories' : 'Sell Your Accessories')),
       body: WebConstrainedBox(
         child: LoadingOverlay(
         isLoading: _isLoading,
@@ -327,8 +466,10 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
                     ],
                   )),
                   buildPaddedField(CategorySelector(
-                    onCategoryChanged: (cat) => selectedCategory = cat,
-                    onSubcategoryChanged: (sub) => selectedSubcategory = sub,
+                    initialCategory: selectedCategory,
+                    initialSubcategory: selectedSubcategory,
+                    onCategoryChanged: (cat) => setState(() => selectedCategory = cat),
+                    onSubcategoryChanged: (sub) => setState(() => selectedSubcategory = sub),
                   )),
                   buildPaddedField(TextFormField(
                     controller: accessoriesNameController,
@@ -622,7 +763,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
                   onPressed: submitForm,
                   style: ElevatedButton.styleFrom(
                       minimumSize: const Size.fromHeight(50)),
-                  child: const Text("Submit"),
+                  child: Text(_isEditing ? "Update" : "Submit"),
                 ),
               ),
             ),

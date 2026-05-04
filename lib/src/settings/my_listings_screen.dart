@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../api/api_url.dart';
+import 'package:popp/src/toolbar/common_app_bar.dart';
 import '../widgets/title_text.dart';
 import 'package:popp/src/widgets/web_constrained_box.dart';
 import 'list_grid_view.dart';
@@ -36,7 +37,7 @@ class _MyListingsScreenState extends State<MyListingsScreen>
 
     if (user == null) {
       return Scaffold(
-        appBar: AppBar(title: const TitleText("My Listings")),
+        appBar: const CommonAppBar(titleWidget: TitleText("My Listings")),
         body: WebConstrainedBox(
           child: Center(
           child: Column(
@@ -59,8 +60,8 @@ class _MyListingsScreenState extends State<MyListingsScreen>
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const TitleText("My Listings"),
+      appBar: CommonAppBar(
+        titleWidget: const TitleText("My Listings"),
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: Colors.green,

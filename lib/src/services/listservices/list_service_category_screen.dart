@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:popp/src/toolbar/common_app_bar.dart';
 import 'package:popp/src/utils/build_extensions.dart';
 import 'package:popp/src/utils/product_utils.dart';
 import 'package:popp/src/widgets/title_text.dart';
@@ -11,8 +12,8 @@ class ListServiceCategoryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const TitleText("Select Category"),
+      appBar: const CommonAppBar(
+        titleWidget: TitleText("Select Category"),
         centerTitle: true,
       ),
       body: Padding(

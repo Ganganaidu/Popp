@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:popp/src/toolbar/common_app_bar.dart';
 import 'package:popp/src/widgets/title_text.dart';
 
 import '../../api/firebase/firebase_api_service.dart';
@@ -53,8 +54,8 @@ class _ServiceListingScreenState extends State<ServiceListingScreen> {
   Widget build(BuildContext context) {
     String appBarTitle = ProductUtils.getServiceAppBarTitle(widget.category);
     return Scaffold(
-      appBar: AppBar(
-        title: TitleText(appBarTitle),
+      appBar: CommonAppBar(
+        titleWidget: TitleText(appBarTitle),
       ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: _servicesFuture,

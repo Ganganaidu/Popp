@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:popp/src/toolbar/common_app_bar.dart';
 import 'package:popp/src/widgets/title_text.dart';
 import 'package:popp/src/widgets/web_constrained_box.dart';
 
@@ -37,7 +38,7 @@ class _FavoritesScreenState extends State<FavoritesScreen>
 
     if (user == null) {
       return Scaffold(
-        appBar: AppBar(title: const TitleText("Favorites")),
+        appBar: const CommonAppBar(titleWidget: TitleText("Favorites")),
         body: WebConstrainedBox(
           child: Center(
             child: Column(
@@ -60,8 +61,8 @@ class _FavoritesScreenState extends State<FavoritesScreen>
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const TitleText("My Favorites"),
+      appBar: CommonAppBar(
+        titleWidget: const TitleText("My Favorites"),
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: primaryColor,

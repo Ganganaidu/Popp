@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:popp/src/toolbar/common_app_bar.dart';
 import 'package:intl/intl.dart';
 import 'package:popp/src/api/api_url.dart';
 import 'package:popp/src/login/model/user_data_model.dart';
@@ -227,14 +228,10 @@ class _SignupScreenState extends State<SignupScreen> {
 
   Widget _buildWebLayout(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => onLoginTap(context),
-          tooltip: 'Back',
-        ),
-        title: const TitleText("Create Account"),
-        elevation: 0,
+      appBar: CommonAppBar(
+        titleWidget: const TitleText("Create Account"),
+        showBackButton: true,
+        onBackPressed: () => onLoginTap(context),
         backgroundColor: Colors.transparent,
       ),
       body: Container(
@@ -279,14 +276,10 @@ class _SignupScreenState extends State<SignupScreen> {
 
   Widget _buildMobileLayout(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => onLoginTap(context),
-          tooltip: 'Back',
-        ),
-        title: const TitleText("Create Account"),
-        elevation: 0,
+      appBar: CommonAppBar(
+        titleWidget: const TitleText("Create Account"),
+        showBackButton: true,
+        onBackPressed: () => onLoginTap(context),
       ),
       body: Form(
         key: _formKey,

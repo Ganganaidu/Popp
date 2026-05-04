@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:popp/src/toolbar/common_app_bar.dart';
 import 'package:popp/src/api/currency_service.dart';
 import 'package:popp/src/utils/app_loger.dart';
 
@@ -205,10 +206,10 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
   Widget build(BuildContext context) {
     String countryCode = Localizations.localeOf(context).countryCode ?? 'US';
     return Scaffold(
-      appBar: AppBar(
-          title: TitleText(widget.categoryName,
-              style:
-                  const TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
+      appBar: CommonAppBar(
+        titleWidget: TitleText(widget.categoryName,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _error != null

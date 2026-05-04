@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../api/api_url.dart';
 import '../navigation/nav_router.dart';
+import '../toolbar/common_app_bar.dart';
 import '../widgets/app_network_image.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -73,8 +74,8 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: TextField(
+      appBar: CommonAppBar(
+        titleWidget: TextField(
           controller: _searchController,
           focusNode: _focusNode,
           autofocus: true,

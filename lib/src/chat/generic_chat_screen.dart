@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:popp/src/toolbar/common_app_bar.dart';
 import 'package:popp/src/utils/build_extensions.dart';
 import '../utils/app_loger.dart';
 import 'active_chat_provider.dart';
@@ -215,8 +216,8 @@ class _GenericChatScreenState extends State<GenericChatScreen> {
         ? widget.productTitle
         : widget.receiverUserName;
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
+      appBar: CommonAppBar(
+        titleWidget: Text(
           title,
           style: Theme.of(context)
               .textTheme
@@ -225,10 +226,6 @@ class _GenericChatScreenState extends State<GenericChatScreen> {
           maxLines: 2,
         ),
         centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
       ),
       body: Column(
         children: [

@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:popp/src/toolbar/common_app_bar.dart';
 import 'package:popp/src/utils/app_loger.dart';
 import 'package:intl/intl.dart'; // **NEW: For timestamp formatting**
 
@@ -41,8 +42,8 @@ class _ChatListScreenState extends State<ChatListScreen> {
 
   Widget _agentChatListView() {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Agent Dashboard'),
+      appBar: const CommonAppBar(
+        title: 'Agent Dashboard',
         centerTitle: true,
       ),
       body: StreamBuilder<List<Map<String, dynamic>>>(

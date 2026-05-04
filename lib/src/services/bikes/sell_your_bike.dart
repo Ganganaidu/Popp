@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:popp/src/utils/build_extensions.dart';
 import 'package:popp/src/widgets/app_dialogs.dart';
 import 'package:popp/src/widgets/loading_overlay.dart';
+import 'package:popp/src/toolbar/common_app_bar.dart';
 import 'package:popp/src/widgets/title_text.dart';
 import 'package:popp/src/widgets/web_constrained_box.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -454,7 +455,9 @@ class _SellYourBikeState extends State<SellYourBike>
         modelsForBrand.isNotEmpty ? [...modelsForBrand, 'Others'] : <String>[];
 
     return Scaffold(
-      appBar: AppBar(title: TitleText(_isEditing ? 'Edit Your Bike' : 'Sell Your Bike')),
+      appBar: CommonAppBar(
+        titleWidget: TitleText(_isEditing ? 'Edit Your Bike' : 'Sell Your Bike'),
+      ),
       body: WebConstrainedBox(
         child: LoadingOverlay(
         isLoading: _isLoading,

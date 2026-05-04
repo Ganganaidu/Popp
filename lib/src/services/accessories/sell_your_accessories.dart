@@ -10,6 +10,7 @@ import 'package:popp/src/utils/app_utils.dart';
 import 'package:popp/src/utils/build_extensions.dart';
 import 'package:popp/src/widgets/category_selector.dart';
 import 'package:popp/src/widgets/loading_overlay.dart';
+import 'package:popp/src/toolbar/common_app_bar.dart';
 import 'package:popp/src/widgets/title_text.dart';
 import 'package:popp/src/widgets/web_constrained_box.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -415,7 +416,9 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: TitleText(_isEditing ? 'Edit Your Accessories' : 'Sell Your Accessories')),
+      appBar: CommonAppBar(
+        titleWidget: TitleText(_isEditing ? 'Edit Your Accessories' : 'Sell Your Accessories'),
+      ),
       body: WebConstrainedBox(
         child: LoadingOverlay(
         isLoading: _isLoading,

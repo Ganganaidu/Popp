@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:popp/src/toolbar/common_app_bar.dart';
 import 'package:popp/src/utils/app_constants.dart';
 
 import '../adbanner/ui/ad_list_page.dart';
@@ -37,7 +38,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
   Widget build(BuildContext context) {
     if (!_isAdmin) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Admin Dashboard')),
+        appBar: const CommonAppBar(title: 'Admin Dashboard'),
         body: const Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -60,8 +61,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
       );
     }
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Admin Dashboard"),
+      appBar: CommonAppBar(
+        title: 'Admin Dashboard',
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: Colors.green,

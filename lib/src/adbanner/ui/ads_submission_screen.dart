@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:popp/src/toolbar/common_app_bar.dart';
 
 import '../../api/api_url.dart';
 import '../../deeplink/DeepLinkConfig.dart';
@@ -143,8 +144,8 @@ class _AdsSubmissionScreenState extends State<AdsSubmissionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
+      appBar: const CommonAppBar(
+        titleWidget: Text(
           'Create / Submit Ad',
           style: TextStyle(
               fontSize: 16,

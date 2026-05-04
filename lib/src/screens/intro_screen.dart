@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:popp/src/toolbar/common_app_bar.dart';
 import 'package:popp/src/systemalerts/auth_wrapper.dart';
 import 'package:popp/src/utils/app_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -17,7 +18,8 @@ class IntroScreen extends StatelessWidget {
         primaryColor: Colors.green,
       ),
       child: Scaffold(
-        appBar: AppBar(
+        appBar: CommonAppBar(
+          showBackButton: false,
           actions: [
             TextButton(
               onPressed: () => _onIntroComplete(context),
@@ -29,7 +31,6 @@ class IntroScreen extends StatelessWidget {
             ),
           ],
           backgroundColor: Colors.transparent,
-          elevation: 0,
         ),
         body: Stack(
           children: [

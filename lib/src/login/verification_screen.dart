@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:popp/src/toolbar/common_app_bar.dart';
 import 'package:popp/src/login/model/user_data_model.dart';
 import 'package:popp/src/navigation/nav_router.dart';
 import 'package:popp/src/widgets/title_text.dart';
@@ -127,8 +128,8 @@ class _VerificationScreenState extends State<VerificationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const TitleText('Verify Your Email'),
+      appBar: const CommonAppBar(
+        titleWidget: TitleText('Verify Your Email'),
       ),
       body: Center(
         child: SingleChildScrollView(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:popp/src/toolbar/common_app_bar.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:popp/src/utils/app_constants.dart';
 import 'package:popp/src/widgets/web_constrained_box.dart';
@@ -57,9 +58,8 @@ class _AboutUsScreenState extends State<AboutUsScreen> {
   Widget build(BuildContext context) {
     // Use WebConstrainedBox for web-friendly layout
     return Scaffold(
-      appBar: AppBar(
-        title: const TitleText('About Bikerverse'),
-        elevation: 0,
+      appBar: const CommonAppBar(
+        titleWidget: TitleText('About Bikerverse'),
       ),
       body: Center(
         child: WebConstrainedBox(

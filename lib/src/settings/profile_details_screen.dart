@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:popp/src/api/api_url.dart';
 import 'package:popp/src/login/model/user_data_model.dart'; // Adjust path to your UserData model
 import 'package:popp/src/theme/bikerverse_colors.dart';
+import 'package:popp/src/toolbar/common_app_bar.dart';
 import 'package:popp/src/utils/app_loger.dart';
 import 'package:popp/src/widgets/web_constrained_box.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -144,9 +145,8 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const TitleText('Profile Details'),
-        elevation: 0,
+      appBar: const CommonAppBar(
+        titleWidget: TitleText('Profile Details'),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())

@@ -7,6 +7,7 @@ class AppBarIconButton extends StatelessWidget {
   final VoidCallback onTap;
   final bool accent;
   final Color? iconColor;
+  final String? iconSemanticLabel;
 
   const AppBarIconButton({
     super.key,
@@ -14,6 +15,7 @@ class AppBarIconButton extends StatelessWidget {
     required this.onTap,
     this.accent = false,
     this.iconColor,
+    this.iconSemanticLabel
   });
 
   @override
@@ -35,6 +37,7 @@ class AppBarIconButton extends StatelessWidget {
             border: Border.all(color: borderColor, width: 1.2),
           ),
           child: Icon(icon,
+              semanticLabel: iconSemanticLabel,
               color: iconColor ??
                   (accent
                       ? BikerverseColors.accent

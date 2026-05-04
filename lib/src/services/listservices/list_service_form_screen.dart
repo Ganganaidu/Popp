@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:popp/src/toolbar/common_app_bar.dart';
 import 'package:popp/src/navigation/nav_router.dart';
 import 'package:popp/src/utils/build_extensions.dart';
 import 'package:popp/src/utils/product_utils.dart';
@@ -655,28 +656,26 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
         }
       },
       child: Scaffold(
-        appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () async {
-              AppLogger.d('[ListServiceFormScreen] AppBar back pressed');
-              if (_hasFormData()) {
-                AppLogger.d(
-                    '[ListServiceFormScreen] unsaved data detected on AppBar back');
-                final discard = await _confirmDiscardChanges();
-                AppLogger.d(
-                    '[ListServiceFormScreen] discard confirmation result (AppBar): $discard');
-                if (discard && Navigator.of(context).canPop()) {
-                  Navigator.of(context).pop();
-                }
-              } else {
-                if (Navigator.of(context).canPop()) Navigator.of(context).pop();
+        appBar: CommonAppBar(
+          showBackButton: true,
+          onBackPressed: () async {
+            AppLogger.d('[ListServiceFormScreen] AppBar back pressed');
+            if (_hasFormData()) {
+              AppLogger.d(
+                  '[ListServiceFormScreen] unsaved data detected on AppBar back');
+              final discard = await _confirmDiscardChanges();
+              AppLogger.d(
+                  '[ListServiceFormScreen] discard confirmation result (AppBar): $discard');
+              if (discard && Navigator.of(context).canPop()) {
+                Navigator.of(context).pop();
               }
-            },
-          ),
-          title: TitleText(_selectedCategory ?? 'List your service'),
+            } else {
+              if (Navigator.of(context).canPop()) Navigator.of(context).pop();
+            }
+          },
+          titleWidget: TitleText(_selectedCategory ?? 'List your service'),
           actions: [
-            if (widget.category == null) // Check if category was passed
+            if (widget.category == null)
               IconButton(
                 icon: const Icon(Icons.arrow_drop_down_circle_rounded),
                 tooltip: 'Change Service Category',

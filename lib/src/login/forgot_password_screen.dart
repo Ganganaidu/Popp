@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:popp/src/toolbar/common_app_bar.dart';
 import 'package:popp/src/api/api_url.dart';
 import 'package:popp/src/widgets/title_text.dart';
 
@@ -81,8 +82,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: TitleText(
+      appBar: CommonAppBar(
+        titleWidget: TitleText(
             widget.isChangePassword ? "Change Password" : ""),
       ),
       body: SafeArea(

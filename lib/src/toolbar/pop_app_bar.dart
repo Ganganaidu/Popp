@@ -84,10 +84,12 @@ class PopAppBar extends StatelessWidget implements PreferredSizeWidget {
         centerTitle: false,
         actions: <Widget>[
           AppBarIconButton(
+            iconSemanticLabel: "Search",
             icon: Icons.search,
             onTap: () => onSearchTap(context),
           ),
           AppBarIconButton(
+            iconSemanticLabel: "Favorites",
             icon: Icons.favorite_border_outlined,
             onTap: () => onFavScreenTap(context),
           ),
@@ -123,6 +125,7 @@ class _NotificationBell extends StatelessWidget {
           clipBehavior: Clip.none,
           children: [
             AppBarIconButton(
+              iconSemanticLabel: "Notifications",
               icon: Icons.notifications_outlined,
               onTap: () => onNotificationsTap(context),
             ),

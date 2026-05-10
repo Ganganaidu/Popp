@@ -193,6 +193,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   Widget _buildWebLayout(BuildContext context, List<String> imageUrls,
       Map<String, dynamic> product, TextTheme theme) {
+    final category = (product['category'] as String? ?? '');
+    final subCategory = (product['subCategory'] as String? ?? '');
+    final title = ProductUtils.getTitle(product);
+    final List<String> crumbs = ['Home'];
+    if (category.isNotEmpty) crumbs.add(category);
+    if (subCategory.isNotEmpty) crumbs.add(subCategory);
+    if (title.isNotEmpty) crumbs.add(title);
+
     return SingleChildScrollView(
       child: Center(
         child: Container(
@@ -201,6 +209,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Breadcrumb navigation row
+              _buildWebBreadcrumb(context, crumbs),
+              const SizedBox(height: 16),
               // Top Section: Images and Key Details
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -389,6 +400,74 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     );
   }
 
+  // Web breadcrumb: back arrow + clickable path segments
+  Widget _buildWebBreadcrumb(BuildContext context, List<String> crumbs) {
+    return Row(
+      children: [
+        InkWell(
+          onTap: () => Navigator.of(context).pop(),
+          borderRadius: BorderRadius.circular(20),
+          child: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.arrow_back_ios_new_rounded,
+                size: 16, color: Colors.black87),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                for (int i = 0; i < crumbs.length; i++) ...[
+                  if (i > 0)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                      child: Icon(Icons.chevron_right_rounded,
+                          size: 16, color: Colors.grey.shade400),
+                    ),
+                  GestureDetector(
+                    onTap: i == crumbs.length - 1
+                        ? null
+                        : () {
+                            final steps = crumbs.length - 1 - i;
+                            for (int j = 0; j < steps; j++) {
+                              if (Navigator.of(context).canPop()) {
+                                Navigator.of(context).pop();
+                              }
+                            }
+                          },
+                    child: Text(
+                      crumbs[i],
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: i == crumbs.length - 1
+                            ? FontWeight.w600
+                            : FontWeight.w400,
+                        color: i == crumbs.length - 1
+                            ? Colors.black87
+                            : Colors.orange.shade700,
+                        decoration: i == crumbs.length - 1
+                            ? null
+                            : TextDecoration.underline,
+                        decorationColor: Colors.orange.shade700,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Mobile SliverAppBar title breadcrumb
   Widget _buildBreadcrumbTitle(BuildContext context, List<String> crumbs) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,

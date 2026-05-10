@@ -72,35 +72,28 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
     return Consumer<AdCarouselViewModel>(
       builder: (context, viewModel, _) {
         if (viewModel.isLoading) {
-          return isWeb
-              ? _webShimmer()
-              : SizedBox(
-                  height: 420,
-                  child: Shimmer.fromColors(
-                    baseColor: Colors.grey[300]!,
-                    highlightColor: Colors.grey[100]!,
-                    child: Container(
-                      width: double.infinity,
-                      color: Colors.white,
-                    ),
-                  ),
-                );
+          return SizedBox(
+            height: isWeb ? 500 : 420,
+            child: Shimmer.fromColors(
+              baseColor: Colors.grey[300]!,
+              highlightColor: Colors.grey[100]!,
+              child: Container(
+                width: double.infinity,
+                color: Colors.white,
+              ),
+            ),
+          );
         }
 
+        // If there's an error or no ads, show the engaging business-focused fallback UI.
         if (viewModel.error != null || viewModel.ads.isEmpty) {
-          return isWeb
-              ? const SizedBox(height: 8)
-              : _buildFallbackUI(isWeb: false);
+          return _buildFallbackUI(isWeb: isWeb);
         }
 
-        // Web: compact 3-up card row
-        if (isWeb) return _buildWebAds(viewModel.ads);
-
-        // Mobile: full-screen carousel
         if (viewModel.ads.length == 1) {
           return SizedBox(
-            height: 420,
-            child: buildAdSlide(viewModel.ads.first, isWeb: false),
+            height: isWeb ? 500 : 420,
+            child: buildAdSlide(viewModel.ads.first, isWeb: isWeb),
           );
         }
 
@@ -110,10 +103,10 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
             CarouselSlider(
               carouselController: _controller,
               items: viewModel.ads
-                  .map((ad) => buildAdSlide(ad, isWeb: false))
+                  .map((ad) => buildAdSlide(ad, isWeb: isWeb))
                   .toList(),
               options: CarouselOptions(
-                height: 420,
+                height: isWeb ? 500 : 420,
                 viewportFraction: 1.0,
                 autoPlay: true,
                 autoPlayInterval: const Duration(seconds: 4),
@@ -121,74 +114,76 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
                     setState(() => _current = index),
               ),
             ),
+            // Pagination Dots
             Positioned(
-              bottom: 20.0,
+              bottom: isWeb ? 24.0 : 20.0,
               child: Row(
                 children: List.generate(viewModel.ads.length, (index) {
                   final isActive = index == _current;
                   return AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
                     margin: const EdgeInsets.symmetric(horizontal: 4),
-                    width: isActive ? 16 : 12,
-                    height: 4,
+                    width: isActive ? (isWeb ? 20 : 16) : (isWeb ? 16 : 12),
+                    height: isWeb ? 6 : 4,
                     decoration: BoxDecoration(
                       color: isActive ? context.primaryColor : Colors.white70,
-                      borderRadius: BorderRadius.circular(2),
+                      borderRadius: BorderRadius.circular(isWeb ? 3 : 2),
                     ),
                   );
                 }),
               ),
             ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildWebAds(List<AdBanner> ads) {
-    final visible = ads.take(3).toList();
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: List.generate(visible.length, (i) {
-          final ad = visible[i];
-          return Expanded(
-            child: Padding(
-              padding: EdgeInsets.only(
-                left: i == 0 ? 0 : 8,
-                right: i == visible.length - 1 ? 0 : 8,
-              ),
-              child: _WebAdCard(ad: ad, onTap: () => deepLinkToTarget(ad.buttonLink)),
-            ),
-          );
-        }),
-      ),
-    );
-  }
-
-  Widget _webShimmer() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: List.generate(3, (i) {
-          return Expanded(
-            child: Padding(
-              padding: EdgeInsets.only(left: i == 0 ? 0 : 8),
-              child: Shimmer.fromColors(
-                baseColor: Colors.grey[300]!,
-                highlightColor: Colors.grey[100]!,
-                child: Container(
-                  height: 150,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
+            // Left Arrow (Web Only)
+            if (isWeb)
+              Positioned(
+                left: 20,
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: GestureDetector(
+                    onTap: () => _controller.previousPage(),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.3),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white24, width: 1),
+                      ),
+                      child: const Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
-          );
-        }),
-      ),
+            // Right Arrow (Web Only)
+            if (isWeb)
+              Positioned(
+                right: 20,
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: GestureDetector(
+                    onTap: () => _controller.nextPage(),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.3),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white24, width: 1),
+                      ),
+                      child: const Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 
@@ -645,100 +640,6 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
                 Icons.arrow_forward,
                 size: 16,
                 color: Colors.black,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _WebAdCard extends StatelessWidget {
-  final AdBanner ad;
-  final VoidCallback onTap;
-
-  const _WebAdCard({required this.ad, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(10),
-        child: Stack(
-          children: [
-            SizedBox(
-              height: 150,
-              width: double.infinity,
-              child: ad.imageUrl.isEmpty
-                  ? Image.asset('assets/ads_default_image.png', fit: BoxFit.cover)
-                  : Image.network(
-                      ad.imageUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        color: Colors.grey.shade200,
-                        child: const Icon(Icons.image_outlined, color: Colors.grey, size: 40),
-                      ),
-                    ),
-            ),
-            Positioned.fill(
-              child: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [Colors.transparent, Color(0xCC000000)],
-                    stops: [0.4, 1.0],
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              top: 8,
-              right: 8,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: Colors.black54,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: const Text(
-                  'AD',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              left: 10,
-              right: 10,
-              bottom: 10,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    ad.highlight,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  Text(
-                    ad.subtitle,
-                    style: const TextStyle(color: Colors.white70, fontSize: 11),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
               ),
             ),
           ],

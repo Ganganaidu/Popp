@@ -389,9 +389,51 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     );
   }
 
+  Widget _buildBreadcrumbTitle(BuildContext context, List<String> crumbs) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (int i = 0; i < crumbs.length; i++) ...[
+            if (i > 0)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Icon(Icons.chevron_right_rounded,
+                    size: 14, color: Colors.white54),
+              ),
+            Text(
+              crumbs[i],
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: i == crumbs.length - 1
+                    ? FontWeight.w600
+                    : FontWeight.w400,
+                color: i == crumbs.length - 1
+                    ? Colors.white
+                    : Colors.orange.shade300,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   Widget _buildMobileLayout(BuildContext context, List<String> imageUrls,
       Map<String, dynamic> product, TextTheme theme) {
     final screenHeight = MediaQuery.of(context).size.height;
+
+    // Build breadcrumb: Home / Category / SubCategory? / Title
+    final category = (product['category'] as String? ?? '');
+    final subCategory = (product['subCategory'] as String? ?? '');
+    final title = ProductUtils.getTitle(product);
+    final List<String> crumbs = ['Home'];
+    if (category.isNotEmpty) crumbs.add(category);
+    if (subCategory.isNotEmpty) crumbs.add(subCategory);
+    if (title.isNotEmpty) crumbs.add(title);
 
     return Scaffold(
       backgroundColor: const Color(0xFF121212), // Dark background
@@ -401,6 +443,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             backgroundColor: const Color(0xFF121212),
             expandedHeight: screenHeight * 0.45,
             pinned: true,
+            title: _buildBreadcrumbTitle(context, crumbs),
             leading: Center(
               child: AppBarIconButton(
                 icon: Icons.arrow_back,

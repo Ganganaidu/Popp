@@ -1,0 +1,15 @@
+.wordmark {
+  font-family: var(--font-archivo-narrow), 'Archivo Narrow', system-ui, sans-serif;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  color: var(--bv-text);
+  white-space: nowrap;
+  font-stretch: condensed;
+  user-select: none;
+}
+
+.accent {
+  color: var(--bv-green);
+}

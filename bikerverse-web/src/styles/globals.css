@@ -1,0 +1,129 @@
+/* Import design tokens first */
+@import './tokens.css';
+
+/* ─── Base reset ────────────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  background-color: var(--bv-bg);
+  color: var(--bv-text);
+  font-family: var(--font-archivo), system-ui, sans-serif;
+  line-height: 1.5;
+  min-height: 100vh;
+  /* Smooth theme transitions */
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* ─── Typography base ───────────────────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-archivo-narrow), 'Archivo Narrow', system-ui, sans-serif;
+  font-weight: 800;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: -0.025em;
+}
+
+p {
+  font-family: var(--font-archivo), system-ui, sans-serif;
+  line-height: 1.55;
+  color: var(--bv-text-2);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+  border: none;
+  background: none;
+  padding: 0;
+}
+
+input, textarea, select {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: var(--bv-surface);
+  border: 1px solid var(--bv-border-hi);
+  border-radius: var(--bv-radius);
+  outline: none;
+}
+
+input:focus, textarea:focus {
+  border-color: var(--bv-green);
+  box-shadow: 0 0 0 3px var(--bv-green-soft);
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+/* ─── Scrollbars ────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bv-surface-hi);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bv-border-hi);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--bv-text-3);
+}
+
+/* ─── Layout utilities ──────────────────────────────────────────────────────── */
+.bv-page-gutter {
+  padding-left: 32px;
+  padding-right: 32px;
+}
+
+.bv-max-width {
+  max-width: 1440px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ─── Text utilities (for inline use) ──────────────────────────────────────── */
+.bv-mono {
+  font-family: var(--font-jetbrains-mono), 'JetBrains Mono', ui-monospace, monospace;
+}
+
+.bv-display {
+  font-family: var(--font-archivo-narrow), 'Archivo Narrow', system-ui, sans-serif;
+  font-weight: 800;
+}
+
+.bv-green { color: var(--bv-green); }
+.bv-text-2 { color: var(--bv-text-2); }
+.bv-text-3 { color: var(--bv-text-3); }
+
+/* ─── Focus-visible ring ────────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--bv-green);
+  outline-offset: 2px;
+}
+
+/* ─── Selection color ───────────────────────────────────────────────────────── */
+::selection {
+  background: var(--bv-green-soft);
+  color: var(--bv-text);
+}

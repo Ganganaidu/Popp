@@ -1,0 +1,138 @@
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 32px;
+  height: 56px;
+  border-top: 1px solid var(--bv-border);
+  border-bottom: 1px solid var(--bv-border);
+  background: var(--bv-surface);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.bar::-webkit-scrollbar {
+  display: none;
+}
+
+.allFilters {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 14px;
+  border: 1px solid var(--bv-border-hi);
+  background: transparent;
+  border-radius: var(--bv-radius);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 150ms;
+
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--bv-text-2);
+  text-transform: uppercase;
+}
+
+.allFilters:hover {
+  border-color: var(--bv-text-3);
+}
+
+.divider {
+  width: 1px;
+  height: 20px;
+  background: var(--bv-border);
+  flex-shrink: 0;
+}
+
+.chips {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.count {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--bv-text-3);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Sort */
+.sortWrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.sortBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--bv-border-hi);
+  background: transparent;
+  border-radius: var(--bv-radius);
+  cursor: pointer;
+  transition: border-color 150ms;
+}
+
+.sortBtn:hover {
+  border-color: var(--bv-text-3);
+}
+
+.sortLabel {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--bv-text-3);
+  text-transform: uppercase;
+}
+
+.sortValue {
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 12px;
+  color: var(--bv-text-2);
+}
+
+.sortDropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 200px;
+  background: var(--bv-surface-hi);
+  border: 1px solid var(--bv-border-hi);
+  border-radius: var(--bv-radius);
+  overflow: hidden;
+  z-index: 100;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.sortOption {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  text-align: left;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 13px;
+  color: var(--bv-text-2);
+  transition: background 120ms;
+}
+
+.sortOption:hover {
+  background: var(--bv-surface);
+}
+
+.sortActive {
+  color: var(--bv-green);
+}

@@ -1,0 +1,35 @@
+.nav {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0;
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bv-text-3);
+}
+
+.segment {
+  display: flex;
+  align-items: center;
+}
+
+.sep {
+  margin: 0 6px;
+  color: var(--bv-text-3);
+}
+
+.crumb {
+  color: var(--bv-text-3);
+  text-decoration: none;
+  transition: color 150ms;
+}
+
+.crumb:hover {
+  color: var(--bv-text);
+}
+
+.active {
+  color: var(--bv-green);
+}

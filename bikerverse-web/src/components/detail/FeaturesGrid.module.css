@@ -1,0 +1,85 @@
+.section {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 40px;
+  padding: 32px 0;
+  border-top: 1px solid var(--bv-border);
+}
+
+/* Left */
+.left {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.title {
+  font-family: var(--font-archivo-narrow), sans-serif;
+  font-weight: 800;
+  font-size: 20px;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  color: var(--bv-text);
+  margin: 0;
+}
+
+.about {
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--bv-text-2);
+  margin: 0;
+}
+
+/* Right */
+.right {
+  display: flex;
+  align-items: flex-start;
+}
+
+.featureGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px 20px;
+  width: 100%;
+}
+
+.feature {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dot {
+  display: block;
+  width: 6px;
+  height: 6px;
+  flex-shrink: 0;
+  background: var(--bv-green);
+  /* Square — spec says 6×6 green square marker */
+  border-radius: 0;
+}
+
+.featureLabel {
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 13px;
+  color: var(--bv-text-2);
+  line-height: 1.4;
+}
+
+@media (max-width: 900px) {
+  .section {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .featureGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 500px) {
+  .featureGrid {
+    grid-template-columns: 1fr;
+  }
+}

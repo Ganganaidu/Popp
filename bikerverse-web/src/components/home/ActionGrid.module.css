@@ -1,0 +1,133 @@
+.section {
+  padding: 72px 32px 56px;
+}
+
+/* ─── Header ──────────────────────────────────────────────────────────────── */
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  gap: 16px;
+}
+
+.h2 {
+  font-family: var(--font-archivo-narrow), 'Archivo Narrow', system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 48px;
+  letter-spacing: -0.025em;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--bv-text);
+  margin: 8px 0 0;
+}
+
+.label {
+  font-family: var(--font-jetbrains-mono), 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--bv-text-3);
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* ─── Grid ────────────────────────────────────────────────────────────────── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+}
+
+/* ─── Tile ────────────────────────────────────────────────────────────────── */
+.tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: var(--bv-surface);
+  color: var(--bv-text);
+  border: 1px solid var(--bv-border);
+  border-radius: var(--bv-radius);
+  padding: 24px 20px;
+  min-height: 200px;
+  cursor: pointer;
+  text-decoration: none;
+  overflow: hidden;
+  transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.15s ease;
+}
+
+.tile:hover {
+  border-color: var(--bv-border-hi);
+  background: var(--bv-surface-hi);
+  transform: translateY(-1px);
+}
+
+/* Featured — first tile — lime fill */
+.tileFeatured {
+  background: var(--bv-green);
+  color: var(--bv-green-ink);
+  border-color: var(--bv-green);
+}
+
+.tileFeatured:hover {
+  background: var(--bv-green-hi);
+  border-color: var(--bv-green-hi);
+}
+
+/* Index label — "/01" etc, top-left */
+.index {
+  font-family: var(--font-jetbrains-mono), 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  opacity: 0.6;
+}
+
+/* Verb — large Archivo Narrow */
+.verb {
+  font-family: var(--font-archivo-narrow), 'Archivo Narrow', system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 38px;
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  margin-top: auto; /* pushes to the bottom-left */
+  padding-top: 56px; /* gap from top label */
+}
+
+/* Noun — below verb */
+.noun {
+  font-family: var(--font-archivo), system-ui, sans-serif;
+  font-size: 14px;
+  opacity: 0.7;
+  margin-top: 4px;
+}
+
+/* Arrow — absolute bottom-right */
+.arrow {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ─── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .section {
+    padding: 48px 20px 40px;
+  }
+
+  .h2 {
+    font-size: 36px;
+  }
+}

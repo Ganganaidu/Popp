@@ -1,0 +1,87 @@
+.section {
+  position: relative;
+  padding: 56px 32px 72px;
+  border-bottom: 1px solid var(--bv-border);
+}
+
+/* 1.05fr 1fr grid, gap 48px, vertically centred */
+.grid {
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+  gap: 48px;
+  align-items: center;
+}
+
+/* ─── Left column ─────────────────────────────────────────────────────────── */
+.copy {
+  display: flex;
+  flex-direction: column;
+}
+
+.h1 {
+  font-family: var(--font-archivo-narrow), 'Archivo Narrow', system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 116px;
+  line-height: 0.92;
+  letter-spacing: -0.035em;
+  text-transform: uppercase;
+  color: var(--bv-text);
+  margin: 18px 0 0;
+  /* no text-wrap: balance in all browsers — use manual <br> instead */
+}
+
+.green {
+  color: var(--bv-green);
+}
+
+.body {
+  font-family: var(--font-archivo), system-ui, sans-serif;
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--bv-text-2);
+  max-width: 540px;
+  margin-top: 28px;
+}
+
+.buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 36px;
+  flex-wrap: wrap;
+}
+
+/* ─── Right column ────────────────────────────────────────────────────────── */
+/* position: relative is required for CornerTicks absolute positioning */
+.imageWrap {
+  position: relative;
+}
+
+.slot {
+  border-radius: var(--bv-radius);
+}
+
+/* ─── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .h1 {
+    font-size: 80px;
+  }
+}
+
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Image goes above copy on mobile */
+  .imageWrap {
+    order: -1;
+  }
+
+  .h1 {
+    font-size: 56px;
+  }
+
+  .section {
+    padding: 40px 20px 56px;
+  }
+}

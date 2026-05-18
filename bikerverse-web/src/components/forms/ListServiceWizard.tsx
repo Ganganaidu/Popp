@@ -156,21 +156,31 @@ export function ListServiceWizard() {
                   key={cat}
                   type="button"
                   className={[styles.catCard, data.serviceCategory === cat ? styles.catCardActive : ''].filter(Boolean).join(' ')}
+                  style={{ backgroundColor: CAT_COLORS[cat] ?? 'var(--bv-surface-hi)' }}
                   onClick={() => { set('serviceCategory', cat); }}
                 >
-                  <div
-                    className={styles.catIcon}
-                    style={{ background: CAT_COLORS[cat] ?? 'var(--bv-surface)' }}
-                  >
+                  {/* Top row — number + arrow, matching ActionGrid */}
+                  <div className={styles.catTopRow}>
+                    <span className={styles.catIndex}>/{String(SERVICE_CATEGORIES.indexOf(cat) + 1).padStart(2, '0')}</span>
+                    <span className={styles.catArrow} aria-hidden>→</span>
+                  </div>
+
+                  {/* Centred Flutter PNG */}
+                  <div className={styles.catImageWrap}>
                     <Image
                       src={CAT_IMAGES[cat] ?? '/assets/actions/find_mechanic.png'}
                       alt={cat}
-                      width={56}
-                      height={56}
+                      width={120}
+                      height={120}
                       style={{ objectFit: 'contain' }}
                     />
                   </div>
-                  <span className={styles.catLabel}>{cat}</span>
+
+                  {/* Label — verb + noun split, matching ActionGrid text block */}
+                  <div className={styles.catTextBlock}>
+                    <span className={styles.catVerb}>{CAT_VERB[cat]}</span>
+                    <span className={styles.catNoun}>{CAT_NOUN[cat]}</span>
+                  </div>
                 </button>
               ))}
             </div>
@@ -604,4 +614,24 @@ const CAT_COLORS: Record<string, string> = {
   'Accessory Store': '#4A0072',   // Deep Purple
   'Tyre Shops':      '#0D47A1',   // Blue
   'Towing Service':  '#3D5502',   // Olive Green
+};
+
+/* Verb + noun split — mirrors ActionGrid label style */
+const CAT_VERB: Record<string, string> = {
+  'Find Mechanic':   'FIND',
+  'Bike Rentals':    'RENT',
+  'Track day':       'BOOK',
+  'Training day':    'TRAIN',
+  'Accessory Store': 'SHOP',
+  'Tyre Shops':      'TYRE',
+  'Towing Service':  'TOW',
+};
+const CAT_NOUN: Record<string, string> = {
+  'Find Mechanic':   'Mechanic',
+  'Bike Rentals':    'Bike',
+  'Track day':       'Track day',
+  'Training day':    'Training',
+  'Accessory Store': 'Accessories',
+  'Tyre Shops':      'Shops',
+  'Towing Service':  'Service',
 };

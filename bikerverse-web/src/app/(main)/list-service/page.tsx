@@ -1,10 +1,19 @@
 import type { Metadata } from 'next';
-export const metadata: Metadata = { title: 'List a service' };
-export default function Page() {
+import { WizardShell } from '@/components/forms/WizardShell';
+import { ListServiceWizard } from '@/components/forms/ListServiceWizard';
+
+export const metadata: Metadata = {
+  title: 'List Your Service — Bikerverse',
+  description: 'List your workshop, tyre shop or accessory store on Bikerverse and reach local riders.',
+};
+
+export default function ListServicePage() {
   return (
-    <div style={{ padding: '40px 32px', color: 'var(--bv-text)' }}>
-      <h1 style={{ fontFamily: 'var(--font-archivo-narrow)', fontWeight: 800, fontSize: 56, letterSpacing: '-0.025em', textTransform: 'uppercase', marginBottom: 16 }}>LIST A SERVICE</h1>
-      <p style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 11, letterSpacing: '0.14em', color: 'var(--bv-text-3)', textTransform: 'uppercase' }}>List form — coming in next phase</p>
-    </div>
+    <WizardShell
+      title="LIST YOUR SERVICE"
+      subtitle="Put your workshop, tyre shop or accessory store in front of local riders."
+    >
+      <ListServiceWizard />
+    </WizardShell>
   );
 }

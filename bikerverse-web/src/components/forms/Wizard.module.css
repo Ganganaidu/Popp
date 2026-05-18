@@ -1,0 +1,135 @@
+.panel {
+  padding-bottom: 100px; /* clearance for sticky WizardFooter */
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.stepTitle {
+  font-family: var(--font-archivo-narrow), sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: -0.01em;
+  color: var(--bv-text);
+  margin: 0 0 4px;
+}
+
+/* 2-column row */
+.row2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.row3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+}
+
+/* Negotiable checkbox */
+.checkWrap {
+  display: flex;
+  align-items: flex-end;
+  padding-bottom: 10px;
+}
+
+.checkLabel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--bv-green);
+  cursor: pointer;
+  flex-shrink: 0;
+  border-radius: var(--bv-radius);
+}
+
+.checkText {
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 14px;
+  color: var(--bv-text-2);
+}
+
+.divider {
+  height: 1px;
+  background: var(--bv-border);
+  margin: 8px 0;
+}
+
+.stepHint {
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 13px;
+  color: var(--bv-text-3);
+  margin: -8px 0 0;
+  line-height: 1.5;
+}
+
+/* Tag picker (service wizard) */
+.tagGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag {
+  height: 34px;
+  padding: 0 14px;
+  border: 1px solid var(--bv-border-hi);
+  background: transparent;
+  border-radius: var(--bv-radius);
+  cursor: pointer;
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 13px;
+  color: var(--bv-text-2);
+  transition: border-color 150ms, background 150ms, color 150ms;
+}
+
+.tag:hover {
+  border-color: var(--bv-text-3);
+  color: var(--bv-text);
+}
+
+.tagActive {
+  border-color: var(--bv-green-line);
+  background: var(--bv-green-soft);
+  color: var(--bv-green);
+}
+
+/* Hours grid */
+.hoursGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+
+.dayRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 13px;
+  color: var(--bv-text-2);
+}
+
+.dayLabel {
+  min-width: 40px;
+}
+
+@media (max-width: 600px) {
+  .row2, .row3 {
+    grid-template-columns: 1fr;
+  }
+
+  .hoursGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}

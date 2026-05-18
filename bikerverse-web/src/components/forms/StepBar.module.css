@@ -1,0 +1,106 @@
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 24px 0 32px;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.step:last-child {
+  flex: none;
+}
+
+/* Connecting line */
+.line {
+  flex: 1;
+  height: 1px;
+  background: var(--bv-border-hi);
+  transition: background 300ms;
+}
+
+.lineDone {
+  background: var(--bv-green);
+}
+
+/* Circle */
+.circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--bv-border-hi);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: border-color 200ms, background 200ms;
+}
+
+.circleDone {
+  background: var(--bv-green);
+  border-color: var(--bv-green);
+}
+
+.circleActive {
+  border-color: var(--bv-green);
+  background: var(--bv-green-soft);
+}
+
+.circleUpcoming {
+  border-color: var(--bv-border);
+}
+
+.num {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 11px;
+  color: var(--bv-text-3);
+  line-height: 1;
+}
+
+.circleActive .num {
+  color: var(--bv-green);
+}
+
+/* Label */
+.label {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--bv-text-3);
+  white-space: nowrap;
+  transition: color 200ms;
+}
+
+.labelDone {
+  color: var(--bv-text-3);
+}
+
+.labelActive {
+  color: var(--bv-green);
+}
+
+@media (max-width: 600px) {
+  .label {
+    display: none;
+  }
+
+  .step {
+    flex: none;
+  }
+
+  .line {
+    flex: 1;
+    min-width: 20px;
+  }
+
+  .bar {
+    justify-content: center;
+  }
+}

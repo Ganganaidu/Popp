@@ -1,10 +1,19 @@
 import type { Metadata } from 'next';
-export const metadata: Metadata = { title: 'Sell accessory' };
-export default function Page() {
+import { WizardShell } from '@/components/forms/WizardShell';
+import { SellAccessoryWizard } from '@/components/forms/SellAccessoryWizard';
+
+export const metadata: Metadata = {
+  title: 'Sell Gear & Accessories — Bikerverse',
+  description: 'List your riding gear, helmets, jackets and accessories on Bikerverse.',
+};
+
+export default function SellAccessoryPage() {
   return (
-    <div style={{ padding: '40px 32px', color: 'var(--bv-text)' }}>
-      <h1 style={{ fontFamily: 'var(--font-archivo-narrow)', fontWeight: 800, fontSize: 56, letterSpacing: '-0.025em', textTransform: 'uppercase', marginBottom: 16 }}>SELL ACCESSORY</h1>
-      <p style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 11, letterSpacing: '0.14em', color: 'var(--bv-text-3)', textTransform: 'uppercase' }}>Sell form — coming in next phase</p>
-    </div>
+    <WizardShell
+      title="SELL YOUR GEAR"
+      subtitle="List helmets, jackets, boots and accessories in minutes."
+    >
+      <SellAccessoryWizard />
+    </WizardShell>
   );
 }

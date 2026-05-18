@@ -1,10 +1,19 @@
 import type { Metadata } from 'next';
-export const metadata: Metadata = { title: 'Sell your bike' };
-export default function Page() {
+import { WizardShell } from '@/components/forms/WizardShell';
+import { SellBikeWizard } from '@/components/forms/SellBikeWizard';
+
+export const metadata: Metadata = {
+  title: 'Sell Your Bike — Bikerverse',
+  description: 'List your pre-owned motorcycle on Bikerverse. Reach thousands of verified buyers.',
+};
+
+export default function SellBikePage() {
   return (
-    <div style={{ padding: '40px 32px', color: 'var(--bv-text)' }}>
-      <h1 style={{ fontFamily: 'var(--font-archivo-narrow)', fontWeight: 800, fontSize: 56, letterSpacing: '-0.025em', textTransform: 'uppercase', marginBottom: 16 }}>SELL YOUR BIKE</h1>
-      <p style={{ fontFamily: 'var(--font-jetbrains-mono)', fontSize: 11, letterSpacing: '0.14em', color: 'var(--bv-text-3)', textTransform: 'uppercase' }}>Sell form — coming in next phase</p>
-    </div>
+    <WizardShell
+      title="SELL YOUR BIKE"
+      subtitle="List your motorcycle in under 5 minutes. Reach thousands of verified buyers across India."
+    >
+      <SellBikeWizard />
+    </WizardShell>
   );
 }

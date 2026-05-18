@@ -57,6 +57,13 @@
   font-family: var(--font-archivo), sans-serif;
   font-size: 14px;
   color: var(--bv-text-2);
+  line-height: 1.5;
+}
+
+.checkLink {
+  color: var(--bv-green);
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .divider {
@@ -104,6 +111,64 @@
   color: var(--bv-green);
 }
 
+/* Toggle switch (mirrors Flutter SwitchListTile) */
+.toggleRow {
+  padding: 4px 0;
+}
+
+.toggleLabel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  gap: 16px;
+}
+
+.toggleText {
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 14px;
+  color: var(--bv-text-2);
+}
+
+.toggle {
+  width: 44px;
+  height: 24px;
+  border-radius: 12px;
+  background: var(--bv-surface-hi);
+  border: 1px solid var(--bv-border-hi);
+  position: relative;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: background 200ms, border-color 200ms;
+  outline: none;
+}
+
+.toggle:focus-visible {
+  outline: 2px solid var(--bv-green);
+  outline-offset: 2px;
+}
+
+.toggleOn {
+  background: var(--bv-green);
+  border-color: var(--bv-green);
+}
+
+.toggleThumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--bv-text-3);
+  transition: transform 200ms, background 200ms;
+}
+
+.toggleOn .toggleThumb {
+  transform: translateX(20px);
+  background: var(--bv-green-ink);
+}
+
 /* Hours grid */
 .hoursGrid {
   display: grid;
@@ -124,6 +189,64 @@
   min-width: 40px;
 }
 
+/* Sub-section label */
+.subLabel {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bv-text-2);
+}
+
+/* Category selection grid (ListServiceWizard step 0) */
+.catGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.catCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 20px 12px;
+  border: 1px solid var(--bv-border-hi);
+  background: var(--bv-surface-hi);
+  border-radius: var(--bv-radius);
+  cursor: pointer;
+  transition: border-color 150ms, background 150ms;
+  text-align: center;
+}
+
+.catCard:hover {
+  border-color: var(--bv-text-3);
+  background: var(--bv-surface);
+}
+
+.catCardActive {
+  border-color: var(--bv-green);
+  background: var(--bv-green-soft);
+}
+
+.catIcon {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.catLabel {
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--bv-text-2);
+  line-height: 1.3;
+}
+
+.catCardActive .catLabel {
+  color: var(--bv-green);
+}
+
 @media (max-width: 600px) {
   .row2, .row3 {
     grid-template-columns: 1fr;
@@ -131,5 +254,9 @@
 
   .hoursGrid {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .catGrid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }

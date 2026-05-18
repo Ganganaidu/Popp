@@ -27,6 +27,13 @@
   gap: 16px;
 }
 
+.shopNameRow {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .shopName {
   font-family: var(--font-archivo-narrow), sans-serif;
   font-weight: 800;
@@ -36,6 +43,42 @@
   color: var(--bv-text);
   margin: 0;
   line-height: 1;
+}
+
+.businessTitle {
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--bv-text-2);
+  margin: 0;
+  letter-spacing: 0.01em;
+}
+
+/* Status badges */
+.badge {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 3px 7px;
+  border-radius: var(--bv-radius);
+  color: #fff;
+  align-self: center;
+}
+
+.badgeApproved {
+  background: var(--bv-green);
+  color: var(--bv-green-ink);
+}
+
+.badgePending {
+  background: #F59E0B;
+  color: #fff;
+}
+
+.badgeRejected {
+  background: #EF4444;
+  color: #fff;
 }
 
 .metaRow {

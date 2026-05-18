@@ -16,30 +16,58 @@ const ACCESSORY = {
   name: 'Arai RX-7V Helmet',
   priceInRupees: 45000,
   negotiable: false,
-  condition: 'Like New',
-  usageMonths: 8,
-  size: 'L (59-60 cm)',
-  seller: { name: 'Priya Sharma', city: 'Pune', verified: true, listingCount: 2 },
-  specs: [
-    { key: 'Brand',      value: 'Arai'                   },
-    { key: 'Model',      value: 'RX-7V'                  },
-    { key: 'Type',       value: 'Full Face'               },
-    { key: 'Size',       value: 'L (59-60 cm)'           },
-    { key: 'Shell',      value: 'PB-cLc (fibreglass)'    },
-    { key: 'Weight',     value: '≈ 1,450 g'              },
-    { key: 'Visor',      value: 'VAS-V (anti-fog ready)' },
-    { key: 'Condition',  value: 'Like New'               },
-    { key: 'Usage',      value: '8 months'               },
-    { key: 'Colour',     value: 'Solid Black'            },
-  ],
+
+  // Category
+  category: 'Accessories',
+  subcategory: 'Helmet',
+
+  // Condition & size
+  productCondition: 'Like New',
+  productSize: 'L (59-60 cm)',
+  productAging: '8',          // months
+
+  // Brand
+  brand: 'Arai',
+  model: 'RX-7V',
+
+  // Bike compatibility
+  isProductBikeSpecific: false,
+  bikeBrandName: '',
+  bikeModelName: '',
+  bikeMfgDate: '',
+
+  // Bill / warranty
+  billAvailable: 'Yes',
+  billDate: 'Jan 2023',
+  warrantyLimit: 'Mar 2024',
+
+  // Location
+  area: 'Koregaon Park',
+  city: 'Pune',
+  state: 'Maharashtra',
+
+  // Seller
+  sellerName: 'Priya Sharma',
+  sellerContactNumber: '+91 98765 43210',
+  sellerCategory: 'Individual',
+  sellerVerified: true,
+  sellerListingCount: 2,
+
+  // Status
+  isApproved: true,
+  isSold: false,
+  createdAtDate: '10 Feb 2025',
+
+  // Description
+  additionalDetails: `Purchased new in January 2023. Used for weekend track days only — never crashed.
+Comes with original bag, clear and dark tinted visors, spare pinlock lens,
+and all internal padding. Shell has zero scratches. Interior freshly washed.
+Reason for selling: upgraded to Arai CK-6 for track.`,
+
   features: [
     'FIA 8860-2010', 'SNELL M2015', 'ECE 22.05', 'Anti-fog ready',
     'Includes bag', 'Two visors', 'Winter liner', 'Pinlock fitted',
   ],
-  about: `Purchased new in January 2023. Used for weekend track days only — never crashed.
-    Comes with original bag, clear and dark tinted visors, spare pinlock lens,
-    and all internal padding. Shell has zero scratches. Interior freshly washed.
-    Reason for selling: upgraded to Arai CK-6 for track.`,
 };
 
 interface PageProps {
@@ -50,8 +78,36 @@ export default async function AccessoryDetailPage({ params }: PageProps) {
   const { id } = await params;
   const item = { ...ACCESSORY, id };
 
+  const specsForGrid = [
+    { key: 'Category',        value: item.category },
+    { key: 'Sub-Category',    value: item.subcategory },
+    { key: 'Brand',           value: item.brand },
+    { key: 'Model',           value: item.model },
+    { key: 'Condition',       value: item.productCondition },
+    { key: 'Size',            value: item.productSize },
+    { key: 'Usage',           value: `${item.productAging} months` },
+    { key: 'Bill Available',  value: item.billAvailable },
+    { key: 'Bill Date',       value: item.billDate },
+    { key: 'Warranty Limit',  value: item.warrantyLimit },
+  ];
+
+  const compatSpecsForGrid = item.isProductBikeSpecific
+    ? [
+        { key: 'Bike Brand', value: item.bikeBrandName },
+        { key: 'Bike Model', value: item.bikeModelName },
+        { key: 'Bike Year',  value: item.bikeMfgDate },
+      ]
+    : [];
+
   return (
     <div className={styles.page}>
+      {/* Sold banner */}
+      {item.isSold && (
+        <div className={styles.soldBanner}>
+          SOLD — This listing is no longer active
+        </div>
+      )}
+
       <Breadcrumb items={[
         { label: 'Home',        href: '/'            },
         { label: 'Accessories', href: '/accessories' },
@@ -65,7 +121,23 @@ export default async function AccessoryDetailPage({ params }: PageProps) {
 
         <div className={styles.sideCol}>
           <div className={styles.nameBlock}>
-            <h1 className={styles.itemName}>{item.name}</h1>
+            <div className={styles.nameStack}>
+              <div className={styles.nameBadgeRow}>
+                <h1 className={styles.itemName}>{item.name}</h1>
+                {item.isSold && (
+                  <span className={`${styles.badge} ${styles.badgeSold}`}>SOLD</span>
+                )}
+                {!item.isSold && item.isApproved && (
+                  <span className={`${styles.badge} ${styles.badgeApproved}`}>APPROVED</span>
+                )}
+                {!item.isSold && !item.isApproved && (
+                  <span className={`${styles.badge} ${styles.badgePending}`}>PENDING</span>
+                )}
+              </div>
+              <span className={styles.listedOn}>
+                Listed on {item.createdAtDate} · {item.area}, {item.city}, {item.state}
+              </span>
+            </div>
           </div>
           <PriceCard
             priceInRupees={item.priceInRupees}
@@ -77,16 +149,23 @@ export default async function AccessoryDetailPage({ params }: PageProps) {
       </div>
 
       <SellerRow
-        name={item.seller.name}
-        city={item.seller.city}
-        verified={item.seller.verified}
-        listingCount={item.seller.listingCount}
+        name={item.sellerName}
+        city={`${item.area}, ${item.city}`}
+        verified={item.sellerVerified}
+        listingCount={item.sellerListingCount}
+        phone={item.sellerContactNumber}
+        sellerCategory={item.sellerCategory}
       />
 
-      <SpecsGrid specs={item.specs} title="ITEM SPECIFICATIONS" />
+      <SpecsGrid specs={specsForGrid} title="ITEM SPECIFICATIONS" />
+
+      {/* Compatible bike — only shown when isProductBikeSpecific */}
+      {item.isProductBikeSpecific && compatSpecsForGrid.length > 0 && (
+        <SpecsGrid specs={compatSpecsForGrid} title="COMPATIBLE WITH" />
+      )}
 
       <FeaturesGrid
-        about={item.about}
+        about={item.additionalDetails}
         features={item.features}
         title="ABOUT THIS ITEM"
       />

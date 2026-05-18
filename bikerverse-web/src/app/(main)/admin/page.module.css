@@ -1,0 +1,296 @@
+.page {
+  padding: 40px 32px;
+  color: var(--bv-text);
+}
+
+.title {
+  font-family: var(--font-archivo-narrow);
+  font-weight: 800;
+  font-size: 48px;
+  letter-spacing: -0.025em;
+  text-transform: uppercase;
+  line-height: 1;
+  margin: 0 0 24px;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--bv-border);
+  margin-bottom: 28px;
+}
+
+.tab {
+  font-family: var(--font-jetbrains-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bv-text-3);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 10px 24px 10px 0;
+  cursor: pointer;
+  margin-bottom: -1px;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.tab:hover {
+  color: var(--bv-text);
+}
+
+.tabActive {
+  color: var(--bv-text);
+  border-bottom-color: var(--bv-green);
+}
+
+/* Product/Service card */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.card {
+  display: flex;
+  gap: 16px;
+  background: var(--bv-surface);
+  border: 1px solid var(--bv-border);
+  border-radius: var(--bv-radius);
+  overflow: hidden;
+  padding: 0;
+}
+
+.cardImage {
+  width: 120px;
+  flex-shrink: 0;
+  background: var(--bv-surface-hi);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-jetbrains-mono);
+  font-size: 10px;
+  color: var(--bv-text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  aspect-ratio: 4/3;
+  min-height: 90px;
+}
+
+.cardBody {
+  flex: 1;
+  min-width: 0;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cardName {
+  font-family: var(--font-archivo);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--bv-text);
+  margin: 0;
+}
+
+.cardMeta {
+  font-family: var(--font-archivo);
+  font-size: 13px;
+  color: var(--bv-text-3);
+  margin: 0;
+}
+
+.cardPrice {
+  font-family: var(--font-jetbrains-mono);
+  font-size: 13px;
+  color: var(--bv-green);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.cardActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+/* Status badge */
+.badge {
+  font-family: var(--font-jetbrains-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: var(--bv-radius);
+}
+
+.badgePending {
+  background: #d9770622;
+  color: #d97706;
+  border: 1px solid #d9770633;
+}
+
+/* Action buttons */
+.btnApprove {
+  font-family: var(--font-jetbrains-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  border-radius: var(--bv-radius);
+  cursor: pointer;
+  border: none;
+  background: var(--bv-green);
+  color: var(--bv-green-ink);
+  transition: opacity 0.15s;
+}
+
+.btnApprove:hover {
+  opacity: 0.85;
+}
+
+.btnReject {
+  font-family: var(--font-jetbrains-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  border-radius: var(--bv-radius);
+  cursor: pointer;
+  background: transparent;
+  color: #dc2626;
+  border: 1px solid #dc262644;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.btnReject:hover {
+  background: #dc262610;
+  border-color: #dc2626;
+}
+
+.btnSentBack {
+  font-family: var(--font-jetbrains-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  border-radius: var(--bv-radius);
+  cursor: pointer;
+  background: transparent;
+  color: #d97706;
+  border: 1px solid #d9770644;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.btnSentBack:hover {
+  background: #d9770610;
+  border-color: #d97706;
+}
+
+/* Ads tab */
+.adList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.adRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--bv-border);
+}
+
+.adRow:first-child {
+  border-top: 1px solid var(--bv-border);
+}
+
+.adTitle {
+  flex: 1;
+  font-family: var(--font-archivo);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--bv-text);
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.toggleTrack {
+  width: 36px;
+  height: 20px;
+  border-radius: 10px;
+  position: relative;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.toggleTrackOn {
+  background: var(--bv-green);
+}
+
+.toggleTrackOff {
+  background: var(--bv-surface-hi);
+  border: 1px solid var(--bv-border-hi);
+}
+
+.toggleThumb {
+  position: absolute;
+  top: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  transition: left 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+}
+
+.toggleThumbOn {
+  left: 18px;
+}
+
+.toggleThumbOff {
+  left: 2px;
+}
+
+.toggleLabel {
+  font-family: var(--font-jetbrains-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--bv-text-3);
+  text-transform: uppercase;
+  min-width: 48px;
+}
+
+.editLink {
+  font-family: var(--font-jetbrains-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--bv-green);
+  text-decoration: none;
+}
+
+.editLink:hover {
+  opacity: 0.7;
+}
+
+.dismissed {
+  opacity: 0.4;
+  pointer-events: none;
+}

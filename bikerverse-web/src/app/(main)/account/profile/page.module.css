@@ -1,0 +1,116 @@
+.page {
+  padding: 40px 32px 80px;
+  max-width: 640px;
+  color: var(--bv-text);
+}
+
+.heading {
+  font-family: var(--font-archivo-narrow);
+  font-weight: 800;
+  font-size: 48px;
+  letter-spacing: -0.025em;
+  text-transform: uppercase;
+  margin: 0 0 32px;
+  line-height: 1;
+}
+
+.green {
+  color: var(--bv-green);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 480px) {
+  .row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Greyed-out read-only field */
+.readonlyField input,
+:global(.readonlyField) input {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.saveRow {
+  margin-top: 8px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+/* Danger zone */
+.dangerZone {
+  margin-top: 48px;
+  padding-top: 24px;
+  border-top: 1px solid var(--bv-border);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sectionLabel {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bv-text-3);
+}
+
+.deleteBtn {
+  all: unset;
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #EF4444;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.deleteBtn:hover {
+  color: #DC2626;
+}
+
+.confirmRow {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.confirmText {
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 13px;
+  color: var(--bv-text-2);
+}
+
+.cancelBtn {
+  all: unset;
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bv-text-3);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.cancelBtn:hover {
+  color: var(--bv-text);
+}

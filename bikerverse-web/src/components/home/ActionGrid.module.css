@@ -75,8 +75,8 @@
 /* ─── Tile ────────────────────────────────────────────────────────────────── */
 .tile {
   position: relative;
-  flex: 0 0 148px;          /* fixed width, no shrink */
-  height: 190px;
+  flex: 0 0 192px;          /* fixed width, no shrink */
+  height: 245px;
   border-radius: 14px;
   padding: 12px 12px 14px;
   cursor: pointer;
@@ -132,71 +132,56 @@
 }
 .tileFeatured .arrow { color: rgba(0, 0, 0, 0.45); }
 
-/* ─── Background image ────────────────────────────────────────────────────── */
+/* ─── Centered icon image ─────────────────────────────────────────────────── */
 .imageWrap {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  /* give the Next.js Image a concrete size to fill */
+  min-height: 0;
 }
 .image {
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
 }
 
-/* ─── Gradient overlay ────────────────────────────────────────────────────── */
-.gradient {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background: linear-gradient(
-    to bottom,
-    transparent 25%,
-    rgba(0, 0, 0, 0.78) 100%
-  );
-  pointer-events: none;
-}
-.tileFeatured .gradient {
-  background: linear-gradient(
-    to bottom,
-    transparent 30%,
-    rgba(0, 80, 0, 0.72) 100%
-  );
-}
+/* no gradient needed — solid color bg + contained image */
+.gradient { display: none; }
 
 /* ─── Text block ──────────────────────────────────────────────────────────── */
 .textBlock {
-  position: relative;
-  z-index: 2;
-  margin-top: auto;
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
 }
 
 .verb {
   font-family: var(--font-archivo-narrow), 'Archivo Narrow', system-ui, sans-serif;
   font-weight: 800;
-  font-size: 22px;
+  font-size: 30px;
   line-height: 1;
   letter-spacing: -0.01em;
   text-transform: uppercase;
   color: #ffffff;
 }
-.tileFeatured .verb { color: var(--bv-green-ink); }
+.tileFeatured .verb { color: #0a2200; }
 
 .noun {
   font-family: var(--font-archivo), system-ui, sans-serif;
   font-size: 12px;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.68);
+  color: rgba(255, 255, 255, 0.65);
   line-height: 1;
 }
-.tileFeatured .noun { color: rgba(0, 0, 0, 0.55); }
+.tileFeatured .noun { color: rgba(0, 0, 0, 0.52); }
 
 /* ─── Responsive ──────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .header { padding: 0 20px; }
   .scroller { padding: 6px 20px 12px; }
-  .tile { flex: 0 0 130px; height: 168px; }
-  .verb { font-size: 19px; }
+  .tile { flex: 0 0 148px; height: 190px; }
+  .verb { font-size: 22px; }
 }

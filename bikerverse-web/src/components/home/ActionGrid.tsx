@@ -168,19 +168,16 @@ export function ActionGrid() {
                 <span className={styles.arrow} aria-hidden>→</span>
               </div>
 
-              {/* Background image */}
+              {/* Centred icon image */}
               <div className={styles.imageWrap}>
                 <Image
                   src={image}
                   alt={`${verb} ${noun}`}
-                  fill
-                  sizes="160px"
+                  width={110}
+                  height={110}
                   className={styles.image}
                 />
               </div>
-
-              {/* Gradient overlay */}
-              <div className={styles.gradient} aria-hidden />
 
               {/* Text */}
               <div className={styles.textBlock}>

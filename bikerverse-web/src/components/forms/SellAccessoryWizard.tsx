@@ -19,6 +19,7 @@ const STEPS = ['Seller Info', 'Item Details', 'Bill & Warranty', 'Location', 'Pr
 
 type MY = { month: string; year: string };
 const MY0: MY = { month: '', year: '' };
+type Errors = Record<string, string>;
 
 interface FormData {
   /* Seller */
@@ -50,24 +51,50 @@ const INIT: FormData = {
   expectedPrice: '', additionalDetails: '', termsAccepted: false,
 };
 
-/**
- * SellAccessoryWizard — 5-step form with full field parity to
- * Flutter sell_your_accessories.dart.
- *
- * Steps:
- *  0 — Seller Info      (category, name, contact)
- *  1 — Item Details     (category, subcategory, name, brand, bike-specific toggle + conditionals, condition, size)
- *  2 — Bill & Warranty  (bill toggle + date/aging, warranty toggle + period)
- *  3 — Location         (state, address, area, city, pin code)
- *  4 — Price & Photos   (price, additional details, photos, T&C, preview)
- */
+function validateStep(s: number, d: FormData): Errors {
+  const e: Errors = {};
+  const req = (key: string, val: string) => { if (!val.trim()) e[key] = 'This field is required'; };
+
+  if (s === 0) {
+    req('sellerCategory', d.sellerCategory);
+    req('sellerName', d.sellerName);
+    req('contactNumber', d.contactNumber);
+  }
+  if (s === 1) {
+    req('categoryId', d.categoryId);
+    const selectedCat = ACCESSORY_CATEGORIES.find((c) => c.id === d.categoryId);
+    if (selectedCat && selectedCat.subcategories.length > 0) req('subcategory', d.subcategory);
+    req('accessoryName', d.accessoryName);
+    req('brandName', d.brandName);
+    req('productCondition', d.productCondition);
+    if (d.isBikeSpecific) {
+      req('bikeBrandName', d.bikeBrandName);
+      req('bikeModelName', d.bikeModelName);
+    }
+  }
+  // Step 2 (Bill & Warranty) — all optional toggles, no required fields
+  if (s === 3) {
+    req('state', d.state);
+    req('address', d.address);
+    req('area', d.area);
+    req('city', d.city);
+  }
+  if (s === 4) {
+    req('expectedPrice', d.expectedPrice);
+    if (!d.termsAccepted) e['termsAccepted'] = 'You must accept the Terms & Conditions to publish';
+  }
+  return e;
+}
+
 export function SellAccessoryWizard() {
-  const [step, setStep]     = useState(0);
-  const [data, setData]     = useState<FormData>(INIT);
+  const [step, setStep]         = useState(0);
+  const [data, setData]         = useState<FormData>(INIT);
+  const [errors, setErrors]     = useState<Errors>({});
   const [submitting, setSubmitting] = useState(false);
 
   function set<K extends keyof FormData>(field: K, value: FormData[K]) {
     setData((prev) => ({ ...prev, [field]: value }));
+    setErrors((prev) => { const e = { ...prev }; delete e[field as string]; return e; });
   }
 
   const selectedCat = ACCESSORY_CATEGORIES.find((c) => c.id === data.categoryId);
@@ -77,10 +104,21 @@ export function SellAccessoryWizard() {
     : [];
 
   function next() {
+    const stepErrors = validateStep(step, data);
+    if (Object.keys(stepErrors).length > 0) {
+      setErrors(stepErrors);
+      setTimeout(() => document.querySelector('[aria-invalid="true"]')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
+      return;
+    }
+    setErrors({});
     if (step < STEPS.length - 1) setStep((s) => s + 1);
     else handleSubmit();
   }
-  function back() { setStep((s) => Math.max(0, s - 1)); }
+
+  function back() {
+    setErrors({});
+    setStep((s) => Math.max(0, s - 1));
+  }
 
   async function handleSubmit() {
     setSubmitting(true);
@@ -88,6 +126,8 @@ export function SellAccessoryWizard() {
     setSubmitting(false);
     alert('Listing published! (Firestore write wired in Phase 7)');
   }
+
+  const canProceed = Object.keys(errors).length === 0;
 
   return (
     <div>
@@ -104,18 +144,21 @@ export function SellAccessoryWizard() {
               placeholder="Select category"
               value={data.sellerCategory}
               onChange={(e) => set('sellerCategory', e.target.value)}
+              error={errors.sellerCategory}
             />
             <FormField
               label="Seller Name" required
               placeholder="Your full name or business name"
               value={data.sellerName}
               onChange={(e) => set('sellerName', e.target.value)}
+              error={errors.sellerName}
             />
             <PhoneField
               label="Contact Number" required
               countryCode={data.countryCode} number={data.contactNumber}
               onCountryCodeChange={(v) => set('countryCode', v)}
               onNumberChange={(v) => set('contactNumber', v)}
+              error={errors.contactNumber}
             />
           </div>
         )}
@@ -131,6 +174,7 @@ export function SellAccessoryWizard() {
                 placeholder="Select category"
                 value={data.categoryId}
                 onChange={(e) => { set('categoryId', e.target.value); set('subcategory', ''); }}
+                error={errors.categoryId}
               />
               {selectedCat && selectedCat.subcategories.length > 0 ? (
                 <FormSelect
@@ -139,9 +183,10 @@ export function SellAccessoryWizard() {
                   placeholder="Select subcategory"
                   value={data.subcategory}
                   onChange={(e) => set('subcategory', e.target.value)}
+                  error={errors.subcategory}
                 />
               ) : (
-                <div /> /* placeholder to maintain grid */
+                <div />
               )}
             </div>
             <div className={styles.row2}>
@@ -150,12 +195,14 @@ export function SellAccessoryWizard() {
                 placeholder="e.g. Arai RX-7V Helmet"
                 value={data.accessoryName}
                 onChange={(e) => set('accessoryName', e.target.value)}
+                error={errors.accessoryName}
               />
               <FormField
                 label="Brand Name" required
                 placeholder="e.g. Arai, Alpinestars, REV'IT"
                 value={data.brandName}
                 onChange={(e) => set('brandName', e.target.value)}
+                error={errors.brandName}
               />
             </div>
             <div className={styles.row2}>
@@ -165,6 +212,7 @@ export function SellAccessoryWizard() {
                 placeholder="Select condition"
                 value={data.productCondition}
                 onChange={(e) => set('productCondition', e.target.value)}
+                error={errors.productCondition}
               />
               <FormField
                 label="Product Size"
@@ -193,7 +241,6 @@ export function SellAccessoryWizard() {
               </label>
             </div>
 
-            {/* Conditional: bike-specific fields */}
             {data.isBikeSpecific && (
               <>
                 <div className={styles.row2}>
@@ -203,6 +250,7 @@ export function SellAccessoryWizard() {
                     placeholder="Select bike brand"
                     value={data.bikeBrandName}
                     onChange={(e) => { set('bikeBrandName', e.target.value); set('bikeModelName', ''); }}
+                    error={errors.bikeBrandName}
                   />
                   {data.bikeBrandName ? (
                     <FormSelect
@@ -211,6 +259,7 @@ export function SellAccessoryWizard() {
                       placeholder="Select model"
                       value={data.bikeModelName}
                       onChange={(e) => set('bikeModelName', e.target.value)}
+                      error={errors.bikeModelName}
                     />
                   ) : (
                     <FormField
@@ -237,7 +286,6 @@ export function SellAccessoryWizard() {
           <div className={styles.fields}>
             <h2 className={styles.stepTitle}>Bill &amp; warranty</h2>
 
-            {/* Bill available */}
             <div className={styles.toggleRow}>
               <label className={styles.toggleLabel}>
                 <span className={styles.toggleText}>Bill available?</span>
@@ -269,7 +317,6 @@ export function SellAccessoryWizard() {
               </div>
             )}
 
-            {/* Warranty available */}
             <div className={styles.toggleRow}>
               <label className={styles.toggleLabel}>
                 <span className={styles.toggleText}>Warranty available?</span>
@@ -305,12 +352,14 @@ export function SellAccessoryWizard() {
               placeholder="Select state"
               value={data.state}
               onChange={(e) => set('state', e.target.value)}
+              error={errors.state}
             />
             <FormField
               label="Address" required
               placeholder="Street address, landmark…"
               value={data.address}
               onChange={(e) => set('address', e.target.value)}
+              error={errors.address}
             />
             <div className={styles.row2}>
               <FormField
@@ -318,12 +367,14 @@ export function SellAccessoryWizard() {
                 placeholder="Neighbourhood / locality"
                 value={data.area}
                 onChange={(e) => set('area', e.target.value)}
+                error={errors.area}
               />
               <FormField
                 label="City" required
                 placeholder="City"
                 value={data.city}
                 onChange={(e) => set('city', e.target.value)}
+                error={errors.city}
               />
             </div>
             <FormField
@@ -347,6 +398,7 @@ export function SellAccessoryWizard() {
               value={data.expectedPrice}
               onChange={(e) => set('expectedPrice', e.target.value)}
               hint="Enter the asking price in Indian Rupees"
+              error={errors.expectedPrice}
             />
             <FormField
               as="textarea" rows={3}
@@ -382,7 +434,6 @@ export function SellAccessoryWizard() {
                 className={styles.checkbox}
                 checked={data.termsAccepted}
                 onChange={(e) => set('termsAccepted', e.target.checked)}
-                required
               />
               <span className={styles.checkText}>
                 I agree to the{' '}
@@ -390,6 +441,9 @@ export function SellAccessoryWizard() {
                 {' '}and confirm all information is accurate.
               </span>
             </label>
+            {errors.termsAccepted && (
+              <span className={styles.fieldError}>{errors.termsAccepted}</span>
+            )}
           </div>
         )}
       </div>
@@ -398,7 +452,7 @@ export function SellAccessoryWizard() {
         step={step} totalSteps={STEPS.length}
         onBack={back} onNext={next}
         isSubmitting={submitting}
-        canProceed={step < 4 || data.termsAccepted}
+        canProceed={canProceed}
         submitLabel="PUBLISH LISTING"
       />
     </div>

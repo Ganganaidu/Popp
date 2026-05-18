@@ -20,6 +20,7 @@ const STEPS = ['Seller Info', 'Bike Details', 'Condition & Docs', 'Location', 'P
 
 type MY = { month: string; year: string };
 const MY0: MY = { month: '', year: '' };
+type Errors = Record<string, string>;
 
 interface FormData {
   /* Seller */
@@ -63,35 +64,79 @@ const INIT: FormData = {
   expectedPrice: '', additionalDetails: '', termsAccepted: false,
 };
 
-/**
- * SellBikeWizard — 5-step form with full field parity to Flutter sell_your_bike.dart.
- *
- * Steps:
- *  0 — Seller Info       (category, name, contact)
- *  1 — Bike Details      (brand, model, mfg date, reg date, km driven)
- *  2 — Condition & Docs  (ownership, invoice, NOC, insurance, insurance validity, battery, tyre)
- *  3 — Location          (state, address, area, city, pin code)
- *  4 — Price & Photos    (expected price, additional details, photos, T&C, preview)
- */
+function validateStep(s: number, d: FormData): Errors {
+  const e: Errors = {};
+  const req = (key: string, val: string) => { if (!val.trim()) e[key] = 'This field is required'; };
+  const reqMY = (key: string, val: MY) => { if (!val.month || !val.year) e[key] = 'Select both month and year'; };
+
+  if (s === 0) {
+    req('sellerCategory', d.sellerCategory);
+    req('sellerName', d.sellerName);
+    req('contactNumber', d.contactNumber);
+  }
+  if (s === 1) {
+    req('brandName', d.brandName);
+    if (d.brandName !== 'Others') req('modelName', d.modelName);
+    if (d.modelName === 'Others') req('modelOther', d.modelOther);
+    reqMY('mfgDate', d.mfgDate);
+    reqMY('registrationDate', d.registrationDate);
+    req('kmDriven', d.kmDriven);
+  }
+  if (s === 2) {
+    req('ownershipNumber', d.ownershipNumber);
+    req('invoiceAvailable', d.invoiceAvailable);
+    req('nocAvailable', d.nocAvailable);
+    req('insuranceAvailable', d.insuranceAvailable);
+    if (d.insuranceAvailable === 'Yes') reqMY('insuranceValidTill', d.insuranceValidTill);
+    req('batteryCondition', d.batteryCondition);
+    req('tyreCondition', d.tyreCondition);
+  }
+  if (s === 3) {
+    req('state', d.state);
+    req('address', d.address);
+    req('area', d.area);
+    req('city', d.city);
+  }
+  if (s === 4) {
+    req('expectedPrice', d.expectedPrice);
+    if (!d.termsAccepted) e['termsAccepted'] = 'You must accept the Terms & Conditions to publish';
+  }
+  return e;
+}
+
 export function SellBikeWizard() {
-  const [step, setStep]     = useState(0);
-  const [data, setData]     = useState<FormData>(INIT);
+  const [step, setStep]         = useState(0);
+  const [data, setData]         = useState<FormData>(INIT);
+  const [errors, setErrors]     = useState<Errors>({});
   const [submitting, setSubmitting] = useState(false);
 
   function set<K extends keyof FormData>(field: K, value: FormData[K]) {
     setData((prev) => ({ ...prev, [field]: value }));
+    // Clear this field's error as soon as user edits it
+    setErrors((prev) => { const e = { ...prev }; delete e[field as string]; return e; });
   }
 
-  /* Dynamic model list based on selected brand */
   const modelOptions = data.brandName && data.brandName !== 'Others'
     ? [...(BIKE_MODELS[data.brandName] ?? []), 'Others'].map((m) => ({ value: m, label: m }))
     : [];
 
   function next() {
+    const stepErrors = validateStep(step, data);
+    if (Object.keys(stepErrors).length > 0) {
+      setErrors(stepErrors);
+      // Scroll to first error
+      setTimeout(() => document.querySelector('[aria-invalid="true"]')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
+      return;
+    }
+    setErrors({});
     if (step < STEPS.length - 1) setStep((s) => s + 1);
     else handleSubmit();
   }
-  function back() { setStep((s) => Math.max(0, s - 1)); }
+
+  function back() {
+    setErrors({});
+    setStep((s) => Math.max(0, s - 1));
+  }
 
   async function handleSubmit() {
     setSubmitting(true);
@@ -104,6 +149,8 @@ export function SellBikeWizard() {
     data.brandName === 'Others' ? '' : data.brandName,
     data.modelName === 'Others' ? data.modelOther : data.modelName,
   ].filter(Boolean).join(' ');
+
+  const canProceed = Object.keys(errors).length === 0;
 
   return (
     <div>
@@ -120,19 +167,22 @@ export function SellBikeWizard() {
               placeholder="Select category"
               value={data.sellerCategory}
               onChange={(e) => set('sellerCategory', e.target.value)}
+              error={errors.sellerCategory}
             />
             <FormField
               label="Seller Name" required
               placeholder="Your full name or business name"
               value={data.sellerName}
               onChange={(e) => set('sellerName', e.target.value)}
+              error={errors.sellerName}
             />
             <PhoneField
               label="Contact Number" required
               countryCode={data.countryCode}
               number={data.contactNumber}
               onCountryCodeChange={(v) => set('countryCode', v)}
-              onNumberChange={(v) => set('contactNumber', v)}
+              onNumberChange={(v) => { set('contactNumber', v); }}
+              error={errors.contactNumber}
             />
           </div>
         )}
@@ -148,6 +198,7 @@ export function SellBikeWizard() {
                 placeholder="Select brand"
                 value={data.brandName}
                 onChange={(e) => { set('brandName', e.target.value); set('modelName', ''); set('modelOther', ''); }}
+                error={errors.brandName}
               />
               {data.brandName && data.brandName !== 'Others' ? (
                 <FormSelect
@@ -156,6 +207,7 @@ export function SellBikeWizard() {
                   placeholder="Select model"
                   value={data.modelName}
                   onChange={(e) => set('modelName', e.target.value)}
+                  error={errors.modelName}
                 />
               ) : (
                 <FormField
@@ -163,17 +215,18 @@ export function SellBikeWizard() {
                   placeholder="Enter model name"
                   value={data.modelName}
                   onChange={(e) => set('modelName', e.target.value)}
+                  error={errors.modelName}
                 />
               )}
             </div>
 
-            {/* If model = Others, show manual entry */}
             {data.modelName === 'Others' && (
               <FormField
                 label="Model Name (specify)" required
                 placeholder="Enter the exact model name"
                 value={data.modelOther}
                 onChange={(e) => set('modelOther', e.target.value)}
+                error={errors.modelOther}
               />
             )}
 
@@ -182,11 +235,13 @@ export function SellBikeWizard() {
                 label="Manufacture Date" required
                 value={data.mfgDate}
                 onChange={(v) => set('mfgDate', v)}
+                error={errors.mfgDate}
               />
               <MonthYearPicker
                 label="Registration Date" required
                 value={data.registrationDate}
                 onChange={(v) => set('registrationDate', v)}
+                error={errors.registrationDate}
               />
             </div>
 
@@ -197,6 +252,7 @@ export function SellBikeWizard() {
               value={data.kmDriven}
               onChange={(e) => set('kmDriven', e.target.value)}
               hint="Total odometer reading in kilometres"
+              error={errors.kmDriven}
             />
           </div>
         )}
@@ -212,6 +268,7 @@ export function SellBikeWizard() {
                 placeholder="Select"
                 value={data.ownershipNumber}
                 onChange={(e) => set('ownershipNumber', e.target.value)}
+                error={errors.ownershipNumber}
               />
               <FormSelect
                 label="Invoice Available" required
@@ -219,6 +276,7 @@ export function SellBikeWizard() {
                 placeholder="Select"
                 value={data.invoiceAvailable}
                 onChange={(e) => set('invoiceAvailable', e.target.value)}
+                error={errors.invoiceAvailable}
               />
             </div>
             <div className={styles.row2}>
@@ -228,6 +286,7 @@ export function SellBikeWizard() {
                 placeholder="Select"
                 value={data.nocAvailable}
                 onChange={(e) => set('nocAvailable', e.target.value)}
+                error={errors.nocAvailable}
               />
               <FormSelect
                 label="Insurance Available" required
@@ -235,17 +294,18 @@ export function SellBikeWizard() {
                 placeholder="Select"
                 value={data.insuranceAvailable}
                 onChange={(e) => set('insuranceAvailable', e.target.value)}
+                error={errors.insuranceAvailable}
               />
             </div>
 
-            {/* Insurance validity — conditional, only when insurance = Yes */}
             {data.insuranceAvailable === 'Yes' && (
               <MonthYearPicker
-                label="Insurance Valid Till"
+                label="Insurance Valid Till" required
                 value={data.insuranceValidTill}
                 onChange={(v) => set('insuranceValidTill', v)}
                 fromYear={new Date().getFullYear()}
                 toYear={new Date().getFullYear() + 10}
+                error={errors.insuranceValidTill}
               />
             )}
 
@@ -256,6 +316,7 @@ export function SellBikeWizard() {
                 placeholder="Select"
                 value={data.batteryCondition}
                 onChange={(e) => set('batteryCondition', e.target.value)}
+                error={errors.batteryCondition}
               />
               <FormSelect
                 label="Tyre Condition" required
@@ -263,6 +324,7 @@ export function SellBikeWizard() {
                 placeholder="Select"
                 value={data.tyreCondition}
                 onChange={(e) => set('tyreCondition', e.target.value)}
+                error={errors.tyreCondition}
               />
             </div>
           </div>
@@ -278,12 +340,14 @@ export function SellBikeWizard() {
               placeholder="Select state"
               value={data.state}
               onChange={(e) => set('state', e.target.value)}
+              error={errors.state}
             />
             <FormField
               label="Address" required
               placeholder="Street address, landmark…"
               value={data.address}
               onChange={(e) => set('address', e.target.value)}
+              error={errors.address}
             />
             <div className={styles.row2}>
               <FormField
@@ -292,12 +356,14 @@ export function SellBikeWizard() {
                 value={data.area}
                 onChange={(e) => set('area', e.target.value)}
                 hint="Start typing to search your area"
+                error={errors.area}
               />
               <FormField
                 label="City" required
                 placeholder="City"
                 value={data.city}
                 onChange={(e) => set('city', e.target.value)}
+                error={errors.city}
               />
             </div>
             <FormField
@@ -321,6 +387,7 @@ export function SellBikeWizard() {
               value={data.expectedPrice}
               onChange={(e) => set('expectedPrice', e.target.value)}
               hint="Enter the asking price in Indian Rupees"
+              error={errors.expectedPrice}
             />
             <FormField
               as="textarea" rows={3}
@@ -357,7 +424,6 @@ export function SellBikeWizard() {
                 className={styles.checkbox}
                 checked={data.termsAccepted}
                 onChange={(e) => set('termsAccepted', e.target.checked)}
-                required
               />
               <span className={styles.checkText}>
                 I agree to the{' '}
@@ -365,6 +431,9 @@ export function SellBikeWizard() {
                 {' '}and confirm the information provided is accurate.
               </span>
             </label>
+            {errors.termsAccepted && (
+              <span className={styles.fieldError}>{errors.termsAccepted}</span>
+            )}
           </div>
         )}
       </div>
@@ -375,7 +444,7 @@ export function SellBikeWizard() {
         onBack={back}
         onNext={next}
         isSubmitting={submitting}
-        canProceed={step < 4 || data.termsAccepted}
+        canProceed={canProceed}
         submitLabel="PUBLISH LISTING"
       />
     </div>

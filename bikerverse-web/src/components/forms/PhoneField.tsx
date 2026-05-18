@@ -9,6 +9,7 @@ interface PhoneFieldProps {
   onNumberChange: (v: string) => void;
   required?: boolean;
   hint?: string;
+  error?: string;
 }
 
 /**
@@ -16,7 +17,7 @@ interface PhoneFieldProps {
  * Mirrors Flutter's Country Code Dropdown + TextFormField pattern.
  */
 export function PhoneField({
-  label, countryCode, number, onCountryCodeChange, onNumberChange, required, hint,
+  label, countryCode, number, onCountryCodeChange, onNumberChange, required, hint, error,
 }: PhoneFieldProps) {
   const fieldId = `phone-${label.toLowerCase().replace(/\s+/g, '-')}`;
 
@@ -43,15 +44,24 @@ export function PhoneField({
         <input
           id={`${fieldId}-number`}
           type="tel"
-          className={styles.numberInput}
+          className={[styles.numberInput, error ? styles.hasError : ''].filter(Boolean).join(' ')}
           placeholder="Enter phone number"
           value={number}
           onChange={(e) => onNumberChange(e.target.value)}
           inputMode="numeric"
           maxLength={15}
+          aria-invalid={!!error}
+          aria-describedby={error ? `${fieldId}-error` : undefined}
         />
       </div>
-      {hint && <span className={styles.hint}>{hint}</span>}
+      {(error || hint) && (
+        <span
+          id={error ? `${fieldId}-error` : undefined}
+          className={error ? styles.error : styles.hint}
+        >
+          {error ?? hint}
+        </span>
+      )}
     </div>
   );
 }

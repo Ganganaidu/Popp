@@ -7,6 +7,7 @@ interface MonthYearPickerProps {
   onChange: (v: { month: string; year: string }) => void;
   required?: boolean;
   hint?: string;
+  error?: string;
   fromYear?: number;
   toYear?: number;
 }
@@ -16,7 +17,7 @@ interface MonthYearPickerProps {
  * Side-by-side Month + Year selects under a single label.
  */
 export function MonthYearPicker({
-  label, value, onChange, required, hint, fromYear = 1990, toYear,
+  label, value, onChange, required, hint, error, fromYear = 1990, toYear,
 }: MonthYearPickerProps) {
   const years = yearOptions(fromYear, toYear);
   const fieldId = `myp-${label.toLowerCase().replace(/\s+/g, '-')}`;
@@ -31,10 +32,11 @@ export function MonthYearPicker({
         {/* Month */}
         <div className={styles.selectWrap}>
           <select
-            className={styles.select}
+            className={[styles.select, error ? styles.hasError : ''].filter(Boolean).join(' ')}
             value={value.month}
             onChange={(e) => onChange({ ...value, month: e.target.value })}
             aria-label={`${label} month`}
+            aria-invalid={!!error}
           >
             <option value="">Month</option>
             {MONTHS.map((m) => (
@@ -47,10 +49,11 @@ export function MonthYearPicker({
         {/* Year */}
         <div className={styles.selectWrap}>
           <select
-            className={styles.select}
+            className={[styles.select, error ? styles.hasError : ''].filter(Boolean).join(' ')}
             value={value.year}
             onChange={(e) => onChange({ ...value, year: e.target.value })}
             aria-label={`${label} year`}
+            aria-invalid={!!error}
           >
             <option value="">Year</option>
             {years.map((y) => (
@@ -60,7 +63,11 @@ export function MonthYearPicker({
           <span className={styles.chevron} aria-hidden>▾</span>
         </div>
       </div>
-      {hint && <span className={styles.hint}>{hint}</span>}
+      {(error || hint) && (
+        <span className={error ? styles.error : styles.hint}>
+          {error ?? hint}
+        </span>
+      )}
     </div>
   );
 }

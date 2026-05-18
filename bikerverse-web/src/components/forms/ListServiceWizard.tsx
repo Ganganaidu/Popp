@@ -24,6 +24,67 @@ const STEPS_TOWING      = ['Category', 'Business Info', 'Location & Hours', 'Pho
 
 type MY = { month: string; year: string };
 const MY0: MY = { month: '', year: '' };
+type Errors = Record<string, string>;
+
+function validateStep(s: number, d: FormData): Errors {
+  const e: Errors = {};
+  const req  = (key: string, val: string)  => { if (!val.trim()) e[key] = 'This field is required'; };
+  const reqMY = (key: string, val: MY)     => { if (!val.month || !val.year) e[key] = 'Select both month and year'; };
+
+  if (s === 0) {
+    if (!d.serviceCategory) e['serviceCategory'] = 'Please select a service category';
+  }
+
+  if (s === 1 && isStandard(d.serviceCategory)) {
+    req('shopName', d.shopName);
+    req('contactNumber', d.contactNumber);
+    req('contactName', d.contactName);
+    req('gstNumber', d.gstNumber);
+    if (isTowing(d.serviceCategory)) {
+      req('bikeRSA', d.bikeRSA);
+      req('towingServiceName', d.towingServiceName);
+      req('businessName', d.businessName);
+      if (d.towingTypes.length === 0) e['towingTypes'] = 'Select at least one towing service type';
+      if (d.towingTypes.includes('Others')) req('towingTypeOther', d.towingTypeOther);
+      req('serviceCoverageArea', d.serviceCoverageArea);
+    }
+  }
+
+  if (s === 1 && isEvent(d.serviceCategory)) {
+    req('eventName', d.eventName);
+    req('eventContactNumber', d.eventContactNumber);
+    req('eventContactName', d.eventContactName);
+    req('bikeProvision', d.bikeProvision);
+    req('riderSkillLevel', d.riderSkillLevel);
+    reqMY('eventStartDate', d.eventStartDate);
+    reqMY('eventEndDate', d.eventEndDate);
+    req('eventStartTime', d.eventStartTime);
+    req('eventEndTime', d.eventEndTime);
+    req('maxSlots', d.maxSlots);
+    req('eventDescription', d.eventDescription);
+  }
+
+  if (s === 2 && isStandard(d.serviceCategory)) {
+    req('state', d.state);
+    req('address', d.address);
+    req('area', d.area);
+    req('city', d.city);
+    req('workingHours', d.workingHours);
+  }
+
+  if (s === 2 && isEvent(d.serviceCategory)) {
+    req('locationName', d.locationName);
+    req('locationAddress', d.locationAddress);
+    req('state', d.state);
+    req('city', d.city);
+  }
+
+  if (s === 3) {
+    if (!d.termsAccepted) e['termsAccepted'] = 'You must accept the Terms & Conditions to publish';
+  }
+
+  return e;
+}
 
 interface FormData {
   /* Category */
@@ -106,12 +167,14 @@ function isStandard(cat: string) { return !isEvent(cat) && !isTowing(cat); }
  *    0 Category → 1 Business Info (+ towing fields) → 2 Location & Hours → 3 Photos & Preview
  */
 export function ListServiceWizard() {
-  const [step, setStep]     = useState(0);
-  const [data, setData]     = useState<FormData>(INIT);
+  const [step, setStep]         = useState(0);
+  const [data, setData]         = useState<FormData>(INIT);
+  const [errors, setErrors]     = useState<Errors>({});
   const [submitting, setSubmitting] = useState(false);
 
   function set<K extends keyof FormData>(field: K, value: FormData[K]) {
     setData((prev) => ({ ...prev, [field]: value }));
+    setErrors((prev) => { const e = { ...prev }; delete e[field as string]; return e; });
   }
 
   function toggleTowingType(t: string) {
@@ -121,15 +184,27 @@ export function ListServiceWizard() {
         ? prev.towingTypes.filter((x) => x !== t)
         : [...prev.towingTypes, t],
     }));
+    setErrors((prev) => { const e = { ...prev }; delete e['towingTypes']; return e; });
   }
 
   const steps = isEvent(data.serviceCategory) ? STEPS_EVENT : STEPS_STANDARD;
 
   function next() {
+    const stepErrors = validateStep(step, data);
+    if (Object.keys(stepErrors).length > 0) {
+      setErrors(stepErrors);
+      setTimeout(() => document.querySelector('[aria-invalid="true"]')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
+      return;
+    }
+    setErrors({});
     if (step < steps.length - 1) setStep((s) => s + 1);
     else handleSubmit();
   }
-  function back() { setStep((s) => Math.max(0, s - 1)); }
+
+  function back() {
+    setErrors({});
+    setStep((s) => Math.max(0, s - 1));
+  }
 
   async function handleSubmit() {
     setSubmitting(true);
@@ -139,6 +214,7 @@ export function ListServiceWizard() {
   }
 
   const lastStep = steps.length - 1;
+  const canProceed = Object.keys(errors).length === 0;
 
   return (
     <div>
@@ -184,6 +260,9 @@ export function ListServiceWizard() {
                 </button>
               ))}
             </div>
+            {errors.serviceCategory && (
+              <span className={styles.fieldError}>{errors.serviceCategory}</span>
+            )}
           </div>
         )}
 
@@ -197,6 +276,7 @@ export function ListServiceWizard() {
                 placeholder="e.g. Weekendmech Pvt Ltd"
                 value={data.shopName}
                 onChange={(e) => set('shopName', e.target.value)}
+                error={errors.shopName}
               />
               <FormField
                 label="Business Title" required
@@ -217,12 +297,14 @@ export function ListServiceWizard() {
               countryCode={data.countryCode} number={data.contactNumber}
               onCountryCodeChange={(v) => set('countryCode', v)}
               onNumberChange={(v) => set('contactNumber', v)}
+              error={errors.contactNumber}
             />
             <FormField
               label="Contact Name" required
               placeholder="Name of person to contact"
               value={data.contactName}
               onChange={(e) => set('contactName', e.target.value)}
+              error={errors.contactName}
             />
             <div className={styles.row2}>
               <FormField
@@ -230,6 +312,7 @@ export function ListServiceWizard() {
                 placeholder="22AAAAA0000A1Z5"
                 value={data.gstNumber}
                 onChange={(e) => set('gstNumber', e.target.value)}
+                error={errors.gstNumber}
               />
               <FormField
                 label="Google Maps Link"
@@ -276,12 +359,14 @@ export function ListServiceWizard() {
                     placeholder="RSA number / reference"
                     value={data.bikeRSA}
                     onChange={(e) => set('bikeRSA', e.target.value)}
+                    error={errors.bikeRSA}
                   />
                   <FormField
                     label="Towing Service Name" required
                     placeholder="Name of your towing service"
                     value={data.towingServiceName}
                     onChange={(e) => set('towingServiceName', e.target.value)}
+                    error={errors.towingServiceName}
                   />
                 </div>
                 <FormField
@@ -289,6 +374,7 @@ export function ListServiceWizard() {
                   placeholder="Registered business name"
                   value={data.businessName}
                   onChange={(e) => set('businessName', e.target.value)}
+                  error={errors.businessName}
                 />
                 <div className={styles.fields}>
                   <span className={styles.subLabel}>List of Towing Services (select all that apply)</span>
@@ -304,12 +390,16 @@ export function ListServiceWizard() {
                       </button>
                     ))}
                   </div>
+                  {errors.towingTypes && (
+                    <span className={styles.fieldError}>{errors.towingTypes}</span>
+                  )}
                   {data.towingTypes.includes('Others') && (
                     <FormField
                       label="Specify Other Towing Service" required
                       placeholder="Describe the service"
                       value={data.towingTypeOther}
                       onChange={(e) => set('towingTypeOther', e.target.value)}
+                      error={errors.towingTypeOther}
                     />
                   )}
                 </div>
@@ -319,6 +409,7 @@ export function ListServiceWizard() {
                   placeholder="Select coverage area"
                   value={data.serviceCoverageArea}
                   onChange={(e) => set('serviceCoverageArea', e.target.value)}
+                  error={errors.serviceCoverageArea}
                 />
               </>
             )}
@@ -334,6 +425,7 @@ export function ListServiceWizard() {
               placeholder="e.g. Bikerverse Track Day — BIC Round 4"
               value={data.eventName}
               onChange={(e) => set('eventName', e.target.value)}
+              error={errors.eventName}
             />
             <div className={styles.row2}>
               <PhoneField
@@ -341,12 +433,14 @@ export function ListServiceWizard() {
                 countryCode={data.eventCountryCode} number={data.eventContactNumber}
                 onCountryCodeChange={(v) => set('eventCountryCode', v)}
                 onNumberChange={(v) => set('eventContactNumber', v)}
+                error={errors.eventContactNumber}
               />
               <FormField
                 label="Point of Contact Name" required
                 placeholder="Name of organiser"
                 value={data.eventContactName}
                 onChange={(e) => set('eventContactName', e.target.value)}
+                error={errors.eventContactName}
               />
             </div>
             <div className={styles.row2}>
@@ -362,6 +456,7 @@ export function ListServiceWizard() {
                 placeholder="Select"
                 value={data.bikeProvision}
                 onChange={(e) => set('bikeProvision', e.target.value)}
+                error={errors.bikeProvision}
               />
             </div>
             <FormSelect
@@ -370,6 +465,7 @@ export function ListServiceWizard() {
               placeholder="Select level"
               value={data.riderSkillLevel}
               onChange={(e) => set('riderSkillLevel', e.target.value)}
+              error={errors.riderSkillLevel}
             />
             <div className={styles.row2}>
               <MonthYearPicker
@@ -378,6 +474,7 @@ export function ListServiceWizard() {
                 onChange={(v) => set('eventStartDate', v)}
                 fromYear={new Date().getFullYear()}
                 toYear={new Date().getFullYear() + 3}
+                error={errors.eventStartDate}
               />
               <MonthYearPicker
                 label="Event End Date" required
@@ -385,6 +482,7 @@ export function ListServiceWizard() {
                 onChange={(v) => set('eventEndDate', v)}
                 fromYear={new Date().getFullYear()}
                 toYear={new Date().getFullYear() + 3}
+                error={errors.eventEndDate}
               />
             </div>
             <div className={styles.row2}>
@@ -393,12 +491,14 @@ export function ListServiceWizard() {
                 type="time"
                 value={data.eventStartTime}
                 onChange={(e) => set('eventStartTime', e.target.value)}
+                error={errors.eventStartTime}
               />
               <FormField
                 label="End Time" required
                 type="time"
                 value={data.eventEndTime}
                 onChange={(e) => set('eventEndTime', e.target.value)}
+                error={errors.eventEndTime}
               />
             </div>
             <FormField
@@ -407,6 +507,7 @@ export function ListServiceWizard() {
               placeholder="e.g. 30"
               value={data.maxSlots}
               onChange={(e) => set('maxSlots', e.target.value)}
+              error={errors.maxSlots}
             />
             <FormField
               as="textarea" rows={3}
@@ -414,6 +515,7 @@ export function ListServiceWizard() {
               placeholder="Track layout, briefing time, what's included, safety requirements…"
               value={data.eventDescription}
               onChange={(e) => set('eventDescription', e.target.value)}
+              error={errors.eventDescription}
             />
             <FormField
               label="Google Form / Registration Link"
@@ -434,12 +536,14 @@ export function ListServiceWizard() {
               placeholder="Select state"
               value={data.state}
               onChange={(e) => set('state', e.target.value)}
+              error={errors.state}
             />
             <FormField
               label="Address" required
               placeholder="Street address, landmark…"
               value={data.address}
               onChange={(e) => set('address', e.target.value)}
+              error={errors.address}
             />
             <div className={styles.row2}>
               <FormField
@@ -447,12 +551,14 @@ export function ListServiceWizard() {
                 placeholder="Neighbourhood / locality"
                 value={data.area}
                 onChange={(e) => set('area', e.target.value)}
+                error={errors.area}
               />
               <FormField
                 label="City" required
                 placeholder="City"
                 value={data.city}
                 onChange={(e) => set('city', e.target.value)}
+                error={errors.city}
               />
             </div>
             <FormField
@@ -469,6 +575,7 @@ export function ListServiceWizard() {
               value={data.workingHours}
               onChange={(e) => set('workingHours', e.target.value)}
               hint="Describe your working days and opening hours"
+              error={errors.workingHours}
             />
           </div>
         )}
@@ -482,6 +589,7 @@ export function ListServiceWizard() {
               placeholder="e.g. Buddh International Circuit"
               value={data.locationName}
               onChange={(e) => set('locationName', e.target.value)}
+              error={errors.locationName}
             />
             <FormField
               as="textarea" rows={2}
@@ -489,6 +597,7 @@ export function ListServiceWizard() {
               placeholder="Full address of the venue"
               value={data.locationAddress}
               onChange={(e) => set('locationAddress', e.target.value)}
+              error={errors.locationAddress}
             />
             <FormSelect
               label="State" required
@@ -496,6 +605,7 @@ export function ListServiceWizard() {
               placeholder="Select state"
               value={data.state}
               onChange={(e) => set('state', e.target.value)}
+              error={errors.state}
             />
             <div className={styles.row2}>
               <FormField
@@ -503,6 +613,7 @@ export function ListServiceWizard() {
                 placeholder="City"
                 value={data.city}
                 onChange={(e) => set('city', e.target.value)}
+                error={errors.city}
               />
               <FormField
                 label="Pin Code"
@@ -579,6 +690,9 @@ export function ListServiceWizard() {
                 {' '}and confirm all information provided is accurate.
               </span>
             </label>
+            {errors.termsAccepted && (
+              <span className={styles.fieldError}>{errors.termsAccepted}</span>
+            )}
           </div>
         )}
       </div>
@@ -587,7 +701,7 @@ export function ListServiceWizard() {
         step={step} totalSteps={steps.length}
         onBack={back} onNext={next}
         isSubmitting={submitting}
-        canProceed={step === 0 ? !!data.serviceCategory : (step < lastStep || data.termsAccepted)}
+        canProceed={canProceed}
         submitLabel="LIST MY SERVICE"
       />
     </div>

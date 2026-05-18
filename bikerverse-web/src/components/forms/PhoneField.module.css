@@ -78,3 +78,13 @@
   font-size: 11px;
   color: var(--bv-text-3);
 }
+
+.error {
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 11px;
+  color: #EF4444;
+}
+
+.hasError {
+  border-color: #EF4444 !important;
+}

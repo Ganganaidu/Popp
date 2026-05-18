@@ -293,6 +293,14 @@
   line-height: 1;
 }
 
+/* Standalone field-level error message (e.g. T&C checkbox, towing types) */
+.fieldError {
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 11px;
+  color: #EF4444;
+  margin-top: -4px;
+}
+
 /* Legacy — no longer used, kept to avoid breakage */
 .catIcon  {}
 .catLabel {}

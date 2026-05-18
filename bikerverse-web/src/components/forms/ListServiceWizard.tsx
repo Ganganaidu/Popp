@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import {
   SERVICE_CATEGORIES, RIDER_SKILL_LEVELS, BIKE_PROVISION,
   TOWING_SERVICE_TYPES, SERVICE_COVERAGE_AREAS, INDIAN_STATES,
@@ -157,7 +158,18 @@ export function ListServiceWizard() {
                   className={[styles.catCard, data.serviceCategory === cat ? styles.catCardActive : ''].filter(Boolean).join(' ')}
                   onClick={() => { set('serviceCategory', cat); }}
                 >
-                  <span className={styles.catIcon}>{CAT_ICONS[cat]}</span>
+                  <div
+                    className={styles.catIcon}
+                    style={{ background: CAT_COLORS[cat] ?? 'var(--bv-surface)' }}
+                  >
+                    <Image
+                      src={CAT_IMAGES[cat] ?? '/assets/actions/find_mechanic.png'}
+                      alt={cat}
+                      width={56}
+                      height={56}
+                      style={{ objectFit: 'contain' }}
+                    />
+                  </div>
                   <span className={styles.catLabel}>{cat}</span>
                 </button>
               ))}
@@ -572,13 +584,24 @@ export function ListServiceWizard() {
   );
 }
 
-/* Category tile icons */
-const CAT_ICONS: Record<string, string> = {
-  'Find Mechanic':   '🔧',
-  'Bike Rentals':    '🏍',
-  'Track day':       '🏁',
-  'Training day':    '🎓',
-  'Accessory Store': '🛒',
-  'Tyre Shops':      '⭕',
-  'Towing Service':  '🚛',
+/* Flutter asset images — sourced from pop_service_item.dart */
+const CAT_IMAGES: Record<string, string> = {
+  'Find Mechanic':   '/assets/actions/find_mechanic.png',
+  'Bike Rentals':    '/assets/actions/bike_rentals.png',
+  'Track day':       '/assets/actions/track_training_day.png',
+  'Training day':    '/assets/actions/track_training_day.png',
+  'Accessory Store': '/assets/actions/accessory_store.png',
+  'Tyre Shops':      '/assets/actions/tyre_shops.png',
+  'Towing Service':  '/assets/actions/towing_service.png',
+};
+
+/* Flutter background colours — sourced from pop_service_item.dart */
+const CAT_COLORS: Record<string, string> = {
+  'Find Mechanic':   '#BF360C',   // Deep Orange
+  'Bike Rentals':    '#37474F',   // Blue Grey
+  'Track day':       '#B71C1C',   // Red
+  'Training day':    '#B71C1C',   // Red
+  'Accessory Store': '#4A0072',   // Deep Purple
+  'Tyre Shops':      '#0D47A1',   // Blue
+  'Towing Service':  '#3D5502',   // Olive Green
 };

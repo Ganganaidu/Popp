@@ -1069,7 +1069,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       }
     }
     final String displayFormat =
-        selectOnlyMonthYear ? 'MMMM yyyy' : 'dd/MM/yyyy';
+        selectOnlyMonthYear ? 'MMMM yyyy' : 'd MMM yyyy';
     return DateFormat(displayFormat).format(dt);
   }
 

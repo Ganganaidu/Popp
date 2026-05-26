@@ -154,7 +154,7 @@ class _NotificationTile extends StatelessWidget {
     } else if (diff.inDays == 1) {
       return 'Yesterday';
     } else {
-      return DateFormat('dd/MM/yyyy').format(dt);
+      return DateFormat('d MMM yyyy').format(dt);
     }
   }
 

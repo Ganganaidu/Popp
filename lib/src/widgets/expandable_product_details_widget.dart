@@ -173,7 +173,7 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
   String _formatDate(DateTime? date, bool selectOnlyMonthYear) {
     if (date == null) return "-";
     final String displayFormat =
-        selectOnlyMonthYear ? 'MMMM yyyy' : 'dd/MM/yyyy';
+        selectOnlyMonthYear ? 'MMMM yyyy' : 'd MMM yyyy';
     return DateFormat(displayFormat).format(date);
   }
 }

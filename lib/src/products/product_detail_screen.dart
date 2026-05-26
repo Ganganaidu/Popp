@@ -1004,55 +1004,19 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     final productId = widget.productJson['id'] as String? ?? '';
     if (productId.isEmpty) return;
 
-    final confirmed = await showDialog<bool>(
+    final success = await AppDialogs.confirmAndMarkAsSold(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1E1E1E),
-        title: const Text('Mark as Sold', style: TextStyle(color: Colors.white)),
-        content: const Text('Are you sure you want to mark this item as sold?',
-            style: TextStyle(color: Colors.white70)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-            ),
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Confirm', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
+      docRef: FirebaseFirestore.instance
+          .collection(ApiUrl.productsPath)
+          .doc(productId),
+      successMessage: 'Item marked as sold.',
     );
 
-    if (confirmed != true) return;
-
-    try {
-      await FirebaseFirestore.instance
-          .collection(ApiUrl.productsPath)
-          .doc(productId)
-          .update({'isSold': true, 'status': 'Sold'});
-
-      if (!mounted) return;
+    if (success && mounted) {
       setState(() {
         _isSold = true;
         _status = 'Sold';
       });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Item marked as sold.'),
-            backgroundColor: Colors.green),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text('Failed to update status: $e'),
-            backgroundColor: Colors.red),
-      );
     }
   }
 

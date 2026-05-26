@@ -65,6 +65,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
   String? sellerCategory;
   DateTime? _selectedManufactureDate;
   DateTime? _selectedBillDate;
+  DateTime? _selectedWarrantyTillDate;
   String? _productCondition;
   PopCategory? selectedCategory;
   String? selectedSubcategory;
@@ -72,7 +73,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
   Function(String?)? onBrandChanged;
   bool isBikeSpecific = false;
   bool isBillAvailable = false;
-  bool isWarrantyAvailable = true;
+  bool isWarrantyAvailable = false;
   bool _termsAccepted = false;
   bool _enableGallery = false;
   int _productAgingMonths = 0;
@@ -84,14 +85,26 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
     _selectedManufactureDate = null;
   }
 
-  void _clearBillFields() {
-    _selectedBillDate = null;
-    _productAgingMonths = 0;
-    _productAgingYears = 0;
+  void _clearWarrantyFields() {
+    _selectedWarrantyTillDate = null;
+    warrantyLeftController.clear();
   }
 
-  void _clearWarrantyFields() {
-    warrantyLeftController.clear();
+  String _remainingWarrantyText(DateTime? tillDate) {
+    if (tillDate == null) return '';
+    final now = DateTime.now();
+    int totalMonths =
+        (tillDate.year - now.year) * 12 + (tillDate.month - now.month);
+    if (totalMonths < 0) totalMonths = 0;
+    final years = totalMonths ~/ 12;
+    final months = totalMonths % 12;
+    return "$years years $months months";
+  }
+
+  bool _isPastMonth(DateTime date) {
+    final now = DateTime.now();
+    return DateTime(date.year, date.month)
+        .isBefore(DateTime(now.year, now.month));
   }
 
   final List<File> _images = [];
@@ -141,17 +154,18 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
     _productCondition = data['productCondition'] as String?;
 
     _selectedBillDate = _toDateTime(data['billDate']);
-    isBillAvailable = _selectedBillDate != null;
+    isBillAvailable = data['isBillAvailable'] as bool? ?? false;
 
-    // Parse productAging string e.g. "3 months 2 years"
-    final agingStr = data['productAging'] as String? ?? '';
-    final mMatch = RegExp(r'(\d+)\s*month').firstMatch(agingStr);
-    final yMatch = RegExp(r'(\d+)\s*year').firstMatch(agingStr);
-    _productAgingMonths = int.tryParse(mMatch?.group(1) ?? '0') ?? 0;
-    _productAgingYears = int.tryParse(yMatch?.group(1) ?? '0') ?? 0;
+    // Product aging is derived from the purchase date, not stored input.
+    final age = AppUtils.calculateAge(_selectedBillDate);
+    _productAgingYears = age['years'] ?? 0;
+    _productAgingMonths = age['months'] ?? 0;
 
-    warrantyLeftController.text = data['warrantyLimit'] ?? '';
-    isWarrantyAvailable = warrantyLeftController.text.isNotEmpty;
+    _selectedWarrantyTillDate = _toDateTime(data['warrantyValidTill']);
+    isWarrantyAvailable = _selectedWarrantyTillDate != null;
+    warrantyLeftController.text = _selectedWarrantyTillDate != null
+        ? _remainingWarrantyText(_selectedWarrantyTillDate)
+        : '';
 
     priceController.text = data['expectedPrice'] ?? '';
     additionalDetailsController.text = data['additionalDetails'] ?? '';
@@ -284,8 +298,10 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
         'productSize': productSizeController.text,
         'productCondition': _productCondition,
         'billDate': _selectedBillDate,
+        'isBillAvailable': isBillAvailable,
         'productAging': '$_productAgingMonths months $_productAgingYears years',
         'warrantyLimit': warrantyLeftController.text,
+        'warrantyValidTill': _selectedWarrantyTillDate,
         'expectedPrice': priceController.text,
         'price': priceController.text,
         'additionalDetails': additionalDetailsController.text,
@@ -344,8 +360,10 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
         productSize: productSizeController.text,
         productCondition: _productCondition,
         billDate: _selectedBillDate,
+        isBillAvailable: isBillAvailable,
         productAging: '$_productAgingMonths months $_productAgingYears years',
         warrantyLimit: warrantyLeftController.text,
+        warrantyValidTill: _selectedWarrantyTillDate,
         expectedPrice: priceController.text,
         price: priceController.text,
         additionalDetails: additionalDetailsController.text,
@@ -374,8 +392,12 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
         priceController.clear();
         additionalDetailsController.clear();
         setState(() {
+          _selectedBillDate = null;
+          isBillAvailable = false;
           _productAgingMonths = 0;
           _productAgingYears = 0;
+          _selectedWarrantyTillDate = null;
+          isWarrantyAvailable = false;
         });
         productSizeController.clear();
         warrantyLeftController.clear();
@@ -614,15 +636,16 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
                     onChanged: (val) {
                       setState(() {
                         isBillAvailable = val;
-                        if (!val) _clearBillFields();
                       });
                     },
                   )),
                   buildPaddedField(MonthYearPicker(
-                    enable: isBillAvailable,
-                    label: "Bill Date",
+                    label: "Purchase date",
                     hint: "Select month and year",
+                    selectOnlyMonthYear: true,
                     selectedDate: _selectedBillDate,
+                    validator: (_) =>
+                        _selectedBillDate == null ? "Required" : null,
                     onDateSelected: (date) {
                       setState(() {
                         _selectedBillDate = date;
@@ -644,28 +667,23 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
                               ),
                         ),
                       ),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildAgingPicker(
-                              "Months",
-                              _productAgingMonths,
-                              0,
-                              11,
-                              (val) => setState(() => _productAgingMonths = val),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildAgingPicker(
-                              "Years",
-                              _productAgingYears,
-                              0,
-                              50,
-                              (val) => setState(() => _productAgingYears = val),
-                            ),
-                          ),
-                        ],
+                      InputDecorator(
+                        decoration: context.inputDecoration(
+                          "",
+                          "",
+                          enable: false,
+                        ),
+                        child: Text(
+                          _selectedBillDate == null
+                              ? "Set purchase date to calculate"
+                              : "$_productAgingYears years $_productAgingMonths months",
+                          style:
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    color: _selectedBillDate == null
+                                        ? Colors.grey[600]
+                                        : null,
+                                  ),
+                        ),
                       ),
                     ],
                   )),
@@ -682,13 +700,43 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
                       });
                     },
                   )),
+                  buildPaddedField(MonthYearPicker(
+                    enable: isWarrantyAvailable,
+                    label: "Warranty valid till",
+                    hint: "Select month and year",
+                    selectOnlyMonthYear: true,
+                    selectedDate: _selectedWarrantyTillDate,
+                    validator: (_) {
+                      if (isWarrantyAvailable &&
+                          _selectedWarrantyTillDate != null &&
+                          _isPastMonth(_selectedWarrantyTillDate!)) {
+                        return "Warranty valid till cannot be in the past";
+                      }
+                      return null;
+                    },
+                    onDateSelected: (date) {
+                      if (date != null && _isPastMonth(date)) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                                "Warranty valid till cannot be in the past."),
+                          ),
+                        );
+                        return;
+                      }
+                      setState(() {
+                        _selectedWarrantyTillDate = date;
+                        warrantyLeftController.text =
+                            _remainingWarrantyText(date);
+                      });
+                    },
+                  )),
                   buildPaddedField(TextFormField(
                     enabled: isWarrantyAvailable,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    readOnly: true,
                     controller: warrantyLeftController,
                     decoration: context.inputDecoration("Remaining Warranty Period",
-                        "How many months/years warranty left?"),
+                        "Calculated from warranty valid till date"),
                   )),
                   buildPaddedField(TextFormField(
                     controller: priceController,
@@ -770,48 +818,6 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
                 ),
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAgingPicker(
-      String label, int value, int min, int max, ValueChanged<int> onChanged) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade400),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        children: [
-          Text(label,
-              style: const TextStyle(color: Colors.grey, fontSize: 12)),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.remove),
-                onPressed:
-                    value > min ? () => onChanged(value - 1) : null,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-              ),
-              Text(
-                '$value',
-                style: const TextStyle(
-                    fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              IconButton(
-                icon: const Icon(Icons.add),
-                onPressed:
-                    value < max ? () => onChanged(value + 1) : null,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-              ),
-            ],
           ),
         ],
       ),

@@ -15,6 +15,7 @@ import '../../chat/chat_with_seller_card.dart';
 import '../../toolbar/AppBarIconButton.dart';
 import '../../utils/app_constants.dart';
 import '../../utils/product_utils.dart';
+import '../../widgets/app_dialogs.dart';
 import '../../widgets/app_network_image.dart';
 import '../../widgets/full_screen_image_screen.dart';
 import '../../widgets/web_image_gallery.dart';
@@ -1052,6 +1053,19 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     );
   }
 
+  String? _formatProductDate(dynamic value) {
+    DateTime? dt;
+    if (value is Timestamp) {
+      dt = value.toDate();
+    } else if (value is DateTime) {
+      dt = value;
+    } else if (value is String && value.isNotEmpty) {
+      dt = DateTime.tryParse(value);
+    }
+    if (dt == null) return null;
+    return DateFormat('MMMM yyyy').format(dt);
+  }
+
   Widget _buildServiceInfoSection(
       BuildContext context, Map<String, dynamic> serviceData, String category) {
     Map<String, String> allDetails = {};
@@ -1068,6 +1082,41 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
       if (startDate != null) allDetails['Start Date'] = startDate;
       final endDate = serviceData['eventEndDate'];
       if (endDate != null) allDetails['End Date'] = endDate;
+    }
+
+    // Accessory / product specific details
+    if (serviceData['isProductBikeSpecific'] == true) {
+      final bikeBrand = serviceData['bikeBrandName']?.toString() ?? '';
+      if (bikeBrand.isNotEmpty) allDetails['Bike Brand'] = bikeBrand;
+      final bikeModel = serviceData['bikeModelName']?.toString() ?? '';
+      if (bikeModel.isNotEmpty) allDetails['Bike Model'] = bikeModel;
+      final bikeMfg = _formatProductDate(serviceData['bikeMfgDate']);
+      if (bikeMfg != null) allDetails['Bike MFG Date'] = bikeMfg;
+    }
+
+    final productSize = serviceData['productSize']?.toString() ?? '';
+    if (productSize.isNotEmpty) allDetails['Product Size'] = productSize;
+
+    final productAging = serviceData['productAging']?.toString() ?? '';
+    if (productAging.isNotEmpty) allDetails['Product Aging'] = productAging;
+
+    final purchaseDate = _formatProductDate(serviceData['billDate']);
+    if (purchaseDate != null) allDetails['Purchase Date'] = purchaseDate;
+    if (serviceData.containsKey('isBillAvailable')) {
+      allDetails['Bill Available'] =
+          serviceData['isBillAvailable'] == true ? 'Yes' : 'No';
+    }
+
+    final warrantyValidTill = _formatProductDate(serviceData['warrantyValidTill']);
+    final warrantyLimit = serviceData['warrantyLimit']?.toString() ?? '';
+    if (warrantyValidTill != null || warrantyLimit.isNotEmpty) {
+      allDetails['Warranty Available'] = 'Yes';
+      if (warrantyValidTill != null) {
+        allDetails['Warranty Valid Till'] = warrantyValidTill;
+      }
+      if (warrantyLimit.isNotEmpty) {
+        allDetails['Remaining Warranty'] = warrantyLimit;
+      }
     }
 
     // Remove Address/Hours manual additions from here if they exist in standard loop
@@ -1113,7 +1162,18 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
       'eventEndDate',
       'eventStartTime',
       'eventEndTime',
-      'maxSlots'
+      'maxSlots',
+      // Rendered explicitly in the accessory/product block above
+      'isProductBikeSpecific',
+      'bikeBrandName',
+      'bikeModelName',
+      'bikeMfgDate',
+      'productSize',
+      'productAging',
+      'billDate',
+      'isBillAvailable',
+      'warrantyValidTill',
+      'warrantyLimit',
     };
 
     String formatKeyToLabel(String key) {
@@ -1463,55 +1523,19 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     final serviceId = widget.serviceData['id'] as String? ?? '';
     if (serviceId.isEmpty) return;
 
-    final confirmed = await showDialog<bool>(
+    final success = await AppDialogs.confirmAndMarkAsSold(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1E1E1E),
-        title: const Text('Mark as Sold', style: TextStyle(color: Colors.white)),
-        content: const Text('Are you sure you want to mark this service as sold?',
-            style: TextStyle(color: Colors.white70)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-            ),
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Confirm', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
+      docRef: FirebaseFirestore.instance
+          .collection(ApiUrl.servicePath)
+          .doc(serviceId),
+      successMessage: 'Service marked as sold.',
     );
 
-    if (confirmed != true) return;
-
-    try {
-      await FirebaseFirestore.instance
-          .collection(ApiUrl.servicePath)
-          .doc(serviceId)
-          .update({'isSold': true, 'status': 'Sold'});
-
-      if (!mounted) return;
+    if (success && mounted) {
       setState(() {
         _isSold = true;
         _status = 'Sold';
       });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Service marked as sold.'),
-            backgroundColor: Colors.green),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text('Failed to update status: $e'),
-            backgroundColor: Colors.red),
-      );
     }
   }
 }

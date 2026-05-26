@@ -129,46 +129,16 @@ class _ListingsGridViewState extends State<ListingsGridView> {
               onEdit: () {
                 // Handle edit action
               },
-              onSold: () {
-                AppDialogs.showConfirmationDialog(
+              onSold: () async {
+                final success = await AppDialogs.confirmAndMarkAsSold(
                   context: context,
-                  title: "Mark as Sold",
-                  content:
-                      "Marking as sold will update your product status to 'Sold' and it will be automatically removed from the database after 15 days.",
-                  onConfirm: () async {
-                    try {
-                      await FirebaseFirestore.instance
-                          .doc(doc.reference.path)
-                          .update({
-                        'isSold': true,
-                        'soldDate': FieldValue.serverTimestamp(),
-                      });
-
-                      // Show success message
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content:
-                                Text('Product marked as sold successfully'),
-                            backgroundColor: Colors.green,
-                          ),
-                        );
-                        // Force a rebuild of the widget
-                        setState(() {});
-                      }
-                    } catch (e) {
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                                'Failed to mark as sold. Please try again.'),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                      }
-                    }
-                  },
+                  docRef:
+                      FirebaseFirestore.instance.doc(doc.reference.path),
                 );
+                if (success && context.mounted) {
+                  // Force a rebuild of the widget
+                  setState(() {});
+                }
               },
             );
           },

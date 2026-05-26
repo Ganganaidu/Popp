@@ -32,11 +32,13 @@ class Product {
   final String? kmDriven;
   bool? isFavorite;
   DateTime? billDate;
+  bool? isBillAvailable;
   bool? isProductBikeSpecific;
   String? productSize;
   String? productCondition;
   String? productAging;
   String? warrantyLimit;
+  DateTime? warrantyValidTill;
   String? bikeBrandName; // we choose this filed for accessories
   String? bikeModelName; // we choose this filed for accessories
   DateTime? bikeMfgDate; // we choose this filed for accessories
@@ -83,6 +85,7 @@ class Product {
       this.isFavorite,
       this.kmDriven,
       this.billDate,
+      this.isBillAvailable,
       this.isProductBikeSpecific = false,
       this.createdAt, // Used when creating/updating
       this.createdAtDate, // Used when reading
@@ -90,6 +93,7 @@ class Product {
       this.productCondition,
       this.productAging,
       this.warrantyLimit,
+      this.warrantyValidTill,
       this.bikeBrandName,
       this.bikeModelName,
       this.bikeMfgDate,
@@ -143,10 +147,12 @@ class Product {
         isSold: json['isSold'] as bool? ?? false,
         // Explicitly cast to non-nullable
         billDate: _parseDate(json['billDate']),
+        isBillAvailable: json['isBillAvailable'] as bool?,
         productSize: json['productSize'] as String?,
         productCondition: json['productCondition'] as String?,
         productAging: json['productAging'] as String?,
         warrantyLimit: json['warrantyLimit'] as String?,
+        warrantyValidTill: _parseDate(json['warrantyValidTill']),
         bikeBrandName: json['bikeBrandName'] as String?,
         bikeModelName: json['bikeModelName'] as String?,
         bikeMfgDate: (json['bikeMfgDate'] as Timestamp?)?.toDate(),
@@ -205,11 +211,13 @@ class Product {
       if (isProductBikeSpecific != null)
         'isProductBikeSpecific': isProductBikeSpecific,
       if (billDate != null) 'billDate': Timestamp.fromDate(billDate!),
+      if (isBillAvailable != null) 'isBillAvailable': isBillAvailable,
       // `createdAt` is usually FieldValue.serverTimestamp() when creating
       if (productSize != null) 'productSize': productSize,
       if (productCondition != null) 'productCondition': productCondition,
       if (productAging != null) 'productAging': productAging,
       if (warrantyLimit != null) 'warrantyLimit': warrantyLimit,
+      if (warrantyValidTill != null) 'warrantyValidTill': warrantyValidTill,
       if (bikeBrandName != null) 'bikeBrandName': bikeBrandName,
       if (bikeModelName != null) 'bikeModelName': bikeModelName,
       if (bikeMfgDate != null) 'bikeMfgDate': Timestamp.fromDate(bikeMfgDate!),
@@ -270,10 +278,12 @@ class Product {
       DateTime? createdAtDate, // Keep for reading/display
       bool? isFavorite,
       DateTime? billDate,
+      bool? isBillAvailable,
       String? productSize,
       String? productCondition,
       String? productAging,
       String? warrantyLimit,
+      DateTime? warrantyValidTill,
       String? bikeBrandName,
       String? bikeModelName,
       DateTime? bikeMfgDate,
@@ -322,10 +332,12 @@ class Product {
         createdAtDate: createdAtDate ?? this.createdAtDate,
         isFavorite: isFavorite ?? this.isFavorite,
         billDate: billDate ?? this.billDate,
+        isBillAvailable: isBillAvailable ?? this.isBillAvailable,
         productSize: productSize ?? this.productSize,
         productCondition: productCondition ?? this.productCondition,
         productAging: productAging ?? this.productAging,
         warrantyLimit: warrantyLimit ?? this.warrantyLimit,
+        warrantyValidTill: warrantyValidTill ?? this.warrantyValidTill,
         bikeBrandName: bikeBrandName ?? this.bikeBrandName,
         bikeModelName: bikeModelName ?? this.bikeModelName,
         bikeMfgDate: bikeMfgDate ?? this.bikeMfgDate,

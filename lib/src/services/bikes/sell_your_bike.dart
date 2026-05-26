@@ -709,12 +709,14 @@ class _SellYourBikeState extends State<SellYourBike>
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 10.0),
                         child: TextFormField(
+                          keyboardType: TextInputType.number,
                           controller: kmDrivenController,
                           decoration: context.inputDecoration(
                               "KM Driven", "Enter kilometers driven"),
                           validator: (val) => val!.isEmpty ? "Required" : null,
                         ),
                       ),
+
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 10.0),
                         child: TextFormField(

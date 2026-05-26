@@ -470,6 +470,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   Widget _buildMobileLayout(BuildContext context, List<String> imageUrls,
       Map<String, dynamic> product, TextTheme theme) {
     final screenHeight = MediaQuery.of(context).size.height;
+    final currentUid = FirebaseAuth.instance.currentUser?.uid;
+    final isOwner = !_isAdmin && product['userId'] == currentUid;
 
     return Scaffold(
       backgroundColor: const Color(0xFF121212), // Dark background
@@ -612,7 +614,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
                       height: 1.1,
-                      fontFamily: 'Orbitron',
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -637,8 +638,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       style: TextStyle(
                           color: Colors.white,
                           fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          fontStyle: FontStyle.italic)),
+                          fontWeight: FontWeight.bold)),
                   const SizedBox(height: 24),
 
                   ExpandableProductDetails(productJson: product),
@@ -648,8 +648,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         style: TextStyle(
                             color: Colors.white,
                             fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            fontStyle: FontStyle.italic)),
+                            fontWeight: FontWeight.bold)),
                   const SizedBox(height: 16),
                   Text(
                     product['additionalDetails'],
@@ -659,12 +658,39 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
                   const SizedBox(height: 20),
 
-                  ChatWithSellerCard(
-                    receiverUserName: product['sellerName'],
-                    receiverUserID: product['userId'],
-                    productTitle: ProductUtils.getTitle(product),
-                    productId: product['id'],
-                  ),
+                  if (isOwner && !_isSold) ...[
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
+                        ),
+                        onPressed: _markAsSold,
+                        icon: const Icon(Icons.check_circle_outline, size: 18),
+                        label: const Text(
+                          'Mark as Sold',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ] else ...[
+                    if (!isOwner)
+                      ChatWithSellerCard(
+                        receiverUserName: product['sellerName'],
+                        receiverUserID: product['userId'],
+                        productTitle: ProductUtils.getTitle(product),
+                        productId: product['id'],
+                      ),
+                  ],
 
                   const SizedBox(height: 100), // Space for bottom button
                 ],
@@ -692,11 +718,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           child: _buildHighlightCard(Icons.history, "DRIVEN", "$kmDriven KM")));
     }
 
-    final firstOwner = product['firstOwner'];
-    if (firstOwner != null && firstOwner.toString() != '-') {
-      cards.add(Expanded(
-          child: _buildHighlightCard(
-              Icons.settings_outlined, "OWNERSHIP", "$firstOwner Owner")));
+    final mfgDate = product['mfgDate'];
+    if (mfgDate != null) {
+      final formattedMfg = _formatDate(mfgDate, true);
+      if (formattedMfg != '-') {
+        cards.add(Expanded(
+            child: _buildHighlightCard(
+                Icons.calendar_today_outlined, "MFG DATE", formattedMfg)));
+      }
+
     }
 
     if (cards.isEmpty) return const SizedBox.shrink();
@@ -968,6 +998,62 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     final text = controller.text;
     if (confirmed != true) return null;
     return text;
+  }
+
+  Future<void> _markAsSold() async {
+    final productId = widget.productJson['id'] as String? ?? '';
+    if (productId.isEmpty) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1E1E1E),
+        title: const Text('Mark as Sold', style: TextStyle(color: Colors.white)),
+        content: const Text('Are you sure you want to mark this item as sold?',
+            style: TextStyle(color: Colors.white70)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+            ),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Confirm', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      await FirebaseFirestore.instance
+          .collection(ApiUrl.productsPath)
+          .doc(productId)
+          .update({'isSold': true, 'status': 'Sold'});
+
+      if (!mounted) return;
+      setState(() {
+        _isSold = true;
+        _status = 'Sold';
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Item marked as sold.'),
+            backgroundColor: Colors.green),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text('Failed to update status: $e'),
+            backgroundColor: Colors.red),
+      );
+    }
   }
 
   String _formatDate(dynamic date, bool selectOnlyMonthYear) {

@@ -117,13 +117,14 @@ extension BuildContextEntension<T> on BuildContext {
         hintText: hint,
         floatingLabelBehavior: FloatingLabelBehavior.always,
         filled: true,
+        fillColor: Colors.transparent,
         prefixIcon: icon != null ? Icon(icon) : null,
-        hintStyle: const TextStyle(color: Colors.grey),
+        hintStyle: const TextStyle(color: Colors.white54),
         labelStyle: const TextStyle(fontWeight: FontWeight.w500),
         // Change fill color when disabled
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(borderRadius),
-          borderSide: const BorderSide(color: Colors.grey),
+          borderSide: const BorderSide(color: Colors.white12),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(borderRadius),
@@ -132,11 +133,11 @@ extension BuildContextEntension<T> on BuildContext {
         disabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(borderRadius),
           // Add this for when InputDecorator is disabled
-          borderSide: BorderSide(color: Colors.grey.shade400),
+          borderSide: const BorderSide(color: Colors.white12),
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(borderRadius),
-          borderSide: const BorderSide(color: Colors.white),
+          borderSide: const BorderSide(color: Colors.white12),
         ),
       );
 }

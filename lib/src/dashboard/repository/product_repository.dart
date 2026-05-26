@@ -12,6 +12,7 @@ class ProductRepository {
         .collection(ApiUrl.productsPath)
         .where('isApproved', isEqualTo: isApproved)
         .where('isActive', isEqualTo: true)
+        .where('isSold', isEqualTo: false)
         .get();
     return _processSnapshot(snapshot);
   }
@@ -22,6 +23,7 @@ class ProductRepository {
         .collection(ApiUrl.productsPath)
         .where('isApproved', isEqualTo: isApproved)
         .where('isActive', isEqualTo: true)
+        .where('isSold', isEqualTo: false)
         .snapshots()
         .asyncMap((snapshot) => _processSnapshot(snapshot));
   }

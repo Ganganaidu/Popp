@@ -1,5 +1,6 @@
 .section {
-  padding: 48px 0 40px;
+  /* Identical side padding to every other home section */
+  padding: 56px 32px 48px;
 }
 
 /* ─── Header ──────────────────────────────────────────────────────────────── */
@@ -7,8 +8,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
-  padding: 0 32px;
+  margin-bottom: 20px;
 }
 
 .label {
@@ -23,6 +23,9 @@
 /* ─── Scroll track ────────────────────────────────────────────────────────── */
 .track {
   position: relative;
+  /* extend the scrollable area to the section edges — no negative margin needed */
+  margin: 0 -32px;
+  padding: 0 32px;
 }
 
 /* Nav buttons */
@@ -53,8 +56,8 @@
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
 }
 
-.navBtnLeft  { left: 8px; }
-.navBtnRight { right: 8px; }
+.navBtnLeft  { left: 4px; }
+.navBtnRight { right: 4px; }
 
 /* ─── Horizontal scroller ─────────────────────────────────────────────────── */
 .scroller {
@@ -64,8 +67,8 @@
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
-  padding: 6px 32px 12px;
-  /* Hide scrollbar on Webkit */
+  /* top/bottom padding only — left/right comes from .track padding */
+  padding: 6px 0 14px;
   scrollbar-width: none;
 }
 .scroller::-webkit-scrollbar {
@@ -75,7 +78,7 @@
 /* ─── Tile ────────────────────────────────────────────────────────────────── */
 .tile {
   position: relative;
-  flex: 0 0 192px;          /* fixed width, no shrink */
+  flex: 0 0 192px;
   height: 245px;
   border-radius: 14px;
   padding: 12px 12px 14px;
@@ -138,8 +141,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
-  /* give the Next.js Image a concrete size to fill */
   min-height: 0;
 }
 .image {
@@ -147,7 +148,6 @@
   object-position: center;
 }
 
-/* no gradient needed — solid color bg + contained image */
 .gradient { display: none; }
 
 /* ─── Text block ──────────────────────────────────────────────────────────── */
@@ -180,8 +180,8 @@
 
 /* ─── Responsive ──────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
-  .header { padding: 0 20px; }
-  .scroller { padding: 6px 20px 12px; }
-  .tile { flex: 0 0 148px; height: 190px; }
-  .verb { font-size: 22px; }
+  .section  { padding: 40px 20px 36px; }
+  .track    { margin: 0 -20px; padding: 0 20px; }
+  .tile     { flex: 0 0 148px; height: 190px; }
+  .verb     { font-size: 22px; }
 }

@@ -36,20 +36,24 @@ class _ExploreProductsScreenState extends State<ExploreProductsScreen> {
     final productsSnap = await fireStore
         .collection(ApiUrl.productsPath)
         .where('searchKeywords', arrayContainsAny: [query.toLowerCase()]).get();
-    results.addAll(productsSnap.docs.map((doc) => {
-          ...doc.data(),
-          'type': 'product',
-          'id': doc.id,
-        }));
+    results.addAll(productsSnap.docs
+        .map((doc) => {
+              ...doc.data(),
+              'type': 'product',
+              'id': doc.id,
+            })
+        .where((item) => item['isSold'] != true && item['status'] != 'Sold'));
     // Search services
     final servicesSnap = await fireStore
         .collection(ApiUrl.servicePath)
         .where('searchKeywords', arrayContainsAny: [query.toLowerCase()]).get();
-    results.addAll(servicesSnap.docs.map((doc) => {
-          ...doc.data(),
-          'type': 'service',
-          'id': doc.id,
-        }));
+    results.addAll(servicesSnap.docs
+        .map((doc) => {
+              ...doc.data(),
+              'type': 'service',
+              'id': doc.id,
+            })
+        .where((item) => item['isSold'] != true && item['status'] != 'Sold'));
     setState(() {
       _results = results;
       _isLoading = false;

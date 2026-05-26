@@ -173,8 +173,8 @@ export function ActionGrid() {
                 <Image
                   src={image}
                   alt={`${verb} ${noun}`}
-                  width={110}
-                  height={110}
+                  width={180}
+                  height={180}
                   className={styles.image}
                 />
               </div>

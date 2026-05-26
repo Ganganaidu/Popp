@@ -563,12 +563,15 @@ class FirebaseApiService {
       }
 
       QuerySnapshot snapshot = await query.get();
-      return snapshot.docs.map((doc) {
-        final data = doc.data() as Map<String, dynamic>;
-        // ensure the document id is present on the returned map
-        data['id'] = doc.id;
-        return data;
-      }).toList();
+      return snapshot.docs
+          .map((doc) {
+            final data = doc.data() as Map<String, dynamic>;
+            // ensure the document id is present on the returned map
+            data['id'] = doc.id;
+            return data;
+          })
+          .where((data) => data['isSold'] != true)
+          .toList();
     } catch (e) {
       AppLogger.d("Error fetching products by category: $e");
       return [];
@@ -593,11 +596,14 @@ class FirebaseApiService {
         queryActive = queryActive.where('subCategory', isEqualTo: subCategory);
       }
       QuerySnapshot activeSnapshot = await queryActive.get();
-      List<Map<String, dynamic>> activeServices = activeSnapshot.docs.map((doc) {
-        final data = doc.data() as Map<String, dynamic>;
-        data['id'] = doc.id;
-        return data;
-      }).toList();
+      List<Map<String, dynamic>> activeServices = activeSnapshot.docs
+          .map((doc) {
+            final data = doc.data() as Map<String, dynamic>;
+            data['id'] = doc.id;
+            return data;
+          })
+          .where((service) => service['isSold'] != true)
+          .toList();
 
       AppLogger.d("current user $userId");
 
@@ -613,11 +619,14 @@ class FirebaseApiService {
           queryUser = queryUser.where('subCategory', isEqualTo: subCategory);
         }
         QuerySnapshot userSnapshot = await queryUser.get();
-        userServices = userSnapshot.docs.map((doc) {
-          final data = doc.data() as Map<String, dynamic>;
-          data['id'] = doc.id;
-          return data;
-        }).toList();
+        userServices = userSnapshot.docs
+            .map((doc) {
+              final data = doc.data() as Map<String, dynamic>;
+              data['id'] = doc.id;
+              return data;
+            })
+            .where((service) => service['isSold'] != true)
+            .toList();
       }
 
       // Merge and deduplicate

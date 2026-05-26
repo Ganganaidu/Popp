@@ -38,9 +38,9 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
             detailRow("Bike MFG Date",
                 _formatDate(product.bikeMfgDate, true), theme),
         ],
-        if (product.mfgDate != null)
+        if (product.firstOwner != null)
           detailRow(
-              "Manufacturing Date", _formatDate(product.mfgDate, true), theme),
+              "Current Ownership Number", product.firstOwner!, theme),
         if (product.city.isNotEmpty) detailRow("City", product.city, theme),
         if (product.area.isNotEmpty) detailRow("Area", product.area, theme),
         if (product.state.isNotEmpty)
@@ -66,9 +66,6 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
                 if (product.registrationDate != null)
                   detailRow("Registration Date",
                       _formatDate(product.registrationDate, true), theme),
-                if (product.firstOwner != null)
-                  detailRow(
-                      "Current Ownership Number", product.firstOwner!, theme),
                 if (product.productAging?.isNotEmpty ?? false)
                   detailRow("Product Aging", product.productAging!, theme),
                 if (product.productSize?.isNotEmpty ?? false)

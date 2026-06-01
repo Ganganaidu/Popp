@@ -1,8 +1,8 @@
 import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
-import '../firebase/auth_service.dart';
+import '../api/firebase/auth_service.dart';
 
-enum AuthType { google, facebook, apple }
+enum AuthType { google, apple }
 
 class SocialLoginButtons extends StatelessWidget {
   const SocialLoginButtons({super.key});
@@ -16,13 +16,6 @@ class SocialLoginButtons extends StatelessWidget {
           label: const Text('Continue with Google'),
           style: _buttonStyle(),
           onPressed: () => _handleLogin(context, AuthType.google),
-        ),
-        const SizedBox(height: 10),
-        ElevatedButton.icon(
-          icon: const Icon(Icons.facebook),
-          label: const Text('Continue with Facebook'),
-          style: _buttonStyle(),
-          onPressed: () => _handleLogin(context, AuthType.facebook),
         ),
         if (Platform.isIOS) ...[
           const SizedBox(height: 10),
@@ -60,9 +53,6 @@ class SocialLoginButtons extends StatelessWidget {
       switch (type) {
         case AuthType.google:
           await auth.signInWithGoogle();
-          break;
-        case AuthType.facebook:
-          await auth.signInWithFacebook();
           break;
         case AuthType.apple:
           await auth.signInWithApple();

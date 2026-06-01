@@ -2,8 +2,10 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:popp/src/toolbar/common_app_bar.dart';
 import 'package:popp/src/login/model/user_data_model.dart';
 import 'package:popp/src/navigation/nav_router.dart';
+import 'package:popp/src/widgets/title_text.dart';
 
 import '../utils/app_loger.dart';
 
@@ -126,8 +128,8 @@ class _VerificationScreenState extends State<VerificationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Verify Your Email'),
+      appBar: const CommonAppBar(
+        titleWidget: TitleText('Verify Your Email'),
       ),
       body: Center(
         child: SingleChildScrollView(
@@ -135,7 +137,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.email_outlined, size: 80, color: Colors.orange),
+              const Icon(Icons.email_outlined, size: 80, color: Colors.green),
               const SizedBox(height: 24),
               Text(
                 'Check Your Inbox',
@@ -157,9 +159,39 @@ class _VerificationScreenState extends State<VerificationScreen> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
-              const Text(
-                'Click the link in the email to complete your registration. This screen will update automatically.',
-                textAlign: TextAlign.center,
+              Column(
+                children: [
+                  const Text(
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.white,
+                      fontStyle: FontStyle.italic,
+                    ),
+                    'Click the link in the email to complete your registration. This screen will update automatically.',
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 10),
+                  RichText(
+                    textAlign: TextAlign.center,
+                    text: const TextSpan(
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.red,
+                        fontStyle: FontStyle.italic,
+                      ),
+                      children: [
+                        TextSpan(
+                            text:
+                                'If you haven\'t received the email, please check your '),
+                        TextSpan(
+                          text: 'spam/junk',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        TextSpan(text: ' folder.'),
+                      ],
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 32),
               const CircularProgressIndicator(),

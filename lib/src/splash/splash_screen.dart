@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:popp/src/utils/app_loger.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -14,25 +16,31 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // The native splash screen is showing. We just need to handle the navigation logic.
-    // We don't need a Future.delayed here anymore.
-    // The logic will run, and once it's done, we'll navigate away.
     _checkUserAndNavigate();
   }
 
   Future<void> _checkUserAndNavigate() async {
     // A short delay can sometimes help prevent a jarring transition.
     // This is optional and you can adjust the duration.
-    await Future.delayed(const Duration(milliseconds: 50));
+    await Future.delayed(
+        kIsWeb ? const Duration(milliseconds: 500) : const Duration(milliseconds: 50));
 
     if (mounted) {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        // User is logged in, go to home screen.
-        Navigator.pushReplacementNamed(context, '/home');
-      } else {
-        // User is not logged in, go to login screen.
-        Navigator.pushReplacementNamed(context, '/login');
+      try {
+        final user = FirebaseAuth.instance.currentUser;
+        if (user != null) {
+          // User is logged in, go to home screen.
+          Navigator.pushReplacementNamed(context, '/home');
+        } else {
+          // User is not logged in, go to auth screen.
+          Navigator.pushReplacementNamed(context, '/auth');
+        }
+      } catch (e) {
+        AppLogger.e('Error during authentication check: $e');
+        // In case of any error, redirect to auth screen
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, '/auth');
+        }
       }
     }
   }

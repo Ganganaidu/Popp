@@ -1,0 +1,320 @@
+.panel {
+  padding-bottom: 100px; /* clearance for sticky WizardFooter */
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.stepTitle {
+  font-family: var(--font-archivo-narrow), sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: -0.01em;
+  color: var(--bv-text);
+  margin: 0 0 4px;
+}
+
+/* 2-column row */
+.row2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.row3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+}
+
+/* Negotiable checkbox */
+.checkWrap {
+  display: flex;
+  align-items: flex-end;
+  padding-bottom: 10px;
+}
+
+.checkLabel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--bv-green);
+  cursor: pointer;
+  flex-shrink: 0;
+  border-radius: var(--bv-radius);
+}
+
+.checkText {
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 14px;
+  color: var(--bv-text-2);
+  line-height: 1.5;
+}
+
+.checkLink {
+  color: var(--bv-green);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.divider {
+  height: 1px;
+  background: var(--bv-border);
+  margin: 8px 0;
+}
+
+.stepHint {
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 13px;
+  color: var(--bv-text-3);
+  margin: -8px 0 0;
+  line-height: 1.5;
+}
+
+/* Tag picker (service wizard) */
+.tagGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag {
+  height: 34px;
+  padding: 0 14px;
+  border: 1px solid var(--bv-border-hi);
+  background: transparent;
+  border-radius: var(--bv-radius);
+  cursor: pointer;
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 13px;
+  color: var(--bv-text-2);
+  transition: border-color 150ms, background 150ms, color 150ms;
+}
+
+.tag:hover {
+  border-color: var(--bv-text-3);
+  color: var(--bv-text);
+}
+
+.tagActive {
+  border-color: var(--bv-green-line);
+  background: var(--bv-green-soft);
+  color: var(--bv-green);
+}
+
+/* Toggle switch (mirrors Flutter SwitchListTile) */
+.toggleRow {
+  padding: 4px 0;
+}
+
+.toggleLabel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  gap: 16px;
+}
+
+.toggleText {
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 14px;
+  color: var(--bv-text-2);
+}
+
+.toggle {
+  width: 44px;
+  height: 24px;
+  border-radius: 12px;
+  background: var(--bv-surface-hi);
+  border: 1px solid var(--bv-border-hi);
+  position: relative;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: background 200ms, border-color 200ms;
+  outline: none;
+}
+
+.toggle:focus-visible {
+  outline: 2px solid var(--bv-green);
+  outline-offset: 2px;
+}
+
+.toggleOn {
+  background: var(--bv-green);
+  border-color: var(--bv-green);
+}
+
+.toggleThumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--bv-text-3);
+  transition: transform 200ms, background 200ms;
+}
+
+.toggleOn .toggleThumb {
+  transform: translateX(20px);
+  background: var(--bv-green-ink);
+}
+
+/* Hours grid */
+.hoursGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+
+.dayRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 13px;
+  color: var(--bv-text-2);
+}
+
+.dayLabel {
+  min-width: 40px;
+}
+
+/* Sub-section label */
+.subLabel {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bv-text-2);
+}
+
+/* Category selection grid (ListServiceWizard step 0) */
+.catGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+/* ── Category tile — pixel-matched to ActionGrid .tile ─────────────────── */
+.catCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 200px;
+  border-radius: 14px;
+  padding: 12px 12px 14px;
+  cursor: pointer;
+  border: none;
+  overflow: hidden;
+  background-color: var(--bv-surface-hi);    /* overridden inline per cat */
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  text-align: left;
+}
+
+.catCard:hover {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.16),
+    0 10px 28px rgba(0, 0, 0, 0.50);
+}
+
+/* Selected: bright green ring over the coloured bg */
+.catCardActive {
+  box-shadow:
+    0 0 0 2px var(--bv-green),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.20);
+}
+
+/* Top row — /01 index + → arrow */
+.catTopRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.catIndex {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: rgba(255, 255, 255, 0.50);
+  line-height: 1;
+}
+
+.catArrow {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.50);
+  line-height: 1;
+}
+
+/* Centred image area — flex-grows to fill space between top row and text */
+.catImageWrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+}
+
+/* Text block — verb + noun pinned to bottom */
+.catTextBlock {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.catVerb {
+  font-family: var(--font-archivo-narrow), 'Archivo Narrow', sans-serif;
+  font-weight: 800;
+  font-size: 22px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  color: #ffffff;
+}
+
+.catNoun {
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.65);
+  line-height: 1;
+}
+
+/* Standalone field-level error message (e.g. T&C checkbox, towing types) */
+.fieldError {
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 11px;
+  color: #EF4444;
+  margin-top: -4px;
+}
+
+/* Legacy — no longer used, kept to avoid breakage */
+.catIcon  {}
+.catLabel {}
+
+@media (max-width: 600px) {
+  .row2, .row3 {
+    grid-template-columns: 1fr;
+  }
+
+  .hoursGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .catGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

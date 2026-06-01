@@ -2,11 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import '../models/product.dart';
+import '../utils/product_utils.dart';
 
 class ExpandableProductDetails extends StatefulWidget {
-  final Product product;
+  final Map<String, dynamic> productJson;
 
-  const ExpandableProductDetails({super.key, required this.product});
+  /// When false, City / Area / State rows are suppressed because the highlights
+  /// row above already shows the location card.
+  final bool showLocationDetails;
+
+  const ExpandableProductDetails({
+    super.key,
+    required this.productJson,
+    this.showLocationDetails = true,
+  });
 
   @override
   State<ExpandableProductDetails> createState() =>
@@ -15,11 +24,12 @@ class ExpandableProductDetails extends StatefulWidget {
 
 class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
     with SingleTickerProviderStateMixin {
-  bool isExpanded = false;
+  bool isExpanded = true;
 
   @override
   Widget build(BuildContext context) {
-    final product = widget.product;
+    final product =
+        Product.fromJson(widget.productJson, widget.productJson["id"]);
     final theme = Theme.of(context).textTheme;
 
     return Column(
@@ -27,16 +37,23 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
       children: [
         // Always Visible Important Fields
         // detailRow("Features", product.additionalDetails, theme),
-        if (product.mfgDate != null)
-          detailRow(
-              "Manufacturing Date", _formatDate(product.mfgDate, true), theme),
-        if (product.registrationPlace?.isNotEmpty ?? false)
-          detailRow("Registration Place", product.registrationPlace!, theme),
-        if (product.city.isNotEmpty) detailRow("City", product.city, theme),
-        if (product.state.isNotEmpty)
-          detailRow("State", product.state, theme)
-        else
-          const SizedBox.shrink(),
+        if (product.isProductBikeSpecific == true) ...[
+          if (product.bikeBrandName?.isNotEmpty ?? false)
+            detailRow("Bike Brand", product.bikeBrandName!, theme),
+          if (product.bikeModelName?.isNotEmpty ?? false)
+            detailRow("Bike Model", product.bikeModelName!, theme),
+          if (product.bikeMfgDate != null)
+            detailRow(
+                "Bike MFG Date", _formatDate(product.bikeMfgDate, true), theme),
+        ],
+        if (product.firstOwner != null)
+          detailRow("Current Ownership Number", product.firstOwner!, theme),
+        if (widget.showLocationDetails) ...[
+          if (product.city.isNotEmpty) detailRow("City", product.city, theme),
+          if (product.area.isNotEmpty) detailRow("Area", product.area, theme),
+          if (product.state.isNotEmpty)
+            detailRow("State", product.state, theme),
+        ],
 
         const SizedBox(height: 8),
 
@@ -51,14 +68,11 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (product.kmDriven?.isNotEmpty ?? false)
-                  detailRow("KM Driven", product.kmDriven!, theme),
+                // if (product.kmDriven?.isNotEmpty ?? false)
+                //   detailRow("KM Driven", product.kmDriven!, theme),
                 if (product.registrationDate != null)
                   detailRow("Registration Date",
                       _formatDate(product.registrationDate, true), theme),
-                if (product.registrationDate != null)
-                  detailRow(
-                      "Bill Date", _formatDate(product.billDate, false), theme),
                 if (product.productAging?.isNotEmpty ?? false)
                   detailRow("Product Aging", product.productAging!, theme),
                 if (product.productSize?.isNotEmpty ?? false)
@@ -67,19 +81,40 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
                   detailRow(
                       "Product Condition", product.productCondition!, theme),
                 if (product.insuranceAvailable != null)
-                  detailRow("Insurance Available",
-                      product.insuranceAvailable != null ? "Yes" : "No", theme),
+                  detailRow("Insurance Available", product.insuranceAvailable!,
+                      theme),
                 if (product.insuranceValidTill != null)
                   detailRow("Insurance valid till",
                       _formatDate(product.insuranceValidTill, false), theme),
                 detailRow("Warranty Available",
                     product.warrantyLimit != null ? "Yes" : "No", theme),
                 if (product.warrantyLimit?.isNotEmpty ?? false)
-                  detailRow("Warranty Limit", product.warrantyLimit!, theme),
-                detailRow("Invoice Available",
-                    product.invoiceAvailable != null ? "Yes" : "No", theme),
-                detailRow("NOC Available",
-                    product.nocAvailable != null ? "Yes" : "No", theme),
+                  detailRow(
+                      "Remaining Warranty", product.warrantyLimit!, theme),
+                if (product.warrantyValidTill != null)
+                  detailRow("Warranty Valid Till",
+                      _formatDate(product.warrantyValidTill, true), theme),
+                if (product.isBillAvailable != null &&
+                    product.isBillAvailable == true)
+                  detailRow("Bill Available",
+                      product.isBillAvailable == true ? 'Yes' : 'No', theme),
+                if (product.billDate != null)
+                  detailRow("Purchase Date",
+                      _formatDate(product.billDate, true), theme),
+                if (product.invoiceAvailable != null)
+                  detailRow(
+                      "Invoice Available", product.invoiceAvailable!, theme),
+                if (product.category.contains(ProductUtils.premiumBikes) &&
+                    product.nocAvailable != null)
+                  detailRow("NOC Available", product.nocAvailable!, theme),
+                if (product.batteryCondition != null)
+                  detailRow(
+                      "Battery Condition", product.batteryCondition!, theme),
+                if (product.tyreCondition != null)
+                  detailRow("Tyre Condition", product.tyreCondition!, theme),
+                // if (product.additionalDetails.isNotEmpty)
+                //   detailRow(
+                //       "Additional Details", product.additionalDetails, theme),
               ],
             ),
           ),
@@ -113,17 +148,12 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
     final isRegistrationPlace =
         title.toLowerCase().contains('registration place');
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6.0),
+      padding: const EdgeInsets.only(bottom: 16.0),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          Text(title, style: const TextStyle(color: Colors.grey, fontSize: 14)),
           Expanded(
-              flex: 3,
-              child: Text("$title:",
-                  style:
-                      theme.titleSmall?.copyWith(fontWeight: FontWeight.w600))),
-          Expanded(
-            flex: 5,
             child: isRegistrationPlace && value.isNotEmpty
                 ? GestureDetector(
                     onTap: () async {
@@ -139,9 +169,18 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
                         color: Colors.blue,
                         decoration: TextDecoration.underline,
                       ),
+                      textAlign: TextAlign.right,
                     ),
                   )
-                : Text(value),
+                : Text(
+                    value.isEmpty ? "-" : value,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    textAlign: TextAlign.right,
+                  ),
           ),
         ],
       ),
@@ -151,9 +190,7 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
   String _formatDate(DateTime? date, bool selectOnlyMonthYear) {
     if (date == null) return "-";
     final String displayFormat =
-        selectOnlyMonthYear ? 'MMMM yyyy' : 'MMMM dd yyyy';
+        selectOnlyMonthYear ? 'MMMM yyyy' : 'd MMM yyyy';
     return DateFormat(displayFormat).format(date);
   }
 }
-
-//  const TextStyle(fontWeight: FontWeight.w600)

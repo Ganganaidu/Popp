@@ -1,15 +1,20 @@
-import 'package:cloud_firestore/cloud_firestore.dart'; // NEW: Import Firestore
-import 'package:firebase_auth/firebase_auth.dart'; // NEW: Import FirebaseAuth
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:popp/src/toolbar/pop_app_bar.dart';
+import 'package:popp/src/toolbar/web_menu_drawer.dart';
+import 'package:popp/src/toolbar/web_top_bar.dart';
 import 'package:popp/src/utils/app_constants.dart';
 import 'package:popp/src/utils/app_loger.dart';
 
+import '../api/api_url.dart';
+import '../chat/active_chat_provider.dart';
 import '../navigation/custom_bottom_nav_bar.dart';
 import '../navigation/nav_helper.dart';
+import '../toolbar/web_side_bar.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -23,8 +28,6 @@ class _HomeScreenState extends State<HomeScreen> {
   final _navHelper = NavHelper();
   final ValueNotifier<bool> _canPop = ValueNotifier(false);
   final ValueNotifier<String> _appBarTitle = ValueNotifier(Constants.appName);
-
-  String? _fcmToken;
 
   // Recommended for foreground notifications on Android
   late AndroidNotificationChannel _channel;
@@ -41,56 +44,63 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  /// Sets up all notification-related logic.
   Future<void> _setupNotifications() async {
-    await _requestPermissions();
-    await _getFCMToken(); // This will now also save the token
-    _configureForegroundMessageHandler();
-  }
+    try {
+      final messaging = FirebaseMessaging.instance;
 
-  Future<void> _requestPermissions() async {
-    FirebaseMessaging messaging = FirebaseMessaging.instance;
-    NotificationSettings settings = await messaging.requestPermission(
-      alert: true,
-      announcement: false,
-      badge: true,
-      carPlay: false,
-      criticalAlert: false,
-      provisional: false,
-      sound: true,
-    );
-    AppLogger.d('User granted permission: ${settings.authorizationStatus}');
-  }
+      // 1. Request permission from the user.
+      await messaging.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
 
-  Future<void> _getFCMToken() async {
-    String? token = await FirebaseMessaging.instance.getToken();
-    setState(() {
-      _fcmToken = token;
-    });
-    AppLogger.d('FCM Token: $_fcmToken');
-    // Send this token to your backend server or save it to Firestore
-    if (token != null && FirebaseAuth.instance.currentUser != null) {
-      await _saveFCMTokenToFirestore(token, FirebaseAuth.instance.currentUser!.uid);
+      // 2. Get the initial token and save it to Firestore.
+      final initialToken = await messaging.getToken();
+      if (initialToken != null) {
+        _saveToken(initialToken);
+      }
+
+      // 3. Set up a listener for any future token refreshes.
+      // This is crucial for keeping the token up-to-date.
+      FirebaseMessaging.instance.onTokenRefresh.listen(_saveToken);
+
+      // 4. Configure foreground message handling.
+      if (mounted) {
+        _configureForegroundMessageHandler();
+      }
+    } catch (e) {
+      AppLogger.e('Error setting up notifications: $e');
     }
   }
 
-  // NEW: Method to save FCM token to Firestore
-  Future<void> _saveFCMTokenToFirestore(String token, String uid) async {
+  /// Saves the given FCM token to the current user's document in Firestore.
+  Future<void> _saveToken(String token) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      AppLogger.d('User not logged in. Skipping FCM token save.');
+      return;
+    }
+
     try {
-      final userRef = FirebaseFirestore.instance.collection(Constants.userPath).doc(uid);
+      final userRef = FirebaseFirestore.instance.collection(ApiUrl.userPath).doc(user.uid);
+      // Use arrayUnion to add the token only if it's not already present.
+      // This prevents duplicate tokens.
       await userRef.set(
         {
-          'fcmTokens': FieldValue.arrayUnion([token]), // Add token to an array
+          'fcmTokens': FieldValue.arrayUnion([token]),
           'lastTokenUpdate': FieldValue.serverTimestamp(),
         },
-        SetOptions(merge: true), // Use merge to avoid overwriting existing fields
+        SetOptions(merge: true), // Use merge to avoid overwriting other user data.
       );
-      AppLogger.d('FCM Token saved to Firestore for user: $uid');
+      AppLogger.d('FCM Token saved to Firestore for user: ${user.uid}');
     } catch (e) {
       AppLogger.e('Error saving FCM Token to Firestore: $e');
     }
   }
 
-
+  /// Configures how incoming messages are handled while the app is in the foreground.
   void _configureForegroundMessageHandler() {
     // Required for foreground notifications on Android
     _channel = const AndroidNotificationChannel(
@@ -115,13 +125,22 @@ class _HomeScreenState extends State<HomeScreen> {
       AppLogger.d('Got a message whilst in the foreground!');
       AppLogger.d('Message data: ${message.data}');
 
+      // Extract chatRoomId from incoming data payload if it exists
+      final String? incomingChatRoomId = message.data['chatRoomId'];
+
+      // Check if the user is actively viewing this specific chat room
+      if (incomingChatRoomId != null && incomingChatRoomId == ActiveChatProvider.activeChatRoomId.value) {
+        AppLogger.d('Suppressing notification because user is actively viewing this chat room: $incomingChatRoomId');
+        return; // Skip showing the local notification
+      }
+
       if (notification != null) {
         AppLogger.d(
             'Message also contained a notification: ${notification.title}');
 
         // If you're on Android, you need to display the notification manually
         // using flutter_local_notifications.
-        if (android != null && !kIsWeb) { // Add !kIsWeb check for Android-specific logic
+        if (android != null && !kIsWeb) {
           _flutterLocalNotificationsPlugin.show(
             notification.hashCode,
             notification.title,
@@ -142,8 +161,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // Also handle when a user taps a notification that opened the app from a background state.
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       AppLogger.d('A new onMessageOpenedApp event was published!');
-      // You can add logic here to navigate to a specific page
-      // based on the message data.
+      // Notification already saved server-side by Cloud Functions.
     });
 
     // Handle messages when the app is terminated or in the background
@@ -153,10 +171,10 @@ class _HomeScreenState extends State<HomeScreen> {
   // Define a top-level function for background messages handler
   @pragma('vm:entry-point')
   static Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-    // If you're using Firebase services, make sure to initialize them
-    // For example: await Firebase.initializeApp();
+    // If you're using other Firebase services in the background,
+    // make sure to initialize them first.
+    // await Firebase.initializeApp();
     AppLogger.d("Handling a background message: ${message.messageId}");
-    // You can process the message here, e.g., save to local storage, show local notification
   }
 
 
@@ -200,12 +218,24 @@ class _HomeScreenState extends State<HomeScreen> {
         _navHelper.onWillPop(_selectedIndex);
       },
       child: Scaffold(
+        drawer: kIsWeb
+            ? WebMenuDrawer(
+                selectedIndex: _selectedIndex,
+                onItemTapped: _onItemTapped,
+              )
+            : null,
         appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(kToolbarHeight),
+          preferredSize: const Size.fromHeight(kIsWeb ? 150 : kToolbarHeight),
           child: ValueListenableBuilder2<bool, String>(
             first: _canPop,
             second: _appBarTitle,
             builder: (context, canPop, title, _) {
+              if (kIsWeb) {
+                return WebTopBar(
+                  selectedIndex: _selectedIndex,
+                  navigatorKeys: _navHelper.navigatorKeys,
+                );
+              }
               return PopAppBar(
                 title: title,
                 selectedIndex: _selectedIndex,
@@ -215,19 +245,38 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           ),
         ),
-        body: IndexedStack(
-          index: _selectedIndex,
-          children: _navHelper.widgetOptions,
-        ),
-        bottomNavigationBar: CustomBottomNavBar(
-          selectedIndex: _selectedIndex,
-          onItemTapped: _onItemTapped,
-        ),
+        body: kIsWeb
+            ? Row(
+                children: [
+                  WebSideBar(
+                    selectedIndex: _selectedIndex,
+                    onItemTapped: _onItemTapped,
+                  ),
+                  Expanded(
+                    child: IndexedStack(
+                      index: _selectedIndex,
+                      children: _navHelper.widgetOptions,
+                    ),
+                  ),
+                ],
+              )
+            : IndexedStack(
+                index: _selectedIndex,
+                children: _navHelper.widgetOptions,
+              ),
+        bottomNavigationBar: kIsWeb
+            ? null
+            : CustomBottomNavBar(
+                selectedIndex: _selectedIndex,
+                onItemTapped: _onItemTapped,
+              ),
       ),
+
     );
   }
 }
 
+// Helper widget to rebuild when two ValueListenables change.
 class ValueListenableBuilder2<A, B> extends StatelessWidget {
   final ValueListenable<A> first;
   final ValueListenable<B> second;

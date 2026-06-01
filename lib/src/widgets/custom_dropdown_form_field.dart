@@ -10,6 +10,11 @@ class CustomDropdownFormField<T> extends StatelessWidget {
   final List<DropdownMenuItem<T>> items;
   final ValueChanged<T?>? onChanged;
   final FormFieldValidator<T>? validator;
+  final Color? fillColor;
+  final Icon? prefixIcon;
+  final TextStyle? style;
+  final Color? dropdownColor;
+  final InputDecoration? decoration;
 
   const CustomDropdownFormField({
     super.key,
@@ -20,6 +25,11 @@ class CustomDropdownFormField<T> extends StatelessWidget {
     required this.items,
     required this.onChanged,
     this.validator,
+    this.fillColor,
+    this.prefixIcon,
+    this.style,
+    this.dropdownColor,
+    this.decoration,
   });
 
   @override
@@ -27,18 +37,31 @@ class CustomDropdownFormField<T> extends StatelessWidget {
     return DropdownButtonFormField2<T>(
       isExpanded: true,
       value: value,
-      decoration: context.inputDecoration(label, hint, enable: enabled),
+      decoration: decoration ??
+          context.inputDecoration(label, hint, enable: enabled).copyWith(
+                fillColor: fillColor,
+                filled: fillColor != null,
+                prefixIcon: prefixIcon,
+              ),
       items: items,
       onChanged: enabled ? onChanged : null,
       validator: validator,
+      style: style,
       dropdownStyleData: DropdownStyleData(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(14),
+          color: dropdownColor,
         ),
         scrollbarTheme: ScrollbarThemeData(
           radius: const Radius.circular(40),
           thickness: WidgetStateProperty.all(6),
           thumbVisibility: WidgetStateProperty.all(true),
+        ),
+      ),
+      iconStyleData: const IconStyleData(
+        icon: Icon(
+          Icons.keyboard_arrow_down,
+          color: Colors.grey,
         ),
       ),
     );

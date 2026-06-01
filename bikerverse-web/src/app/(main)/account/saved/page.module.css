@@ -1,0 +1,118 @@
+.page {
+  padding: 40px 32px 80px;
+  color: var(--bv-text);
+}
+
+.heading {
+  font-family: var(--font-archivo-narrow);
+  font-weight: 800;
+  font-size: 48px;
+  letter-spacing: -0.025em;
+  text-transform: uppercase;
+  margin: 0 0 24px;
+  line-height: 1;
+}
+
+.green {
+  color: var(--bv-green);
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--bv-border);
+  margin-bottom: 28px;
+}
+
+.tab {
+  all: unset;
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bv-text-3);
+  padding: 10px 20px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.tab:hover {
+  color: var(--bv-text);
+}
+
+.tabActive {
+  color: var(--bv-text);
+  border-bottom-color: var(--bv-green);
+}
+
+/* Empty state */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 64px 0;
+}
+
+.emptyMsg {
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 15px;
+  color: var(--bv-text-3);
+  margin: 0;
+}
+
+/* Products grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 24px;
+}
+
+.cardWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Unsave row */
+.unsaveRow {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.unsaveBtn {
+  all: unset;
+  font-size: 16px;
+  line-height: 1;
+  color: #EF4444;
+  cursor: pointer;
+  padding: 2px 4px;
+  transition: transform 0.15s;
+}
+
+.unsaveBtn:hover {
+  transform: scale(1.2);
+}
+
+/* Services list */
+.serviceList {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.serviceWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--bv-border);
+}
+
+.serviceWrap:last-child {
+  border-bottom: none;
+}

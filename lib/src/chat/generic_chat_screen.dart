@@ -1,7 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:popp/src/toolbar/common_app_bar.dart';
+import 'package:popp/src/utils/build_extensions.dart';
 import '../utils/app_loger.dart';
+import 'active_chat_provider.dart';
 import 'chat_bubble.dart';
 import 'chat_service.dart';
 
@@ -9,6 +12,8 @@ import 'chat_service.dart';
 class GenericChatScreen extends StatefulWidget {
   final String receiverUserName;
   final String receiverUserID;
+  final String productId;
+  final String productTitle;
   final String chatType; // 'user_to_user' or 'agent_user'
   final String? agentId; // Required if chatType is 'agent_user'
 
@@ -17,9 +22,11 @@ class GenericChatScreen extends StatefulWidget {
     required this.receiverUserName,
     required this.receiverUserID,
     required this.chatType,
+    required this.productId,
+    required this.productTitle,
     this.agentId,
   }) : assert(chatType == 'user_to_user' ||
-      (chatType == 'agent_user' && agentId != null));
+            (chatType == 'agent_user' && agentId != null));
 
   @override
   State<GenericChatScreen> createState() => _GenericChatScreenState();
@@ -30,10 +37,12 @@ class _GenericChatScreenState extends State<GenericChatScreen> {
   final ChatService _chatService = ChatService();
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   final ScrollController _scrollController = ScrollController();
+  late String _currentChatRoomId;
 
   @override
   void initState() {
     super.initState();
+    _determineChatRoomId();
     // Set up the message listener immediately if a user is authenticated
     if (_firebaseAuth.currentUser != null) {
       _setupMessageListener();
@@ -41,10 +50,36 @@ class _GenericChatScreenState extends State<GenericChatScreen> {
       AppLogger.e("ChatScreen initialized without an authenticated user.");
       // You might want to navigate back or show an error here
     }
+
+    // Set active chat room for notifications
+    ActiveChatProvider.setActiveChat(_currentChatRoomId);
+  }
+
+  void _determineChatRoomId() {
+    final currentUser = _firebaseAuth.currentUser;
+    if (currentUser == null) {
+      _currentChatRoomId = '';
+      return;
+    }
+
+    if (widget.chatType == 'user_to_user') {
+      List<String> ids = [
+        currentUser.uid,
+        widget.receiverUserID,
+        widget.productId
+      ];
+      ids.sort();
+      _currentChatRoomId = ids.join("_");
+    } else {
+      List<String> ids = [widget.receiverUserID, widget.agentId!];
+      ids.sort();
+      _currentChatRoomId = ids.join("_");
+    }
   }
 
   @override
   void dispose() {
+    ActiveChatProvider.clearActiveChat();
     _messageController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -61,9 +96,7 @@ class _GenericChatScreenState extends State<GenericChatScreen> {
     Stream<QuerySnapshot> messageStream;
     if (widget.chatType == 'user_to_user') {
       messageStream = _chatService.getUserToUserMessages(
-        currentUser.uid,
-        widget.receiverUserID,
-      );
+          currentUser.uid, widget.receiverUserID, widget.productId);
     } else {
       // 'agent_user'
       messageStream = _chatService.getAgentUserMessages(
@@ -74,10 +107,28 @@ class _GenericChatScreenState extends State<GenericChatScreen> {
 
     // Listen to the stream to automatically scroll to the bottom when new messages arrive
     messageStream.listen((snapshot) {
+      String otherUserId = widget.receiverUserID;
+      if (widget.chatType == 'agent_user') {
+        // If current user is the agent, other user is receiverUserID.
+        // If current user is the regular user, other user is agentId.
+        if (currentUser.uid == widget.agentId) {
+          otherUserId = widget.receiverUserID;
+        } else {
+          otherUserId = widget.agentId!;
+        }
+      }
+
+      _chatService.markChatAsRead(
+        currentUser.uid,
+        otherUserId,
+        productId: widget.productId,
+        chatType: widget.chatType,
+      );
+
       if (_scrollController.hasClients) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _scrollController.animateTo(
-            _scrollController.position.maxScrollExtent,
+            0.0,
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeOut,
           );
@@ -89,7 +140,7 @@ class _GenericChatScreenState extends State<GenericChatScreen> {
   void sendMessage() async {
     final User? currentUser = _firebaseAuth.currentUser;
     if (currentUser == null) {
-      AppLogger.e("User not logged in. Cannot send message.");
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please log in to send messages.')),
       );
@@ -97,37 +148,57 @@ class _GenericChatScreenState extends State<GenericChatScreen> {
     }
 
     if (_messageController.text.trim().isNotEmpty) {
+      final message = _messageController.text.trim();
+
+      // Clear the text field immediately for a snappy UX
+      _messageController.clear();
+      AppLogger.d("Message controller cleared instantly.");
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          0.0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+
       try {
         if (widget.chatType == 'user_to_user') {
-          await _chatService.sendUserToUserMessage(
+          // Do not await, let it run in the background
+          _chatService
+              .sendUserToUserMessage(
             widget.receiverUserID,
-            _messageController.text.trim(),
-          );
+            message,
+            widget.productId,
+            widget.productTitle,
+          )
+              .catchError((e) {
+            AppLogger.e("Background error sending U2U message: $e");
+            // Optional: Provide offline/retry feedback here if it fails critically
+          });
+          AppLogger.d("Dispatched user-to-user message.");
         } else {
           // 'agent_user'
-          // When sending an agent-user message, receiverUserID is the OTHER party's ID
-          // The agentId needs to be consistent for the chat room.
-          await _chatService.sendAgentUserMessage(
+          _chatService
+              .sendAgentUserMessage(
             widget.agentId!, // The fixed agent ID
             widget.receiverUserID,
             // The fixed user ID (even if agent is current sender)
-            _messageController.text.trim(),
-          );
+            message,
+          )
+              .catchError((e) {
+            AppLogger.e("Background error sending Agent message: $e");
+          });
+          AppLogger.d("Dispatched agent-user message.");
         }
-        _messageController.clear();
-        if (_scrollController.hasClients) {
-          _scrollController.animateTo(
-            _scrollController.position.maxScrollExtent,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOut,
-          );
-        }
-      } catch (e) {
-        AppLogger.e("Error sending message: $e");
+      } catch (e, stack) {
+        AppLogger.e("Error dispatching message: $e", stack);
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to send message: ${e.toString()}')),
         );
       }
+    } else {
+      AppLogger.w("Attempted to send an empty message.");
     }
   }
 
@@ -141,37 +212,28 @@ class _GenericChatScreenState extends State<GenericChatScreen> {
         ),
       );
     }
-
+    final title = widget.productTitle.isNotEmpty
+        ? widget.productTitle
+        : widget.receiverUserName;
     return Scaffold(
+      appBar: CommonAppBar(
+        titleWidget: Text(
+          title,
+          style: Theme.of(context)
+              .textTheme
+              .bodyMedium
+              ?.copyWith(fontWeight: FontWeight.bold),
+          maxLines: 2,
+        ),
+        centerTitle: true,
+      ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16.0, 40.0, 16.0, 8.0),
-            child: Row(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.arrow_back),
-                  onPressed: () => Navigator.pop(context),
-                ),
-                Expanded(
-                  child: Text(
-                    widget.receiverUserName,
-                    style: Theme.of(context)
-                        .textTheme
-                        .headlineSmall
-                        ?.copyWith(fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                const SizedBox(width: 48), // Spacer to balance the back button
-              ],
-            ),
-          ),
           Expanded(
             child: _buildMessageList(),
           ),
           _buildMessageInput(),
-          const SizedBox(height: 25), // Padding at the bottom
+          const SizedBox(height: 35), // Padding at the bottom
         ],
       ),
     );
@@ -186,9 +248,7 @@ class _GenericChatScreenState extends State<GenericChatScreen> {
     Stream<QuerySnapshot> messageStream;
     if (widget.chatType == 'user_to_user') {
       messageStream = _chatService.getUserToUserMessages(
-        currentUser.uid,
-        widget.receiverUserID,
-      );
+          currentUser.uid, widget.receiverUserID, widget.productId);
     } else {
       // 'agent_user'
       messageStream = _chatService.getAgentUserMessages(
@@ -213,9 +273,9 @@ class _GenericChatScreenState extends State<GenericChatScreen> {
 
         return ListView(
           controller: _scrollController,
-          reverse: false, // Messages are typically displayed bottom-up, so reverse is often true
+          reverse: true,
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-          children: snapshot.data!.docs
+          children: snapshot.data!.docs.reversed
               .map((document) => _buildMessageItem(document))
               .toList(),
         );
@@ -228,14 +288,14 @@ class _GenericChatScreenState extends State<GenericChatScreen> {
     final User? currentUser = _firebaseAuth.currentUser;
 
     bool isCurrentUser =
-    (currentUser != null && data['senderId'] == currentUser.uid);
+        (currentUser != null && data['senderId'] == currentUser.uid);
 
     return Container(
       alignment: isCurrentUser ? Alignment.centerRight : Alignment.centerLeft,
       margin: const EdgeInsets.symmetric(vertical: 4),
       child: Column(
         crossAxisAlignment:
-        isCurrentUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+            isCurrentUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
           Text(
             data['senderEmail'] ?? 'Unknown User', // Display sender's email
@@ -271,7 +331,7 @@ class _GenericChatScreenState extends State<GenericChatScreen> {
                 ),
                 filled: true,
                 contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 20.0, vertical: 10.0),
+                    horizontal: 20.0, vertical: 20.0),
               ),
               obscureText: false,
               maxLines: null,
@@ -281,8 +341,7 @@ class _GenericChatScreenState extends State<GenericChatScreen> {
           const SizedBox(width: 8),
           FloatingActionButton(
             onPressed: sendMessage,
-            mini: true,
-            backgroundColor: Colors.orange,
+            backgroundColor: context.primaryColor,
             child: const Icon(Icons.send, color: Colors.white),
           )
         ],

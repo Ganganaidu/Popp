@@ -1,0 +1,115 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:shimmer/shimmer.dart';
+
+import '../services/service_category_list_widget.dart';
+import 'viewmodel/service_viewmodel.dart';
+
+class ServiceListDashboardScreen extends StatefulWidget {
+  const ServiceListDashboardScreen({super.key});
+
+  @override
+  State<ServiceListDashboardScreen> createState() => _ServiceListDashboardScreenState();
+}
+
+class _ServiceListDashboardScreenState extends State<ServiceListDashboardScreen> {
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<ServiceViewModel>(
+      builder: (context, viewModel, _) {
+
+        if (viewModel.isLoading) {
+          return _shimmerLoading();
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: viewModel.categories
+              .map((category) => ServiceCategoryListWidget(
+                    categoryName: category.name,
+                    services: category.products ?? [],
+                  ))
+              .toList(),
+        );
+      },
+    );
+  }
+
+  Widget _buildMessageWidget({
+    required IconData icon,
+    required String title,
+    required String message,
+  }) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 48.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 72, color: Colors.grey[500]),
+            const SizedBox(height: 20),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              message,
+              style: const TextStyle(
+                fontSize: 16,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _shimmerLoading() {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final base = isDarkMode ? Colors.grey[800]! : Colors.grey[300]!;
+    final highlight = isDarkMode ? Colors.grey[700]! : Colors.grey[100]!;
+    final blockColor = isDarkMode ? Colors.grey[850]! : Colors.white;
+    return SizedBox(
+      height: 200,
+      child: ListView.separated(
+        padding: const EdgeInsets.all(16.0),
+        itemCount: 5,
+        separatorBuilder: (context, index) => const SizedBox(height: 12),
+        itemBuilder: (context, index) {
+          return Shimmer.fromColors(
+            baseColor: base,
+            highlightColor: highlight,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Row(
+                children: [
+                  Container(width: 60, height: 60, color: blockColor),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                            height: 16,
+                            width: double.infinity,
+                            color: blockColor),
+                        const SizedBox(height: 8),
+                        Container(height: 14, width: 150, color: blockColor),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}

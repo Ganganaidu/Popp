@@ -5,7 +5,11 @@ class ChatMessage {
   final String senderEmail;
   final String receiverId;
   final String message;
+  final String productId;
+  final String productTitle;
   final Timestamp timestamp;
+
+  final bool isRead;
 
   ChatMessage({
     required this.senderId,
@@ -13,6 +17,9 @@ class ChatMessage {
     required this.receiverId,
     required this.message,
     required this.timestamp,
+    required this.productId,
+    required this.productTitle,
+    this.isRead = false,
   });
 
   // Convert to a map
@@ -23,6 +30,9 @@ class ChatMessage {
       'receiverId': receiverId,
       'message': message,
       'timestamp': timestamp,
+      'productId': productId,
+      'productTitle': productTitle,
+      'isRead': isRead,
     };
   }
 }

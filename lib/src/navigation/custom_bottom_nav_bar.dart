@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:popp/src/utils/build_extensions.dart';
+import 'package:provider/provider.dart';
+import '../chat/chat_service.dart';
 import '../utils/app_constants.dart';
+import '../theme/bikerverse_colors.dart';
 
 class CustomBottomNavBar extends StatelessWidget {
   final int selectedIndex;
@@ -13,23 +17,36 @@ class CustomBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Stack(
       alignment: Alignment.bottomCenter,
       children: [
         Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
+            color: isDarkMode ? BikerverseColors.background : Colors.grey[50],
+            border: Border(
+              top: BorderSide(
+                color:
+                    isDarkMode ? BikerverseColors.outline : Colors.grey.shade300,
+              ),
+            ),
             boxShadow: [
-              BoxShadow(color: Colors.black12, blurRadius: 5),
+              BoxShadow(
+                color: Colors.black.withOpacity(0.35),
+                blurRadius: 24,
+                offset: const Offset(0, -6),
+              ),
             ],
           ),
-          padding: const EdgeInsets.only(bottom: 5),
+          padding: const EdgeInsets.only(bottom: 6, top: 4),
           child: BottomNavigationBar(
             type: BottomNavigationBarType.fixed,
             backgroundColor: Colors.transparent,
             elevation: 0,
             currentIndex: selectedIndex,
-            selectedItemColor: Colors.orange,
-            unselectedItemColor: Colors.grey,
+            selectedItemColor: context.primaryColor,
+            unselectedItemColor:
+                isDarkMode ? BikerverseColors.textMuted : Colors.grey,
             onTap: onItemTapped,
             showSelectedLabels: true,
             showUnselectedLabels: true,
@@ -43,32 +60,36 @@ class CustomBottomNavBar extends StatelessWidget {
               BottomNavigationBarItem(
                 icon: Icon(
                   selectedIndex == 1
-                      ? Icons.two_wheeler
-                      : Icons.two_wheeler_outlined,
-                ),
-                label: Constants.rides,
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(
-                  selectedIndex == 1
                       ? Icons.search_sharp
                       : Icons.search_outlined,
                 ),
                 label: Constants.explore,
               ),
               BottomNavigationBarItem(
-                icon: Icon(
-                  selectedIndex == 3 ? Icons.map : Icons.map_outlined,
+                icon: StreamBuilder<int>(
+                  stream: context.read<ChatService>().totalUnreadCountStream,
+                  builder: (context, snapshot) {
+                    final int count = snapshot.data ?? 0;
+                    return Badge(
+                      isLabelVisible: count > 0,
+                      label: Text('$count'),
+                      child: Icon(
+                        selectedIndex == 2
+                            ? Icons.chat_bubble_outlined
+                            : Icons.chat_bubble_outline,
+                      ),
+                    );
+                  },
                 ),
-                label: Constants.routes,
+                label: Constants.chat,
               ),
               BottomNavigationBarItem(
                 icon: Icon(
-                  selectedIndex == 2
-                      ? Icons.help_center_rounded
-                      : Icons.help_center_outlined,
+                  selectedIndex == 3
+                      ? Icons.settings
+                      : Icons.settings_outlined,
                 ),
-                label: Constants.help,
+                label: Constants.settings,
               ),
             ],
           ),

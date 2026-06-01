@@ -1,0 +1,118 @@
+/*
+ * Bikerverse Design Tokens
+ * Single source of truth for both dark (default) and light themes.
+ * All values sourced directly from the design handoff README §6.1 and bv-screens.jsx.
+ *
+ * Usage:  var(--bv-green)   var(--bv-surface)   etc.
+ * Theme toggle: set data-theme="light" on <html> element.
+ */
+
+/* ─── Dark theme (default) ─────────────────────────────────────────────────── */
+:root {
+  /* Surfaces */
+  --bv-bg:          #0B0B0C;
+  --bv-surface:     #131418;
+  --bv-surface-hi:  #1B1D23;
+  --bv-surface-lo:  #0F1013;
+
+  /* Borders */
+  --bv-border:      rgba(255, 255, 255, 0.07);
+  --bv-border-hi:   rgba(255, 255, 255, 0.14);
+
+  /* Text */
+  --bv-text:        #F4F4F2;
+  --bv-text-2:      rgba(244, 244, 242, 0.62);
+  --bv-text-3:      rgba(244, 244, 242, 0.40);
+  --bv-text-4:      rgba(244, 244, 242, 0.25);
+
+  /* Brand green — lime signal */
+  --bv-green:       #4DE57E;
+  --bv-green-hi:    #7BEF9C;
+  --bv-green-lo:    #2FC764;
+  --bv-green-ink:   #062014;        /* text ON green */
+  --bv-green-soft:  rgba(77, 229, 126, 0.10);   /* chip bg */
+  --bv-green-line:  rgba(77, 229, 126, 0.32);   /* chip border */
+
+  /* Ember — reserved for status badges only */
+  --bv-ember:       #FF7A3D;
+
+  /* Overlays & shadows */
+  --bv-overlay:         rgba(11, 11, 12, 0.70);
+  --bv-modal-shadow:    0 40px 100px rgba(0, 0, 0, 0.60);
+  --bv-card-shadow:     0 20px 50px  rgba(0, 0, 0, 0.50);
+  --bv-dot-rest:        rgba(255, 255, 255, 0.20);
+
+  /* Slot (image placeholder) */
+  --bv-slot-bg:         #1A1C22;
+  --bv-slot-stripe-1:   rgba(255, 255, 255, 0.04);
+  --bv-slot-stripe-2:   rgba(255, 255, 255, 0.015);
+  --bv-slot-text:       rgba(244, 244, 242, 0.40);
+}
+
+/* ─── Light theme ───────────────────────────────────────────────────────────── */
+[data-theme="light"] {
+  /* Surfaces — warm bone */
+  --bv-bg:          #F6F4EE;
+  --bv-surface:     #FFFFFF;
+  --bv-surface-hi:  #ECE8DE;
+  --bv-surface-lo:  #EFEBE3;
+
+  /* Borders */
+  --bv-border:      rgba(15, 15, 12, 0.10);
+  --bv-border-hi:   rgba(15, 15, 12, 0.22);
+
+  /* Text */
+  --bv-text:        #0B0B0C;
+  --bv-text-2:      rgba(11, 11, 12, 0.66);
+  --bv-text-3:      rgba(11, 11, 12, 0.46);
+  --bv-text-4:      rgba(11, 11, 12, 0.26);
+
+  /* Brand green — deeper for light bg contrast */
+  --bv-green:       #1FAE5C;
+  --bv-green-hi:    #3DC777;
+  --bv-green-lo:    #16894A;
+  --bv-green-ink:   #FFFFFF;
+  --bv-green-soft:  rgba(31, 174, 92, 0.12);
+  --bv-green-line:  rgba(31, 174, 92, 0.40);
+
+  /* Ember */
+  --bv-ember:       #E55A1C;
+
+  /* Overlays & shadows */
+  --bv-overlay:         rgba(255, 255, 255, 0.78);
+  --bv-modal-shadow:    0 40px 100px rgba(20, 18, 12, 0.18);
+  --bv-card-shadow:     0 20px 50px  rgba(20, 18, 12, 0.14);
+  --bv-dot-rest:        rgba(11, 11, 12, 0.18);
+
+  /* Slot */
+  --bv-slot-bg:         #E6E2D6;
+  --bv-slot-stripe-1:   rgba(0, 0, 0, 0.06);
+  --bv-slot-stripe-2:   rgba(0, 0, 0, 0.02);
+  --bv-slot-text:       rgba(0, 0, 0, 0.45);
+}
+
+/* ─── Spacing scale (px → custom props for convenience) ────────────────────── */
+:root {
+  --sp-1:  4px;
+  --sp-2:  8px;
+  --sp-3:  10px;
+  --sp-4:  12px;
+  --sp-5:  14px;
+  --sp-6:  16px;
+  --sp-7:  18px;
+  --sp-8:  20px;
+  --sp-9:  24px;
+  --sp-10: 28px;
+  --sp-11: 32px;
+  --sp-12: 36px;
+  --sp-13: 40px;
+  --sp-14: 48px;
+  --sp-15: 56px;
+  --sp-16: 72px;
+  --sp-17: 80px;
+}
+
+/* ─── Border radius ─────────────────────────────────────────────────────────── */
+:root {
+  --bv-radius: 2px;   /* ALL elements — sharp technical brand */
+}

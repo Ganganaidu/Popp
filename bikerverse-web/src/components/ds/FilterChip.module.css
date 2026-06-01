@@ -1,0 +1,46 @@
+.chip {
+  height: 34px;
+  padding: 0 14px;
+  background: transparent;
+  border: 1px solid var(--bv-border);
+  border-radius: var(--bv-radius);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+  white-space: nowrap;
+}
+
+.chip:hover {
+  background: var(--bv-surface-hi);
+}
+
+/* Active — green-tinted */
+.active {
+  background: var(--bv-green-soft);
+  border-color: var(--bv-green-line);
+}
+
+.active:hover {
+  background: var(--bv-green-soft);
+}
+
+.label {
+  font-family: var(--font-jetbrains-mono), 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--bv-text-3);
+}
+
+.value {
+  font-family: var(--font-archivo), system-ui, sans-serif;
+  font-size: 13px;
+  color: var(--bv-text);
+  transition: color 0.15s ease;
+}
+
+.active .value {
+  color: var(--bv-green);
+}

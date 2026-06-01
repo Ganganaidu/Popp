@@ -1,8 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:popp/src/utils/app_constants.dart';
 
+import '../api/api_url.dart';
+import 'package:popp/src/toolbar/common_app_bar.dart';
+import '../widgets/title_text.dart';
+import 'package:popp/src/widgets/web_constrained_box.dart';
 import 'list_grid_view.dart';
 
 class MyListingsScreen extends StatefulWidget {
@@ -34,8 +37,9 @@ class _MyListingsScreenState extends State<MyListingsScreen>
 
     if (user == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text("My Listings")),
-        body: Center(
+        appBar: const CommonAppBar(titleWidget: TitleText("My Listings")),
+        body: WebConstrainedBox(
+          child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -44,23 +48,24 @@ class _MyListingsScreenState extends State<MyListingsScreen>
               ElevatedButton(
                 onPressed: () => Navigator.pushNamed(context, '/login'),
                 style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
+                    backgroundColor: Colors.green,
                     foregroundColor: Colors.white),
                 child: const Text("Login"),
               )
             ],
           ),
         ),
+        ),
       );
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("My Listings"),
+      appBar: CommonAppBar(
+        titleWidget: const TitleText("My Listings"),
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: Colors.orange,
-          labelColor: Colors.orange,
+          indicatorColor: Colors.green,
+          labelColor: Colors.green,
           unselectedLabelColor: Colors.grey,
           tabs: const [
             Tab(icon: Icon(Icons.storefront), text: "Products"),
@@ -68,24 +73,26 @@ class _MyListingsScreenState extends State<MyListingsScreen>
           ],
         ),
       ),
-      body: TabBarView(
+      body: WebConstrainedBox(
+        child: TabBarView(
         controller: _tabController,
         children: [
           // Using the reusable widget for Products
           ListingsGridView(
             query: FirebaseFirestore.instance
-                .collection(Constants.productsPath)
+                .collection(ApiUrl.productsPath)
                 .where('userId', isEqualTo: user.uid),
             showOptionsMenu: true, // Show edit/delete options
           ),
           // Using the reusable widget for Services
           ListingsGridView(
             query: FirebaseFirestore.instance
-                .collection(Constants.servicePath)
+                .collection(ApiUrl.servicePath)
                 .where('userId', isEqualTo: user.uid),
             showOptionsMenu: true, // Show edit/delete options
           ),
         ],
+      ),
       ),
     );
   }

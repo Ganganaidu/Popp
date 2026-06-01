@@ -1,15 +1,22 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:popp/src/utils/app_loger.dart';
-import 'package:popp/src/utils/build_extensions.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher_string.dart';
-import 'package:shimmer/shimmer.dart';
 
-import '../../firebase/firebase_api_service.dart';
+import '../../admin/admin_notification_service.dart';
+import '../../api/api_url.dart';
+import '../../api/firebase/firebase_api_service.dart';
+import '../../chat/chat_with_seller_card.dart';
+import '../../toolbar/AppBarIconButton.dart';
 import '../../utils/app_constants.dart';
-import '../../utils/product_content_data.dart';
-import '../../widgets/chat_with_user_widget.dart';
+import '../../utils/product_utils.dart';
+import '../../widgets/app_dialogs.dart';
+import '../../widgets/app_network_image.dart';
+import '../../widgets/full_screen_image_screen.dart';
+import 'list_service_form_screen.dart';
 
 class ServiceDetailScreen extends StatefulWidget {
   final Map<String, dynamic> serviceData;
@@ -27,8 +34,10 @@ class ServiceDetailScreen extends StatefulWidget {
 
 class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
   late bool _isApproved;
+  bool _isSold = false;
+  String _status = 'Pending';
   int _selectedImageIndex = 0;
-  bool _isFav = false; // Track favorite state
+  bool _isFav = false;
   bool _favButtonDisabled = false;
   final FirebaseApiService _firebaseApiService = FirebaseApiService();
 
@@ -36,6 +45,19 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
   void initState() {
     super.initState();
     _isApproved = widget.serviceData['isApproved'] == true;
+    _isSold = widget.serviceData['isSold'] == true || widget.serviceData['status'] == 'Sold';
+    final docStatus = widget.serviceData['status'] as String?;
+    if (_isSold) {
+      _status = 'Sold';
+    } else if (_isApproved) {
+      _status = 'Approved';
+    } else if (docStatus == 'sent_back') {
+      _status = 'Sent Back';
+    } else if (docStatus == 'rejected') {
+      _status = 'Rejected';
+    } else {
+      _status = 'Pending';
+    }
     final favoritedBy = widget.serviceData['favoritedBy'] as List<dynamic>?;
     final currentUser = FirebaseAuth.instance.currentUser;
     if (favoritedBy != null && currentUser != null) {
@@ -52,7 +74,8 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     });
     final prev = _isFav;
     final result = await _firebaseApiService.toggleFavoriteProduct(
-        Constants.servicePath, widget.serviceData['id']);
+        ApiUrl.servicePath, widget.serviceData['id']);
+    if (!mounted) return;
     setState(() {
       _favButtonDisabled = false;
       if (!result) {
@@ -69,85 +92,100 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
         'an amazing service';
 
     // This is your deep link. Ensure your domain is correct.
-    final String deepLink = "${Constants.servicePath}/$serviceId";
+    final String deepLink = "${ApiUrl.servicePath}/$serviceId";
 
-    final String shareText = "Check out $serviceName on POPP! $deepLink";
+    final String shareText = "Check out $serviceName on Bikerverse! $deepLink";
     AppLogger.i("shareText $shareText");
-    Share.share(shareText, subject: 'Check out this service!');
+    SharePlus.instance.share(ShareParams(text: shareText));
   }
 
   @override
   Widget build(BuildContext context) {
     final isAdmin =
         FirebaseAuth.instance.currentUser?.uid == Constants.adminUserId;
-    String appBarTitle = widget.category;
-    if (appBarTitle.contains("Track")) {
-      appBarTitle = "Track and Training day";
-    }
+    AppLogger.d("isAdmin $isAdmin and isApproved $_isApproved");
+    // String appBarTitle = ProductUtils.getServiceAppBarTitle(widget.category);
     return Scaffold(
-      appBar: AppBar(
-        title: Text(appBarTitle),
-        automaticallyImplyLeading: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.share),
-            onPressed: _shareService,
-            tooltip: 'Share Service',
+      body: _buildBody(context),
+      bottomNavigationBar: _buildServiceBottomBar(isAdmin),
+    );
+  }
+  Widget _buildDetailRow(BuildContext context, String label, String value) {
+    IconData? icon;
+    VoidCallback? onTap;
+    bool isLink = false;
+
+    if (label.toLowerCase().contains('address') ||
+        label.toLowerCase().contains('map')) {
+      icon = Icons.map;
+      isLink = true;
+      onTap = () {
+        launchUrlString(value, mode: LaunchMode.externalApplication);
+      };
+    } else if (label.toLowerCase().contains('phone') ||
+        label.toLowerCase() == 'business contact') {
+      icon = Icons.phone;
+      isLink = true;
+      onTap = () => launchUrlString('tel:$value');
+    } else if (label.toLowerCase().contains('link') ||
+        value.startsWith('http')) {
+      icon = Icons.link;
+      isLink = true;
+      onTap =
+          () => launchUrlString(value, mode: LaunchMode.externalApplication);
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 2,
+            child: Text(label,
+                style: const TextStyle(
+                    color: Colors.grey,
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold)),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            flex: 3,
+            child: GestureDetector(
+              onTap: onTap,
+              child: Row(
+                children: [
+                  Expanded(
+                      child: Text(value,
+                          style: TextStyle(
+                              color: isLink ? Colors.blue : Colors.white,
+                              fontSize: 13,
+                              decoration:
+                                  isLink ? TextDecoration.underline : null))),
+                  if (icon != null) ...[
+                    const SizedBox(width: 4),
+                    Icon(icon,
+                        color: isLink ? Colors.blue : Colors.grey, size: 14)
+                  ]
+                ],
+              ),
+            ),
           ),
         ],
       ),
-      body: _buildBody(context),
-      bottomNavigationBar: isAdmin && !_isApproved
-          ? SafeArea(
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          _isApproved ? Colors.green : Colors.orange,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    onPressed: _isApproved
-                        ? null
-                        : () async {
-                            final serviceId = widget.serviceData['id'] ?? '';
-                            if (serviceId != '') {
-                              await FirebaseApiService()
-                                  .updateServiceApprovalStatus(serviceId, true);
-                              setState(() {
-                                _isApproved = true;
-                              });
-                              if (_isApproved) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'Product approved successfully!',
-                                    ),
-                                    duration: Duration(seconds: 2),
-                                  ),
-                                );
-                              }
-                            }
-                          },
-                    child: Text(_isApproved ? 'Approved' : 'Approve'),
-                  ),
-                ),
-              ),
-            )
-          : null,
     );
   }
 
+  // Web breadcrumb: back arrow + clickable path segments
   Widget _buildBody(BuildContext context) {
     final serviceData = widget.serviceData;
     final category = widget.category;
+    final isAdmin =
+        FirebaseAuth.instance.currentUser?.uid == Constants.adminUserId;
+    final currentUid = FirebaseAuth.instance.currentUser?.uid;
+    final isOwner = !isAdmin && serviceData['userId'] == currentUid;
 
+    // Prepare images
     List<String> allImageUrls = [];
     List<dynamic>? promoImages;
 
@@ -156,9 +194,8 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     } else if (serviceData['promoImageUrls'] is String &&
         (serviceData['promoImageUrls'] as String).isNotEmpty) {
       promoImages = [(serviceData['promoImageUrls'] as String)];
-    } else {
-      promoImages = null;
     }
+
     List<dynamic>? shopGarageImages = serviceData['shopImageUrls'] is List
         ? serviceData['shopImageUrls'] as List<dynamic>?
         : null;
@@ -170,13 +207,10 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
       allImageUrls.addAll(shopGarageImages.cast<String>());
     }
 
+    // Prepare Data
     String title = serviceData['businessTitle'] ??
         serviceData['eventName'] ??
         'Service Details';
-    String status = serviceData['status'] ?? 'N/A';
-    String dateTimeInfo = 'N/A';
-    String locationInfo = 'N/A';
-    String capacityInfo = 'N/A';
     String description = serviceData['businessDescription'] ??
         serviceData['eventDetailedDescription'] ??
         'No description available.';
@@ -187,443 +221,984 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     }
     String userId = (serviceData['userId'] ?? '') as String;
 
-    Map<String, String> eventDetails = {};
-    Map<String, String> bikeRentalDetails = {};
+    // Data for Highlights & Details
+    String city = serviceData['city'] ?? 'N/A';
+    String state = serviceData['state'] ?? '';
+    String status = serviceData['status'] ?? 'Open';
 
-    final isBikeRentalCategory = (category == serviceCategories[0] ||
-        category == serviceCategories[1] ||
-        category == Constants.premiumInspection);
-    final isTrackOrTrainingDay = (category == serviceCategories[2] ||
-        category == serviceCategories[3] ||
-        category == [serviceCategories[2], serviceCategories[3]].join(','));
+    // Address & Hours
+    String fullAddress = 'N/A';
+    String hoursInfo = 'N/A';
+    String closedDaysInfo = '';
+
+    final isBikeRentalCategory =
+        (ProductUtils.isBikeAndOthersCategory(category));
+    final isTrackOrTrainingDay =
+        (ProductUtils.isTrackAndTrainingCategory(category));
 
     if (isBikeRentalCategory) {
-      locationInfo =
-          '${serviceData['businessAddress'] ?? ''}, ${serviceData['city'] ?? ''}, ${serviceData['state'] ?? ''}';
-      dateTimeInfo = serviceData['businessWorkingDaysHours'] ?? 'N/A';
-      final bikeFields = {
-        'GST Number': serviceData['gstNumber']?.toString(),
-        'PAN Number': serviceData['panNumber']?.toString(),
-        'Business Address': serviceData['businessAddress']?.toString(),
-        'Area': serviceData['area']?.toString(),
-        'City': serviceData['city']?.toString(),
-        'State': serviceData['state']?.toString(),
-        'Pincode': serviceData['pincode']?.toString(),
-        'Do You Inspect Premium Bikes':
-            serviceData['doYouInspectPremiumBikes']?.toString(),
-        'Google Map Link': serviceData['googleMapLink']?.toString(),
-        'Social Media Link': serviceData['socialMediaLink']?.toString(),
-        'Business Working Days/Hours':
-            serviceData['businessWorkingDaysHours']?.toString(),
-      };
-      bikeFields.forEach((key, value) {
-        if (value != null && value.trim().isNotEmpty && value != 'N/A') {
-          bikeRentalDetails[key] = value;
-        }
-      });
+      fullAddress = serviceData['businessAddress'] ??
+          serviceData['locationAddress'] ??
+          'N/A';
+
+      final rawHours = serviceData['businessWorkingDaysHours'] ?? 'N/A';
+      final parsed = _parseBusinessHours(rawHours);
+      hoursInfo = parsed['hours']!;
+      closedDaysInfo = parsed['closed']!;
     } else if (isTrackOrTrainingDay) {
-      locationInfo =
+      fullAddress =
           '${serviceData['locationAddress'] ?? ''}, ${serviceData['city'] ?? ''}, ${serviceData['state'] ?? ''}';
 
       String startDate = serviceData['eventStartDate'] != null
-          ? DateTime.parse(serviceData['eventStartDate'])
-              .toLocal()
-              .toIso8601String()
-              .split('T')[0]
-          : 'N/A';
-      String endDate = serviceData['eventEndDate'] != null
-          ? DateTime.parse(serviceData['eventEndDate'])
-              .toLocal()
-              .toIso8601String()
-              .split('T')[0]
-          : 'N/A';
-      String startTime = serviceData['eventStartTime'] ?? 'N/A';
-      String endTime = serviceData['eventEndTime'] ?? 'N/A';
+          ? DateFormat('d MMM yyyy')
+              .format(DateTime.parse(serviceData['eventStartDate']))
+          : '';
+      String startTime = serviceData['eventStartTime'] ?? '';
 
-      dateTimeInfo = '$startDate at $startTime - $endDate at $endTime';
+      if (startDate.isNotEmpty) {
+        hoursInfo = '$startDate, $startTime';
+      } else {
+        hoursInfo = serviceData['eventStartTime'] ?? 'N/A';
+      }
+      if (hoursInfo == 'N/A' || hoursInfo.trim().isEmpty) {
+        hoursInfo = 'Check details';
+      }
+    } else {
+      // Fallback
+      fullAddress =
+          serviceData['businessAddress'] ?? serviceData['address'] ?? 'N/A';
 
-      if (serviceData['maxSlots'] != null &&
-          serviceData['maxSlots'].isNotEmpty) {
-        capacityInfo = '${serviceData['maxSlots']} riders(Max slots)';
-      }
-
-      eventDetails = {
-        'Meeting Point': serviceData['locationName'] ?? 'N/A',
-        'Bike Type/Model': serviceData['bikeTypeModel'] ?? 'N/A',
-        'Bike Provision': serviceData['bikeProvision'] ?? 'N/A',
-        'Rider Skill Level': serviceData['riderSkillLevel'] ?? 'N/A',
-        'Max Slots': serviceData['maxSlots'] ?? 'N/A',
-      };
-      if (serviceData['pointOfContactName'] != null) {
-        eventDetails['Point of Contact'] = serviceData['pointOfContactName'];
-      }
-      if (serviceData['gstNumber'] != null && serviceData['gstNumber'] != '') {
-        eventDetails['GST #'] = serviceData['gstNumber'];
-      }
-      if (serviceData['panNumber'] != null && serviceData['panNumber'] != '') {
-        eventDetails['PAN #'] = serviceData['panNumber'];
-      }
-      if (serviceData['googleFormLink'] != null &&
-          serviceData['googleFormLink'] != '') {
-        eventDetails['Google Form/Redirect Link'] =
-            serviceData['googleFormLink'];
-      }
-      if (serviceData['socialMediaLink'] != null &&
-          serviceData['socialMediaLink'] != '') {
-        eventDetails['Social Media Link'] = serviceData['socialMediaLink'];
-      }
+      final rawHours = serviceData['workingHours'] ?? 'N/A';
+      final parsed = _parseBusinessHours(rawHours);
+      hoursInfo = parsed['hours']!;
+      closedDaysInfo = parsed['closed']!;
     }
 
-    return CustomScrollView(
-      slivers: [
-        SliverAppBar(
-          expandedHeight: 250.0,
-          floating: false,
-          pinned: true,
-          automaticallyImplyLeading: false,
-          flexibleSpace: FlexibleSpaceBar(
-            background: Stack(
-              fit: StackFit.expand,
-              children: [
-                Shimmer.fromColors(
-                  baseColor: Colors.grey[300]!,
-                  highlightColor: Colors.grey[100]!,
-                  child: Container(
-                    color: Colors.grey[300],
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    return Scaffold(
+      backgroundColor: const Color(0xFF121212), // Dark background
+      body: Stack(
+        children: [
+          CustomScrollView(
+            slivers: [
+              SliverAppBar(
+                backgroundColor: const Color(0xFF121212),
+                expandedHeight: screenHeight * 0.45,
+                pinned: true,
+                leading: Center(
+                  child: AppBarIconButton(
+                    icon: Icons.arrow_back,
+                    onTap: () => Navigator.of(context).pop(),
                   ),
                 ),
-                Image.network(
-                  allImageUrls.isNotEmpty
-                      ? allImageUrls[_selectedImageIndex]
-                      : Constants.defaultPlaceholderImage,
-                  fit: BoxFit.cover,
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return Shimmer.fromColors(
-                      baseColor: Colors.grey[300]!,
-                      highlightColor: Colors.grey[100]!,
-                      child: Container(
-                        color: Colors.grey[300],
-                      ),
-                    );
-                  },
-                  errorBuilder: (context, error, stackTrace) {
-                    return Image.network(
-                      Constants.defaultPlaceholderImage,
-                      fit: BoxFit.cover,
-                    );
-                  },
-                ),
-                Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black.withAlpha((0.7 * 255).toInt())
-                      ],
-                    ),
+                actions: [
+                  AppBarIconButton(
+                    icon: Icons.share,
+                    onTap: _shareService,
                   ),
-                ),
-                Positioned(
-                  top: 16,
-                  right: 16,
-                  child: CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Colors.white70,
-                    child: IconButton(
-                      iconSize: 25,
-                      icon: Icon(
-                        _isFav ? Icons.favorite : Icons.favorite_border,
-                        color: _isFav ? Colors.red : Colors.red,
-                      ),
-                      onPressed: _favButtonDisabled ? null : _toggleFavorite,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        if (allImageUrls.length > 1)
-          SliverToBoxAdapter(
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              child: SizedBox(
-                height: 80,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: allImageUrls.length,
-                  itemBuilder: (context, index) {
-                    String thumbUrl = allImageUrls[index];
-                    return GestureDetector(
+                  const SizedBox(width: 12),
+                  AppBarIconButton(
+                      icon: _isFav ? Icons.favorite : Icons.favorite_border,
                       onTap: () {
-                        setState(() {
-                          _selectedImageIndex = index;
-                        });
+                        if (!_favButtonDisabled) _toggleFavorite();
                       },
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8.0),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: _selectedImageIndex == index
-                                    ? Colors.orange
-                                    : Colors.transparent,
-                                width: 3,
-                              ),
-                            ),
-                            child: Stack(
-                              children: [
-                                Shimmer.fromColors(
-                                  baseColor: Colors.grey[300]!,
-                                  highlightColor: Colors.grey[100]!,
-                                  child: Container(
-                                    width: 80,
-                                    height: 80,
-                                    color: Colors.grey[300],
+                      iconColor: _isFav ? Colors.red : null),
+                  const SizedBox(width: 16),
+                ],
+                flexibleSpace: FlexibleSpaceBar(
+                  background: Stack(
+                    children: [
+                      if (allImageUrls.isNotEmpty)
+                        PageView.builder(
+                          itemCount: allImageUrls.length,
+                          onPageChanged: (index) {
+                            setState(() {
+                              _selectedImageIndex = index;
+                            });
+                          },
+                          itemBuilder: (context, index) {
+                            return GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    fullscreenDialog: true,
+                                    builder: (context) => FullScreenImageScreen(
+                                      imageUrls: allImageUrls,
+                                      initialIndex: index,
+                                    ),
                                   ),
-                                ),
-                                Image.network(
-                                  thumbUrl,
-                                  width: 80,
-                                  height: 80,
-                                  fit: BoxFit.cover,
-                                  loadingBuilder:
-                                      (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return Shimmer.fromColors(
-                                      baseColor: Colors.grey[300]!,
-                                      highlightColor: Colors.grey[100]!,
-                                      child: Container(
-                                        width: 80,
-                                        height: 80,
-                                        color: Colors.grey[300],
-                                      ),
-                                    );
-                                  },
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Container(
-                                      width: 80,
-                                      height: 80,
-                                      color: Colors.grey[300],
-                                      child: Icon(Icons.broken_image,
-                                          color: Colors.grey[600]),
-                                    );
-                                  },
-                                ),
+                                );
+                              },
+                              child: AppNetworkImage(
+                                imageUrl: allImageUrls[index],
+                                fit: BoxFit.cover,
+                                errorWidget: Container(color: Colors.grey[900]),
+                              ),
+                            );
+                          },
+                        )
+                      else
+                        Container(
+                          color: Colors.grey[900],
+                          child: const Center(
+                            child: Icon(Icons.image_not_supported,
+                                color: Colors.white24, size: 50),
+                          ),
+                        ),
+
+                      // Gradient for top icon visibility
+                      Positioned(
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: 100,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.black.withOpacity(0.7),
+                                Colors.transparent
                               ],
                             ),
                           ),
                         ),
                       ),
-                    );
-                  },
-                ),
-              ),
-            ),
-          ),
-        SliverList(
-          delegate: SliverChildBuilderDelegate(
-            (BuildContext context, int index) {
-              if (index == 0) {
-                return Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: context.headlineLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      if (status != 'N/A')
-                        _buildInfoRow(context, 'Status:', status, Colors.green),
-                      _buildInfoRow(context, 'When:', dateTimeInfo),
-                      _buildInfoRow(context, 'Where:', locationInfo),
-                      if (capacityInfo != 'N/A')
-                        _buildInfoRow(context, 'Capacity:', capacityInfo),
-                      const SizedBox(height: 20),
-                      Text(
-                        'Description',
-                        style: context.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        description,
-                        style: context.bodyLarge,
-                      ),
-                      const SizedBox(height: 20),
-                      if (isTrackOrTrainingDay) ...[
-                        Text(
-                          'Event Details',
-                          style: context.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
+
+                      // Gradient for bottom indicator visibility
+                      Positioned(
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        child: Container(
+                          padding: const EdgeInsets.only(top: 80, bottom: 20),
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.bottomCenter,
+                              end: Alignment.topCenter,
+                              colors: [Color(0xFF121212), Colors.transparent],
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children:
+                                List.generate(allImageUrls.length, (index) {
+                              return Container(
+                                margin:
+                                    const EdgeInsets.symmetric(horizontal: 3),
+                                width: _selectedImageIndex == index ? 24 : 6,
+                                height: 6,
+                                decoration: BoxDecoration(
+                                  color: _selectedImageIndex == index
+                                      ? const Color(0xFF2ECC71)
+                                      : Colors.grey,
+                                  borderRadius: BorderRadius.circular(3),
+                                ),
+                              );
+                            }),
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        ...eventDetails.entries.map((entry) =>
-                            _buildDetailRow(context, entry.key, entry.value)),
-                      ] else if (isBikeRentalCategory &&
-                          bikeRentalDetails.isNotEmpty) ...[
-                        Text(
-                          'Bike Rental Details',
-                          style: context.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        ...bikeRentalDetails.entries.map((entry) =>
-                            _buildDetailRow(context, entry.key, entry.value)),
-                      ],
-                      const SizedBox(height: 20),
-                      ChatWithSellerCard(
-                        receiverUserName: contactName,
-                        receiverUserID: userId,
                       ),
                     ],
                   ),
-                );
-              }
-              return null;
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 15),
+                      // Category Tag
+                      Text(category.toUpperCase(),
+                          style: const TextStyle(
+                              color: Color(0xFF2ECC71),
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.2)),
+                      const SizedBox(height: 8),
+                      // Title
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          height: 1.1,
+                          fontFamily: 'Orbitron',
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+
+                      const SizedBox(height: 30),
+
+                      // 1. Highlight Cards Row (Location, Map, Social Links)
+                      _buildHighlightsRow(city, state, serviceData),
+
+                      const SizedBox(height: 15),
+
+                      // 2. Address Block
+                      if (fullAddress != 'N/A' && fullAddress.isNotEmpty)
+                        _buildInfoBlock(
+                            Icons.location_on_outlined, "ADDRESS", fullAddress),
+
+                      const SizedBox(height: 10),
+
+                      // 3. Business Hours Block
+                      if (hoursInfo != 'N/A' && hoursInfo.isNotEmpty)
+                        _buildInfoBlock(
+                            Icons.access_time, "BUSINESS HOURS", hoursInfo,
+                            subText: closedDaysInfo.isNotEmpty
+                                ? closedDaysInfo
+                                : null),
+
+                      const SizedBox(height: 20),
+
+                      // Description
+                      const Text("DESCRIPTION",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              fontStyle: FontStyle.italic)),
+                      const SizedBox(height: 16),
+                      Text(
+                        description,
+                        style: const TextStyle(
+                            color: Colors.white, fontSize: 14, height: 1.5),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // Other Details
+                      _buildServiceInfoSection(context, serviceData, category),
+
+                      const SizedBox(height: 32),
+
+                      if (isOwner && !_isSold) ...[
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10)),
+                            ),
+                            onPressed: _markAsSold,
+                            icon: const Icon(Icons.check_circle_outline, size: 18),
+                            label: const Text(
+                              'Mark as Sold',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ] else ...[
+                        if (!isOwner)
+                          ChatWithSellerCard(
+                            receiverUserName: contactName,
+                            receiverUserID: userId,
+                            productId: widget.serviceData['id'] ?? '',
+                            productTitle: title,
+                          ),
+                      ],
+
+                      const SizedBox(height: 100), // Spacing for bottom overlay
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHighlightsRow(String city, String state, Map<String, dynamic> serviceData) {
+    final locationValue = state.isNotEmpty ? '$city\n$state' : city;
+    // 1. Always show Location
+    List<Widget> cards = [
+      Expanded(
+        child: _buildHighlightCard(
+          Icons.location_on_outlined,
+          "LOCATION",
+          locationValue,
+          maxLines: 2,
+        ),
+      ),
+    ];
+
+    // 2. Get Map and Social Links
+    final links = _getMapAndSocialLinks(serviceData);
+    // 3. Add Links to cards (max 2 more cards to fit row of 3)
+    // We prioritize Map > Instagram > Facebook > Others
+    for (var link in links.take(2)) {
+      cards.add(const SizedBox(width: 12));
+      cards.add(
+        Expanded(
+          child: _buildHighlightCard(
+            link['icon'] as IconData,
+            link['label'] as String,
+            link['value'] as String,
+            onTap: () {
+              final url = link['url'] as String;
+              launchUrlString(url, mode: LaunchMode.externalApplication);
             },
-            childCount: 1,
+          ),
+        ),
+      );
+    }
+
+    return Row(
+      children: cards,
+    );
+  }
+
+  List<Map<String, dynamic>> _getMapAndSocialLinks(
+      Map<String, dynamic> serviceData) {
+    List<Map<String, dynamic>> links = [];
+
+    serviceData.forEach((key, value) {
+      if (value is! String || value.isEmpty || value == 'N/A') return;
+
+      final lowerKey = key.toLowerCase();
+      final lowerValue = value.toLowerCase();
+
+      AppLogger.d("lowerValue $lowerKey - $lowerValue");
+
+      // Check for Map/Location links
+      if (lowerKey.contains('googlemaplink')) {
+        links.add({
+          'label': 'MAP',
+          'value': 'Address',
+          'icon': Icons.map_outlined,
+          'url': value,
+          'priority': 1,
+        });
+      }
+      // Check for Social Links
+      else if (lowerValue.contains('instagram.com')) {
+        links.add({
+          'label': 'SOCIAL',
+          'value': 'Instagram',
+          'icon': Icons.camera_alt_outlined, // Or custom icon if available
+          'url': value,
+          'priority': 2,
+        });
+      } else if (lowerValue.contains('facebook.com')) {
+        links.add({
+          'label': 'SOCIAL',
+          'value': 'Facebook',
+          'icon': Icons.facebook,
+          'url': value,
+          'priority': 3,
+        });
+      }
+      // General links if explicit keys present, though user emphasized social/map
+      // We can add more specific detections if needed.
+    });
+
+    // Sort by priority
+    links
+        .sort((a, b) => (a['priority'] as int).compareTo(b['priority'] as int));
+
+    // De-duplicate URLs just in case
+    final uniqueLinks = <String>{};
+    final distinctLinks = <Map<String, dynamic>>[];
+    for (var link in links) {
+      if (uniqueLinks.add(link['url'] as String)) {
+        distinctLinks.add(link);
+      }
+    }
+
+    return distinctLinks;
+  }
+
+  Widget _buildInfoBlock(IconData icon, String title, String content,
+      {String? subText}) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: const BoxDecoration(
+        color: Colors.transparent,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E1E1E),
+              borderRadius: BorderRadius.circular(50),
+            ),
+            child: Icon(icon, color: const Color(0xFF2ECC71), size: 24),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title,
+                    style: const TextStyle(
+                        color: Colors.grey,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.0)),
+                const SizedBox(height: 8),
+                Text(content,
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        height: 1.3)),
+                if (subText != null) ...[
+                  const SizedBox(height: 4),
+                  Text(subText,
+                      style: const TextStyle(
+                          color: Colors.redAccent,
+                          fontSize: 14,
+                          fontWeight: FontWeight.normal)),
+                ]
+              ],
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHighlightCard(IconData icon, String label, String value,
+      {VoidCallback? onTap, int maxLines = 1}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: maxLines > 1 ? 136 : 120,
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E1E1E),
+          borderRadius: BorderRadius.circular(16),
+          border: onTap != null
+              ? Border.all(color: const Color(0xFF2ECC71).withOpacity(0.3))
+              : null,
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: const Color(0xFF2ECC71), size: 22),
+            const SizedBox(height: 8),
+            Text(label,
+                style: const TextStyle(
+                    color: Colors.grey,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.5)),
+            const SizedBox(height: 4),
+            Text(value,
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+                maxLines: maxLines,
+                overflow: TextOverflow.ellipsis),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String? _formatProductDate(dynamic value) {
+    DateTime? dt;
+    if (value is Timestamp) {
+      dt = value.toDate();
+    } else if (value is DateTime) {
+      dt = value;
+    } else if (value is String && value.isNotEmpty) {
+      dt = DateTime.tryParse(value);
+    }
+    if (dt == null) return null;
+    return DateFormat('MMMM yyyy').format(dt);
+  }
+
+  Widget _buildServiceInfoSection(
+      BuildContext context, Map<String, dynamic> serviceData, String category) {
+    Map<String, String> allDetails = {};
+
+    // Explicitly add items that were removed from highlights or need priority
+    // Status, Address, Hours are now handled elsewhere.
+
+    if (ProductUtils.isTrackAndTrainingCategory(category)) {
+      if (serviceData['maxSlots'] != null) {
+        allDetails['Max Slots'] = serviceData['maxSlots'].toString();
+      }
+
+      final startDate = serviceData['eventStartDate'];
+      if (startDate != null) allDetails['Start Date'] = startDate;
+      final endDate = serviceData['eventEndDate'];
+      if (endDate != null) allDetails['End Date'] = endDate;
+    }
+
+    // Accessory / product specific details
+    if (serviceData['isProductBikeSpecific'] == true) {
+      final bikeBrand = serviceData['bikeBrandName']?.toString() ?? '';
+      if (bikeBrand.isNotEmpty) allDetails['Bike Brand'] = bikeBrand;
+      final bikeModel = serviceData['bikeModelName']?.toString() ?? '';
+      if (bikeModel.isNotEmpty) allDetails['Bike Model'] = bikeModel;
+      final bikeMfg = _formatProductDate(serviceData['bikeMfgDate']);
+      if (bikeMfg != null) allDetails['Bike MFG Date'] = bikeMfg;
+    }
+
+    final productSize = serviceData['productSize']?.toString() ?? '';
+    if (productSize.isNotEmpty) allDetails['Product Size'] = productSize;
+
+    final productAging = serviceData['productAging']?.toString() ?? '';
+    if (productAging.isNotEmpty) allDetails['Product Aging'] = productAging;
+
+    if (serviceData.containsKey('isBillAvailable')) {
+      allDetails['Bill Available'] =
+      serviceData['isBillAvailable'] == true ? 'Yes' : 'No';
+    }
+
+    final purchaseDate = _formatProductDate(serviceData['billDate']);
+    if (purchaseDate != null) allDetails['Purchase Date'] = purchaseDate;
+
+    final warrantyValidTill = _formatProductDate(serviceData['warrantyValidTill']);
+    final warrantyLimit = serviceData['warrantyLimit']?.toString() ?? '';
+    if (warrantyValidTill != null || warrantyLimit.isNotEmpty) {
+      allDetails['Warranty Available'] = 'Yes';
+      if (warrantyValidTill != null) {
+        allDetails['Warranty Valid Till'] = warrantyValidTill;
+      }
+      if (warrantyLimit.isNotEmpty) {
+        allDetails['Remaining Warranty'] = warrantyLimit;
+      }
+    }
+
+    // Remove Address/Hours manual additions from here if they exist in standard loop
+    final excludeKeys = {
+      'socialMediaLink',
+      'googleMapLink',
+      'searchKeywords',
+      'shopName',
+      'isActive',
+      'createdAt',
+      'updatedAt',
+      'approvedAt',
+      'statusUpdatedAt',
+      'adminFeedback',
+      'status',
+      'isFavorite',
+      'id',
+      'isApproved',
+      'favoritedBy',
+      'userId',
+      'pointOfContactName',
+      'countryCode',
+      'businessDescription',
+      'businessTitle',
+      'eventDetailedDescription',
+      'eventName',
+      'businessWorkingDaysHours',
+      // Explicitly excluded as shown in blocks
+      'businessPromoPicture',
+      'shopImageUrls',
+      'promoImageUrls',
+      'shopGaragePics',
+      'category',
+      // Shown in highlights
+      'businessAddress',
+      // Shown in blocks
+      'promoImage',
+      'locationAddress',
+      'city',
+      'state',
+      'eventStartDate',
+      'eventEndDate',
+      'eventStartTime',
+      'eventEndTime',
+      'maxSlots',
+      // Rendered explicitly in the accessory/product block above
+      'isProductBikeSpecific',
+      'bikeBrandName',
+      'bikeModelName',
+      'bikeMfgDate',
+      'productSize',
+      'productAging',
+      'billDate',
+      'isBillAvailable',
+      'warrantyValidTill',
+      'warrantyLimit',
+    };
+
+    String formatKeyToLabel(String key) {
+      final withSpaces = key.replaceAll('_', ' ').replaceAllMapped(
+          RegExp(r'([a-z])([A-Z])'), (m) => '${m[1]} ${m[2]}');
+      final parts = withSpaces.split(' ');
+      return parts.map((p) {
+        if (p.isEmpty) return p;
+        return p[0].toUpperCase() + p.substring(1);
+      }).join(' ');
+    }
+
+    serviceData.forEach((rawKey, rawValue) {
+      try {
+        if (excludeKeys.contains(rawKey)) return;
+        if (rawValue == null) return;
+        String valueStr =
+            rawValue is List ? rawValue.join(', ') : rawValue.toString();
+        if (valueStr.trim().isEmpty || valueStr.toLowerCase() == 'n/a') return;
+
+        final label = formatKeyToLabel(rawKey);
+        if (!allDetails.containsKey(label)) {
+          allDetails[label] = valueStr;
+        }
+      } catch (e) {
+        /* ignore */
+      }
+    });
+
+    if (allDetails.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(" DETAILS ",
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                fontStyle: FontStyle.italic)),
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: allDetails.entries
+                .map((e) => _buildDetailRow(context, e.key, e.value))
+                .toList(),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildInfoRow(BuildContext context, String label, String value,
-      [Color? valueColor]) {
-    if (label.toLowerCase().contains('where') &&
-        value.isNotEmpty &&
-        value != 'N/A') {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4.0),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              width: 80,
-              child: Text(
-                label,
-                style: context.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
-              ),
+  Map<String, String> _parseBusinessHours(String raw) {
+    if (raw == 'N/A' || raw.isEmpty) {
+      return {'hours': 'N/A', 'closed': ''};
+    }
+
+    // 1. Process Time: Convert 24h to 12h
+    // Match HH:mm only if NOT followed by am or pm
+    // logic verified in test_business_hours.dart
+    final timeRegex = RegExp(r'(\d{1,2}):(\d{2})(?!\s*[aApP][mM])');
+    String processedHours = raw.replaceAllMapped(timeRegex, (match) {
+      int h = int.parse(match.group(1)!);
+      int m = int.parse(match.group(2)!);
+
+      final dt = DateTime(2022, 1, 1, h, m);
+      return DateFormat('h:mm a').format(dt);
+    });
+
+    // 2. Calculate Closed Days
+    final daysMap = {
+      'mon': 'Monday',
+      'tue': 'Tuesday',
+      'wed': 'Wednesday',
+      'thu': 'Thursday',
+      'fri': 'Friday',
+      'sat': 'Saturday',
+      'sun': 'Sunday'
+    };
+    final allDaysSeq = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+    Set<String> presentDays = {};
+    String lowerRaw = raw.toLowerCase();
+
+    // Check ranges "Mon-Fri"
+    final rangeRegex = RegExp(
+        r'(mon|tue|wed|thu|fri|sat|sun)[a-z]*\s*-\s*(mon|tue|wed|thu|fri|sat|sun)[a-z]*');
+    final rangeMatch = rangeRegex.firstMatch(lowerRaw);
+    if (rangeMatch != null) {
+      int startIdx = allDaysSeq.indexOf(rangeMatch.group(1)!);
+      int endIdx = allDaysSeq.indexOf(rangeMatch.group(2)!);
+      if (startIdx != -1 && endIdx != -1) {
+        if (startIdx <= endIdx) {
+          for (int i = startIdx; i <= endIdx; i++) {
+            presentDays.add(allDaysSeq[i]);
+          }
+        } else {
+          for (int i = startIdx; i < 7; i++) {
+            presentDays.add(allDaysSeq[i]);
+          }
+          for (int i = 0; i <= endIdx; i++) {
+            presentDays.add(allDaysSeq[i]);
+          }
+        }
+      }
+    }
+
+    // Check individual days
+    daysMap.forEach((k, v) {
+      if (lowerRaw.contains(k)) presentDays.add(k);
+    });
+
+    // Check specific "everyday" keywords
+    if (lowerRaw.contains("daily") ||
+        lowerRaw.contains("everyday") ||
+        lowerRaw.contains("7 days")) {
+      for (var d in allDaysSeq) {
+        presentDays.add(d);
+      }
+    }
+
+    // Calculate closed
+    List<String> closedList = [];
+    if (presentDays.isNotEmpty && presentDays.length < 7) {
+      for (var d in allDaysSeq) {
+        if (!presentDays.contains(d)) closedList.add(daysMap[d]!);
+      }
+    }
+
+    String closedStr = '';
+    if (closedList.isNotEmpty) {
+      closedStr = '${closedList.join(", ")}: Closed';
+    }
+
+    return {'hours': processedHours, 'closed': closedStr};
+  }
+
+  Widget? _buildServiceBottomBar(bool isAdmin) {
+    final currentUid = FirebaseAuth.instance.currentUser?.uid;
+    final isOwner = !isAdmin && widget.serviceData['userId'] == currentUid;
+    if (isOwner && _status == 'Sent Back') {
+      return SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue.shade700,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
-            Expanded(
-              child: GestureDetector(
-                onTap: () async {
-                  final encodedLocation = Uri.encodeComponent(value);
-                  final url =
-                      'https://www.google.com/maps/search/?api=1&query=$encodedLocation';
-                  await launchUrlString(url,
-                      mode: LaunchMode.externalApplication);
-                },
-                child: Text(
-                  value,
-                  style: context.bodyLarge?.copyWith(
-                    color: Colors.blue,
-                    decoration: TextDecoration.underline,
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ListServiceFormScreen(
+                    category: widget.category,
+                    existingData: widget.serviceData,
                   ),
                 ),
-              ),
-            ),
-          ],
+              );
+            },
+            icon: const Icon(Icons.edit_outlined, size: 18),
+            label: const Text('Edit & Resubmit'),
+          ),
         ),
       );
     }
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 80,
-            child: Text(
-              label,
-              style: context.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+    if (isAdmin && _status != 'Approved' && _status != 'Rejected') {
+      return SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: _buildAdminActionRow(),
+        ),
+      );
+    }
+    return null;
+  }
+
+  Widget _buildAdminActionRow() {
+    return Row(
+      children: [
+        Expanded(
+          child: ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
             ),
+            onPressed: () => _handleAdminAction('approved'),
+            icon: const Icon(Icons.check_circle_outline, size: 18),
+            label: const Text('Approve'),
           ),
-          Expanded(
-            child: Text(
-              value,
-              style: context.bodyLarge?.copyWith(color: valueColor),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
             ),
+            onPressed: () => _handleAdminAction('sent_back'),
+            icon: const Icon(Icons.undo_outlined, size: 18),
+            label: const Text('Send Back'),
           ),
-        ],
-      ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () => _handleAdminAction('rejected'),
+            icon: const Icon(Icons.cancel_outlined, size: 18),
+            label: const Text('Reject'),
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildDetailRow(BuildContext context, String label, String value) {
-    if (label.toLowerCase().contains('google map link') ||
-        label.toLowerCase().contains('social media link') &&
-            value.isNotEmpty &&
-            value != 'N/A') {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4.0),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              flex: 2,
-              child: Text(
-                '$label:',
-                style:
-                    context.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
-              ),
-            ),
-            Expanded(
-              flex: 3,
-              child: GestureDetector(
-                onTap: () async {
-                  final url =
-                      value.startsWith('http') ? value : 'https://$value';
-                  await launchUrlString(url,
-                      mode: LaunchMode.externalApplication);
-                },
-                child: Text(
-                  value,
-                  style: context.bodyMedium?.copyWith(
-                    color: Colors.blue,
-                    decoration: TextDecoration.underline,
-                  ),
+  Future<void> _handleAdminAction(String action) async {
+    final serviceId = widget.serviceData['id'] as String? ?? '';
+    if (serviceId.isEmpty) return;
+
+    String? reason;
+    if (action == 'sent_back' || action == 'rejected') {
+      reason = await _showReasonDialog(action);
+      if (reason == null) return;
+    }
+
+    final listingRef = FirebaseFirestore.instance
+        .collection(ApiUrl.servicePath)
+        .doc(serviceId);
+
+    try {
+      switch (action) {
+        case 'approved':
+          await AdminNotificationService.approveListing(
+              listingRef: listingRef);
+          if (!mounted) return;
+          setState(() {
+            _isApproved = true;
+            _status = 'Approved';
+          });
+        case 'sent_back':
+          await AdminNotificationService.sendBackListing(
+              listingRef: listingRef, feedback: reason);
+          if (!mounted) return;
+          setState(() => _status = 'Sent Back');
+        case 'rejected':
+          await AdminNotificationService.rejectListing(
+              listingRef: listingRef, reason: reason);
+          if (!mounted) return;
+          setState(() => _status = 'Rejected');
+      }
+      if (mounted) {
+        final msg = switch (action) {
+          'approved' => 'Service approved. User will be notified.',
+          'sent_back' => 'Sent back to user for corrections.',
+          _ => 'Listing rejected. User will be notified.',
+        };
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(msg), backgroundColor: Colors.green),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Action failed: $e'),
+              backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  Future<String?> _showReasonDialog(String action) async {
+    final controller = TextEditingController();
+    final isSendBack = action == 'sent_back';
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title:
+            Text(isSendBack ? 'Send Back for Corrections' : 'Reject Listing'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(isSendBack
+                  ? 'Provide feedback so the user knows what to correct:'
+                  : 'Provide a reason why this listing is not eligible for Bikerverse:'),
+              const SizedBox(height: 12),
+              TextField(
+                controller: controller,
+                maxLines: 3,
+                autofocus: true,
+                decoration: InputDecoration(
+                  hintText: isSendBack
+                      ? 'e.g. Please upload clearer photos of the service.'
+                      : 'e.g. Does not meet Bikerverse guidelines.',
+                  border: const OutlineInputBorder(),
                 ),
               ),
-            ),
-          ],
-        ),
-      );
-    }
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            flex: 2,
-            child: Text(
-              '$label:',
-              style: context.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
-            ),
+            ],
           ),
-          Expanded(
-            flex: 3,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: isSendBack ? Colors.orange : Colors.red,
+            ),
+            onPressed: () => Navigator.of(ctx).pop(true),
             child: Text(
-              value,
-              style: context.bodyMedium,
+              isSendBack ? 'Send Back' : 'Reject',
+              style: const TextStyle(color: Colors.white),
             ),
           ),
         ],
       ),
     );
+
+    // Read text before any cleanup — do NOT dispose here because the dialog's
+    // exit animation may still be running and the TextField listener would fire
+    // on an already-disposed controller.
+    final text = controller.text;
+    if (confirmed != true) return null;
+    return text;
+  }
+
+  Future<void> _markAsSold() async {
+    final serviceId = widget.serviceData['id'] as String? ?? '';
+    if (serviceId.isEmpty) return;
+
+    final success = await AppDialogs.confirmAndMarkAsSold(
+      context: context,
+      docRef: FirebaseFirestore.instance
+          .collection(ApiUrl.servicePath)
+          .doc(serviceId),
+      successMessage: 'Service marked as sold.',
+    );
+
+    if (success && mounted) {
+      setState(() {
+        _isSold = true;
+        _status = 'Sold';
+      });
+    }
   }
 }

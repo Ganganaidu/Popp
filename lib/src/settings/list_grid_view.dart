@@ -1,12 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:popp/src/api/currency_service.dart';
 import 'package:popp/src/navigation/nav_router.dart';
-import 'package:popp/src/utils/product_content_data.dart';
+import 'package:popp/src/utils/product_utils.dart';
+import 'package:popp/src/widgets/app_dialogs.dart';
 
 import '../widgets/listing_card.dart';
 
-class ListingsGridView extends StatelessWidget {
+class ListingsGridView extends StatefulWidget {
   final Query query;
   final bool showOptionsMenu;
 
@@ -17,9 +19,14 @@ class ListingsGridView extends StatelessWidget {
   });
 
   @override
+  State<ListingsGridView> createState() => _ListingsGridViewState();
+}
+
+class _ListingsGridViewState extends State<ListingsGridView> {
+  @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
-      stream: query.snapshots(),
+      stream: widget.query.snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -32,6 +39,7 @@ class ListingsGridView extends StatelessWidget {
         }
 
         final docs = snapshot.data!.docs;
+        final countryCode = Localizations.localeOf(context).countryCode ?? 'US';
 
         return GridView.builder(
           padding: const EdgeInsets.all(16.0),
@@ -44,7 +52,10 @@ class ListingsGridView extends StatelessWidget {
           itemCount: docs.length,
           itemBuilder: (context, index) {
             final doc = docs[index];
-            final data = doc.data() as Map<String, dynamic>;
+            final raw = doc.data() as Map<String, dynamic>;
+            // Ensure the Firestore document ID is available to downstream screens
+            // (ServiceDetailScreen expects `serviceData['id']` to contain the doc id).
+            final data = {...raw, 'id': doc.id};
 
             // Logic to handle different data structures
             String title = data['name'] ?? data['brandName'] ?? '';
@@ -90,30 +101,44 @@ class ListingsGridView extends StatelessWidget {
             final price = data['expectedPrice']?.toString();
             bool isApproved = data['isApproved'] ?? false;
             bool isSold = data['isSold'] ?? false;
+            final docStatus = data['status'] as String?;
             final status = isSold
                 ? 'Sold'
                 : isApproved
                     ? 'Approved'
-                    : 'Pending';
+                    : docStatus == 'sent_back'
+                        ? 'Sent Back'
+                        : docStatus == 'rejected'
+                            ? 'Rejected'
+                            : 'Pending';
+
             return ListingCard(
               title: title,
               imageUrl: imageUrl,
-              price: price,
+              price: CurrencyService.getProductPrice(price, countryCode),
               status: status,
-              showOptionsMenu: showOptionsMenu,
+              showOptionsMenu: widget.showOptionsMenu,
               onTap: () {
                 final category = data['category'] as String?;
-                if (serviceCategories.contains(category)) {
-                  onServiceDetailsScreenTap(context, data, category!);
-                } else {
+                if (!ProductUtils.listYourServiceCategories.contains(category)) {
                   onProductDetailsTap(context, data, true);
+                } else {
+                  onServiceDetailsScreenTap(context, data, category!);
                 }
               },
               onEdit: () {
                 // Handle edit action
               },
-              onSold: () {
-                // Handle mark as sold action
+              onSold: () async {
+                final success = await AppDialogs.confirmAndMarkAsSold(
+                  context: context,
+                  docRef:
+                      FirebaseFirestore.instance.doc(doc.reference.path),
+                );
+                if (success && context.mounted) {
+                  // Force a rebuild of the widget
+                  setState(() {});
+                }
               },
             );
           },
@@ -131,11 +156,14 @@ class ListingsGridView extends StatelessWidget {
           children: [
             Lottie.asset('assets/empty_state.json', width: 200, height: 200),
             const SizedBox(height: 20),
-            Text(showOptionsMenu ? "No Listings Found" : "No Favorites Yet",
+            Text(
+                widget.showOptionsMenu
+                    ? "No Listings Found"
+                    : "No Favorites Yet",
                 style: Theme.of(context).textTheme.headlineSmall),
             const SizedBox(height: 8),
             Text(
-                showOptionsMenu
+                widget.showOptionsMenu
                     ? "You haven't listed any products or services yet."
                     : "Tap the heart on any item to save it here.",
                 style: Theme.of(context).textTheme.bodyLarge,
@@ -147,10 +175,11 @@ class ListingsGridView extends StatelessWidget {
                     context, '/home', (route) => false);
               },
               icon: const Icon(Icons.add_circle),
-              label: Text(
-                  showOptionsMenu ? "Create a Listing" : "Start Exploring"),
+              label: Text(widget.showOptionsMenu
+                  ? "Create a Listing"
+                  : "Start Exploring"),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
+                backgroundColor: Theme.of(context).primaryColor,
                 foregroundColor: Colors.white,
                 padding:
                     const EdgeInsets.symmetric(horizontal: 24, vertical: 12),

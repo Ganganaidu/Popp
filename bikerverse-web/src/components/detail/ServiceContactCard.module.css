@@ -1,0 +1,56 @@
+.card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background: var(--bv-surface-lo);
+  border: 1px solid var(--bv-border-hi);
+  border-radius: var(--bv-radius);
+}
+
+.info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.label {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bv-text-3);
+}
+
+.name {
+  font-family: var(--font-archivo), sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--bv-text);
+}
+
+.hours {
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 12px;
+  color: var(--bv-text-3);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.phoneNumber {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--bv-text);
+  background: var(--bv-surface);
+  border: 1px solid var(--bv-border-hi);
+  border-radius: var(--bv-radius);
+  padding: 6px 10px;
+}

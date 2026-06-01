@@ -2,15 +2,24 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:popp/src/toolbar/common_app_bar.dart';
+import 'package:intl/intl.dart';
+import 'package:popp/src/api/api_url.dart';
 import 'package:popp/src/login/model/user_data_model.dart';
 import 'package:popp/src/login/validation_requiremen_text.dart';
-import 'package:popp/src/utils/app_utils.dart';
+import 'package:popp/src/utils/app_loger.dart';
 import 'package:popp/src/utils/build_extensions.dart';
+import 'package:popp/src/widgets/title_text.dart';
 
 import '../navigation/nav_router.dart';
+import '../search/autocomplete_search_field.dart';
+import '../utils/app_constants.dart';
+import '../utils/app_utils.dart';
 import '../utils/product_content_data.dart';
 import '../widgets/custom_dropdown_form_field.dart';
+import '../widgets/month_year_picker.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -30,20 +39,23 @@ class _SignupScreenState extends State<SignupScreen> {
   final TextEditingController confirmPasswordController =
       TextEditingController();
   final TextEditingController addressController = TextEditingController();
+  final TextEditingController areaController = TextEditingController();
   final TextEditingController cityController = TextEditingController();
   final TextEditingController pinCodeController = TextEditingController();
 
-  final List<Map<String, TextEditingController>> bikes = [
-    {
-      'brand': TextEditingController(),
-      'model': TextEditingController(),
-      'monthYear': TextEditingController(),
-    }
-  ];
+  final List<Map<String, dynamic>> bikes = [];
+  final List<FocusNode> brandFocusNodes = [];
+  final List<FocusNode> modelFocusNodes = [];
 
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
   bool isSubmitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _addBike();
+  }
 
   @override
   void dispose() {
@@ -53,12 +65,19 @@ class _SignupScreenState extends State<SignupScreen> {
     passwordController.dispose();
     confirmPasswordController.dispose();
     addressController.dispose();
+    areaController.dispose();
     cityController.dispose();
     pinCodeController.dispose();
+
     for (final bike in bikes) {
-      bike['brand']!.dispose();
-      bike['model']!.dispose();
-      bike['monthYear']!.dispose();
+      (bike['brandController'] as TextEditingController).dispose();
+      (bike['modelController'] as TextEditingController).dispose();
+    }
+    for (final node in brandFocusNodes) {
+      node.dispose();
+    }
+    for (final node in modelFocusNodes) {
+      node.dispose();
     }
     super.dispose();
   }
@@ -67,27 +86,29 @@ class _SignupScreenState extends State<SignupScreen> {
     if (bikes.length < 3) {
       setState(() {
         bikes.add({
-          'brand': TextEditingController(),
-          'model': TextEditingController(),
-          'monthYear': TextEditingController(),
+          'brand': null,
+          'model': null,
+          'monthYear': null,
+          'brandController': TextEditingController(),
+          'modelController': TextEditingController(),
         });
+        brandFocusNodes.add(FocusNode());
+        modelFocusNodes.add(FocusNode());
       });
     }
   }
 
   void _removeBike(int index) {
-    if (bikes.length > 1) {
-      setState(() {
-        bikes[index]['brand']!.dispose();
-        bikes[index]['model']!.dispose();
-        bikes[index]['monthYear']!.dispose();
-        bikes.removeAt(index);
-      });
-    } else {
-      bikes[index]['brand']!.clear();
-      bikes[index]['model']!.clear();
-      bikes[index]['monthYear']!.clear();
-    }
+    (bikes[index]['brandController'] as TextEditingController).dispose();
+    (bikes[index]['modelController'] as TextEditingController).dispose();
+    brandFocusNodes[index].dispose();
+    modelFocusNodes[index].dispose();
+
+    setState(() {
+      bikes.removeAt(index);
+      brandFocusNodes.removeAt(index);
+      modelFocusNodes.removeAt(index);
+    });
   }
 
   Future<void> _createAccountAndContinue() async {
@@ -97,7 +118,6 @@ class _SignupScreenState extends State<SignupScreen> {
     setState(() => isSubmitting = true);
 
     try {
-      // Create the user in Firebase Auth
       final userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(
               email: emailController.text, password: passwordController.text);
@@ -105,23 +125,50 @@ class _SignupScreenState extends State<SignupScreen> {
       final user = userCredential.user;
       if (user == null) throw Exception("User creation failed.");
 
-      // Send the verification email
       var acs = ActionCodeSettings(
-          url: 'https://popp-71efb.web.app',
+          url: ApiUrl.welcomePage,
           handleCodeInApp: true,
-          iOSBundleId: 'com.popp.abike',
-          androidPackageName: 'com.popp.abike',
+          iOSBundleId: Constants.appBundleId,
+          androidPackageName: Constants.appBundleId,
           androidInstallApp: true,
           androidMinimumVersion: '12');
       await user.sendEmailVerification(acs);
 
-      // Package all the data to pass to the next screen
       final bikeDataList = bikes
-          .map((bikeControllers) => BikeData(
-                brand: bikeControllers['brand']!.text,
-                model: bikeControllers['model']!.text,
-                monthYear: bikeControllers['monthYear']!.text,
-              ))
+          .map((bikeData) {
+            final brandController =
+                bikeData['brandController'] as TextEditingController;
+            final modelController =
+                bikeData['modelController'] as TextEditingController;
+            final selectedBrand = bikeData['brand'] as String?;
+            final selectedModel = bikeData['model'] as String?;
+
+            String finalBrand;
+            String finalModel;
+
+            if (selectedBrand == 'Others') {
+              finalBrand = brandController.text;
+              finalModel = modelController.text;
+            } else {
+              finalBrand = selectedBrand ?? '';
+              if (selectedModel == 'Others') {
+                finalModel = modelController.text;
+              } else {
+                finalModel = selectedModel ?? '';
+              }
+            }
+
+            final monthYear = bikeData['monthYear'] as DateTime?;
+            final monthYearString = monthYear != null
+                ? DateFormat('MM/yyyy').format(monthYear)
+                : '';
+
+            return BikeData(
+              brand: finalBrand,
+              model: finalModel,
+              monthYear: monthYearString,
+            );
+          })
           .where((bike) =>
               bike.brand.isNotEmpty ||
               bike.model.isNotEmpty ||
@@ -134,6 +181,7 @@ class _SignupScreenState extends State<SignupScreen> {
         email: emailController.text,
         phoneNumber: phoneNumberController.text,
         address: addressController.text,
+        area: areaController.text,
         stateName: selectedState ?? "",
         city: cityController.text,
         pinCode: pinCodeController.text,
@@ -143,7 +191,6 @@ class _SignupScreenState extends State<SignupScreen> {
 
       if (!mounted) return;
 
-      // Navigate to the dedicated verification screen
       onVerificationScreenTap(
           context, userData, userData.email, passwordController.text, true);
     } on FirebaseAuthException catch (e) {
@@ -158,6 +205,7 @@ class _SignupScreenState extends State<SignupScreen> {
         default:
           errorMessage = 'An error occurred: ${e.message}';
       }
+      AppLogger.e(errorMessage);
       if (mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(errorMessage)));
@@ -171,17 +219,67 @@ class _SignupScreenState extends State<SignupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (kIsWeb && context.isDesktop) {
+      return _buildWebLayout(context);
+    } else {
+      return _buildMobileLayout(context);
+    }
+  }
+
+  Widget _buildWebLayout(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            onLoginTap(context);
-          },
-          tooltip: 'Back',
+      appBar: CommonAppBar(
+        titleWidget: const TitleText("Create Account"),
+        showBackButton: true,
+        onBackPressed: () => onLoginTap(context),
+        backgroundColor: Colors.transparent,
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: Theme.of(context).brightness == Brightness.dark
+                ? [Colors.grey[850]!, Colors.grey[900]!]
+                : [const Color(0xFFFDFBFB), const Color(0xFFEBEDEE)],
+          ),
         ),
-        title: const Text("Create Account"),
-        elevation: 0,
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              Expanded(
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 1200),
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(40),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildWebHeader(),
+                          const SizedBox(height: 40),
+                          _buildWebFormContent(),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              _buildWebSubmitButton(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMobileLayout(BuildContext context) {
+    return Scaffold(
+      appBar: CommonAppBar(
+        titleWidget: const TitleText("Create Account"),
+        showBackButton: true,
+        onBackPressed: () => onLoginTap(context),
       ),
       body: Form(
         key: _formKey,
@@ -198,19 +296,23 @@ class _SignupScreenState extends State<SignupScreen> {
                         "Account Details", "Create your login credentials."),
                     _buildTextField("Name", usernameController,
                         icon: Icons.person_outline),
+                    const SizedBox(height: 15),
                     _buildTextField("Email", emailController,
                         icon: Icons.email_outlined,
                         keyboardType: TextInputType.emailAddress),
+                    const SizedBox(height: 15),
                     _buildTextField("Phone number", phoneNumberController,
                         icon: Icons.phone_outlined,
                         keyboardType: TextInputType.number,
-                        isRequired: true),
+                        isRequired: false),
+                    const SizedBox(height: 15),
                     _buildTextField("Password", passwordController,
                         icon: Icons.lock_outline,
                         isPasswordTextField: true,
                         currentPasswordVisibility: _isPasswordVisible,
                         onTogglePasswordVisibility: () => setState(
                             () => _isPasswordVisible = !_isPasswordVisible)),
+                    const SizedBox(height: 15),
                     _buildTextField(
                         "Confirm Password", confirmPasswordController,
                         icon: Icons.lock_person_outlined,
@@ -219,26 +321,21 @@ class _SignupScreenState extends State<SignupScreen> {
                         onTogglePasswordVisibility: () => setState(() =>
                             _isConfirmPasswordVisible =
                                 !_isConfirmPasswordVisible)),
-                    _buildPasswordRequirementsDisclosure(),
+                    _buildPasswordRequirements(),
                     const SizedBox(height: 24),
                     _buildSectionHeader("Your Location",
                         "Used to find rides and services near you."),
-                    CustomDropdownFormField<String>(
-                        value: selectedState,
-                        label: "",
-                        hint: "Select your state",
-                        items: stateNames
-                            .map((b) =>
-                                DropdownMenuItem(value: b, child: Text(b)))
-                            .toList(),
-                        onChanged: (val) => setState(() => selectedState = val),
-                        validator: (val) =>
-                            val == null ? "State is required" : null),
+                    _buildDropdownField(),
                     const SizedBox(height: 15),
-                    _buildTextField("Address", addressController,
-                        icon: Icons.home_outlined, maxLines: 2),
+                    _buildAreaTextField(),
+                    const SizedBox(height: 15),
+                    _buildAutocompleteField(),
+                    const SizedBox(height: 15),
+                    // --- UPDATED: CITY FIELD (NOW AUTO-POPULATED) ---
                     _buildTextField("City", cityController,
                         icon: Icons.location_city_outlined),
+                    const SizedBox(height: 15),
+                    // --- UPDATED: PIN CODE FIELD (NOW AUTO-POPULATED) ---
                     _buildTextField("Pin Code", pinCodeController,
                         icon: Icons.pin_drop_outlined,
                         keyboardType: TextInputType.number),
@@ -266,13 +363,18 @@ class _SignupScreenState extends State<SignupScreen> {
             ),
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(
+                16.0,
+                16.0,
+                16.0,
+                50.0,
+              ),
               child: ElevatedButton(
                 onPressed: isSubmitting ? null : _createAccountAndContinue,
                 style: ElevatedButton.styleFrom(
                   shape: const StadiumBorder(),
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  backgroundColor: Colors.orange,
+                  backgroundColor: context.primaryColor,
                   foregroundColor: Colors.white,
                 ),
                 child: isSubmitting
@@ -287,7 +389,243 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
+  Widget _buildWebHeader() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Create Your Account",
+          style: TextStyle(
+            fontSize: 32,
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          "Join our community and start your biking journey today",
+          style: TextStyle(
+            fontSize: 18,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white70
+                : Colors.black54,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildWebFormContent() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Left Column - Account Details
+        Expanded(
+          flex: 1,
+          child: Padding(
+            padding: const EdgeInsets.only(right: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildWebSectionHeader(
+                  "Account Details",
+                  "Create your login credentials",
+                  Icons.person_outline,
+                ),
+                const SizedBox(height: 20),
+                _buildTextField("Name", usernameController,
+                    icon: Icons.person_outline),
+                const SizedBox(height: 20),
+                _buildTextField("Email", emailController,
+                    icon: Icons.email_outlined,
+                    keyboardType: TextInputType.emailAddress),
+                const SizedBox(height: 20),
+                _buildTextField("Phone number", phoneNumberController,
+                    icon: Icons.phone_outlined,
+                    keyboardType: TextInputType.number,
+                    isRequired: false),
+                const SizedBox(height: 20),
+                _buildTextField("Password", passwordController,
+                    icon: Icons.lock_outline,
+                    isPasswordTextField: true,
+                    currentPasswordVisibility: _isPasswordVisible,
+                    onTogglePasswordVisibility: () => setState(
+                        () => _isPasswordVisible = !_isPasswordVisible)),
+                const SizedBox(height: 20),
+                _buildTextField("Confirm Password", confirmPasswordController,
+                    icon: Icons.lock_person_outlined,
+                    isPasswordTextField: true,
+                    currentPasswordVisibility: _isConfirmPasswordVisible,
+                    onTogglePasswordVisibility: () => setState(() =>
+                        _isConfirmPasswordVisible =
+                            !_isConfirmPasswordVisible)),
+                const SizedBox(height: 20),
+                _buildPasswordRequirements(),
+              ],
+            ),
+          ),
+        ),
+        // Right Column - Location & Bike Details
+        Expanded(
+          flex: 1,
+          child: Padding(
+            padding: const EdgeInsets.only(left: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildWebSectionHeader(
+                  "Your Location",
+                  "Used to find rides and services near you",
+                  Icons.location_on_outlined,
+                ),
+                const SizedBox(height: 20),
+                _buildDropdownField(),
+                const SizedBox(height: 20),
+                _buildAutocompleteField(),
+                const SizedBox(height: 20),
+                _buildTextField("City", cityController,
+                    icon: Icons.location_city_outlined),
+                const SizedBox(height: 20),
+                _buildTextField("Pin Code", pinCodeController,
+                    icon: Icons.pin_drop_outlined,
+                    keyboardType: TextInputType.number),
+                const SizedBox(height: 30),
+                _buildWebSectionHeader(
+                  "Bike Details (Optional)",
+                  "Add your bikes for custom notifications",
+                  Icons.two_wheeler_outlined,
+                ),
+                const SizedBox(height: 20),
+                _buildWebBikeSection(),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildWebSubmitButton() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Theme.of(context).brightness == Brightness.dark
+            ? Colors.grey[900]
+            : Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1200),
+          child: SizedBox(
+            width: 300,
+            child: ElevatedButton(
+              onPressed: isSubmitting ? null : _createAccountAndContinue,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: context.primaryColor,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 18),
+                elevation: 2,
+              ),
+              child: isSubmitting
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : const Text(
+                      "Create Account",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWebSectionHeader(String title, String subtitle, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Theme.of(context).brightness == Brightness.dark
+            ? Colors.grey[800]?.withOpacity(0.5)
+            : Colors.white.withOpacity(0.8),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.grey[700]!
+              : Colors.grey[300]!,
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: context.primaryColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              icon,
+              color: context.primaryColor,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white70
+                        : Colors.black54,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildSectionHeader(String title, String subtitle) {
+    // ... (This method remains unchanged)
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
       child: Column(
@@ -306,6 +644,23 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   Widget _buildBikeFields(int index) {
+    // ... (This method remains unchanged)
+    final bike = bikes[index];
+    final selectedBrand = bike['brand'] as String?;
+    final brandController = bike['brandController'] as TextEditingController;
+    final selectedModel = bike['model'] as String?;
+    final modelController = bike['modelController'] as TextEditingController;
+
+    final bool isBrandOthers = selectedBrand == 'Others';
+    final bool isModelOthers = selectedModel == 'Others';
+
+    final modelsForBrand = isBrandOthers
+        ? <String>[] // No models if brand is "Others"
+        : (bikeBrandModels[selectedBrand] ?? []);
+    final brandListWithOthers = [...bikeBrands, 'Others'];
+    final modelListWithOthers =
+        modelsForBrand.isNotEmpty ? [...modelsForBrand, 'Others'] : <String>[];
+
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
@@ -333,110 +688,467 @@ class _SignupScreenState extends State<SignupScreen> {
               ],
             ),
             const SizedBox(height: 16),
-            _buildTextField('Brand Name', bikes[index]['brand']!,
-                isRequired: false, icon: Icons.two_wheeler_outlined),
-            _buildTextField('Model Name', bikes[index]['model']!,
-                isRequired: false, icon: Icons.motorcycle_outlined),
-            _buildTextField('MFG Month & Year', bikes[index]['monthYear']!,
-                isRequired: false, icon: Icons.calendar_today_outlined),
+            DropdownButtonFormField<String>(
+              value: selectedBrand,
+              decoration: context.inputDecoration("", "Choose brand",
+                  icon: Icons.two_wheeler_outlined),
+              items: brandListWithOthers
+                  .map((b) => DropdownMenuItem(value: b, child: Text(b)))
+                  .toList(),
+              onChanged: (val) {
+                setState(() {
+                  bikes[index]['brand'] = val;
+                  bikes[index]['model'] = null;
+                  modelController.clear();
+                  if (val != 'Others') {
+                    brandController.clear();
+                  } else {
+                    brandFocusNodes[index].requestFocus();
+                  }
+                });
+              },
+            ),
+            if (isBrandOthers)
+              Padding(
+                padding: const EdgeInsets.only(top: 15.0),
+                child: _buildTextField('Enter Brand Name', brandController,
+                    focusNode: brandFocusNodes[index],
+                    icon: Icons.edit_outlined,
+                    isRequired: true),
+              ),
+            const SizedBox(height: 15),
+            if (!isBrandOthers)
+              Column(
+                children: [
+                  DropdownButtonFormField<String>(
+                    value: selectedModel,
+                    decoration: context.inputDecoration(
+                      "",
+                      selectedBrand != null
+                          ? "Choose model"
+                          : "Select a brand first",
+                      icon: Icons.motorcycle_outlined,
+                    ),
+                    onChanged: selectedBrand != null
+                        ? (val) {
+                            setState(() {
+                              bikes[index]['model'] = val;
+                              if (val != 'Others') {
+                                modelController.clear();
+                              } else {
+                                modelFocusNodes[index].requestFocus();
+                              }
+                            });
+                          }
+                        : null,
+                    items: modelListWithOthers
+                        .map((m) => DropdownMenuItem(value: m, child: Text(m)))
+                        .toList(),
+                  ),
+                  if (isModelOthers)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 15.0),
+                      child: _buildTextField(
+                          'Enter Model Name', modelController,
+                          focusNode: modelFocusNodes[index],
+                          icon: Icons.edit_outlined,
+                          isRequired: true),
+                    ),
+                ],
+              ),
+            if (isBrandOthers)
+              _buildTextField('Enter Model Name', modelController,
+                  icon: Icons.motorcycle_outlined, isRequired: true),
+            const SizedBox(height: 15),
+            MonthYearPicker(
+              label: "",
+              hint: "Manufacture Date",
+              selectOnlyMonthYear: true,
+              selectedDate: bike['monthYear'],
+              onDateSelected: (date) =>
+                  setState(() => bikes[index]['monthYear'] = date),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildPasswordRequirementsDisclosure() {
+  Widget _buildPasswordRequirements() {
+    final isWeb = kIsWeb && context.isDesktop;
+
     return ValueListenableBuilder<TextEditingValue>(
       valueListenable: passwordController,
       builder: (context, value, child) {
         final currentPassword = value.text;
-        return ExpansionTile(
-          title: const Text("Password Requirements",
-              style: TextStyle(fontWeight: FontWeight.w600)),
-          tilePadding: EdgeInsets.zero,
-          childrenPadding: const EdgeInsets.symmetric(vertical: 8.0),
-          children: <Widget>[
-            ValidationRequirementText(
-                text: "At least 8 characters",
-                isValid: currentPassword.length >= 8),
-            ValidationRequirementText(
-                text: "At least one uppercase letter (A-Z)",
-                isValid: RegExp(r'(?=.*[A-Z])').hasMatch(currentPassword)),
-            ValidationRequirementText(
-                text: "At least one lowercase letter (a-z)",
-                isValid: RegExp(r'(?=.*[a-z])').hasMatch(currentPassword)),
-            ValidationRequirementText(
-                text: "At least one number (0-9)",
-                isValid: RegExp(r'(?=.*\d)').hasMatch(currentPassword)),
-          ],
-        );
+
+        if (isWeb) {
+          // Web version - always visible in a styled container
+          return Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.grey[800]?.withOpacity(0.3)
+                  : Colors.grey[50],
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.grey[700]!
+                    : Colors.grey[300]!,
+                width: 1,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Password Requirements",
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                ValidationRequirementText(
+                    text: "At least 8 characters",
+                    isValid: currentPassword.length >= 8),
+                const SizedBox(height: 8),
+                ValidationRequirementText(
+                    text: "At least one uppercase letter (A-Z)",
+                    isValid: RegExp(r'(?=.*[A-Z])').hasMatch(currentPassword)),
+                const SizedBox(height: 8),
+                ValidationRequirementText(
+                    text: "At least one lowercase letter (a-z)",
+                    isValid: RegExp(r'(?=.*[a-z])').hasMatch(currentPassword)),
+                const SizedBox(height: 8),
+                ValidationRequirementText(
+                    text: "At least one number (0-9)",
+                    isValid: RegExp(r'(?=.*\d)').hasMatch(currentPassword)),
+              ],
+            ),
+          );
+        } else {
+          // Mobile version - expandable tile
+          return ExpansionTile(
+            title: const Text("Password Requirements",
+                style: TextStyle(fontWeight: FontWeight.w600)),
+            tilePadding: EdgeInsets.zero,
+            childrenPadding: const EdgeInsets.symmetric(vertical: 8.0),
+            children: <Widget>[
+              ValidationRequirementText(
+                  text: "At least 8 characters",
+                  isValid: currentPassword.length >= 8),
+              ValidationRequirementText(
+                  text: "At least one uppercase letter (A-Z)",
+                  isValid: RegExp(r'(?=.*[A-Z])').hasMatch(currentPassword)),
+              ValidationRequirementText(
+                  text: "At least one lowercase letter (a-z)",
+                  isValid: RegExp(r'(?=.*[a-z])').hasMatch(currentPassword)),
+              ValidationRequirementText(
+                  text: "At least one number (0-9)",
+                  isValid: RegExp(r'(?=.*\d)').hasMatch(currentPassword)),
+            ],
+          );
+        }
       },
     );
   }
 
   Widget _buildTextField(String hint, TextEditingController controller,
       {IconData? icon,
-      bool obscureText = false,
       int maxLines = 1,
       bool isRequired = true,
       TextInputType? keyboardType,
       bool isPasswordTextField = false,
       VoidCallback? onTogglePasswordVisibility,
-      bool? currentPasswordVisibility}) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 15.0),
-      child: TextFormField(
-        controller: controller,
-        obscureText: isPasswordTextField
-            ? !(currentPasswordVisibility ?? false)
-            : obscureText,
-        maxLines: maxLines,
-        keyboardType: keyboardType,
-        validator: (value) {
-          if (isRequired && (value == null || value.isEmpty)) {
-            return '$hint is required';
+      bool? currentPasswordVisibility,
+      FocusNode? focusNode}) {
+    final isWeb = kIsWeb && context.isDesktop;
+
+    return TextFormField(
+      controller: controller,
+      focusNode: focusNode,
+      obscureText:
+          isPasswordTextField ? !(currentPasswordVisibility ?? false) : false,
+      maxLines: maxLines,
+      keyboardType: keyboardType,
+      style: TextStyle(fontSize: isWeb ? 16 : 14),
+      validator: (value) {
+        if (isRequired && (value == null || value.isEmpty)) {
+          return '$hint is required';
+        }
+        if (hint == "Email" && value != null && !AppUtils.isEmailValid(value)) {
+          return 'Enter a valid email address';
+        }
+        if (hint == "Password" && value != null && isRequired) {
+          if (value.length < 8) {
+            return 'Password must be at least 8 characters long';
           }
-          if (hint == "Email" &&
-              value != null &&
-              !AppUtils.isEmailValid(value)) {
-            return 'Enter a valid email address';
+          if (!RegExp(r'(?=.*[A-Z])').hasMatch(value)) {
+            return 'Password must contain an uppercase letter';
           }
-          if (hint == "Password" && value != null && isRequired) {
-            if (value.length < 8) {
-              return 'Password must be at least 8 characters long';
-            }
-            if (!RegExp(r'(?=.*[A-Z])').hasMatch(value)) {
-              return 'Password must contain an uppercase letter';
-            }
-            if (!RegExp(r'(?=.*[a-z])').hasMatch(value)) {
-              return 'Password must contain a lowercase letter';
-            }
-            if (!RegExp(r'(?=.*\d)').hasMatch(value)) {
-              return 'Password must contain a number';
-            }
+          if (!RegExp(r'(?=.*[a-z])').hasMatch(value)) {
+            return 'Password must contain a lowercase letter';
           }
-          if (hint == "Confirm Password" &&
-              controller.text != passwordController.text) {
-            return "Passwords do not match";
+          if (!RegExp(r'(?=.*\d)').hasMatch(value)) {
+            return 'Password must contain a number';
           }
-          if (hint == "Pin Code" && value != null && value.isNotEmpty) {
-            if (value.length != 6) return 'Pincode must be 6 digits';
-            if (!RegExp(r"^[0-9]{6}$").hasMatch(value)) {
-              return 'Enter a valid pincode';
-            }
+        }
+        if (hint == "Confirm Password" &&
+            controller.text != passwordController.text) {
+          return "Passwords do not match";
+        }
+        if (hint == "Pin Code" && value != null && value.isNotEmpty) {
+          if (value.length != 6) return 'Pincode must be 6 digits';
+          if (!RegExp(r"^[0-9]{6}$").hasMatch(value)) {
+            return 'Enter a valid pincode';
           }
-          return null;
-        },
-        decoration: context.inputDecoration("", hint, icon: icon).copyWith(
-              suffixIcon: isPasswordTextField
-                  ? IconButton(
-                      icon: Icon((currentPasswordVisibility ?? false)
-                          ? Icons.visibility
-                          : Icons.visibility_off),
-                      onPressed: onTogglePasswordVisibility,
-                    )
-                  : null,
+        }
+        return null;
+      },
+      decoration: context
+          .inputDecoration("", hint,
+              icon: icon, borderRadius: isWeb ? 8.0 : 8.0)
+          .copyWith(
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: isWeb ? 20 : 16,
+              vertical: isWeb ? 18 : 16,
             ),
+            suffixIcon: isPasswordTextField
+                ? IconButton(
+                    icon: Icon(
+                      (currentPasswordVisibility ?? false)
+                          ? Icons.visibility
+                          : Icons.visibility_off,
+                      size: isWeb ? 20 : 18,
+                    ),
+                    onPressed: onTogglePasswordVisibility,
+                  )
+                : null,
+          ),
+    );
+  }
+
+  Widget _buildDropdownField() {
+    return CustomDropdownFormField<String>(
+      value: selectedState,
+      label: "",
+      hint: "Select your state",
+      items: stateNames
+          .map((b) => DropdownMenuItem(value: b, child: Text(b)))
+          .toList(),
+      onChanged: (val) => setState(() => selectedState = val),
+      validator: (val) => val == null ? "State is required" : null,
+    );
+  }
+
+  Widget _buildAreaTextField() {
+    return TextFormField(
+      controller: addressController,
+      decoration: context.inputDecoration("", "Enter address or locality",
+          icon: Icons.home),
+      maxLines: 1,
+      validator: (val) => val!.isEmpty ? "Required" : null,
+    );
+  }
+
+  Widget _buildAutocompleteField() {
+    return AutocompleteSearchField(
+      label: "",
+      hint: "Enter your area",
+      controller: areaController,
+      icon: Icons.area_chart,
+      lat: stateCoordinates[selectedState]?['lat'] ?? 0.0,
+      lon: stateCoordinates[selectedState]?['lon'] ?? 0.0,
+      onPlaceSelected: (suggestion) {
+        setState(() {
+          areaController.text = suggestion.text;
+          cityController.text = suggestion.municipality ?? '';
+          pinCodeController.text = suggestion.postalCode ?? '';
+        });
+      },
+      validator: (val) => val!.isEmpty ? "Required" : null,
+    );
+  }
+
+  Widget _buildWebBikeSection() {
+    return Column(
+      children: [
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: bikes.length,
+          itemBuilder: (context, index) => _buildWebBikeFields(index),
+        ),
+        if (bikes.length < 3)
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton.icon(
+              onPressed: _addBike,
+              icon: const Icon(Icons.add_circle_outline),
+              label: const Text("Add Another Bike"),
+              style: TextButton.styleFrom(
+                foregroundColor: context.primaryColor,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildWebBikeFields(int index) {
+    final bike = bikes[index];
+    final selectedBrand = bike['brand'] as String?;
+    final brandController = bike['brandController'] as TextEditingController;
+    final selectedModel = bike['model'] as String?;
+    final modelController = bike['modelController'] as TextEditingController;
+
+    final bool isBrandOthers = selectedBrand == 'Others';
+    final bool isModelOthers = selectedModel == 'Others';
+
+    final modelsForBrand = isBrandOthers
+        ? <String>[] // No models if brand is "Others"
+        : (bikeBrandModels[selectedBrand] ?? []);
+    final brandListWithOthers = [...bikeBrands, 'Others'];
+    final modelListWithOthers =
+        modelsForBrand.isNotEmpty ? [...modelsForBrand, 'Others'] : <String>[];
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      decoration: BoxDecoration(
+        color: Theme.of(context).brightness == Brightness.dark
+            ? Colors.grey[800]?.withOpacity(0.3)
+            : Colors.white.withOpacity(0.6),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.grey[700]!
+              : Colors.grey[300]!,
+          width: 1,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Bike ${index + 1}',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.black87,
+                  ),
+                ),
+                if (bikes.length > 1)
+                  IconButton(
+                    icon: const Icon(Icons.remove_circle_outline,
+                        color: Colors.redAccent),
+                    onPressed: () => _removeBike(index),
+                    tooltip: 'Remove Bike',
+                  ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            DropdownButtonFormField<String>(
+              value: selectedBrand,
+              decoration: context
+                  .inputDecoration("", "Choose brand",
+                      icon: Icons.two_wheeler_outlined, borderRadius: 8.0)
+                  .copyWith(
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 18),
+                  ),
+              items: brandListWithOthers
+                  .map((b) => DropdownMenuItem(value: b, child: Text(b)))
+                  .toList(),
+              onChanged: (val) {
+                setState(() {
+                  bikes[index]['brand'] = val;
+                  bikes[index]['model'] = null;
+                  modelController.clear();
+                  if (val != 'Others') {
+                    brandController.clear();
+                  } else {
+                    brandFocusNodes[index].requestFocus();
+                  }
+                });
+              },
+            ),
+            if (isBrandOthers) ...[
+              const SizedBox(height: 20),
+              _buildTextField('Enter Brand Name', brandController,
+                  focusNode: brandFocusNodes[index],
+                  icon: Icons.edit_outlined,
+                  isRequired: true),
+            ],
+            if (!isBrandOthers) ...[
+              const SizedBox(height: 20),
+              DropdownButtonFormField<String>(
+                value: selectedModel,
+                decoration: context
+                    .inputDecoration(
+                      "",
+                      selectedBrand != null
+                          ? "Choose model"
+                          : "Select a brand first",
+                      icon: Icons.motorcycle_outlined,
+                      borderRadius: 8.0,
+                    )
+                    .copyWith(
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 18),
+                    ),
+                onChanged: selectedBrand != null
+                    ? (val) {
+                        setState(() {
+                          bikes[index]['model'] = val;
+                          if (val != 'Others') {
+                            modelController.clear();
+                          } else {
+                            modelFocusNodes[index].requestFocus();
+                          }
+                        });
+                      }
+                    : null,
+                items: modelListWithOthers
+                    .map((m) => DropdownMenuItem(value: m, child: Text(m)))
+                    .toList(),
+              ),
+              if (isModelOthers) ...[
+                const SizedBox(height: 20),
+                _buildTextField('Enter Model Name', modelController,
+                    focusNode: modelFocusNodes[index],
+                    icon: Icons.edit_outlined,
+                    isRequired: true),
+              ],
+            ],
+            if (isBrandOthers) ...[
+              const SizedBox(height: 20),
+              _buildTextField('Enter Model Name', modelController,
+                  icon: Icons.motorcycle_outlined, isRequired: true),
+            ],
+            const SizedBox(height: 20),
+            MonthYearPicker(
+              label: "",
+              hint: "Manufacture Date",
+              selectOnlyMonthYear: true,
+              selectedDate: bike['monthYear'],
+              onDateSelected: (date) =>
+                  setState(() => bikes[index]['monthYear'] = date),
+            ),
+          ],
+        ),
       ),
     );
   }

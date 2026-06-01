@@ -1,0 +1,116 @@
+.page {
+  padding: 28px 32px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Sold banner */
+.soldBanner {
+  background: rgba(239, 68, 68, 0.1);
+  border-bottom: 1px solid rgba(239, 68, 68, 0.3);
+  padding: 10px 20px;
+  text-align: center;
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #EF4444;
+  border-radius: var(--bv-radius);
+  margin-bottom: -8px;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
+.imageCol {}
+
+.sideCol {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.nameBlock {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.nameStack {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.nameBadgeRow {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.itemName {
+  font-family: var(--font-archivo-narrow), sans-serif;
+  font-weight: 800;
+  font-size: 36px;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  color: var(--bv-text);
+  margin: 0;
+  line-height: 1;
+}
+
+/* Status badges */
+.badge {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 3px 7px;
+  border-radius: var(--bv-radius);
+  color: #fff;
+  align-self: center;
+}
+
+.badgeApproved {
+  background: var(--bv-green);
+  color: var(--bv-green-ink);
+}
+
+.badgePending {
+  background: #F59E0B;
+  color: #fff;
+}
+
+.badgeRejected {
+  background: #EF4444;
+  color: #fff;
+}
+
+.badgeSold {
+  background: var(--bv-text-3);
+  color: #fff;
+}
+
+/* Listed on + location */
+.listedOn {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--bv-text-3);
+}
+
+@media (max-width: 900px) {
+  .hero { grid-template-columns: 1fr; }
+  .page { padding: 20px 20px 60px; }
+}

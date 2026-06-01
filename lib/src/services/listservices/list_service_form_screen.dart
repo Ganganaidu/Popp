@@ -2,22 +2,34 @@ import 'dart:io';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:popp/src/toolbar/common_app_bar.dart';
 import 'package:popp/src/navigation/nav_router.dart';
-import 'package:popp/src/utils/build_extensions.dart'; // From build_extensions.dart
-import 'package:popp/src/widgets/custom_dropdown_form_field.dart'; // You might need to create this widget
-import 'package:popp/src/widgets/image_picker_selection.dart'; // You might need to create this widget
-import 'package:popp/src/widgets/loading_overlay.dart'; // You might need to create this widget
+import 'package:popp/src/utils/build_extensions.dart';
+import 'package:popp/src/utils/product_utils.dart';
+import 'package:dropdown_button2/dropdown_button2.dart';
+import 'package:popp/src/widgets/app_dialogs.dart';
+import 'package:popp/src/widgets/custom_dropdown_form_field.dart';
+import 'package:popp/src/widgets/image_picker_selection.dart';
+import 'package:popp/src/widgets/loading_overlay.dart';
 import 'package:popp/src/widgets/month_year_picker.dart';
+import 'package:popp/src/widgets/title_text.dart';
+import 'package:popp/src/widgets/web_constrained_box.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../firebase/firebase_api_service.dart';
-import '../../utils/app_constants.dart';
+import '../../api/api_url.dart';
+import '../../api/firebase/firebase_api_service.dart';
+import '../../api/firebase/remote_config_service.dart';
+import '../../gallery/pic_image_gallery.dart';
+import '../../search/autocomplete_search_field.dart';
 import '../../utils/app_loger.dart';
 import '../../utils/product_content_data.dart';
-import '../../widgets/working_hours_picker.dart'; // You might need to create this widget
+import '../../widgets/working_hours_picker.dart';
 
 class ListServiceFormScreen extends StatefulWidget {
-  const ListServiceFormScreen({super.key});
+  final String? category;
+  final Map<String, dynamic>? existingData;
+
+  const ListServiceFormScreen({super.key, this.category, this.existingData});
 
   @override
   State<ListServiceFormScreen> createState() => _ListServiceFormScreenState();
@@ -29,11 +41,11 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
 
   // --- Common controllers, now potentially used in multiple sections based on category ---
   final TextEditingController businessTitleController = TextEditingController();
+  final TextEditingController shopNameController = TextEditingController();
   final TextEditingController businessContactController =
       TextEditingController();
   final TextEditingController contactNameController = TextEditingController();
   final TextEditingController gstController = TextEditingController();
-  final TextEditingController panController = TextEditingController();
   final TextEditingController businessDescriptionController =
       TextEditingController();
   final TextEditingController businessAddressController =
@@ -58,12 +70,20 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
   final TextEditingController googleFormLinkController =
       TextEditingController();
 
+  // --- Towing Service specific controllers ---
+  final TextEditingController bikeRSAController = TextEditingController();
+  final TextEditingController customTowingServiceTypeController =
+      TextEditingController();
+
+  final List<String> _selectedTowingServiceTypes = [];
+  String? _serviceCoverageArea;
+
   String? _selectedCategory;
   String selectedCountryCode = "+91";
   final List<File> _promoImages = [];
-  final List<File> _shopGarageImages =
-      []; // Specific to Book Service/Bike Rentals
+  final List<File> _shopGarageImages = [];
   String? _doYouInspectPremiumBikes; // For Book Service
+  String? _isTyreFitmentAvailable; // For Book Service
   String? _selectedState; // For Bike Rentals
   String? _bikeProvision; // For Track/Training Day
   String? _riderSkillLevel; // For Track/Training Day
@@ -74,11 +94,98 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
 
   bool _isLoading = false;
   bool _termsAccepted = false;
+  bool _enableGallery = false;
+
+  bool get _isEditing => widget.existingData != null;
+
+  TimeOfDay? _parseTime(String? s) {
+    if (s == null || s.isEmpty) return null;
+    final parts = s.split(':');
+    if (parts.length < 2) return null;
+    int h = int.tryParse(parts[0]) ?? 0;
+    final minPart = parts[1].replaceAll(RegExp(r'[^0-9]'), '');
+    int m = int.tryParse(minPart) ?? 0;
+    final lower = s.toLowerCase();
+    if (lower.contains('pm') && h != 12) h += 12;
+    if (lower.contains('am') && h == 12) h = 0;
+    return TimeOfDay(hour: h, minute: m);
+  }
+
+  void _initFromExistingData(Map<String, dynamic> data) {
+    businessTitleController.text = data['businessTitle'] ?? '';
+    shopNameController.text = data['shopName'] ?? '';
+    businessDescriptionController.text =
+        data['businessDescription'] ?? data['eventDetailedDescription'] ?? '';
+    contactNameController.text =
+        data['contactName'] ?? data['pointOfContactName'] ?? '';
+    gstController.text = data['gstNumber'] ?? '';
+    businessAddressController.text =
+        data['businessAddress'] ?? data['locationAddress'] ?? '';
+    areaController.text = data['area'] ?? '';
+    cityController.text = data['city'] ?? '';
+    pincodeController.text = data['pincode'] ?? '';
+    googleMapLinkController.text = data['googleMapLink'] ?? '';
+    socialMediaLinkController.text = data['socialMediaLink'] ?? '';
+    businessWorkingDaysHoursController.text =
+        data['businessWorkingDaysHours'] ?? data['workingHours'] ?? '';
+
+    final contact = (data['businessContact'] ?? data['contact'] ?? '') as String;
+    final spaceIdx = contact.indexOf(' ');
+    if (spaceIdx > 0) {
+      selectedCountryCode = contact.substring(0, spaceIdx);
+      businessContactController.text = contact.substring(spaceIdx + 1);
+    } else {
+      businessContactController.text = contact;
+    }
+
+    _selectedState = data['state'] as String?;
+    _doYouInspectPremiumBikes = data['doYouInspectPremiumBikes'] as String?;
+    _isTyreFitmentAvailable = data['isTyreFitmentAvailable'] as String?;
+    bikeRSAController.text = data['bikeRSA'] ?? '';
+    _serviceCoverageArea = data['serviceCoverageArea'] as String?;
+
+    final towingTypes = data['towingServiceType'];
+    if (towingTypes is List) {
+      _selectedTowingServiceTypes.addAll(towingTypes.cast<String>());
+    }
+
+    // Track / Training Day fields
+    eventNameController.text = data['eventName'] ?? '';
+    maxSlotsController.text = data['maxSlots'] ?? '';
+    eventDetailedDescriptionController.text =
+        data['eventDetailedDescription'] ?? '';
+    locationNameController.text = data['locationName'] ?? '';
+    locationAddressController.text = data['locationAddress'] ?? '';
+    googleFormLinkController.text = data['googleFormLink'] ?? '';
+    _bikeProvision = data['bikeProvision'] as String?;
+    _riderSkillLevel = data['riderSkillLevel'] as String?;
+
+    final startDateStr = data['eventStartDate'] as String?;
+    if (startDateStr != null) {
+      try { _eventStartDate = DateTime.parse(startDateStr); } catch (_) {}
+    }
+    final endDateStr = data['eventEndDate'] as String?;
+    if (endDateStr != null) {
+      try { _eventEndDate = DateTime.parse(endDateStr); } catch (_) {}
+    }
+    _eventStartTime = _parseTime(data['eventStartTime'] as String?);
+    _eventEndTime = _parseTime(data['eventEndTime'] as String?);
+
+    _termsAccepted = true;
+  }
 
   @override
   void initState() {
     super.initState();
-    // Show category selection bottom sheet on first load
+    if (widget.category != null) {
+      _selectedCategory = widget.category;
+    }
+    if (widget.existingData != null) {
+      _selectedCategory ??= widget.existingData!['category'] as String?;
+      _initFromExistingData(widget.existingData!);
+    }
+    _loadConfig();
+    // Show category selection bottom sheet on first load ONLY if no category passed
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_selectedCategory == null) {
         _showCategorySelectionSheet();
@@ -86,13 +193,20 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
     });
   }
 
+  void _loadConfig() async {
+    final configService = await RemoteConfigService.getInstance();
+    setState(() {
+      _enableGallery = configService.enableGallery;
+    });
+  }
+
   @override
   void dispose() {
     businessTitleController.dispose();
+    shopNameController.dispose();
     businessContactController.dispose();
     contactNameController.dispose();
     gstController.dispose();
-    panController.dispose();
     businessDescriptionController.dispose();
     businessAddressController.dispose();
     areaController.dispose();
@@ -108,12 +222,14 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
     locationNameController.dispose();
     locationAddressController.dispose();
     googleFormLinkController.dispose();
+    bikeRSAController.dispose();
+    customTowingServiceTypeController.dispose();
     super.dispose();
   }
 
   void _openTermsLink() async {
     AppLogger.w("Terms link clicked");
-    final uri = Uri.parse(Constants.privacyLink);
+    final uri = Uri.parse(ApiUrl.customersTermsLink);
     final launched = await launchUrl(uri);
     if (launched) {
       setState(() => _termsAccepted = true);
@@ -138,10 +254,10 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
     _formKey.currentState?.reset(); // Resets the form
     // Clear all text controllers
     businessTitleController.clear();
+    shopNameController.clear();
     businessContactController.clear();
     contactNameController.clear();
     gstController.clear();
-    panController.clear();
     businessDescriptionController.clear();
     businessAddressController.clear();
     areaController.clear();
@@ -156,6 +272,8 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
     locationNameController.clear();
     locationAddressController.clear();
     googleFormLinkController.clear();
+    bikeRSAController.clear();
+    customTowingServiceTypeController.clear();
 
     // Clear all dropdown selections and dates
     setState(() {
@@ -169,6 +287,8 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
       _eventStartTime = null;
       _eventEndTime = null;
       _termsAccepted = false;
+      _selectedTowingServiceTypes.clear();
+      _serviceCoverageArea = null;
     });
   }
 
@@ -193,38 +313,50 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
 
       // Collect data based on category
       Map<String, dynamic> formData = {};
+      String countryCode = Localizations.localeOf(context).countryCode ?? "IN";
 
-      if (_selectedCategory == serviceCategories[0] ||
-          _selectedCategory == serviceCategories[1]) {
+      if (ProductUtils.isBikeAndOthersCategory(_selectedCategory)) {
         formData.addAll({
+          'isActive': true,
           'category': _selectedCategory,
+          'shopName': shopNameController.text,
           'businessTitle': businessTitleController.text,
-          'businessPromoPicture': _promoImages.map((e) => e.path).toList(),
-          'shopGaragePics': _shopGarageImages.map((e) => e.path).toList(),
+          'businessDescription': businessDescriptionController.text,
           'businessContact':
               '$selectedCountryCode ${businessContactController.text}',
           'contactName': contactNameController.text,
-          'gstNumber': gstController.text,
-          'panNumber': panController.text,
-          'businessDescription': businessDescriptionController.text,
-          'businessAddress': businessAddressController.text,
+          'state': _selectedState,
           'area': areaController.text,
           'city': cityController.text,
-          'searchKeywords':
-              '${businessTitleController.text} ${areaController.text} '
-                      '${cityController.text} $_selectedCategory '
-                  .toLowerCase()
-                  .split(' '),
-          'state': _selectedState,
+          'businessAddress': businessAddressController.text,
           'pincode': pincodeController.text,
+          'gstNumber': gstController.text,
           'doYouInspectPremiumBikes': _doYouInspectPremiumBikes,
+          'isTyreFitmentAvailable': _isTyreFitmentAvailable,
+          'bikeRSA': bikeRSAController.text,
+          'towingServiceType': _selectedTowingServiceTypes
+              .map((type) => type == 'Others'
+                  ? customTowingServiceTypeController.text
+                  : type)
+              .toList(),
+          'serviceCoverageArea': _serviceCoverageArea,
           'googleMapLink': googleMapLinkController.text,
           'socialMediaLink': socialMediaLinkController.text,
           'businessWorkingDaysHours': businessWorkingDaysHoursController.text,
+          'businessPromoPicture': _promoImages.map((e) => e.path).toList(),
+          'shopGaragePics': _shopGarageImages.map((e) => e.path).toList(),
+          'searchKeywords':
+              '${businessTitleController.text} ${areaController.text} '
+                      '${cityController.text} $_selectedCategory '
+                      '${shopNameController.text} '
+                  .toLowerCase()
+                  .split(' '),
+          'countryCode': countryCode,
         });
-      } else if (_selectedCategory == serviceCategories[2] ||
-          _selectedCategory == serviceCategories[3]) {
+      } else if (ProductUtils.isTrackAndTrainingCategory(_selectedCategory)) {
         formData.addAll({
+          'isActive': true,
+          'countryCode': countryCode,
           'category': _selectedCategory,
           'eventName': eventNameController.text,
           'eventPromoPicture': _promoImages.map((e) => e.path).toList(),
@@ -254,13 +386,55 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
           'state': _selectedState,
           'pincode': pincodeController.text,
           'gstNumber': gstController.text,
-          'panNumber': panController.text,
           'googleMapLink': googleMapLinkController.text,
           'googleFormLink': googleFormLinkController.text,
           'socialMediaLink': socialMediaLinkController.text,
           'contact': businessContactController.text,
           'pointOfContactName': contactNameController.text,
         });
+      }
+
+      if (_isEditing) {
+        final String serviceId = widget.existingData!['id'];
+        final existingPromo =
+            (widget.existingData!['promoImageUrls'] as List? ?? []).cast<String>();
+        final existingShop =
+            (widget.existingData!['shopImageUrls'] as List? ?? []).cast<String>();
+
+        List<String> promoUrls = existingPromo;
+        if (_promoImages.isNotEmpty) {
+          final uploaded = await uploadMultipleImages(_promoImages);
+          if (uploaded.isNotEmpty) promoUrls = uploaded;
+        }
+
+        List<String> shopUrls = existingShop;
+        if (_shopGarageImages.isNotEmpty) {
+          final uploaded = await uploadMultipleImages(_shopGarageImages);
+          if (uploaded.isNotEmpty) shopUrls = uploaded;
+        }
+
+        formData['promoImageUrls'] = promoUrls;
+        formData['shopImageUrls'] = shopUrls;
+        formData['status'] = 'pending';
+        formData['isApproved'] = false;
+
+        await _handleLoading(true);
+        final bool success =
+            await _productsService.updateService(serviceId, formData);
+        await _handleLoading(false);
+
+        if (!mounted) return;
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Service updated! It is under review.')),
+          );
+          Navigator.pop(context);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Update failed. Please try again.')),
+          );
+        }
+        return;
       }
 
       bool success = await _productsService.submitListServicesForm(
@@ -275,8 +449,12 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
       if (success) {
         _clearAllFields(); // Clear all fields after successful submission
         if (!mounted) return;
-        // Optionally navigate to a success page or home
-        onServiceListingTap(context, _selectedCategory!, true);
+        AppLogger.d("Form submission navigate to : $_selectedCategory");
+        // Show a confirmation dialog explaining the review process and then navigate
+        await AppDialogs.showServiceSubmitDialog(context, _selectedCategory!,
+            () {
+          onServiceListingTap(context, _selectedCategory!, null, true);
+        });
       }
     } else {
       if (!mounted) return;
@@ -300,741 +478,1293 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
       builder: (context) {
         return SizedBox(
           width: double.infinity,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Text('Select Service Category',
-                    style:
-                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              ),
-              const Divider(thickness: 1, height: 0),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: serviceCategories
-                      .map((category) => Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 6),
-                            child: Card(
-                              elevation: 1,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              color: Theme.of(context).colorScheme.surface,
-                              child: ListTile(
-                                title: Center(
-                                  child: Text(
-                                    category,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 16,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Select Service Category',
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold)),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: ProductUtils.listYourServiceCategories
+                        .map((category) => Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 6),
+                              child: Card(
+                                elevation: 1,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                color: Theme.of(context).colorScheme.surface,
+                                child: ListTile(
+                                  title: Center(
+                                    child: Text(
+                                      category,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 16,
+                                      ),
                                     ),
                                   ),
+                                  onTap: () {
+                                    Navigator.of(context).pop(category);
+                                  },
                                 ),
-                                onTap: () {
-                                  Navigator.of(context).pop(category);
-                                },
                               ),
-                            ),
-                          ))
-                      .toList(),
+                            ))
+                        .toList(),
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 20)
+              ],
+            ),
           ),
         );
       },
     );
-    if (selected != null && selected != _selectedCategory) {
-      setState(() {
+    if (selected != null) {
+      if (selected != _selectedCategory) {
         _clearAllFields();
-        _selectedCategory = selected;
-      });
+        setState(() {
+          _selectedCategory = selected;
+        });
+      }
+    } else {
+      // If no category is selected and the user closes the sheet,
+      // and there was no category selected before, close the whole page.
+      if (_selectedCategory == null) {
+        Navigator.of(context).pop();
+      }
     }
+  }
+
+  // Returns true when any user-editable field contains data that would be lost
+  bool _hasFormData() {
+    AppLogger.d("_hasFormData called");
+    // Text controllers to check
+    final textControllers = <TextEditingController>[
+      businessTitleController,
+      shopNameController,
+      businessContactController,
+      contactNameController,
+      gstController,
+      businessDescriptionController,
+      businessAddressController,
+      areaController,
+      cityController,
+      pincodeController,
+      googleMapLinkController,
+      socialMediaLinkController,
+      businessWorkingDaysHoursController,
+      eventNameController,
+      maxSlotsController,
+      eventDetailedDescriptionController,
+      locationNameController,
+      locationAddressController,
+      googleFormLinkController,
+      bikeRSAController,
+      customTowingServiceTypeController,
+    ];
+
+    for (final c in textControllers) {
+      if (c.text.trim().isNotEmpty) return true;
+    }
+
+    // Images
+    if (_promoImages.isNotEmpty) return true;
+    if (_shopGarageImages.isNotEmpty) return true;
+
+    // Dropdowns / selections
+    if (_selectedState != null) return true;
+    if (_bikeProvision != null) return true;
+    if (_riderSkillLevel != null) return true;
+    if (_selectedTowingServiceTypes.isNotEmpty) return true;
+    if (_serviceCoverageArea != null) return true;
+
+    // Dates / times / terms
+    if (_eventStartDate != null || _eventEndDate != null) return true;
+    if (_eventStartTime != null || _eventEndTime != null) return true;
+    if (_termsAccepted) return true;
+
+    // If no meaningful data present, return false
+    return false;
+  }
+
+  // Ask the user to confirm discarding changes. Returns true when it's OK to pop.
+  Future<bool> _confirmDiscardChanges() async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Discard changes?'),
+          content: const Text(
+              'You have unsaved changes. If you go back now, your data will be lost.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+
+    return result == true;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('List your service'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.category),
-            tooltip: 'Change Service Category',
-            onPressed: _showCategorySelectionSheet,
-          ),
-        ],
-      ),
-      body: LoadingOverlay(
-        isLoading: _isLoading,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (_selectedCategory == null)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 20.0),
-                    child: Center(
-                      child: Text(
-                        "Please choose a service category to enable the form fields.",
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey[600],
-                          fontStyle: FontStyle.italic,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-                if (_selectedCategory == 'Book your Bike service' ||
-                    _selectedCategory == 'Bike Rentals') ...[
-                  // Fields for Book your Service / Bike Rentals (from image_1a7749.png)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: TextFormField(
-                      controller: businessTitleController, // 1
-                      decoration: context.inputDecoration(
-                          "Business Title", "Enter your business title"),
-                      validator: (val) =>
-                          val!.isEmpty ? "Business Title is mandatory" : null,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: ImagePickerSection(
-                      title: "Upload pics for Business Promo or Adv Picture",
-                      // 2
-                      images: _promoImages,
-                      onImagesChanged: (images) => setState(() {
-                        _promoImages.clear();
-                        _promoImages.addAll(images);
-                      }),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: ImagePickerSection(
-                      title: "Upload pics for Shop/Garage Pics", // 3
-                      images: _shopGarageImages,
-                      onImagesChanged: (images) => setState(() {
-                        _shopGarageImages.clear();
-                        _shopGarageImages.addAll(images);
-                      }),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Row(
-                      children: [
-                        DropdownButton<String>(
-                          value: selectedCountryCode,
-                          items: countryCodes
-                              .map((code) => DropdownMenuItem(
-                                  value: code, child: Text(code)))
-                              .toList(),
-                          onChanged: (val) =>
-                              setState(() => selectedCountryCode = val!),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: TextFormField(
-                            controller: businessContactController, // 4
-                            keyboardType: TextInputType.phone,
-                            decoration: context.inputDecoration(
-                                "Business Contact #",
-                                "Enter business contact number"),
-                            validator: (val) =>
-                                val!.isEmpty ? "Contact is mandatory" : null,
+    return PopScope(
+      // Allow system to pop automatically only when there is no unsaved data.
+      canPop: !_hasFormData(),
+      onPopInvokedWithResult: (didPop, result) async {
+        // If the pop already happened, nothing to do.
+        if (didPop) return;
+
+        // If there is unsaved data, ask confirmation and pop only when user confirms.
+        if (_hasFormData()) {
+          AppLogger.d('[ListServiceFormScreen] unsaved data detected on pop');
+          final discard = await _confirmDiscardChanges();
+          if (discard) {
+            // Perform the pop now that the user confirmed.
+            if (Navigator.of(context).canPop()) Navigator.of(context).pop();
+          }
+        } else {
+          // No unsaved data — perform normal pop.
+          if (Navigator.of(context).canPop()) Navigator.of(context).pop();
+        }
+      },
+      child: Scaffold(
+        appBar: CommonAppBar(
+          showBackButton: true,
+          onBackPressed: () async {
+            AppLogger.d('[ListServiceFormScreen] AppBar back pressed');
+            if (_hasFormData()) {
+              AppLogger.d(
+                  '[ListServiceFormScreen] unsaved data detected on AppBar back');
+              final discard = await _confirmDiscardChanges();
+              AppLogger.d(
+                  '[ListServiceFormScreen] discard confirmation result (AppBar): $discard');
+              if (discard && Navigator.of(context).canPop()) {
+                Navigator.of(context).pop();
+              }
+            } else {
+              if (Navigator.of(context).canPop()) Navigator.of(context).pop();
+            }
+          },
+          titleWidget: TitleText(_selectedCategory ?? 'List your service'),
+          actions: [
+            if (widget.category == null)
+              IconButton(
+                icon: const Icon(Icons.arrow_drop_down_circle_rounded),
+                tooltip: 'Change Service Category',
+                onPressed: _showCategorySelectionSheet,
+              ),
+          ],
+        ),
+        body: WebConstrainedBox(
+          child: LoadingOverlay(
+            isLoading: _isLoading,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (_selectedCategory == null)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 20.0),
+                        child: Center(
+                          child: Text(
+                            "Please choose a service category to enable the form fields.",
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey[600],
+                              fontStyle: FontStyle.italic,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: TextFormField(
-                      controller: contactNameController, // 5
-                      decoration: context.inputDecoration(
-                          "Contact Name", "Enter contact person's name"),
-                      validator: (val) =>
-                          val!.isEmpty ? "Contact Name is mandatory" : null,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: TextFormField(
-                      controller: businessDescriptionController, // 8
-                      decoration: context.inputDecoration(
-                          "Business Description/Clauses",
-                          "Describe your business and terms"),
-                      maxLines: 3,
-                      validator: (val) => val!.isEmpty
-                          ? "Business Description is mandatory"
-                          : null,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: TextFormField(
-                      controller: businessAddressController, // 9
-                      decoration: context.inputDecoration(
-                          "Business Address", "Enter your business address"),
-                      validator: (val) =>
-                          val!.isEmpty ? "Address is mandatory" : null,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: TextFormField(
-                      controller: areaController, // 10
-                      decoration: context.inputDecoration("Area", "Enter area"),
-                      validator: (val) =>
-                          val!.isEmpty ? "Area is mandatory" : null,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: TextFormField(
-                      controller: cityController, // 11
-                      decoration:
-                          context.inputDecoration("City", "Enter city name"),
-                      validator: (val) =>
-                          val!.isEmpty ? "City is mandatory" : null,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: CustomDropdownFormField<String>(
-                      label: "State",
-                      hint: "Select your state",
-                      value: _selectedState,
-                      items: stateNames
-                          .map(
-                              (s) => DropdownMenuItem(value: s, child: Text(s)))
-                          .toList(),
-                      onChanged: (val) => setState(() => _selectedState = val),
-                      validator: (val) => val == null ? "Required" : null,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: TextFormField(
-                      controller: pincodeController, // 13
-                      keyboardType: TextInputType.number,
-                      decoration:
-                          context.inputDecoration("Pin code", "Enter pin code"),
-                      validator: (val) =>
-                          val!.isEmpty ? "Pin code is mandatory" : null,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: CustomDropdownFormField<String>(
-                      label: "Premium Bike Inspection",
-                      hint: "Do you inspect premium bikes?",
-                      value: _doYouInspectPremiumBikes,
-                      items: yesNo
-                          .map(
-                              (s) => DropdownMenuItem(value: s, child: Text(s)))
-                          .toList(),
-                      onChanged: (val) =>
-                          setState(() => _doYouInspectPremiumBikes = val),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: TextFormField(
-                      controller: gstController, // 6
-                      decoration: context.inputDecoration(
-                          "GST #", "Enter GST number (optional)"),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: TextFormField(
-                      controller: panController, // 7
-                      decoration: context.inputDecoration(
-                          "PAN #", "Enter PAN number (optional)"),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: TextFormField(
-                      controller: googleMapLinkController, // 14
-                      decoration: context.inputDecoration("Google Map Link",
-                          "Enter Google Maps link (optional)"),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: TextFormField(
-                      controller: socialMediaLinkController, // 15
-                      decoration: context.inputDecoration("Social Media Link",
-                          "Enter social media link (optional)"),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: WorkingHoursPicker(
-                      label: "Business Working Days & Hours",
-                      hint: "Select working days and hours",
-                      controller: businessWorkingDaysHoursController,
-                      onChanged: (value) {
-                        setState(() {
-                          // The controller text is updated internally by WorkingHoursPicker
-                          // You might want to trigger form validation here if necessary
-                          // _formKey.currentState?.validate();
-                        });
-                      },
-                      validator: (val) => val!.isEmpty ||
-                              val == "No days selected, No time selected"
-                          ? "Working days and hours are mandatory"
-                          : null,
-                    ),
-                  ),
-                ],
-                if (_selectedCategory == 'Track day' ||
-                    _selectedCategory == 'Training day') ...[
-                  // Fields for Track Day / Training Day (from image_1a79f1.png)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: TextFormField(
-                      controller: eventNameController, // 1
-                      decoration: context.inputDecoration(
-                          "Event Name", "Enter the event name"),
-                      validator: (val) =>
-                          val!.isEmpty ? "Event Name is mandatory" : null,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: ImagePickerSection(
-                      title: "Event Promo Picture", // 2
-                      images: _promoImages,
-                      onImagesChanged: (images) => setState(() {
-                        _promoImages.clear();
-                        _promoImages.addAll(images);
-                      }),
-                    ),
-                  ),
-                  // Bike Type/Model (TextFormField as it's free text) - Not explicitly mapped to controller
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: TextFormField(
-                      // 3
-                      decoration: context.inputDecoration(
-                          "Bike Type/Model", "e.g., Any Superbike, 600cc+"),
-                      // No controller needed if just a display or optional input
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: CustomDropdownFormField<String>(
-                      label: 'Bike Provision',
-                      // 4
-                      hint: 'Self/Organizer',
-                      value: _bikeProvision,
-                      items: ['Self', 'Organizer']
-                          .map((provision) => DropdownMenuItem(
-                                value: provision,
-                                child: Text(provision),
-                              ))
-                          .toList(),
-                      onChanged: (val) => setState(() => _bikeProvision = val),
-                      validator: (val) =>
-                          val == null ? 'Bike Provision is mandatory' : null,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: CustomDropdownFormField<String>(
-                      label: 'Rider Skill Level',
-                      // 5
-                      hint: 'All/Beginner/Novice/Intermediate/Expert',
-                      value: _riderSkillLevel,
-                      items: riderSkillLevels
-                          .map((level) => DropdownMenuItem(
-                                value: level,
-                                child: Text(level),
-                              ))
-                          .toList(),
-                      onChanged: (val) =>
-                          setState(() => _riderSkillLevel = val),
-                      validator: (val) =>
-                          val == null ? 'Rider Skill Level is mandatory' : null,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: MonthYearPicker(
-                      // 6
-                      enable: true,
-                      label: "Event Start Date",
-                      hint: "Select start date",
-                      selectedDate: _eventStartDate,
-                      onDateSelected: (date) =>
-                          setState(() => _eventStartDate = date),
-                      validator: (date) =>
-                          date == null ? "Event Start Date is mandatory" : null,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: MonthYearPicker(
-                      // 7
-                      enable: true,
-                      label: "Event End Date",
-                      hint: "Select end date",
-                      selectedDate: _eventEndDate,
-                      onDateSelected: (date) =>
-                          setState(() => _eventEndDate = date),
-                      validator: (date) =>
-                          date == null ? "Event End Date is mandatory" : null,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: InkWell(
-                      onTap: () async {
-                        final TimeOfDay? picked = await showTimePicker(
-                          context: context,
-                          initialTime: _eventStartTime ?? TimeOfDay.now(),
-                        );
-                        if (picked != null && picked != _eventStartTime) {
-                          setState(() {
-                            _eventStartTime = picked;
-                          });
-                        }
-                      },
-                      child: InputDecorator(
-                        decoration: context
-                            .inputDecoration(
-                              "Event Start Time", // 8
-                              _eventStartTime?.format(context) ??
-                                  "Select start time",
-                            )
-                            .copyWith(
-                              errorText: _eventStartTime == null &&
-                                      _formKey.currentState?.validate() == false
-                                  ? "Event Start Time is mandatory"
-                                  : null,
-                            ),
-                        child: Text(
-                          _eventStartTime?.format(context) ??
-                              'Select start time',
-                          style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    if (_selectedCategory == ProductUtils.towingService)
+                      ..._buildTowingServiceFields(context)
+                    else if (ProductUtils.isBikeAndOthersCategory(
+                        _selectedCategory)) ...[
+                      // Fields for Find Mechanic / Bike Rentals
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          controller: shopNameController,
+                          decoration: context.inputDecoration("Shop name",
+                              ProductUtils.getShopNameHint(_selectedCategory)),
+                          validator: (val) =>
+                              val!.isEmpty ? "Shop name is mandatory" : null,
                         ),
                       ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: InkWell(
-                      onTap: () async {
-                        final TimeOfDay? picked = await showTimePicker(
-                          context: context,
-                          initialTime: _eventEndTime ?? TimeOfDay.now(),
-                        );
-                        if (picked != null && picked != _eventEndTime) {
-                          setState(() {
-                            _eventEndTime = picked;
-                          });
-                        }
-                      },
-                      child: InputDecorator(
-                        decoration: context
-                            .inputDecoration(
-                              "Event End Time", // 9
-                              _eventEndTime?.format(context) ??
-                                  "Select end time",
-                            )
-                            .copyWith(
-                              errorText: _eventEndTime == null &&
-                                      _formKey.currentState?.validate() == false
-                                  ? "Event End Time is mandatory"
-                                  : null,
-                            ),
-                        child: Text(
-                          _eventEndTime?.format(context) ?? 'Select end time',
-                          style: Theme.of(context).textTheme.titleMedium,
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          controller: businessTitleController, // 1
+                          decoration: context.inputDecoration("Business name",
+                              "As per GST or official records"),
+                          validator: (val) => val!.isEmpty
+                              ? "Business Title is mandatory"
+                              : null,
                         ),
                       ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: TextFormField(
-                      controller: maxSlotsController, // 10
-                      keyboardType: TextInputType.number,
-                      decoration: context.inputDecoration(
-                          "Max Slots", "Enter maximum slots available"),
-                      validator: (val) =>
-                          val!.isEmpty ? "Max Slots is mandatory" : null,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: TextFormField(
-                      controller: eventDetailedDescriptionController, // 11
-                      decoration: context.inputDecoration(
-                          "Event Detailed Description",
-                          "Tell what you provide, rider briefing & requirements/clauses"),
-                      maxLines: 3,
-                      validator: (val) => val!.isEmpty
-                          ? "Event Description is mandatory"
-                          : null,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: TextFormField(
-                      controller: locationNameController, // 12
-                      decoration: context.inputDecoration(
-                          "Location Name", "Enter location name"),
-                      validator: (val) =>
-                          val!.isEmpty ? "Location Name is mandatory" : null,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: TextFormField(
-                      controller: locationAddressController, // 13
-                      decoration: context.inputDecoration("Location Address",
-                          "Enter location address with landmark"),
-                      validator: (val) =>
-                          val!.isEmpty ? "Location Address is mandatory" : null,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: TextFormField(
-                      controller: areaController, // 14
-                      decoration: context.inputDecoration("Area", "Enter area"),
-                      validator: (val) =>
-                          val!.isEmpty ? "Area is mandatory" : null,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: TextFormField(
-                      controller: cityController, // 15
-                      decoration:
-                          context.inputDecoration("City", "Enter city name"),
-                      validator: (val) =>
-                          val!.isEmpty ? "City is mandatory" : null,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: CustomDropdownFormField<String>(
-                      label: "State",
-                      hint: "Select your state",
-                      value: _selectedState,
-                      items: stateNames
-                          .map(
-                              (s) => DropdownMenuItem(value: s, child: Text(s)))
-                          .toList(),
-                      onChanged: (val) => setState(() => _selectedState = val),
-                      validator: (val) => val == null ? "Required" : null,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: TextFormField(
-                      controller: pincodeController, // 17
-                      keyboardType: TextInputType.number,
-                      decoration:
-                          context.inputDecoration("Pin code", "Enter pin code"),
-                      validator: (val) =>
-                          val!.isEmpty ? "Pin code is mandatory" : null,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: TextFormField(
-                      controller: gstController, // 18
-                      decoration: context.inputDecoration(
-                          "GST #", "Enter GST number (optional)"),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: TextFormField(
-                      controller: panController, // 19
-                      decoration: context.inputDecoration(
-                          "PAN #", "Enter PAN number (optional)"),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: TextFormField(
-                      controller: googleMapLinkController, // 20
-                      decoration: context.inputDecoration("Google Map Link",
-                          "Enter Google Maps link (optional)"),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: TextFormField(
-                      controller: googleFormLinkController, // 21
-                      decoration: context.inputDecoration(
-                          "Google Form/Redirect Link",
-                          "Enter Google Form or redirect link (optional)"),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: TextFormField(
-                      controller: socialMediaLinkController, // 22
-                      decoration: context.inputDecoration("Social Media Link",
-                          "Enter social media link (optional)"),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Row(
-                      children: [
-                        DropdownButton<String>(
-                          value: selectedCountryCode,
-                          items: countryCodes
-                              .map((code) => DropdownMenuItem(
-                                  value: code, child: Text(code)))
-                              .toList(),
-                          onChanged: (val) =>
-                              setState(() => selectedCountryCode = val!),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          controller: businessDescriptionController, // 8
+                          decoration: context.inputDecoration(
+                            "Business Description/Clauses",
+                            ProductUtils.getBusinessDescriptionHint(
+                                _selectedCategory),
+                          ),
+                          maxLines: 3,
+                          validator: (val) => val!.isEmpty
+                              ? "Business Description is mandatory"
+                              : null,
                         ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: TextFormField(
-                            controller: businessContactController,
-                            // 23 (Contact #)
-                            keyboardType: TextInputType.phone,
-                            decoration: context.inputDecoration(
-                                "Contact #", "Enter contact number"),
-                            validator: (val) =>
-                                val!.isEmpty ? "Contact is mandatory" : null,
+                      ),
+                      if (_selectedCategory == ProductUtils.findMechanic)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: CustomDropdownFormField<String>(
+                            label: "Premium Bike Inspection",
+                            hint: "Would you offer a premium bike inspection?",
+                            value: _doYouInspectPremiumBikes,
+                            items: yesNo
+                                .map((s) =>
+                                    DropdownMenuItem(value: s, child: Text(s)))
+                                .toList(),
+                            onChanged: (val) =>
+                                setState(() => _doYouInspectPremiumBikes = val),
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: TextFormField(
-                      controller: contactNameController,
-                      // 24 (Point of Contact Name)
-                      decoration: context.inputDecoration(
-                          "Point of Contact Name",
-                          "Enter point of contact name"),
-                      validator: (val) => val!.isEmpty
-                          ? "Point of Contact Name is mandatory"
-                          : null,
-                    ),
-                  ),
-                ],
-                // Terms & Conditions (18/26 from images) - Only show if a category is selected
-                if (_selectedCategory != null)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16.0),
-                    child: Row(
-                      children: [
-                        Checkbox(
-                          value: _termsAccepted,
-                          onChanged: (bool? newValue) {
+                      if (_selectedCategory == ProductUtils.tyreShop)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: CustomDropdownFormField<String>(
+                            label: "Tyre Fitment",
+                            hint: "Is Tyre fitment available in your shop?",
+                            value: _isTyreFitmentAvailable,
+                            items: yesNo
+                                .map((s) =>
+                                    DropdownMenuItem(value: s, child: Text(s)))
+                                .toList(),
+                            onChanged: (val) =>
+                                setState(() => _isTyreFitmentAvailable = val),
+                          ),
+                        ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Row(
+                          children: [
+                            DropdownButton<String>(
+                              value: selectedCountryCode,
+                              items: countryCodes
+                                  .map((code) => DropdownMenuItem(
+                                      value: code, child: Text(code)))
+                                  .toList(),
+                              onChanged: (val) =>
+                                  setState(() => selectedCountryCode = val!),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: TextFormField(
+                                controller: businessContactController, // 4
+                                keyboardType: TextInputType.phone,
+                                decoration: context.inputDecoration(
+                                    "Business Contact #",
+                                    "Enter business contact number"),
+                                validator: (val) => val!.isEmpty
+                                    ? "Contact is mandatory"
+                                    : null,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          controller: contactNameController, // 5
+                          decoration: context.inputDecoration(
+                              "Contact Name", "Enter contact person's name"),
+                          validator: (val) =>
+                              val!.isEmpty ? "Contact Name is mandatory" : null,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: CustomDropdownFormField<String>(
+                          label: "State",
+                          hint: "Select your state",
+                          value: _selectedState,
+                          items: stateNames
+                              .map((s) =>
+                                  DropdownMenuItem(value: s, child: Text(s)))
+                              .toList(),
+                          onChanged: (val) =>
+                              setState(() => _selectedState = val),
+                          validator: (val) => val == null ? "Required" : null,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          controller: businessAddressController, // 14
+                          decoration: context.inputDecoration(
+                              "Address", "Enter your Shop/Garage address"),
+                          validator: (val) =>
+                              val!.isEmpty ? "Address is mandatory" : null,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      AutocompleteSearchField(
+                        label: "Area",
+                        hint: "Enter area details",
+                        controller: areaController,
+                        icon: null,
+                        lat: stateCoordinates[_selectedState]?['lat'] ?? 0.0,
+                        lon: stateCoordinates[_selectedState]?['lon'] ?? 0.0,
+                        onPlaceSelected: (suggestion) {
+                          // Update all location controllers when a place is selected
+                          setState(() {
+                            areaController.text = suggestion.text;
+                            cityController.text = suggestion.municipality ?? '';
+                            pincodeController.text =
+                                suggestion.postalCode ?? '';
+                          });
+                        },
+                        validator: (val) => val!.isEmpty ? "Required" : null,
+                      ),
+                      const SizedBox(height: 10),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          controller: cityController, // 11
+                          decoration: context.inputDecoration(
+                              "City", "Enter city name"),
+                          validator: (val) =>
+                              val!.isEmpty ? "City is mandatory" : null,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          controller: pincodeController, // 13
+                          keyboardType: TextInputType.number,
+                          decoration: context.inputDecoration(
+                              "Pin code", "Enter pin code"),
+                          validator: (val) =>
+                              val!.isEmpty ? "Pin code is mandatory" : null,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          controller: gstController, // 6
+                          decoration: context.inputDecoration(
+                              "GST #", "Enter GST number"),
+                          validator: (val) =>
+                              val!.isEmpty ? "GST number is mandatory" : null,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          controller: googleMapLinkController, // 14
+                          decoration: context.inputDecoration("Google Map Link",
+                              "Enter Google Maps link (optional)"),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          controller: socialMediaLinkController, // 15
+                          decoration: context.inputDecoration(
+                              "Social Media Link",
+                              "Enter social media link (optional)"),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: WorkingHoursPicker(
+                          label: "Business Working Days & Hours",
+                          hint: "Select working days and hours",
+                          controller: businessWorkingDaysHoursController,
+                          onChanged: (value) {
                             setState(() {
-                              _termsAccepted = newValue ?? false;
+                              // The controller text is updated internally by WorkingHoursPicker
+                              // You might want to trigger form validation here if necessary
+                              // _formKey.currentState?.validate();
                             });
                           },
-                          activeColor: Colors.orange,
+                          validator: (val) => val!.isEmpty ||
+                                  val == "No days selected, No time selected"
+                              ? "Working days and hours are mandatory"
+                              : null,
                         ),
-                        Expanded(
-                          child: RichText(
-                            text: TextSpan(
-                              style: Theme.of(context).textTheme.bodyMedium,
-                              children: [
-                                const TextSpan(
-                                    text: 'I have read and agree to the '),
-                                TextSpan(
-                                  text: 'Terms & Conditions',
-                                  style: const TextStyle(
-                                    color: Colors.blue,
-                                    decoration: TextDecoration.underline,
-                                  ),
-                                  recognizer: TapGestureRecognizer()
-                                    ..onTap = _openTermsLink,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: ImagePickerSection(
+                          title:
+                              "Upload pics for Business Promo or Adv Picture",
+                          allowGallery: _enableGallery,
+                          allowMultipleImages: _enableGallery,
+                          images: _promoImages,
+                          onImagesChanged: (images) => setState(() {
+                            _promoImages.clear();
+                            _promoImages.addAll(images);
+                          }),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: ImagePickerSection(
+                          title: "Upload pics for Shop/Garage Pics",
+                          allowGallery: _enableGallery,
+                          allowMultipleImages: _enableGallery,
+                          images: _shopGarageImages,
+                          onImagesChanged: (images) => setState(() {
+                            _shopGarageImages.clear();
+                            _shopGarageImages.addAll(images);
+                          }),
+                        ),
+                      ),
+                    ],
+                    if (ProductUtils.isTrackAndTrainingCategory(
+                        _selectedCategory)) ...[
+                      // Fields for Track Day / Training Day (from image_1a79f1.png)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          controller: eventNameController, // 1
+                          decoration: context.inputDecoration(
+                              "Event Name", "Enter the event name"),
+                          validator: (val) =>
+                              val!.isEmpty ? "Event Name is mandatory" : null,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Row(
+                          children: [
+                            DropdownButton<String>(
+                              value: selectedCountryCode,
+                              items: countryCodes
+                                  .map((code) => DropdownMenuItem(
+                                      value: code, child: Text(code)))
+                                  .toList(),
+                              onChanged: (val) =>
+                                  setState(() => selectedCountryCode = val!),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: TextFormField(
+                                controller: businessContactController,
+                                // 23 (Contact #)
+                                keyboardType: TextInputType.phone,
+                                decoration: context.inputDecoration(
+                                    "Contact #", "Enter contact number"),
+                                validator: (val) => val!.isEmpty
+                                    ? "Contact is mandatory"
+                                    : null,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          controller: contactNameController,
+                          // 24 (Point of Contact Name)
+                          decoration: context.inputDecoration(
+                              "Point of Contact Name",
+                              "Enter point of contact name"),
+                          validator: (val) => val!.isEmpty
+                              ? "Point of Contact Name is mandatory"
+                              : null,
+                        ),
+                      ),
+                      // Bike Type/Model (TextFormField as it's free text) - Not explicitly mapped to controller
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          // 3
+                          decoration: context.inputDecoration(
+                              "Bike Type/Model", "e.g., Any Superbike, 600cc+"),
+                          // No controller needed if just a display or optional input
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: CustomDropdownFormField<String>(
+                          label: 'Bike Provision',
+                          // 4
+                          hint: 'Self/Organizer',
+                          value: _bikeProvision,
+                          items: ['Self', 'Organizer']
+                              .map((provision) => DropdownMenuItem(
+                                    value: provision,
+                                    child: Text(provision),
+                                  ))
+                              .toList(),
+                          onChanged: (val) =>
+                              setState(() => _bikeProvision = val),
+                          validator: (val) => val == null
+                              ? 'Bike Provision is mandatory'
+                              : null,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: CustomDropdownFormField<String>(
+                          label: 'Rider Skill Level',
+                          // 5
+                          hint: 'All/Beginner/Novice/Intermediate/Expert',
+                          value: _riderSkillLevel,
+                          items: riderSkillLevels
+                              .map((level) => DropdownMenuItem(
+                                    value: level,
+                                    child: Text(level),
+                                  ))
+                              .toList(),
+                          onChanged: (val) =>
+                              setState(() => _riderSkillLevel = val),
+                          validator: (val) => val == null
+                              ? 'Rider Skill Level is mandatory'
+                              : null,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: MonthYearPicker(
+                          // 6
+                          enable: true,
+                          label: "Event Start Date",
+                          hint: "Select start date",
+                          selectedDate: _eventStartDate,
+                          onDateSelected: (date) =>
+                              setState(() => _eventStartDate = date),
+                          validator: (date) => date == null
+                              ? "Event Start Date is mandatory"
+                              : null,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: MonthYearPicker(
+                          // 7
+                          enable: true,
+                          label: "Event End Date",
+                          hint: "Select end date",
+                          selectedDate: _eventEndDate,
+                          onDateSelected: (date) =>
+                              setState(() => _eventEndDate = date),
+                          validator: (date) => date == null
+                              ? "Event End Date is mandatory"
+                              : null,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: FormField<TimeOfDay>(
+                          initialValue: _eventStartTime,
+                          validator: (value) {
+                            if (value == null) {
+                              return 'Event Start Time is mandatory';
+                            }
+                            return null;
+                          },
+                          builder: (FormFieldState<TimeOfDay> state) {
+                            return InkWell(
+                              onTap: () async {
+                                final TimeOfDay? picked = await showTimePicker(
+                                  context: context,
+                                  initialTime: state.value ?? TimeOfDay.now(),
+                                );
+                                if (picked != null && picked != state.value) {
+                                  state.didChange(picked);
+                                  setState(() {
+                                    _eventStartTime = picked;
+                                  });
+                                }
+                              },
+                              child: InputDecorator(
+                                decoration: context
+                                    .inputDecoration(
+                                      "Event Start Time",
+                                      state.value?.format(context) ??
+                                          "Select start time",
+                                    )
+                                    .copyWith(
+                                      errorText: state.errorText,
+                                    ),
+                                child: Text(
+                                  state.value?.format(context) ??
+                                      'Select start time',
+                                  style:
+                                      Theme.of(context).textTheme.titleMedium,
                                 ),
-                              ],
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: FormField<TimeOfDay>(
+                          initialValue: _eventEndTime,
+                          validator: (value) {
+                            if (value == null) {
+                              return 'Event End Time is mandatory';
+                            }
+                            return null;
+                          },
+                          builder: (FormFieldState<TimeOfDay> state) {
+                            return InkWell(
+                              onTap: () async {
+                                final TimeOfDay? picked = await showTimePicker(
+                                  context: context,
+                                  initialTime: state.value ?? TimeOfDay.now(),
+                                );
+                                if (picked != null && picked != state.value) {
+                                  state.didChange(picked);
+                                  setState(() {
+                                    _eventEndTime = picked;
+                                  });
+                                }
+                              },
+                              child: InputDecorator(
+                                decoration: context
+                                    .inputDecoration(
+                                      "Event End Time",
+                                      state.value?.format(context) ??
+                                          "Select end time",
+                                    )
+                                    .copyWith(
+                                      errorText: state.errorText,
+                                    ),
+                                child: Text(
+                                  state.value?.format(context) ??
+                                      'Select end time',
+                                  style:
+                                      Theme.of(context).textTheme.titleMedium,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          controller: maxSlotsController, // 10
+                          keyboardType: TextInputType.number,
+                          decoration: context.inputDecoration(
+                              "Max Slots", "Enter maximum slots available"),
+                          validator: (val) =>
+                              val!.isEmpty ? "Max Slots is mandatory" : null,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          controller: eventDetailedDescriptionController, // 11
+                          decoration: context.inputDecoration(
+                              "Event Detailed Description",
+                              "Tell what you provide, rider briefing & requirements/clauses"),
+                          maxLines: 3,
+                          validator: (val) => val!.isEmpty
+                              ? "Event Description is mandatory"
+                              : null,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          controller: locationNameController, // 12
+                          decoration: context.inputDecoration(
+                              "Location Name", "Enter name the location"),
+                          validator: (val) => val!.isEmpty
+                              ? "Location Name is mandatory"
+                              : null,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: CustomDropdownFormField<String>(
+                          label: "State",
+                          hint: "Select your state",
+                          value: _selectedState,
+                          items: stateNames
+                              .map((s) =>
+                                  DropdownMenuItem(value: s, child: Text(s)))
+                              .toList(),
+                          onChanged: (val) =>
+                              setState(() => _selectedState = val),
+                          validator: (val) => val == null ? "Required" : null,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      AutocompleteSearchField(
+                        label: "Location Address",
+                        hint: "Enter location address with landmark",
+                        controller: locationAddressController,
+                        icon: null,
+                        lat: stateCoordinates[_selectedState]?['lat'] ?? 0.0,
+                        lon: stateCoordinates[_selectedState]?['lon'] ?? 0.0,
+                        onPlaceSelected: (suggestion) {
+                          // Update all location controllers when a place is selected
+                          setState(() {
+                            businessAddressController.text = suggestion.text;
+                            cityController.text = suggestion.municipality ?? '';
+                            pincodeController.text =
+                                suggestion.postalCode ?? '';
+                          });
+                        },
+                        validator: (val) => val!.isEmpty ? "Required" : null,
+                      ),
+                      const SizedBox(height: 10),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          controller: areaController, // 14
+                          decoration:
+                              context.inputDecoration("Area", "Enter area"),
+                          validator: (val) =>
+                              val!.isEmpty ? "Area is mandatory" : null,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          controller: cityController, // 15
+                          decoration: context.inputDecoration(
+                              "City", "Enter city name"),
+                          validator: (val) =>
+                              val!.isEmpty ? "City is mandatory" : null,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          controller: pincodeController, // 17
+                          keyboardType: TextInputType.number,
+                          decoration: context.inputDecoration(
+                              "Pin code", "Enter pin code"),
+                          validator: (val) =>
+                              val!.isEmpty ? "Pin code is mandatory" : null,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          controller: gstController, // 18
+                          decoration: context.inputDecoration(
+                              "GST #", "Enter GST number (optional)"),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          controller: googleMapLinkController, // 20
+                          decoration: context.inputDecoration("Google Map Link",
+                              "Enter Google Maps link (optional)"),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          controller: googleFormLinkController, // 21
+                          decoration: context.inputDecoration(
+                              "Google Form/Redirect Link",
+                              "Enter Google Form or redirect link (optional)"),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: TextFormField(
+                          controller: socialMediaLinkController, // 22
+                          decoration: context.inputDecoration(
+                              "Social Media Link",
+                              "Enter social media link (optional)"),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: ImagePickerSection(
+                          title: "Event Promo Picture",
+                          // 2
+                          images: _promoImages,
+                          allowGallery: _enableGallery,
+                          allowMultipleImages: _enableGallery,
+                          onImagesChanged: (images) => setState(() {
+                            _promoImages.clear();
+                            _promoImages.addAll(images);
+                          }),
+                        ),
+                      ),
+                    ],
+                    // Terms & Conditions (18/26 from images) - Only show if a category is selected
+                    if (_selectedCategory != null)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16.0),
+                        child: Row(
+                          children: [
+                            Checkbox(
+                              value: _termsAccepted,
+                              onChanged: (bool? newValue) {
+                                setState(() {
+                                  _termsAccepted = newValue ?? false;
+                                });
+                              },
+                              activeColor: Colors.green,
+                            ),
+                            Expanded(
+                              child: RichText(
+                                text: TextSpan(
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                  children: [
+                                    const TextSpan(
+                                        text: 'I have read and agree to the '),
+                                    TextSpan(
+                                      text: 'Terms & Conditions',
+                                      style: const TextStyle(
+                                        color: Colors.blue,
+                                        decoration: TextDecoration.underline,
+                                      ),
+                                      recognizer: TapGestureRecognizer()
+                                        ..onTap = _openTermsLink,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    // Submit Button
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 20.0),
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: 50,
+                          child: ElevatedButton(
+                            onPressed: (_isLoading || _selectedCategory == null)
+                                ? null
+                                : _submitForm,
+                            // Disabled if loading or no category selected
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  (_isLoading || _selectedCategory == null)
+                                      ? Colors.grey
+                                      : Theme.of(context).primaryColor,
+                              disabledBackgroundColor: Colors.grey,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                            ),
+                            child: AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 300),
+                              child: _isLoading
+                                  ? const Row(
+                                      key: ValueKey('loading'),
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        SizedBox(
+                                          height: 20,
+                                          width: 20,
+                                          child: CircularProgressIndicator(
+                                            color: Colors.white,
+                                            strokeWidth: 2,
+                                          ),
+                                        ),
+                                        SizedBox(width: 12),
+                                        Text("Submitting...",
+                                            style:
+                                                TextStyle(color: Colors.white)),
+                                      ],
+                                    )
+                                  : const Text(
+                                      "Submit",
+                                      key: ValueKey('submit'),
+                                      style: TextStyle(
+                                          color: Colors.white, fontSize: 18),
+                                    ),
                             ),
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                // Submit Button
-                Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 20.0),
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: ElevatedButton(
-                        onPressed: (_isLoading || _selectedCategory == null)
-                            ? null
-                            : _submitForm,
-                        // Disabled if loading or no category selected
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              (_isLoading || _selectedCategory == null)
-                                  ? Colors.grey
-                                  : Theme.of(context).primaryColor,
-                          disabledBackgroundColor: Colors.grey,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.0),
-                          ),
-                        ),
-                        child: AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 300),
-                          child: _isLoading
-                              ? const Row(
-                                  key: ValueKey('loading'),
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    SizedBox(
-                                      height: 20,
-                                      width: 20,
-                                      child: CircularProgressIndicator(
-                                        color: Colors.white,
-                                        strokeWidth: 2,
-                                      ),
-                                    ),
-                                    SizedBox(width: 12),
-                                    Text("Submitting...",
-                                        style: TextStyle(color: Colors.white)),
-                                  ],
-                                )
-                              : const Text(
-                                  "Submit",
-                                  key: ValueKey('submit'),
-                                  style: TextStyle(
-                                      color: Colors.white, fontSize: 18),
-                                ),
-                        ),
                       ),
                     ),
-                  ),
+                    const SizedBox(height: 50),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ),
       ),
     );
+  }
+
+  List<Widget> _buildTowingServiceFields(BuildContext context) {
+    return [
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: TextFormField(
+          controller: bikeRSAController,
+          decoration:
+              context.inputDecoration("Bike RSA", "Enter Bike RSA details"),
+          validator: (val) => val!.isEmpty ? "Bike RSA is mandatory" : null,
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: TextFormField(
+          controller: shopNameController,
+          decoration: context.inputDecoration("Towing Service Name",
+              ProductUtils.getShopNameHint(_selectedCategory)),
+          validator: (val) =>
+              val!.isEmpty ? "Towing Service Name is mandatory" : null,
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: TextFormField(
+          controller: businessTitleController,
+          decoration: context.inputDecoration(
+              "Business name", "As per GST or official records"),
+          validator: (val) =>
+              val!.isEmpty ? "Business Title is mandatory" : null,
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16.0),
+        child: ImagePickerSection(
+          title: "Upload pics for Towing Vehicle Pics",
+          allowGallery: _enableGallery,
+          allowMultipleImages: _enableGallery,
+          images: _shopGarageImages,
+          onImagesChanged: (images) => setState(() {
+            _shopGarageImages.clear();
+            _shopGarageImages.addAll(images);
+          }),
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10.0),
+        child: DropdownButtonFormField2<String>(
+          isExpanded: true,
+          decoration: context.inputDecoration(
+            "List of towing services",
+            "Select towing service",
+          ),
+          hint: const Text('Select towing service'),
+          items: [
+            "Flatbed Tow Truck",
+            "Hydraulic Lift Tow Truck",
+            "Pickup Truck",
+            "Motorcycle Trailer",
+            "Wheel Clamp Towing",
+            "Others"
+          ].map((item) {
+            return DropdownMenuItem<String>(
+              value: item,
+              enabled: false,
+              child: StatefulBuilder(
+                builder: (context, menuSetState) {
+                  final isSelected = _selectedTowingServiceTypes.contains(item);
+                  return InkWell(
+                    onTap: () {
+                      isSelected
+                          ? _selectedTowingServiceTypes.remove(item)
+                          : _selectedTowingServiceTypes.add(item);
+                      setState(() {});
+                      menuSetState(() {});
+                    },
+                    child: Container(
+                      height: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Row(
+                        children: [
+                          if (isSelected)
+                            const Icon(Icons.check_box_outlined)
+                          else
+                            const Icon(Icons.check_box_outline_blank),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Text(
+                              item,
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            );
+          }).toList(),
+          value: _selectedTowingServiceTypes.isEmpty
+              ? null
+              : _selectedTowingServiceTypes.last,
+          onChanged: (value) {},
+          selectedItemBuilder: (context) {
+            return [
+              "Flatbed Tow Truck",
+              "Hydraulic Lift Tow Truck",
+              "Pickup Truck",
+              "Motorcycle Trailer",
+              "Wheel Clamp Towing",
+              "Others"
+            ].map(
+              (item) {
+                return Container(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: Text(
+                    _selectedTowingServiceTypes.join(', '),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    maxLines: 1,
+                  ),
+                );
+              },
+            ).toList();
+          },
+          validator: (value) {
+            if (_selectedTowingServiceTypes.isEmpty) {
+              return 'Required';
+            }
+            return null;
+          },
+          dropdownStyleData: DropdownStyleData(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              color: Theme.of(context).colorScheme.surface,
+            ),
+          ),
+          iconStyleData: const IconStyleData(
+            icon: Icon(
+              Icons.keyboard_arrow_down,
+              color: Colors.grey,
+            ),
+          ),
+        ),
+      ),
+      if (_selectedTowingServiceTypes.contains('Others'))
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: TextFormField(
+            controller: customTowingServiceTypeController,
+            decoration: context.inputDecoration(
+                "Custom Towing Service", "Enter your custom towing service"),
+            validator: (val) =>
+                val!.isEmpty ? "Custom towing service is mandatory" : null,
+          ),
+        ),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: TextFormField(
+          controller: businessDescriptionController,
+          decoration: context.inputDecoration(
+            "Business Description/Clauses",
+            ProductUtils.getBusinessDescriptionHint(_selectedCategory),
+          ),
+          maxLines: 3,
+          validator: (val) =>
+              val!.isEmpty ? "Business Description is mandatory" : null,
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: CustomDropdownFormField<String>(
+          label: "Service Coverage Area",
+          hint: "Select coverage area",
+          value: _serviceCoverageArea,
+          items: ["City", "Highway", "District"]
+              .map((s) => DropdownMenuItem(value: s, child: Text(s)))
+              .toList(),
+          onChanged: (val) => setState(() => _serviceCoverageArea = val),
+          validator: (val) => val == null ? "Required" : null,
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: TextFormField(
+          controller: businessAddressController,
+          decoration: context.inputDecoration(
+              "Address", "Enter your Shop/Garage address"),
+          validator: (val) => val!.isEmpty ? "Address is mandatory" : null,
+        ),
+      ),
+      const SizedBox(height: 10),
+      AutocompleteSearchField(
+        label: "Area",
+        hint: "Enter area details",
+        controller: areaController,
+        icon: null,
+        lat: stateCoordinates[_selectedState]?['lat'] ?? 0.0,
+        lon: stateCoordinates[_selectedState]?['lon'] ?? 0.0,
+        onPlaceSelected: (suggestion) {
+          setState(() {
+            areaController.text = suggestion.text;
+            cityController.text = suggestion.municipality ?? '';
+            pincodeController.text = suggestion.postalCode ?? '';
+          });
+        },
+        validator: (val) => val!.isEmpty ? "Required" : null,
+      ),
+      const SizedBox(height: 10),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: TextFormField(
+          controller: cityController,
+          decoration: context.inputDecoration("City", "Enter city name"),
+          validator: (val) => val!.isEmpty ? "City is mandatory" : null,
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: CustomDropdownFormField<String>(
+          label: "State",
+          hint: "Select your state",
+          value: _selectedState,
+          items: stateNames
+              .map((s) => DropdownMenuItem(value: s, child: Text(s)))
+              .toList(),
+          onChanged: (val) => setState(() => _selectedState = val),
+          validator: (val) => val == null ? "Required" : null,
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: TextFormField(
+          controller: pincodeController,
+          keyboardType: TextInputType.number,
+          decoration: context.inputDecoration("Pin code", "Enter pin code"),
+          validator: (val) => val!.isEmpty ? "Pin code is mandatory" : null,
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: TextFormField(
+          controller: contactNameController,
+          decoration: context.inputDecoration(
+              "Contact Name", "Enter contact person's name"),
+          validator: (val) => val!.isEmpty ? "Contact Name is mandatory" : null,
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: Row(
+          children: [
+            DropdownButton<String>(
+              value: selectedCountryCode,
+              items: countryCodes
+                  .map((code) =>
+                      DropdownMenuItem(value: code, child: Text(code)))
+                  .toList(),
+              onChanged: (val) => setState(() => selectedCountryCode = val!),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: TextFormField(
+                controller: businessContactController,
+                keyboardType: TextInputType.phone,
+                decoration: context.inputDecoration(
+                    "Business Contact #", "Enter business contact number"),
+                validator: (val) =>
+                    val!.isEmpty ? "Contact is mandatory" : null,
+              ),
+            ),
+          ],
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: TextFormField(
+          controller: gstController,
+          decoration: context.inputDecoration("GST #", "Enter GST number"),
+          validator: (val) => val!.isEmpty ? "GST number is mandatory" : null,
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: TextFormField(
+          controller: googleMapLinkController,
+          decoration: context.inputDecoration(
+              "Google Map Link", "Enter Google Maps link (optional)"),
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: TextFormField(
+          controller: socialMediaLinkController,
+          decoration: context.inputDecoration(
+              "Social Media Link", "Enter social media link (optional)"),
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: WorkingHoursPicker(
+          label: "Business Working Days & Hours",
+          hint: "Select working days and hours",
+          controller: businessWorkingDaysHoursController,
+          onChanged: (value) {
+            setState(() {});
+          },
+          validator: (val) =>
+              val!.isEmpty || val == "No days selected, No time selected"
+                  ? "Working days and hours are mandatory"
+                  : null,
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: ImagePickerSection(
+          title: "Upload pics for Business Promo or Adv Picture",
+          allowGallery: _enableGallery,
+          allowMultipleImages: _enableGallery,
+          images: _promoImages,
+          onImagesChanged: (images) => setState(() {
+            _promoImages.clear();
+            _promoImages.addAll(images);
+          }),
+        ),
+      ),
+    ];
   }
 }

@@ -117,41 +117,28 @@ extension BuildContextEntension<T> on BuildContext {
         hintText: hint,
         floatingLabelBehavior: FloatingLabelBehavior.always,
         filled: true,
+        fillColor: Colors.transparent,
         prefixIcon: icon != null ? Icon(icon) : null,
-        hintStyle: const TextStyle(color: Colors.grey),
+        hintStyle: const TextStyle(color: Colors.white54),
         labelStyle: const TextStyle(fontWeight: FontWeight.w500),
         // Change fill color when disabled
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(borderRadius),
-          borderSide: BorderSide(color: primaryColor.withOpacity(0.4)),
+          borderSide: const BorderSide(color: Colors.white12),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(borderRadius),
-          borderSide: BorderSide(color: primaryColor.withOpacity(0.8), width: 1.5),
+          borderSide: BorderSide(color: Colors.grey.withOpacity(0.8), width: 1.5),
         ),
         disabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(borderRadius),
           // Add this for when InputDecorator is disabled
-          borderSide: BorderSide(color: Colors.grey.shade400),
+          borderSide: const BorderSide(color: Colors.white12),
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(borderRadius),
-          borderSide: const BorderSide(color: Colors.grey),
+          borderSide: const BorderSide(color: Colors.white12),
         ),
       );
 }
 
-// Place the calculateAge function here or in a utility file
-Map<String, int> calculateAge(DateTime? startDate) {
-  if (startDate == null) {
-    return {'years': 0, 'months': 0};
-  }
-  final DateTime currentDate = DateTime.now();
-  int years = currentDate.year - startDate.year;
-  int months = currentDate.month - startDate.month;
-  if (months < 0 || (months == 0 && currentDate.day < startDate.day)) {
-    years--;
-    months += 12;
-  }
-  return {'years': years, 'months': months};
-}

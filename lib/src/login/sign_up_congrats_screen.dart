@@ -98,21 +98,21 @@ class SignUpCongratsScreen extends StatelessWidget {
               ),
               // The button is now in a consistent bottom bar
               Padding(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 50),
                 child: SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () =>
                         Navigator.pushReplacementNamed(context, '/home'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange,
+                      backgroundColor: Colors.green,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
                       ),
                       elevation: 5,
-                      shadowColor: Colors.orange.withOpacity(0.4),
+                      shadowColor: Colors.green.withOpacity(0.4),
                     ),
                     child: const Text(
                       "Let's Ride!",

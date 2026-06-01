@@ -1,0 +1,38 @@
+.shell {
+  min-height: 100vh;
+  background: var(--bv-bg);
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  padding: 32px;
+  display: flex;
+  align-items: center;
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 32px 80px;
+}
+
+/* Centered auth card */
+.card {
+  width: 100%;
+  max-width: 460px;
+  background: var(--bv-surface);
+  border: 1px solid var(--bv-border-hi);
+  border-radius: var(--bv-radius);
+  padding: 40px;
+}
+
+@media (max-width: 500px) {
+  .card {
+    padding: 28px 20px;
+    border: none;
+    background: transparent;
+  }
+}

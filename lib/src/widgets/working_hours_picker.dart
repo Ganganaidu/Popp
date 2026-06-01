@@ -115,16 +115,20 @@ class _WorkingHoursPickerState extends State<WorkingHoursPicker> {
     }
   }
 
-  Future<void> _showWorkingHoursPicker() async {
+  Future<void> _showWorkingHoursPicker(FormFieldState<String> field) async {
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true, // Allows content to take full height
       builder: (BuildContext context) {
         return StatefulBuilder(
+
           builder: (BuildContext context, StateSetter modalSetState) {
             return Padding(
+              // include both viewInsets (keyboard) and viewPadding (system UI like nav bar)
               padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).viewInsets.bottom),
+                  bottom: MediaQuery.of(context).viewInsets.bottom +
+                      MediaQuery.of(context).viewPadding.bottom +
+                      8.0),
               child: Container(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
@@ -224,10 +228,10 @@ class _WorkingHoursPickerState extends State<WorkingHoursPicker> {
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: () {
-                          // Update the controller and call onChanged
                           final formattedText = _formatWorkingHours();
                           widget.controller.text = formattedText;
                           widget.onChanged(formattedText);
+                          field.didChange(formattedText); // Sync FormField value
                           Navigator.pop(context); // Close the bottom sheet
                         },
                         child: const Text('Done'),
@@ -245,27 +249,30 @@ class _WorkingHoursPickerState extends State<WorkingHoursPicker> {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: widget.enable ? _showWorkingHoursPicker : null,
-      child: InputDecorator(
-        decoration: widget.controller.text.isEmpty &&
-                widget.validator != null &&
-                widget.validator!(widget.controller.text) != null
-            ? context.inputDecoration(widget.label, widget.hint).copyWith(
-                  errorText: widget.validator!(widget.controller.text),
-                )
-            : context.inputDecoration(
-                widget.label,
-                widget.controller.text.isEmpty
-                    ? widget.hint
-                    : widget.controller.text),
-        child: Text(
-          widget.controller.text.isEmpty ? widget.hint : widget.controller.text,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: widget.enable ? null : Colors.grey[600],
-              ),
-        ),
-      ),
+    return FormField<String>(
+      validator: widget.validator,
+      initialValue: widget.controller.text,
+      builder: (FormFieldState<String> field) {
+        return InkWell(
+          onTap: widget.enable
+              ? () async {
+                  await _showWorkingHoursPicker(field);
+                }
+              : null,
+          child: InputDecorator(
+            decoration: context.inputDecoration(
+              widget.label,
+              widget.controller.text.isEmpty ? widget.hint : widget.controller.text,
+            ).copyWith(
+              errorText: field.errorText,
+            ),
+            child: Text(
+              widget.controller.text.isEmpty ? widget.hint : widget.controller.text,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+          ),
+        );
+      },
     );
   }
 }

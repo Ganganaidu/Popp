@@ -1,3 +1,5 @@
+
+
 class AppUtils {
   // Private constructor to prevent instantiation
   AppUtils._();
@@ -9,9 +11,18 @@ class AppUtils {
     return emailRegExp.hasMatch(email);
   }
 
-// Add other common utility functions here
-// For example:
-// static String formatDate(DateTime date) {
-//   // ... formatting logic ...
-// }
+  // Place the calculateAge function here or in a utility file
+  static Map<String, int> calculateAge(DateTime? startDate) {
+    if (startDate == null) {
+      return {'years': 0, 'months': 0};
+    }
+    final DateTime currentDate = DateTime.now();
+    int years = currentDate.year - startDate.year;
+    int months = currentDate.month - startDate.month;
+    if (months < 0 || (months == 0 && currentDate.day < startDate.day)) {
+      years--;
+      months += 12;
+    }
+    return {'years': years, 'months': months};
+  }
 }

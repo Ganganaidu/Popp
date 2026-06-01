@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:popp/src/home/explore_screen.dart';
 
+import 'package:popp/src/settings/more_screen.dart';
+
+import '../chat/chat_list_screen.dart';
 import '../home/dashboard_screen.dart';
-import '../home/help_screen.dart';
-import '../products/explore_products_screen.dart';
 import '../toolbar/tab_navigator_observer.dart';
-import '../widgets/coming_soon_screen.dart';
+import '../utils/app_constants.dart';
 import 'nav_router.dart';
 
 class NavHelper {
@@ -43,22 +45,21 @@ class NavHelper {
   void initializeWidgetOptions() {
     widgetOptions = <Widget>[
       const DashboardScreen(),
-      const ComingSoonScreen(),
-      const ExploreProductsScreen(),
-      const ComingSoonScreen(),
-      const HelpScreen(),
+      const ExploreScreen(),
+      const ChatListScreen(agentId: Constants.adminUserId),
+      const MoreScreen(),
     ];
   }
 
   //
-  // // Method to initialize widgetOptions
+  // Method to initialize widgetOptions
   // void initializeWidgetOptions() {
   //   widgetOptions = <Widget>[
   //     buildNavigator(0, const DashboardScreen()),
-  //     buildNavigator(1, const OurServices()),
+  //     // buildNavigator(1, const OurServices()),
   //     buildNavigator(2, const ExploreProductsScreen()),
-  //     buildNavigator(3, const HelpScreen()),
-  //     buildNavigator(4, const CustomerChatScreen()),
+  //     buildNavigator(3, const MoreScreen()),
+  //     buildNavigator(4, const MoreScreen()),
   //   ];
   // }
 
@@ -92,8 +93,10 @@ class NavHelper {
   Future<bool> onWillPop(int selectedIndex) async {
     // Check if the current Navigator can pop
     if (navigatorKeys[selectedIndex].currentState?.canPop() ?? false) {
-      // Pop the current Navigator
-      navigatorKeys[selectedIndex].currentState?.pop();
+      // Use maybePop() so the inner navigator's route will handle willPop
+      // callbacks (PopScope/WillPopScope) and allow the screen to intercept
+      // device back / gesture back events.
+      await navigatorKeys[selectedIndex].currentState?.maybePop();
       return false; // Don't pop the root Navigator
     } else {
       return false;

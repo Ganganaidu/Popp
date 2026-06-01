@@ -1,10 +1,10 @@
-import 'package:popp/src/models/product.dart';
+import '../utils/product_utils.dart';
 
 class PopCategory {
   final String categoryId;
   final String name;
   List<String>? subcategories;
-  List<Product>? products;
+  List<Map<String, dynamic>>? products;
 
   PopCategory(
       {required this.categoryId,
@@ -16,7 +16,7 @@ class PopCategory {
 final List<PopCategory> catList = [
   PopCategory(
     categoryId: "cat_001",
-    name: "Premium Bikes",
+    name: ProductUtils.premiumBikes,
     subcategories: [],
   ),
   PopCategory(

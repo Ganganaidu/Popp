@@ -1,0 +1,122 @@
+.heading {
+  font-family: var(--font-archivo-narrow), sans-serif;
+  font-weight: 800;
+  font-size: 32px;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  color: var(--bv-text);
+  margin: 0 0 32px;
+}
+
+.eyebrow {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--bv-green);
+  margin-bottom: 8px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Password field wrapper — positions toggle button inside the input */
+.passwordWrap {
+  position: relative;
+}
+
+.passwordToggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: var(--bv-text-3);
+  display: flex;
+  align-items: center;
+  line-height: 1;
+}
+
+.passwordToggle:hover {
+  color: var(--bv-text-2);
+}
+
+/* Input with right padding to accommodate toggle */
+.passwordInput {
+  padding-right: 40px !important;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--bv-text-2);
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkboxLabel input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--bv-green);
+  cursor: pointer;
+}
+
+.forgotLink {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--bv-green);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.forgotLink:hover {
+  text-decoration: underline;
+}
+
+.errorBanner {
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 13px;
+  color: var(--bv-red, #f87171);
+  background: rgba(248, 113, 113, 0.08);
+  border: 1px solid rgba(248, 113, 113, 0.2);
+  border-radius: var(--bv-radius);
+  padding: 10px 14px;
+}
+
+.footer {
+  text-align: center;
+  font-family: var(--font-archivo), sans-serif;
+  font-size: 13px;
+  color: var(--bv-text-3);
+  margin-top: 8px;
+}
+
+.footerLink {
+  color: var(--bv-green);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.footerLink:hover {
+  text-decoration: underline;
+}

@@ -1,13 +1,15 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:popp/src/utils/app_loger.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../firebase/auth_service.dart';
+import '../api/api_url.dart';
+import '../api/firebase/auth_service.dart';
+import '../api/firebase/remote_config_service.dart';
 import '../navigation/nav_router.dart';
 import '../subscription/subscribe_page_widget.dart';
-import '../utils/app_constants.dart';
 import '../widgets/app_dialogs.dart';
 import 'model/user_data_model.dart';
 
@@ -26,10 +28,24 @@ class _RegisterAndSubscribeScreenState
   bool termsAccepted = false;
   bool isSubmitting = false;
   bool hasClickedTermsLink = false;
+  bool _showSubscription = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadConfig();
+  }
+
+  void _loadConfig() async {
+    final configService = await RemoteConfigService.getInstance();
+    setState(() {
+      _showSubscription = configService.isSubscriptionFeatureEnabled;
+    });
+  }
 
   void _openTermsLink() async {
     AppLogger.w("Terms link clicked");
-    final uri = Uri.parse(Constants.privacyLink);
+    final uri = Uri.parse(ApiUrl.privacyLink);
     final launched = await launchUrl(uri);
     if (launched) {
       setState(() => hasClickedTermsLink = true);
@@ -61,29 +77,34 @@ class _RegisterAndSubscribeScreenState
         await updateRegistrationComplete(
             uid: widget.userData.uid, registrationComplete: true);
 
-        if (!mounted) return;
-        await showModalBottomSheet(
-          context: context,
-          isScrollControlled: true,
-          isDismissible: false,
-          enableDrag: false,
-          backgroundColor: Colors.transparent,
-          builder: (context) => DraggableScrollableSheet(
-            initialChildSize: 0.8,
-            maxChildSize: 0.9,
-            minChildSize: 0.7,
-            builder: (_, scrollController) => Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-              ),
-              child: SubscribePageWidget(
-                userUid: widget.userData.uid,
-                isFromSettings: false,
+        if (_showSubscription) {
+          if (!mounted) return;
+          await showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            isDismissible: false,
+            enableDrag: false,
+            backgroundColor: Colors.transparent,
+            builder: (context) => DraggableScrollableSheet(
+              initialChildSize: 0.8,
+              maxChildSize: 0.9,
+              minChildSize: 0.7,
+              builder: (_, scrollController) => Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                child: SubscribePageWidget(
+                  userUid: widget.userData.uid,
+                  isFromSettings: false,
+                ),
               ),
             ),
-          ),
-        );
+          );
+        } else {
+          if (!mounted) return;
+          Navigator.pushReplacementNamed(context, '/home');
+        }
       } else {
         await updateRegistrationComplete(
             uid: widget.userData.uid, registrationComplete: false);
@@ -122,14 +143,14 @@ class _RegisterAndSubscribeScreenState
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text("One Last Step...",
+                  Text("Welcome To POPP!",
                       style: textTheme.headlineMedium
                           ?.copyWith(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
                   Text(
-                    "Review the details and subscribe to unlock the full power of the community.",
+                    "Pre Owned Premium Products",
                     style: textTheme.titleSmall?.copyWith(
                         color:
                             isDarkMode ? Colors.grey[400] : Colors.grey[600]),
@@ -142,11 +163,13 @@ class _RegisterAndSubscribeScreenState
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
                   children: [
+                    Lottie.asset('assets/congrats.json', height: 100),
+                    const SizedBox(height: 8),
                     // Welcome Card
                     _buildInfoCard(
                       icon: Icons.celebration_rounded,
                       iconColor: Colors.amber,
-                      title: "Welcome to the Crew!",
+                      title: "Congratulations!",
                       content:
                           "You're now part of a passionate community built by riders, for riders. Explore all features for free during the trial period!",
                     ),
@@ -176,8 +199,9 @@ class _RegisterAndSubscribeScreenState
                       icon: Icons.workspace_premium_rounded,
                       iconColor: Colors.deepOrangeAccent,
                       title: "Subscription required?",
-                      content:
-                          "Practically Free, After the trial ends, keep riding with us for a yearly subscription fee so low, it's almost unbelievable.",
+                      content: _showSubscription
+                          ? "Practically Free, After the trial ends, keep riding with us for a Monthly/yearly subscription fee so low, it's almost unbelievable."
+                          : "It’s completely free to use until we introduce our subscription system — and even then, the yearly fee will be so low, it’s almost unbelievable. Until then, enjoy unlimited access to all our services!",
                     ),
 
                     const SizedBox(height: 20),
@@ -263,7 +287,7 @@ class _RegisterAndSubscribeScreenState
   Widget _buildBottomActionArea(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 50),
       decoration: BoxDecoration(
         color: isDarkMode ? Colors.grey[900] : Colors.white,
         boxShadow: [
@@ -352,9 +376,12 @@ class _RegisterAndSubscribeScreenState
               )),
               child: isSubmitting
                   ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text("Register & Subscribe",
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  : Text(
+                      _showSubscription
+                          ? "Register & Subscribe"
+                          : "Let's Ride!",
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold)),
             ),
           ),
         ],

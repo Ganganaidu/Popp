@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:popp/src/utils/app_constants.dart';
-import 'package:popp/src/utils/app_loger.dart';
-import 'package:popp/src/utils/build_extensions.dart';
-import 'package:shimmer/shimmer.dart';
+import 'package:popp/src/toolbar/common_app_bar.dart';
+import 'package:popp/src/widgets/title_text.dart';
 
-import '../../firebase/firebase_api_service.dart';
+import '../../api/firebase/firebase_api_service.dart';
 import '../../navigation/nav_router.dart';
-import '../../utils/product_content_data.dart';
+import '../../utils/product_utils.dart';
+import '../widgets/service_card.dart';
+import '../../widgets/web_constrained_box.dart';
+import '../../filters/filter_bar.dart';
 
 class ServiceListingScreen extends StatefulWidget {
   final String category;
+  final String? subCategory;
 
-  const ServiceListingScreen({super.key, required this.category});
+  const ServiceListingScreen(
+      {super.key, required this.category, required this.subCategory});
 
   @override
   State<ServiceListingScreen> createState() => _ServiceListingScreenState();
@@ -21,34 +24,38 @@ class _ServiceListingScreenState extends State<ServiceListingScreen> {
   final FirebaseApiService _productsService = FirebaseApiService();
   late Future<List<Map<String, dynamic>>> _servicesFuture;
 
+  List<String> _selectedStates = [];
+  List<String> _selectedCities = [];
+  List<String> _selectedAreas = [];
+
   @override
   void initState() {
     super.initState();
     String category = widget.category;
-    if (category.contains(Constants.premiumInspection)) {
-      // Only display Premium Inspection, and search for 'Book your Bike service' and filter by doYouInspectPremiumBikes == 'Yes'
+    if (category.contains(ProductUtils.premiumInspection)) {
+      // Only display Premium Inspection, and
+      // search for 'Book your Bike service' and
+      // filter by doYouInspectPremiumBikes == 'Yes'
       _servicesFuture = _productsService
-          .fetchServicesByCategories([serviceCategories[0]], true).then(
+          .fetchServicesByCategories([ProductUtils.findMechanic], true).then(
               (services) => services
                   .where((s) => s['doYouInspectPremiumBikes'] == 'Yes')
                   .toList());
     } else {
       final List<String> categories =
           category.split(',').map((e) => e.trim()).toList();
-      _servicesFuture =
-          _productsService.fetchServicesByCategories(categories, true);
+      _servicesFuture = _productsService.fetchServicesByCategories(
+          categories, true,
+          subCategory: widget.subCategory);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    String appBarTitle = widget.category;
-    if (appBarTitle.contains("Track")) {
-      appBarTitle = "Track and Training day";
-    }
+    String appBarTitle = ProductUtils.getServiceAppBarTitle(widget.category);
     return Scaffold(
-      appBar: AppBar(
-        title: Text(appBarTitle),
+      appBar: CommonAppBar(
+        titleWidget: TitleText(appBarTitle),
       ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: _servicesFuture,
@@ -84,215 +91,95 @@ class _ServiceListingScreenState extends State<ServiceListingScreen> {
               ),
             );
           } else {
-            final services = snapshot.data!;
-            return ListView.builder(
-              padding: const EdgeInsets.all(16.0),
-              itemCount: services.length,
-              itemBuilder: (context, index) {
-                final service = services[index];
+            final allServices = snapshot.data!;
+            
+            // Collect unique filter options
+            final List<String> availableStates = allServices
+                .map((s) => s['state']?.toString().trim() ?? '')
+                .where((s) => s.isNotEmpty)
+                .toSet()
+                .toList();
+            final List<String> availableCities = allServices
+                .map((s) => s['city']?.toString().trim() ?? '')
+                .where((c) => c.isNotEmpty)
+                .toSet()
+                .toList();
+            final List<String> availableAreas = allServices
+                .map((s) => s['area']?.toString().trim() ?? '')
+                .where((a) => a.isNotEmpty)
+                .toSet()
+                .toList();
 
-                // Determine the background image
-                String? imageUrl;
-                List<dynamic>? promoImages;
-                if (service['promoImageUrls'] is List) {
-                  promoImages = service['promoImageUrls'] as List<dynamic>?;
-                } else if (service['promoImageUrls'] is String &&
-                    (service['promoImageUrls'] as String).isNotEmpty) {
-                  promoImages = [(service['promoImageUrls'] as String)];
-                } else {
-                  promoImages = null;
-                }
-                List<dynamic>? shopGarageImages =
-                    service['shopImageUrls'] is List
-                        ? service['shopImageUrls'] as List<dynamic>?
-                        : null;
+            // Apply filters
+            final services = allServices.where((service) {
+              final state = service['state']?.toString().trim() ?? '';
+              final city = service['city']?.toString().trim() ?? '';
+              final area = service['area']?.toString().trim() ?? '';
 
-                if (promoImages != null && promoImages.isNotEmpty) {
-                  imageUrl = promoImages.first as String;
-                } else if (shopGarageImages != null &&
-                    shopGarageImages.isNotEmpty) {
-                  imageUrl = shopGarageImages.first as String;
-                }
+              if (_selectedStates.isNotEmpty && !_selectedStates.contains(state)) return false;
+              if (_selectedCities.isNotEmpty && !_selectedCities.contains(city)) return false;
+              if (_selectedAreas.isNotEmpty && !_selectedAreas.contains(area)) return false;
+              
+              return true;
+            }).toList();
 
-                // Data extraction based on category type
-                String title =
-                    service['businessTitle'] ?? service['eventName'] ?? 'N/A';
-                String dateTime = 'N/A';
-                String location = 'N/A';
-                String capacity = 'N/A';
-
-                AppLogger.d("category ${widget.category}");
-                if (widget.category == serviceCategories[0] ||
-                    widget.category == serviceCategories[1] ||
-                    widget.category == Constants.premiumInspection) {
-                  // For Book Service / Bike Rentals
-                  location =
-                      '${service['businessAddress'] ?? ''}, ${service['city'] ?? ''}, ${service['state'] ?? ''}';
-                  dateTime = service['businessWorkingDaysHours'] ?? 'N/A';
-                } else if (widget.category == serviceCategories[2] ||
-                    widget.category == serviceCategories[3] ||
-                    widget.category ==
-                        [serviceCategories[2], serviceCategories[3]]
-                            .join(',')) {
-                  // For Track Day / Training Day
-                  location =
-                      '${service['locationAddress'] ?? ''}, ${service['city'] ?? ''}, ${service['state'] ?? ''}';
-
-                  String startDate = service['eventStartDate'] != null
-                      ? 'From ${DateTime.parse(service['eventStartDate']).toLocal().toIso8601String().split('T')[0]}'
-                      : '';
-                  String endDate = service['eventEndDate'] != null
-                      ? 'To ${DateTime.parse(service['eventEndDate']).toLocal().toIso8601String().split('T')[0]}'
-                      : '';
-                  String startTime = service['eventStartTime'] ?? '';
-                  String endTime = service['eventEndTime'] ?? '';
-
-                  dateTime = [startDate, endDate, startTime, endTime]
-                      .where((s) => s.isNotEmpty)
-                      .join(' ');
-
-                  if (service['maxSlots'] != null &&
-                      service['maxSlots'].isNotEmpty) {
-                    // Assuming 'maxSlots' stores the total capacity
-                    // You might need to fetch current registered riders from another collection/field
-                    capacity =
-                        '${service['maxSlots']} riders (Max slots)'; // Placeholder for registered riders
-                  }
-                }
-
-                return GestureDetector(
-                  onTap: () {
-                    onServiceDetailsScreenTap(
-                        context, service, widget.category);
-                  },
-                  child: Card(
-                    elevation: 5,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15.0),
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (allServices.isNotEmpty)
+                  FilterBar(
+                    filters: const ['By State', 'By City', 'By Area'],
+                    dynamicStates: availableStates,
+                    dynamicCities: availableCities,
+                    dynamicAreas: availableAreas,
+                    onFiltersChanged: (filters) {
+                      setState(() {
+                        _selectedStates = List<String>.from(filters['By State'] ?? []);
+                        _selectedCities = List<String>.from(filters['By City'] ?? []);
+                        _selectedAreas = List<String>.from(filters['By Area'] ?? []);
+                      });
+                    },
+                  ),
+                if (services.isEmpty && allServices.isNotEmpty)
+                    const Expanded(
+                      child: Center(
+                        child: Text(
+                          'No services match your filters.',
+                          style: TextStyle(fontSize: 16, color: Colors.grey),
+                        ),
+                      ),
                     ),
-                    margin: const EdgeInsets.only(bottom: 16.0),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(15.0),
-                      child: Stack(
-                        children: [
-                          // Background Image with shadow
-                          ShaderMask(
-                            shaderCallback: (rect) {
-                              return const LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [Colors.transparent, Colors.black87],
-                              ).createShader(
-                                  Rect.fromLTRB(0, 0, rect.width, rect.height));
-                            },
-                            blendMode: BlendMode.darken,
-                            child: Stack(
-                              children: [
-                                Shimmer.fromColors(
-                                  baseColor: Colors.grey[300]!,
-                                  highlightColor: Colors.grey[100]!,
-                                  child: Container(
-                                    width: double.infinity,
-                                    height: 200,
-                                    color: Colors.grey[300],
-                                  ),
-                                ),
-                                Image.network(
-                                  imageUrl ?? Constants.defaultPlaceholderImage,
-                                  width: double.infinity,
-                                  height: 200,
-                                  // Fixed height for consistency
-                                  fit: BoxFit.cover,
-                                  loadingBuilder:
-                                      (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return Shimmer.fromColors(
-                                      baseColor: Colors.grey[300]!,
-                                      highlightColor: Colors.grey[100]!,
-                                      child: Container(
-                                        width: double.infinity,
-                                        height: 200,
-                                        color: Colors.grey[300],
-                                      ),
-                                    );
-                                  },
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Image.network(
-                                      Constants.defaultPlaceholderImage,
-                                      width: double.infinity,
-                                      height: 200,
-                                      fit: BoxFit.cover,
-                                    );
-                                  },
-                                ),
-                              ],
+                if (services.isNotEmpty)
+                  Expanded(
+                    child: WebConstrainedBox(
+                      child: ListView.separated(
+                        padding: const EdgeInsets.all(16.0),
+                        itemCount: services.length,
+                        separatorBuilder: (context, index) =>
+                            const SizedBox(height: 16),
+                        itemBuilder: (context, index) {
+                          final service = services[index];
+                          return SizedBox(
+                            height: 220,
+                            child: ServiceCard(
+                              service: service,
+                              category: widget.category,
+                              width: double.infinity,
+                              onTap: () {
+                                onServiceDetailsScreenTap(
+                                    context, service, widget.category);
+                              },
+                              isApproved: service['isApproved'] == true,
                             ),
-                          ),
-                          // Content Overlay
-                          Positioned.fill(
-                            child: Padding(
-                              padding: const EdgeInsets.all(12.0),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                // Align content to the bottom
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    title,
-                                    style: context.titleLarge?.copyWith(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  _buildInfoRow(
-                                    context,
-                                    Icons.calendar_today,
-                                    dateTime,
-                                  ),
-                                  _buildInfoRow(
-                                    context,
-                                    Icons.location_on,
-                                    location,
-                                  ),
-                                  if (capacity != 'N/A')
-                                    _buildInfoRow(
-                                      context,
-                                      Icons.people,
-                                      capacity,
-                                    ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
+                          );
+                        },
                       ),
                     ),
                   ),
-                );
-              },
+              ],
             );
           }
         },
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(BuildContext context, IconData icon, String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        children: [
-          Icon(icon, color: Colors.white70, size: 18),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              text,
-              style: context.bodyMedium?.copyWith(color: Colors.white70),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
       ),
     );
   }

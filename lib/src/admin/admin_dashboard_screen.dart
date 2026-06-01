@@ -1,13 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:popp/src/firebase/firebase_api_service.dart';
+import 'package:popp/src/toolbar/common_app_bar.dart';
 import 'package:popp/src/utils/app_constants.dart';
-import 'package:popp/src/utils/build_extensions.dart';
 
-import '../navigation/nav_router.dart';
+import '../adbanner/ui/ad_list_page.dart';
+import '../api/api_url.dart';
 import '../settings/list_grid_view.dart';
-import '../utils/product_content_data.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -18,7 +17,6 @@ class AdminDashboardScreen extends StatefulWidget {
 
 class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     with SingleTickerProviderStateMixin {
-  final FirebaseApiService _firebaseApiService = FirebaseApiService();
   late TabController _tabController;
 
   bool get _isAdmin =>
@@ -27,7 +25,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
   }
 
   @override
@@ -40,7 +38,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
   Widget build(BuildContext context) {
     if (!_isAdmin) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Admin Dashboard')),
+        appBar: const CommonAppBar(title: 'Admin Dashboard'),
         body: const Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -63,36 +61,36 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
       );
     }
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Admin Dashboard"),
+      appBar: CommonAppBar(
+        title: 'Admin Dashboard',
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: Colors.orange,
-          labelColor: Colors.orange,
+          indicatorColor: Colors.green,
+          labelColor: Colors.green,
           unselectedLabelColor: Colors.grey,
           tabs: const [
             Tab(icon: Icon(Icons.storefront), text: "Products"),
             Tab(icon: Icon(Icons.miscellaneous_services), text: "Services"),
+            Tab(icon: Icon(Icons.campaign), text: "Ads"),
           ],
         ),
       ),
       body: TabBarView(
         controller: _tabController,
         children: [
-          // Using the reusable widget for Products
           ListingsGridView(
             query: FirebaseFirestore.instance
-                .collection(Constants.productsPath)
+                .collection(ApiUrl.productsPath)
                 .where('isApproved', isEqualTo: false),
-            showOptionsMenu: false, // Show edit/delete options
+            showOptionsMenu: false,
           ),
-          // Using the reusable widget for Services
           ListingsGridView(
             query: FirebaseFirestore.instance
-                .collection(Constants.servicePath)
+                .collection(ApiUrl.servicePath)
                 .where('isApproved', isEqualTo: false),
-            showOptionsMenu: false, // Show edit/delete options
+            showOptionsMenu: false,
           ),
+          const AdListPage(),
         ],
       ),
     );

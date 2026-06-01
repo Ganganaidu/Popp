@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'app_network_image.dart';
 
 class PageImageView extends StatelessWidget {
   final Color color;
@@ -15,10 +16,11 @@ class PageImageView extends StatelessWidget {
           children: [
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Image.network(
+              child: const AppNetworkImage(
                   fit: BoxFit.fitWidth,
                   height: 200,
-                  "https://images.pexels.com/photos/2899097/pexels-photo-2899097.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500"),
+                  imageUrl:
+                      "https://images.pexels.com/photos/2899097/pexels-photo-2899097.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500"),
             )
           ],
         ),

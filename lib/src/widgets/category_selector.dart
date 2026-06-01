@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
 
 import '../models/pop_category.dart';
-import 'custom_dropdown_form_field.dart'; // <--- Your Category model
+import 'custom_dropdown_form_field.dart';
 
 class CategorySelector extends StatefulWidget {
   final Function(PopCategory?) onCategoryChanged;
   final Function(String?) onSubcategoryChanged;
+  final PopCategory? initialCategory;
+  final String? initialSubcategory;
 
   const CategorySelector({
     super.key,
     required this.onCategoryChanged,
     required this.onSubcategoryChanged,
+    this.initialCategory,
+    this.initialSubcategory,
   });
 
   @override
@@ -21,6 +25,13 @@ class _CategorySelectorState extends State<CategorySelector> {
   PopCategory? selectedCategory;
   String? selectedSubcategory;
   List<PopCategory> filteredCatList = catList.isNotEmpty ? catList.sublist(1) : [];
+
+  @override
+  void initState() {
+    super.initState();
+    selectedCategory = widget.initialCategory;
+    selectedSubcategory = widget.initialSubcategory;
+  }
 
   @override
   Widget build(BuildContext context) {

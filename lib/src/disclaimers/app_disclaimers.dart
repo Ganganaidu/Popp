@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:popp/src/utils/app_constants.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../api/api_url.dart';
+
 class Disclaimers extends StatelessWidget {
   const Disclaimers({super.key});
 
@@ -29,7 +31,7 @@ class Disclaimers extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           InkWell(
-            onTap: () => launchUrl(Uri.parse(Constants.privacyLink)),
+            onTap: () => launchUrl(Uri.parse(ApiUrl.privacyLink)),
             child: const Text(
               'Terms of Use & Privacy Policy',
               style: TextStyle(
@@ -44,7 +46,7 @@ class Disclaimers extends StatelessWidget {
             child: const Row(
               children: [
                 Icon(Icons.call_end_outlined,
-                    color: Colors.orangeAccent, size: 32),
+                    color: Colors.green, size: 32),
                 SizedBox(width: 16),
                 Text('+91 995 5995 8899',
                     style: TextStyle(color: Colors.white)),
@@ -57,7 +59,7 @@ class Disclaimers extends StatelessWidget {
             child: const Row(
               children: [
                 Icon(Icons.email_outlined,
-                    color: Colors.orangeAccent, size: 32),
+                    color: Colors.green, size: 32),
                 SizedBox(width: 16),
                 Text('support@poppapp.in',
                     style: TextStyle(color: Colors.white)),

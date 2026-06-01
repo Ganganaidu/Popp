@@ -1,12 +1,19 @@
 import 'dart:async';
+import 'dart:ui'; // For PlatformDispatcher
+
+import 'package:app_links/app_links.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:month_year_picker/month_year_picker.dart';
+import 'package:popp/src/api/api_url.dart';
+import 'package:popp/src/api/firebase/remote_config_service.dart';
 import 'package:popp/src/app_providers.dart';
 import 'package:popp/src/home/home_screen.dart';
 import 'package:popp/src/login/login_screen.dart';
@@ -14,11 +21,10 @@ import 'package:popp/src/login/sign_up_congrats_screen.dart';
 import 'package:popp/src/login/signup_screen.dart';
 import 'package:popp/src/products/product_detail_screen.dart';
 import 'package:popp/src/services/listservices/service_detail_screen.dart';
+import 'package:popp/src/systemalerts/auth_wrapper.dart';
 import 'package:popp/src/theme/theme_notifier.dart';
-import 'package:app_links/app_links.dart';
-import 'package:popp/src/utils/app_constants.dart';
 
-import 'src/firebase/firebase_options.dart';
+import 'firebase_options.dart';
 import 'src/theme/theme.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -29,19 +35,46 @@ final ThemeNotifier themeNotifier = ThemeNotifier();
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 }
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await themeNotifier.loadTheme();
+
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  await FirebaseAppCheck.instance.activate(
-    androidProvider: AndroidProvider.playIntegrity,
-    appleProvider: AppleProvider.appAttest,
-  );
+
+  // Pass all uncaught "fatal" errors from the framework to Crashlytics
+  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+
+  // Pass all uncaught asynchronous errors that aren't handled by the Flutter framework to Crashlytics
+  PlatformDispatcher.instance.onError = (error, stack) {
+    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    return true;
+  };
+
+  // Initialize Remote Config
+  final remoteConfigService = await RemoteConfigService.getInstance();
+  await remoteConfigService.fetchAndActivate();
+
+  if (kIsWeb) {
+    await FirebaseAppCheck.instance.activate(
+      webProvider: ReCaptchaV3Provider('YOUR_RECAPTCHA_SITE_KEY'),
+    );
+  } else {
+    await FirebaseAppCheck.instance.activate(
+      androidProvider: AndroidProvider.playIntegrity,
+      appleProvider: AppleProvider.appAttest,
+    );
+  }
+
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
   runApp(
     const AppProviders(
       child: MyApp(),
@@ -97,23 +130,22 @@ class _MyAppState extends State<MyApp> {
 
   /// Parses the URI and navigates to the correct screen.
   Future<void> _navigateToDetailScreen(Uri uri) async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      navigatorKey.currentState?.pushReplacementNamed('/login');
-      return;
-    }
-
     final segments = uri.pathSegments;
     if (segments.length != 2 ||
         (segments[0] != 'service' && segments[0] != 'product')) {
       return;
     }
 
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      navigatorKey.currentState?.pushReplacementNamed('/login');
+      return;
+    }
+
     final productType = segments[0];
     final serviceId = segments[1];
-    final servicePath = productType == 'service'
-        ? Constants.servicePath
-        : Constants.productsPath;
+    final servicePath =
+        productType == 'service' ? ApiUrl.servicePath : ApiUrl.productsPath;
 
     try {
       final doc = await FirebaseFirestore.instance
@@ -122,7 +154,8 @@ class _MyAppState extends State<MyApp> {
           .get();
 
       if (!doc.exists) return;
-      final data = doc.data() as Map<String, dynamic>;
+      final raw = doc.data() as Map<String, dynamic>;
+      final data = {...raw, 'id': doc.id};
 
       if (productType == 'service') {
         navigatorKey.currentState?.push(
@@ -154,16 +187,17 @@ class _MyAppState extends State<MyApp> {
       builder: (context, currentThemeMode, _) {
         return MaterialApp(
           navigatorKey: navigatorKey,
-          title: 'Popp',
+          title: 'BikerVerse',
           themeMode: currentThemeMode,
-          theme: poppLightTheme,
-          darkTheme: poppDarkTheme,
-          home: const AuthGate(),
+          theme: bikerverseLightTheme,
+          darkTheme: bikerverseDarkTheme,
+          home: const AuthWrapper(),
+
           routes: {
             '/login': (context) => const LoginScreen(),
             '/signup': (context) => const SignupScreen(),
             '/home': (context) => const HomeScreen(),
-            '/finalCongrats': (context) => const SignUpCongratsScreen(),
+            '/finalCongrats': (context) => const SignUpCongratsScreen()
           },
           debugShowCheckedModeBanner: false,
           localizationsDelegates: const [
@@ -176,23 +210,4 @@ class _MyAppState extends State<MyApp> {
       },
     );
   }
-}
-
-class AuthGate extends StatelessWidget {
-  const AuthGate({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<User?>(
-      stream: FirebaseAuth.instance.authStateChanges(),
-      builder: (context, snapshot) {
-        if (snapshot.hasData && (snapshot.data?.emailVerified ?? false)) {
-          return const HomeScreen();
-        } else {
-          return const LoginScreen();
-        }
-      },
-    );
-  }
-
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:popp/src/utils/build_extensions.dart';
 
 // Chat bubble widget - assuming this is a separate widget in your project
 // Included for completeness, but you can use your existing ChatBubble.
@@ -17,7 +18,7 @@ class ChatBubble extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
         color: isCurrentUser
-            ? Colors.orange[700]
+            ? context.primaryColor
             : Colors.grey[300], // Different colors
       ),
       child: Text(

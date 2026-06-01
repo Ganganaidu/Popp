@@ -2,18 +2,8 @@
 class Constants {
   const Constants._();
 
-  static const String appName = 'POPP';
-
-  static const String _appId = 'popp-71efb'; // Hardcoded appId
-  static const String basePath = 'artifacts/$_appId/public/data';
-  static const String userPath = '$basePath/users';
-  static const String userToUserChatPath = '$basePath/user_to_user_chats';
-  static const String agentToUserChatPath = '$basePath/agent_user_chats';
-  static const String productsPath = '$basePath/products';
-  static const String adsPath = '$basePath/ads';
-  static const String servicePath = '$basePath/services';
-
-  //artifacts/popp-71efb/public/data/services
+  static const String appBundleId = 'com.popp.abike';
+  static const String appName = 'Bikerverse';
 
   static const String home = 'Home';
   static const String rides = 'Rides';
@@ -21,18 +11,14 @@ class Constants {
   static const String chat = 'Chat';
   static const String help = 'Help';
   static const String explore = 'Explore';
+  static const String search = 'Search';
+  static const String more = 'More';
+  static const String settings = 'Settings';
 
-  static const String privacyLink =
-      'https://popp-71efb.web.app/privacy-policy.html';
   static const String contactNumber = '+91 995 9958 899';
   static const String contactEmail = 'preownedpremiumproducts@gmail.com';
 
   // Keep agentUserId consistent with Firestore rules
   static const String adminUserId = '3SYkhqmzDKPf2n2j7csaBUI4OzF2';
-
-  // Default placeholder image
-  static const String defaultPlaceholderImage =
-      'https://images.unsplash.com/photo-1638003299152-dd1e3bf81fa5?q=80&w=2242&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
-
-  static const String premiumInspection = 'Premium Inspection';
+  static const String tomPlacesApiKey = 'NqDzc0cHxhmrerYiPnoKHskGCrTq0a3m';
 }

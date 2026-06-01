@@ -1,5 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:popp/src/widgets/shimmer_image.dart'; // Assuming this is your custom image widget
+import 'package:popp/src/utils/build_extensions.dart';
+import 'package:popp/src/widgets/shimmer_image.dart';
+import 'package:popp/src/theme/bikerverse_colors.dart';
 
 class ListingCard extends StatelessWidget {
   final String title;
@@ -25,13 +28,17 @@ class ListingCard extends StatelessWidget {
     this.onSold,
   });
 
-  // --- NEW: Helper to determine banner color and icon based on status ---
-  (Color, IconData) _getStatusStyle(String status) {
+  // Helper to determine banner color and icon based on status ---
+  (Color, IconData?) _getStatusStyle(String status) {
     switch (status.toLowerCase()) {
-      case 'Sold':
+      case 'sold':
         return (Colors.grey.shade700, Icons.money_off_outlined);
-      case 'Approved':
+      case 'approved':
         return (Colors.green.shade600, Icons.check_circle_outline);
+      case 'sent back':
+        return (Colors.blue.shade600, Icons.undo_outlined);
+      case 'rejected':
+        return (Colors.red.shade700, Icons.cancel_outlined);
       default: // 'Pending' or any other status
         return (Colors.orange.shade700, Icons.hourglass_top_outlined);
     }
@@ -46,6 +53,14 @@ class ListingCard extends StatelessWidget {
   }
 
   Widget _buildCard(BuildContext context) {
+    final isWeb = kIsWeb && context.isDesktop;
+    if (isWeb) {
+      return _buildWebCard(context);
+    }
+    return _buildMobileCard(context);
+  }
+
+  Widget _buildWebCard(BuildContext context) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -63,15 +78,15 @@ class ListingCard extends StatelessWidget {
                         ? ShimmerImage(imageUrl: imageUrl!)
                         : _buildPlaceholderImage(),
                   ),
-                  if (showOptionsMenu)
+                  if (showOptionsMenu &&
+                      (status?.toLowerCase() != 'pending' &&
+                          status?.toLowerCase() != 'sold'))
                     Positioned(
                       top: 4,
                       right: 4,
                       child: _buildOptionsMenu(context),
                     ),
-                  // --- NEW: Conditionally display the status banner ---
-                  if (status != null && status!.isNotEmpty)
-                    _buildStatusBanner(),
+                  if (status != null) _buildStatusBanner(),
                 ],
               ),
             ),
@@ -85,7 +100,7 @@ class ListingCard extends StatelessWidget {
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
-                    maxLines: 3,
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
                   ),
@@ -94,9 +109,121 @@ class ListingCard extends StatelessWidget {
                     Text(
                       price!,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: Colors.orange,
+                            color: context.primaryColor,
                             fontWeight: FontWeight.bold,
                           ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMobileCard(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(15),
+      child: Container(
+        decoration: BoxDecoration(
+          color: BikerverseColors.card,
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(color: BikerverseColors.outline),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.45),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Stack(
+                children: [
+                  SizedBox.expand(
+                    child: imageUrl != null && imageUrl!.isNotEmpty
+                        ? ShimmerImage(imageUrl: imageUrl!)
+                        : _buildPlaceholderImage(),
+                  ),
+                  Positioned.fill(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            Colors.black.withOpacity(0.65),
+                          ],
+                          stops: const [0.5, 1.0],
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (status != null) _buildStatusBanner(),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: BikerverseColors.textPrimary,
+                        ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (price != null && price!.isNotEmpty) ...[
+                    // const SizedBox(height: 10),
+                    // Text(
+                    //   'STARTING FROM',
+                    //   style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    //         color: BikerverseColors.textMuted,
+                    //         letterSpacing: 1.2,
+                    //         fontWeight: FontWeight.w600,
+                    //       ),
+                    // ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            price!,
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
+                                  color: BikerverseColors.priceGreen,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                          ),
+                        ),
+                        Container(
+                          width: 30,
+                          height: 30,
+                          decoration: const BoxDecoration(
+                            color: BikerverseColors.textPrimary,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.arrow_forward_ios,
+                            size: 16,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ],
@@ -158,17 +285,18 @@ class ListingCard extends StatelessWidget {
         }
       },
       itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-        const PopupMenuItem<String>(
-            value: 'edit',
-            child: ListTile(
-                leading: Icon(Icons.edit_outlined), title: Text('Edit'))),
+        if (status?.toLowerCase() == 'pending')
+          const PopupMenuItem<String>(
+              value: 'edit',
+              child: ListTile(
+                  leading: Icon(Icons.edit_outlined), title: Text('Edit'))),
         const PopupMenuItem<String>(
             value: 'sold',
             child: ListTile(
                 leading:
-                    Icon(Icons.monetization_on_outlined, color: Colors.orange),
+                    Icon(Icons.monetization_on_outlined, color: Colors.green),
                 title: Text('Mark as Sold',
-                    style: TextStyle(color: Colors.orange)))),
+                    style: TextStyle(color: Colors.green)))),
       ],
       icon: Container(
         decoration: BoxDecoration(
@@ -180,8 +308,12 @@ class ListingCard extends StatelessWidget {
 
   Widget _buildPlaceholderImage() {
     return Container(
-      color: Colors.grey.shade200,
-      child: Icon(Icons.two_wheeler, color: Colors.grey.shade400, size: 40),
+      color: BikerverseColors.cardElevated,
+      child: Icon(
+        Icons.two_wheeler,
+        color: Colors.white.withOpacity(0.35),
+        size: 40,
+      ),
     );
   }
 }

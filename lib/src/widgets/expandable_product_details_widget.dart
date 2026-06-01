@@ -7,7 +7,15 @@ import '../utils/product_utils.dart';
 class ExpandableProductDetails extends StatefulWidget {
   final Map<String, dynamic> productJson;
 
-  const ExpandableProductDetails({super.key, required this.productJson});
+  /// When false, City / Area / State rows are suppressed because the highlights
+  /// row above already shows the location card.
+  final bool showLocationDetails;
+
+  const ExpandableProductDetails({
+    super.key,
+    required this.productJson,
+    this.showLocationDetails = true,
+  });
 
   @override
   State<ExpandableProductDetails> createState() =>
@@ -16,7 +24,7 @@ class ExpandableProductDetails extends StatefulWidget {
 
 class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
     with SingleTickerProviderStateMixin {
-  bool isExpanded = false;
+  bool isExpanded = true;
 
   @override
   Widget build(BuildContext context) {
@@ -35,18 +43,17 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
           if (product.bikeModelName?.isNotEmpty ?? false)
             detailRow("Bike Model", product.bikeModelName!, theme),
           if (product.bikeMfgDate != null)
-            detailRow("Bike MFG Date",
-                _formatDate(product.bikeMfgDate, true), theme),
+            detailRow(
+                "Bike MFG Date", _formatDate(product.bikeMfgDate, true), theme),
         ],
         if (product.firstOwner != null)
-          detailRow(
-              "Current Ownership Number", product.firstOwner!, theme),
-        if (product.city.isNotEmpty) detailRow("City", product.city, theme),
-        if (product.area.isNotEmpty) detailRow("Area", product.area, theme),
-        if (product.state.isNotEmpty)
-          detailRow("State", product.state, theme)
-        else
-          const SizedBox.shrink(),
+          detailRow("Current Ownership Number", product.firstOwner!, theme),
+        if (widget.showLocationDetails) ...[
+          if (product.city.isNotEmpty) detailRow("City", product.city, theme),
+          if (product.area.isNotEmpty) detailRow("Area", product.area, theme),
+          if (product.state.isNotEmpty)
+            detailRow("State", product.state, theme),
+        ],
 
         const SizedBox(height: 8),
 
@@ -74,18 +81,29 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
                   detailRow(
                       "Product Condition", product.productCondition!, theme),
                 if (product.insuranceAvailable != null)
-                  detailRow("Insurance Available",
-                      product.insuranceAvailable!, theme),
+                  detailRow("Insurance Available", product.insuranceAvailable!,
+                      theme),
                 if (product.insuranceValidTill != null)
                   detailRow("Insurance valid till",
                       _formatDate(product.insuranceValidTill, false), theme),
                 detailRow("Warranty Available",
                     product.warrantyLimit != null ? "Yes" : "No", theme),
                 if (product.warrantyLimit?.isNotEmpty ?? false)
-                  detailRow("Warranty Limit", product.warrantyLimit!, theme),
+                  detailRow(
+                      "Remaining Warranty", product.warrantyLimit!, theme),
+                if (product.warrantyValidTill != null)
+                  detailRow("Warranty Valid Till",
+                      _formatDate(product.warrantyValidTill, true), theme),
+                if (product.isBillAvailable != null &&
+                    product.isBillAvailable == true)
+                  detailRow("Bill Available",
+                      product.isBillAvailable == true ? 'Yes' : 'No', theme),
+                if (product.billDate != null)
+                  detailRow("Purchase Date",
+                      _formatDate(product.billDate, true), theme),
                 if (product.invoiceAvailable != null)
-                  detailRow("Invoice Available",
-                      product.invoiceAvailable!, theme),
+                  detailRow(
+                      "Invoice Available", product.invoiceAvailable!, theme),
                 if (product.category.contains(ProductUtils.premiumBikes) &&
                     product.nocAvailable != null)
                   detailRow("NOC Available", product.nocAvailable!, theme),
@@ -134,8 +152,7 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text("$title:",
-              style: const TextStyle(color: Colors.grey, fontSize: 14)),
+          Text(title, style: const TextStyle(color: Colors.grey, fontSize: 14)),
           Expanded(
             child: isRegistrationPlace && value.isNotEmpty
                 ? GestureDetector(

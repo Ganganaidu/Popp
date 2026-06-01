@@ -12,7 +12,6 @@ import 'package:popp/src/widgets/category_selector.dart';
 import 'package:popp/src/widgets/loading_overlay.dart';
 import 'package:popp/src/toolbar/common_app_bar.dart';
 import 'package:popp/src/widgets/title_text.dart';
-import 'package:popp/src/widgets/web_constrained_box.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
 
@@ -79,6 +78,14 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
   int _productAgingMonths = 0;
   int _productAgingYears = 0;
 
+  String _formatMonthAndYear(int years, int months) {
+    final yearLabel = years == 1 ? '1 year' : '$years years';
+    final monthLabel = months == 1 ? '1 month' : '$months months';
+    if (years > 0 && months > 0) return '$yearLabel $monthLabel';
+    if (years > 0) return yearLabel;
+    return monthLabel;
+  }
+
   void _clearBikeSpecificFields() {
     selectedBikeBrand = null;
     modelNameController.clear();
@@ -98,7 +105,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
     if (totalMonths < 0) totalMonths = 0;
     final years = totalMonths ~/ 12;
     final months = totalMonths % 12;
-    return "$years years $months months";
+    return _formatMonthAndYear(years, months);
   }
 
   bool _isPastMonth(DateTime date) {
@@ -238,7 +245,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
       addressController.text,
       productSizeController.text,
       _productCondition ?? "",
-      '$_productAgingMonths months $_productAgingYears years',
+      _formatMonthAndYear(_productAgingYears, _productAgingMonths),
       warrantyLeftController.text,
       priceController.text,
       additionalDetailsController.text,
@@ -251,7 +258,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
       ...addressController.text.toLowerCase().split(' '),
       ...productSizeController.text.toLowerCase().split(' '),
       ..._productCondition?.toLowerCase().split(' ') ?? [],
-      ...'$_productAgingMonths months $_productAgingYears years'.split(' '),
+      ..._formatMonthAndYear(_productAgingYears, _productAgingMonths).split(' '),
       ...warrantyLeftController.text.toLowerCase().split(' '),
       ...priceController.text.toLowerCase().split(' '),
       ...'accessories'.toLowerCase().split(' '),
@@ -299,7 +306,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
         'productCondition': _productCondition,
         'billDate': _selectedBillDate,
         'isBillAvailable': isBillAvailable,
-        'productAging': '$_productAgingMonths months $_productAgingYears years',
+        'productAging': _formatMonthAndYear(_productAgingYears, _productAgingMonths),
         'warrantyLimit': warrantyLeftController.text,
         'warrantyValidTill': _selectedWarrantyTillDate,
         'expectedPrice': priceController.text,
@@ -361,7 +368,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
         productCondition: _productCondition,
         billDate: _selectedBillDate,
         isBillAvailable: isBillAvailable,
-        productAging: '$_productAgingMonths months $_productAgingYears years',
+        productAging: _formatMonthAndYear(_productAgingYears, _productAgingMonths),
         warrantyLimit: warrantyLeftController.text,
         warrantyValidTill: _selectedWarrantyTillDate,
         expectedPrice: priceController.text,
@@ -441,8 +448,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
       appBar: CommonAppBar(
         titleWidget: TitleText(_isEditing ? 'Edit Your Accessories' : 'Sell Your Accessories'),
       ),
-      body: WebConstrainedBox(
-        child: LoadingOverlay(
+      body: LoadingOverlay(
         isLoading: _isLoading,
         child: SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),
@@ -482,6 +488,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: TextFormField(
+                          keyboardType: TextInputType.phone,
                           controller: sellerContactController,
                           decoration: context.inputDecoration(
                               "Contact Number", "Enter phone number"),
@@ -611,7 +618,6 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
                   ),
                   buildPaddedField(TextFormField(
                     controller: productSizeController,
-                    keyboardType: TextInputType.number,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     decoration: context.inputDecoration(
                         "Product size", "If applicable"),
@@ -676,7 +682,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
                         child: Text(
                           _selectedBillDate == null
                               ? "Set purchase date to calculate"
-                              : "$_productAgingYears years $_productAgingMonths months",
+                              : _formatMonthAndYear(_productAgingYears, _productAgingMonths),
                           style:
                               Theme.of(context).textTheme.titleMedium?.copyWith(
                                     color: _selectedBillDate == null
@@ -801,21 +807,18 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
             ),
           ),
         ),
-      ),
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          WebConstrainedBox(
-            child: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: ElevatedButton(
-                  onPressed: submitForm,
-                  style: ElevatedButton.styleFrom(
-                      minimumSize: const Size.fromHeight(50)),
-                  child: Text(_isEditing ? "Update" : "Submit"),
-                ),
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: ElevatedButton(
+                onPressed: submitForm,
+                style: ElevatedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(50)),
+                child: Text(_isEditing ? "Update" : "Submit"),
               ),
             ),
           ),

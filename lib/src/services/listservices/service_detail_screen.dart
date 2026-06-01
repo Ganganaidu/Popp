@@ -1,10 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:popp/src/utils/app_loger.dart';
-import 'package:popp/src/widgets/title_text.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
@@ -18,7 +16,6 @@ import '../../utils/product_utils.dart';
 import '../../widgets/app_dialogs.dart';
 import '../../widgets/app_network_image.dart';
 import '../../widgets/full_screen_image_screen.dart';
-import '../../widgets/web_image_gallery.dart';
 import 'list_service_form_screen.dart';
 
 class ServiceDetailScreen extends StatefulWidget {
@@ -109,281 +106,10 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     AppLogger.d("isAdmin $isAdmin and isApproved $_isApproved");
     // String appBarTitle = ProductUtils.getServiceAppBarTitle(widget.category);
     return Scaffold(
-      body: kIsWeb ? _buildWebLayout(context) : _buildBody(context),
+      body: _buildBody(context),
       bottomNavigationBar: _buildServiceBottomBar(isAdmin),
     );
   }
-
-  Widget _buildWebLayout(BuildContext context) {
-    final serviceData = widget.serviceData;
-    // Prepare images
-    List<String> allImageUrls = [];
-    if (serviceData['promoImageUrls'] is List) {
-      allImageUrls
-          .addAll((serviceData['promoImageUrls'] as List).cast<String>());
-    } else if (serviceData['promoImageUrls'] is String &&
-        (serviceData['promoImageUrls'] as String).isNotEmpty) {
-      allImageUrls.add(serviceData['promoImageUrls']);
-    }
-    if (serviceData['shopImageUrls'] is List) {
-      allImageUrls
-          .addAll((serviceData['shopImageUrls'] as List).cast<String>());
-    }
-
-    String title = serviceData['businessTitle'] ??
-        serviceData['eventName'] ??
-        'Service Details';
-    String description = serviceData['businessDescription'] ??
-        serviceData['eventDetailedDescription'] ??
-        'No description available.';
-
-    // Admin check for button
-    final isAdmin =
-        FirebaseAuth.instance.currentUser?.uid == Constants.adminUserId;
-
-    // Build breadcrumb for web
-    String categoryLabel = widget.category;
-    if (categoryLabel.contains("Track")) categoryLabel = "Track and Training day";
-    final List<String> webCrumbs = [
-      'Home',
-      'Services',
-      if (categoryLabel.isNotEmpty) categoryLabel,
-      if (title.isNotEmpty) title,
-    ];
-
-    return SingleChildScrollView(
-      child: Center(
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 1200),
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Breadcrumb navigation row
-              _buildWebBreadcrumb(context, webCrumbs),
-              const SizedBox(height: 16),
-              // Top Section: Images and Info
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Left Column: Images
-                  Expanded(
-                    flex: 1,
-                    child: WebImageGallery(
-                      imageUrls: allImageUrls,
-                      selectedIndexNotifier:
-                          ValueNotifier<int>(_selectedImageIndex)
-                            ..addListener(() {}),
-                    ),
-                  ),
-                  const SizedBox(width: 40),
-
-                  // Right Column: Details
-                  Expanded(
-                    flex: 1,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Title and Share
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: TitleText(
-                                title,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .displaySmall
-                                    ?.copyWith(fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                            IconButton(
-                              icon: Icon(
-                                  _isFav
-                                      ? Icons.favorite
-                                      : Icons.favorite_border,
-                                  color: Colors.red),
-                              onPressed:
-                                  _favButtonDisabled ? null : _toggleFavorite,
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            if (!_isApproved) ...[
-                              const Icon(Icons.info_outline,
-                                  color: Colors.orange, size: 18),
-                              const SizedBox(width: 4),
-                              const Text("Pending Approval",
-                                  style: TextStyle(
-                                      color: Colors.orange,
-                                      fontWeight: FontWeight.bold)),
-                              const SizedBox(width: 16),
-                            ],
-                          ],
-                        ),
-
-                        const SizedBox(height: 32),
-
-                        // Details Section (Status, Address, Hours, etc.)
-                        Container(
-                          padding: const EdgeInsets.all(24),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).cardColor,
-                            borderRadius: BorderRadius.circular(16),
-                            border:
-                                Border.all(color: Colors.grey.withOpacity(0.1)),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildWebDetailRow(context, "Status",
-                                  serviceData['status'] ?? 'N/A'),
-                              if (ProductUtils.isBikeAndOthersCategory(
-                                  widget.category)) ...[
-                                _buildWebDetailRow(context, "Address",
-                                    serviceData['businessAddress'] ?? 'N/A',
-                                    isLink: true, isMap: true),
-                                _buildWebDetailRow(
-                                    context,
-                                    "Hours",
-                                    serviceData['businessWorkingDaysHours'] ??
-                                        'N/A'),
-                              ],
-                              // Additional Service Details could go here if extracted
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(height: 24),
-
-                        if (isAdmin && _status != 'Approved' && _status != 'Rejected')
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 16.0),
-                            child: _buildAdminActionRow(),
-                          ),
-                        if (!isAdmin &&
-                            _status == 'Sent Back' &&
-                            widget.serviceData['userId'] ==
-                                FirebaseAuth.instance.currentUser?.uid)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 16.0),
-                            child: ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.blue.shade700,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 14),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10)),
-                              ),
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => ListServiceFormScreen(
-                                      category: widget.category,
-                                      existingData: widget.serviceData,
-                                    ),
-                                  ),
-                                );
-                              },
-                              icon: const Icon(Icons.edit_outlined, size: 18),
-                              label: const Text('Edit & Resubmit'),
-                            ),
-                          ),
-
-                        ChatWithSellerCard(
-                          receiverUserName: serviceData['contactName'] ??
-                              serviceData['pointOfContactName'] ??
-                              '',
-                          receiverUserID: serviceData['userId'] ?? '',
-                          productId: serviceData['id'] ?? '',
-                          productTitle: title,
-                          isOwner: true,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 48),
-
-              // Bottom Section: About This Service
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(32),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).cardColor,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.grey.withOpacity(0.1)),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "About This Service",
-                      style:
-                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      description,
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyLarge
-                          ?.copyWith(height: 1.6, fontSize: 16),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 48),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildWebDetailRow(BuildContext context, String label, String value,
-      {bool isLink = false, bool isMap = false}) {
-    if (value == 'N/A' || value.isEmpty) return const SizedBox.shrink();
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-              width: 100,
-              child: Text("$label:",
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, color: Colors.grey))),
-          Expanded(
-            child: isLink
-                ? GestureDetector(
-                    onTap: () async {
-                      if (isMap) {
-                        final encoded = Uri.encodeComponent(value);
-                        launchUrlString(
-                            'https://www.google.com/maps/search/?api=1&query=$encoded',
-                            mode: LaunchMode.externalApplication);
-                      }
-                    },
-                    child: Text(value,
-                        style: const TextStyle(
-                            color: Colors.blue,
-                            decoration: TextDecoration.underline)),
-                  )
-                : Text(value,
-                    style: const TextStyle(fontWeight: FontWeight.bold)),
-          )
-        ],
-      ),
-    );
-  }
-
   Widget _buildDetailRow(BuildContext context, String label, String value) {
     IconData? icon;
     VoidCallback? onTap;
@@ -397,7 +123,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
         launchUrlString(value, mode: LaunchMode.externalApplication);
       };
     } else if (label.toLowerCase().contains('phone') ||
-        label.toLowerCase().contains('contact')) {
+        label.toLowerCase() == 'business contact') {
       icon = Icons.phone;
       isLink = true;
       onTap = () => launchUrlString('tel:$value');
@@ -451,72 +177,6 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
   }
 
   // Web breadcrumb: back arrow + clickable path segments
-  Widget _buildWebBreadcrumb(BuildContext context, List<String> crumbs) {
-    return Row(
-      children: [
-        InkWell(
-          onTap: () => Navigator.of(context).pop(),
-          borderRadius: BorderRadius.circular(20),
-          child: Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.arrow_back_ios_new_rounded,
-                size: 16, color: Colors.black87),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                for (int i = 0; i < crumbs.length; i++) ...[
-                  if (i > 0)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 6),
-                      child: Icon(Icons.chevron_right_rounded,
-                          size: 16, color: Colors.grey.shade400),
-                    ),
-                  GestureDetector(
-                    onTap: i == crumbs.length - 1
-                        ? null
-                        : () {
-                            final steps = crumbs.length - 1 - i;
-                            for (int j = 0; j < steps; j++) {
-                              if (Navigator.of(context).canPop()) {
-                                Navigator.of(context).pop();
-                              }
-                            }
-                          },
-                    child: Text(
-                      crumbs[i],
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: i == crumbs.length - 1
-                            ? FontWeight.w600
-                            : FontWeight.w400,
-                        color: i == crumbs.length - 1
-                            ? Colors.black87
-                            : Colors.orange.shade700,
-                        decoration: i == crumbs.length - 1
-                            ? null
-                            : TextDecoration.underline,
-                        decorationColor: Colors.orange.shade700,
-                      ),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildBody(BuildContext context) {
     final serviceData = widget.serviceData;
     final category = widget.category;
@@ -563,6 +223,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
 
     // Data for Highlights & Details
     String city = serviceData['city'] ?? 'N/A';
+    String state = serviceData['state'] ?? '';
     String status = serviceData['status'] ?? 'Open';
 
     // Address & Hours
@@ -599,8 +260,9 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
       } else {
         hoursInfo = serviceData['eventStartTime'] ?? 'N/A';
       }
-      if (hoursInfo == 'N/A' || hoursInfo.trim().isEmpty)
+      if (hoursInfo == 'N/A' || hoursInfo.trim().isEmpty) {
         hoursInfo = 'Check details';
+      }
     } else {
       // Fallback
       fullAddress =
@@ -775,7 +437,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                       const SizedBox(height: 30),
 
                       // 1. Highlight Cards Row (Location, Map, Social Links)
-                      _buildHighlightsRow(city, serviceData),
+                      _buildHighlightsRow(city, state, serviceData),
 
                       const SizedBox(height: 15),
 
@@ -863,14 +525,16 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     );
   }
 
-  Widget _buildHighlightsRow(String city, Map<String, dynamic> serviceData) {
+  Widget _buildHighlightsRow(String city, String state, Map<String, dynamic> serviceData) {
+    final locationValue = state.isNotEmpty ? '$city\n$state' : city;
     // 1. Always show Location
     List<Widget> cards = [
       Expanded(
         child: _buildHighlightCard(
           Icons.location_on_outlined,
           "LOCATION",
-          city,
+          locationValue,
+          maxLines: 2,
         ),
       ),
     ];
@@ -1014,11 +678,11 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
   }
 
   Widget _buildHighlightCard(IconData icon, String label, String value,
-      {VoidCallback? onTap}) {
+      {VoidCallback? onTap, int maxLines = 1}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 120,
+        height: maxLines > 1 ? 136 : 120,
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
         decoration: BoxDecoration(
           color: const Color(0xFF1E1E1E),
@@ -1045,7 +709,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                     fontSize: 13,
                     fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
-                maxLines: 1,
+                maxLines: maxLines,
                 overflow: TextOverflow.ellipsis),
           ],
         ),
@@ -1100,12 +764,13 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     final productAging = serviceData['productAging']?.toString() ?? '';
     if (productAging.isNotEmpty) allDetails['Product Aging'] = productAging;
 
-    final purchaseDate = _formatProductDate(serviceData['billDate']);
-    if (purchaseDate != null) allDetails['Purchase Date'] = purchaseDate;
     if (serviceData.containsKey('isBillAvailable')) {
       allDetails['Bill Available'] =
-          serviceData['isBillAvailable'] == true ? 'Yes' : 'No';
+      serviceData['isBillAvailable'] == true ? 'Yes' : 'No';
     }
+
+    final purchaseDate = _formatProductDate(serviceData['billDate']);
+    if (purchaseDate != null) allDetails['Purchase Date'] = purchaseDate;
 
     final warrantyValidTill = _formatProductDate(serviceData['warrantyValidTill']);
     final warrantyLimit = serviceData['warrantyLimit']?.toString() ?? '';
@@ -1150,7 +815,6 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
       'promoImageUrls',
       'shopGaragePics',
       'category',
-      'status',
       // Shown in highlights
       'businessAddress',
       // Shown in blocks
@@ -1311,7 +975,6 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
   }
 
   Widget? _buildServiceBottomBar(bool isAdmin) {
-    if (kIsWeb) return null;
     final currentUid = FirebaseAuth.instance.currentUser?.uid;
     final isOwner = !isAdmin && widget.serviceData['userId'] == currentUid;
     if (isOwner && _status == 'Sent Back') {

@@ -7,7 +7,6 @@ import 'package:popp/src/api/currency_service.dart';
 import 'package:popp/src/utils/app_loger.dart';
 import 'package:popp/src/utils/product_utils.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:shimmer/shimmer.dart';
 
 import '../admin/admin_notification_service.dart';
 import '../api/api_url.dart';
@@ -18,12 +17,10 @@ import '../services/bikes/sell_your_bike.dart';
 import '../toolbar/AppBarIconButton.dart';
 import '../utils/app_constants.dart';
 import '../widgets/app_dialogs.dart';
+import '../widgets/app_network_image.dart';
 import '../widgets/expandable_product_details_widget.dart';
 import '../widgets/full_screen_image_screen.dart';
 import '../widgets/web_constrained_box.dart';
-import '../widgets/web_image_gallery.dart';
-import '../widgets/web_product_specs.dart';
-import '../widgets/app_network_image.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final Map<String, dynamic> productJson;
@@ -52,6 +49,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   String localizedPrice = '';
   bool _didInitPrice = false;
   String countryCode = '';
+
+  // Populated by _buildHighlightsRow so ExpandableProductDetails can check
+  // whether the location card was already rendered there.
+  final List<Widget> _highlightCards = [];
 
   @override
   void initState() {
@@ -118,37 +119,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     });
   }
 
-  Widget _buildImage(String url, {bool useHero = false}) {
-    final imageWidget = AppNetworkImage(
-      imageUrl: url,
-      fit: BoxFit.cover,
-      width: double.infinity,
-      height: 400,
-      placeholder: Shimmer.fromColors(
-        baseColor: Colors.grey[300]!,
-        highlightColor: Colors.grey[100]!,
-        child: Container(
-          color: Colors.white,
-          width: double.infinity,
-          height: 400,
-        ),
-      ),
-      errorWidget: Container(
-        color: Colors.grey[200],
-        width: double.infinity,
-        height: 400,
-        child: const Icon(Icons.broken_image, color: Colors.grey, size: 50),
-      ),
-    );
-
-    return useHero
-        ? Hero(
-            tag: widget.productJson['imageUrl'] ?? '',
-            child: imageWidget,
-          )
-        : imageWidget;
-  }
-
   void _shareProduct(Map<String, dynamic> product) {
     final serviceId = product['id'];
     final serviceName = product['title'] ?? '';
@@ -161,21 +131,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   bool get _isAdmin =>
       FirebaseAuth.instance.currentUser?.uid == Constants.adminUserId;
 
-  (Color, IconData) _getStatusStyle(String status) {
-    switch (status.toLowerCase()) {
-      case 'sold':
-        return (Colors.grey.shade700, Icons.money_off_outlined);
-      case 'approved':
-        return (Colors.green.shade600, Icons.check_circle_outline);
-      case 'sent back':
-        return (Colors.blue.shade600, Icons.undo_outlined);
-      case 'rejected':
-        return (Colors.red.shade700, Icons.cancel_outlined);
-      default:
-        return (Colors.orange.shade700, Icons.hourglass_top_outlined);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context).textTheme;
@@ -184,286 +139,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         (product['thumbImageUrls'] as List<dynamic>? ?? []).cast<String>();
 
     return Scaffold(
-      body: kIsWeb
-          ? _buildWebLayout(context, imageUrls, product, theme)
-          : _buildMobileLayout(context, imageUrls, product, theme),
+      body: _buildMobileLayout(context, imageUrls, product, theme),
       bottomNavigationBar: _buildBottomBar(),
-    );
-  }
-
-  Widget _buildWebLayout(BuildContext context, List<String> imageUrls,
-      Map<String, dynamic> product, TextTheme theme) {
-    final category = (product['category'] as String? ?? '');
-    final subCategory = (product['subCategory'] as String? ?? '');
-    final title = ProductUtils.getTitle(product);
-    final List<String> crumbs = ['Home'];
-    if (category.isNotEmpty) crumbs.add(category);
-    if (subCategory.isNotEmpty) crumbs.add(subCategory);
-    if (title.isNotEmpty) crumbs.add(title);
-
-    return SingleChildScrollView(
-      child: Center(
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 1200),
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Breadcrumb navigation row
-              _buildWebBreadcrumb(context, crumbs),
-              const SizedBox(height: 16),
-              // Top Section: Images and Key Details
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Left Column: Images
-                  Expanded(
-                    flex: 1,
-                    child: WebImageGallery(
-                      imageUrls: imageUrls,
-                      selectedIndexNotifier: selectedImageIndexNotifier,
-                    ),
-                  ),
-                  const SizedBox(width: 40),
-                  // Right Column: Details
-                  Expanded(
-                    flex: 1,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Title and Share
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                ProductUtils.getTitle(product),
-                                style: theme.displaySmall?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  height: 1.2,
-                                ),
-                              ),
-                            ),
-                            IconButton(
-                              onPressed:
-                                  _favButtonDisabled ? null : _toggleFavorite,
-                              icon: Icon(
-                                isFavorite
-                                    ? Icons.favorite
-                                    : Icons.favorite_border,
-                                color: Colors.red,
-                                size: 30,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        // Status and Location
-                        Row(
-                          children: [
-                            if (widget.showStatus) ...[
-                              Icon(_getStatusStyle(_status).$2,
-                                  color: _getStatusStyle(_status).$1, size: 18),
-                              const SizedBox(width: 4),
-                              Text(_status,
-                                  style: TextStyle(
-                                      color: _getStatusStyle(_status).$1,
-                                      fontWeight: FontWeight.bold)),
-                              const SizedBox(width: 16),
-                            ],
-                            const Icon(Icons.location_on_outlined,
-                                size: 18, color: Colors.grey),
-                            const SizedBox(width: 4),
-                            Text('${product['city']}, ${product['state']}',
-                                style: const TextStyle(color: Colors.grey)),
-                          ],
-                        ),
-
-                        const SizedBox(height: 24),
-
-                        // Price Card
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(24),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).cardColor,
-                            borderRadius: BorderRadius.circular(16),
-                            border:
-                                Border.all(color: Colors.grey.withOpacity(0.1)),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                CurrencyService.getProductPrice(
-                                    product['expectedPrice'], countryCode),
-                                style: theme.displayMedium?.copyWith(
-                                  color: Colors.green, // Match design green
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                "Posted on ${_formatDate(product['createdAt']?.toDate(), false)}",
-                                style: const TextStyle(color: Colors.grey),
-                              )
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(height: 32),
-
-                        // Specifications
-                        const Text(
-                          "Specifications",
-                          style: TextStyle(
-                              fontSize: 22, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Web version of specs
-                        Container(
-                          padding: const EdgeInsets.all(24),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).cardColor,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: WebProductSpecs(productJson: product),
-                        ),
-
-                        const SizedBox(height: 24),
-
-                        // Chat Button
-                        ChatWithSellerCard(
-                          receiverUserName: product['sellerName'],
-                          receiverUserID: product['userId'],
-                          productTitle: ProductUtils.getTitle(product),
-                          productId: product['id'],
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        if (_isAdmin && _status != 'Approved' && _status != 'Rejected' && _status != 'Sold')
-                          Padding(
-                            padding: const EdgeInsets.only(top: 16.0),
-                            child: _buildAdminActionRow(),
-                          ),
-                        if (!_isAdmin &&
-                            _status == 'Sent Back' &&
-                            widget.productJson['userId'] ==
-                                FirebaseAuth.instance.currentUser?.uid)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 16.0),
-                            child: _buildUserEditButton(),
-                          ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 48),
-
-              // Bottom Section: About This Product
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(32),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).cardColor,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.grey.withOpacity(0.1)),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "About This Product",
-                      style:
-                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      product['additionalDetails'] ??
-                          'No description available.',
-                      style:
-                          theme.bodyLarge?.copyWith(height: 1.6, fontSize: 16),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 48),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // Web breadcrumb: back arrow + clickable path segments
-  Widget _buildWebBreadcrumb(BuildContext context, List<String> crumbs) {
-    return Row(
-      children: [
-        InkWell(
-          onTap: () => Navigator.of(context).pop(),
-          borderRadius: BorderRadius.circular(20),
-          child: Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.arrow_back_ios_new_rounded,
-                size: 16, color: Colors.black87),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                for (int i = 0; i < crumbs.length; i++) ...[
-                  if (i > 0)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 6),
-                      child: Icon(Icons.chevron_right_rounded,
-                          size: 16, color: Colors.grey.shade400),
-                    ),
-                  GestureDetector(
-                    onTap: i == crumbs.length - 1
-                        ? null
-                        : () {
-                            final steps = crumbs.length - 1 - i;
-                            for (int j = 0; j < steps; j++) {
-                              if (Navigator.of(context).canPop()) {
-                                Navigator.of(context).pop();
-                              }
-                            }
-                          },
-                    child: Text(
-                      crumbs[i],
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: i == crumbs.length - 1
-                            ? FontWeight.w600
-                            : FontWeight.w400,
-                        color: i == crumbs.length - 1
-                            ? Colors.black87
-                            : Colors.orange.shade700,
-                        decoration: i == crumbs.length - 1
-                            ? null
-                            : TextDecoration.underline,
-                        decorationColor: Colors.orange.shade700,
-                      ),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ),
-      ],
     );
   }
 
@@ -530,8 +207,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         child: AppNetworkImage(
                           imageUrl: imageUrls[index],
                           fit: BoxFit.cover,
-                          errorWidget:
-                              Container(color: Colors.grey[900]),
+                          errorWidget: Container(color: Colors.grey[900]),
                         ),
                       );
                     },
@@ -641,7 +317,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           fontWeight: FontWeight.bold)),
                   const SizedBox(height: 24),
 
-                  ExpandableProductDetails(productJson: product),
+                  ExpandableProductDetails(
+                    productJson: product,
+                    // _highlightCards is populated by _buildHighlightsRow above.
+                    // Location is added there only when cards.length <= 2, so
+                    // show it in the details section only when it was NOT shown above.
+                    showLocationDetails: _highlightCards.length > 2,
+                  ),
 
                   if (product['additionalDetails'].isNotEmpty)
                     const Text("DESCRIPTION",
@@ -703,38 +385,47 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   Widget _buildHighlightsRow(Map<String, dynamic> product) {
-    final cards = <Widget>[];
+    _highlightCards.clear();
 
     final sellerCategory = product['sellerCategory']?.toString();
     if (sellerCategory != null && sellerCategory.isNotEmpty) {
-      cards.add(Expanded(
+      _highlightCards.add(Expanded(
           child: _buildHighlightCard(
-              Icons.person_outline, "SELLER TYPE", sellerCategory)));
+              Icons.person_outline, "SELLER TYPE", '$sellerCategory\n')));
     }
 
     final kmDriven = product['kmDriven'];
     if (kmDriven != null && kmDriven.toString() != '-') {
-      cards.add(Expanded(
-          child: _buildHighlightCard(Icons.history, "DRIVEN", "$kmDriven KM")));
+      _highlightCards.add(Expanded(
+          child:
+              _buildHighlightCard(Icons.history, "DRIVEN", "$kmDriven KM\n")));
     }
 
     final mfgDate = product['mfgDate'];
     if (mfgDate != null) {
       final formattedMfg = _formatDate(mfgDate, true);
       if (formattedMfg != '-') {
-        cards.add(Expanded(
+        _highlightCards.add(Expanded(
             child: _buildHighlightCard(
-                Icons.calendar_today_outlined, "MFG DATE", formattedMfg)));
+                Icons.calendar_today_outlined, "MFG DATE", '$formattedMfg\n')));
       }
-
     }
 
-    if (cards.isEmpty) return const SizedBox.shrink();
+    String city = product['city'] ?? '';
+    String state = product['state'] ?? '';
+    final locationValue = state.isNotEmpty ? '$city\n$state' : city;
+    if (_highlightCards.length <= 2) {
+      _highlightCards.add(Expanded(
+          child: _buildHighlightCard(
+              Icons.location_on_outlined, "LOCATION", locationValue)));
+    }
+
+    if (_highlightCards.isEmpty) return const SizedBox.shrink();
 
     final children = <Widget>[];
-    for (int i = 0; i < cards.length; i++) {
-      children.add(cards[i]);
-      if (i < cards.length - 1) {
+    for (int i = 0; i < _highlightCards.length; i++) {
+      children.add(_highlightCards[i]);
+      if (i < _highlightCards.length - 1) {
         children.add(const SizedBox(width: 12));
       }
     }
@@ -766,7 +457,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   fontSize: 12,
                   fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
-              maxLines: 1,
+              maxLines: 2,
               overflow: TextOverflow.ellipsis),
         ],
       ),
@@ -780,7 +471,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     if (isOwner && _status == 'Sent Back') {
       return _buildUserEditButton();
     }
-    if (_isAdmin && _status != 'Approved' && _status != 'Rejected' && _status != 'Sold') {
+    if (_isAdmin &&
+        _status != 'Approved' &&
+        _status != 'Rejected' &&
+        _status != 'Sold') {
       return _buildAdminBottomBar();
     }
     return null;
@@ -796,7 +490,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               backgroundColor: Colors.blue.shade700,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
             ),
             onPressed: () {
               final category = widget.productJson['category'] as String? ?? '';
@@ -804,14 +499,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => SellYourBike(existingData: widget.productJson),
+                    builder: (_) =>
+                        SellYourBike(existingData: widget.productJson),
                   ),
                 );
               } else {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => SellYourAccessories(existingData: widget.productJson),
+                    builder: (_) =>
+                        SellYourAccessories(existingData: widget.productJson),
                   ),
                 );
               }
@@ -903,8 +600,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     try {
       switch (action) {
         case 'approved':
-          await AdminNotificationService.approveListing(
-              listingRef: listingRef);
+          await AdminNotificationService.approveListing(listingRef: listingRef);
           if (!mounted) return;
           setState(() {
             _isApproved = true;
@@ -935,8 +631,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text('Action failed: $e'),
-              backgroundColor: Colors.red),
+              content: Text('Action failed: $e'), backgroundColor: Colors.red),
         );
       }
     }
@@ -949,7 +644,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(isSendBack ? 'Send Back for Corrections' : 'Reject Listing'),
+        title:
+            Text(isSendBack ? 'Send Back for Corrections' : 'Reject Listing'),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -1035,6 +731,21 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     final String displayFormat =
         selectOnlyMonthYear ? 'MMMM yyyy' : 'd MMM yyyy';
     return DateFormat(displayFormat).format(dt);
+  }
+
+  (Color, IconData) _getStatusStyle(String status) {
+    switch (status.toLowerCase()) {
+      case 'sold':
+        return (Colors.grey.shade700, Icons.money_off_outlined);
+      case 'approved':
+        return (Colors.green.shade600, Icons.check_circle_outline);
+      case 'sent back':
+        return (Colors.blue.shade600, Icons.undo_outlined);
+      case 'rejected':
+        return (Colors.red.shade700, Icons.cancel_outlined);
+      default:
+        return (Colors.orange.shade700, Icons.hourglass_top_outlined);
+    }
   }
 
   Widget _buildStatusBanner() {

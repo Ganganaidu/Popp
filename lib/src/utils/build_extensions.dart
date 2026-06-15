@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:popp/src/theme/bikerverse_colors.dart';
 
 extension BuildContextEntension<T> on BuildContext {
   bool get isMobile => MediaQuery.of(this).size.width <= 500.0;
@@ -110,34 +111,44 @@ extension BuildContextEntension<T> on BuildContext {
   }
 
   InputDecoration inputDecoration(String label, String hint,
-          {bool enable = true, IconData? icon, double borderRadius = 8.0}) =>
+          {bool enable = true, IconData? icon, double borderRadius = 14.0}) =>
       InputDecoration(
         enabled: enable,
         labelText: label,
         hintText: hint,
         floatingLabelBehavior: FloatingLabelBehavior.always,
         filled: true,
-        fillColor: Colors.transparent,
-        prefixIcon: icon != null ? Icon(icon) : null,
-        hintStyle: const TextStyle(color: Colors.white54),
-        labelStyle: const TextStyle(fontWeight: FontWeight.w500),
-        // Change fill color when disabled
+        fillColor: BikerverseColors.cardElevated,
+        prefixIcon: icon != null
+            ? Icon(icon, size: 20, color: BikerverseColors.textMuted)
+            : null,
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        hintStyle: const TextStyle(color: BikerverseColors.textMuted),
+        labelStyle: const TextStyle(
+          color: BikerverseColors.textSecondary,
+          fontWeight: FontWeight.w500,
+        ),
+        floatingLabelStyle: const TextStyle(
+          color: BikerverseColors.brightGreen,
+          fontWeight: FontWeight.w600,
+        ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(borderRadius),
-          borderSide: const BorderSide(color: Colors.white12),
+          borderSide: const BorderSide(color: BikerverseColors.outline),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(borderRadius),
-          borderSide: BorderSide(color: Colors.grey.withOpacity(0.8), width: 1.5),
+          borderSide:
+              const BorderSide(color: BikerverseColors.brightGreen, width: 1.5),
         ),
         disabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(borderRadius),
-          // Add this for when InputDecorator is disabled
-          borderSide: const BorderSide(color: Colors.white12),
+          borderSide: const BorderSide(color: BikerverseColors.divider),
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(borderRadius),
-          borderSide: const BorderSide(color: Colors.white12),
+          borderSide: const BorderSide(color: BikerverseColors.outline),
         ),
       );
 }

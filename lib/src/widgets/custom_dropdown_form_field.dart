@@ -40,7 +40,9 @@ class CustomDropdownFormField<T> extends StatelessWidget {
       decoration: decoration ??
           context.inputDecoration(label, hint, enable: enabled).copyWith(
                 fillColor: fillColor,
-                filled: fillColor != null,
+                // When no explicit fillColor, keep the base decoration's fill
+                // (passing null to copyWith leaves `filled` unchanged).
+                filled: fillColor != null ? true : null,
                 prefixIcon: prefixIcon,
               ),
       items: items,

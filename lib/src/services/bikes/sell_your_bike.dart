@@ -4,12 +4,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:popp/src/utils/build_extensions.dart';
 import 'package:popp/src/widgets/app_dialogs.dart';
 import 'package:popp/src/widgets/loading_overlay.dart';
-import 'package:popp/src/toolbar/common_app_bar.dart';
-import 'package:popp/src/widgets/title_text.dart';
-import 'package:popp/src/widgets/web_constrained_box.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
 
@@ -21,11 +20,14 @@ import '../../models/pop_category.dart';
 import '../../models/product.dart';
 import '../../navigation/nav_router.dart';
 import '../../search/autocomplete_search_field.dart';
+import '../../theme/bikerverse_colors.dart';
 import '../../utils/app_loger.dart';
 import '../../utils/product_content_data.dart';
-import '../../widgets/custom_dropdown_form_field.dart';
+import '../../widgets/bottom_sheet_selector_field.dart';
 import '../../widgets/image_picker_selection.dart';
 import '../../widgets/month_year_picker.dart';
+import '../../widgets/segmented_selector_field.dart';
+import '../../widgets/stepped_form_scaffold.dart';
 
 class SellYourBike extends StatefulWidget {
   final Map<String, dynamic>? existingData;
@@ -36,13 +38,13 @@ class SellYourBike extends StatefulWidget {
   State<SellYourBike> createState() => _SellYourBikeState();
 }
 
-class _SellYourBikeState extends State<SellYourBike>
-    with SingleTickerProviderStateMixin {
-  final _formKey = GlobalKey<FormState>();
+class _SellYourBikeState extends State<SellYourBike> {
   final FirebaseApiService _firebaseService = FirebaseApiService();
+  final SteppedFormController _stepController = SteppedFormController();
 
-  final ScrollController _scrollController = ScrollController();
-  late final ValueNotifier<bool> _isCollapsedNotifier;
+  // One form key per wizard step so each validates independently.
+  final List<GlobalKey<FormState>> _stepKeys =
+      List.generate(5, (_) => GlobalKey<FormState>());
 
   final TextEditingController sellerNameController = TextEditingController();
   final TextEditingController sellerContactController = TextEditingController();
@@ -82,7 +84,6 @@ class _SellYourBikeState extends State<SellYourBike>
   bool _termsAccepted = false;
   bool _enableGallery = false;
 
-  final double _bannerHeight = 40.0;
   final List<File> _images = [];
   var productId = const Uuid().v4();
 
@@ -152,15 +153,6 @@ class _SellYourBikeState extends State<SellYourBike>
     if (widget.existingData != null) {
       _initFromExistingData(widget.existingData!);
     }
-    _isCollapsedNotifier = ValueNotifier(false);
-    _scrollController.addListener(() {
-      final offset = _scrollController.offset;
-      if (offset > 50 && !_isCollapsedNotifier.value) {
-        _isCollapsedNotifier.value = true;
-      } else if (offset <= 50 && _isCollapsedNotifier.value) {
-        _isCollapsedNotifier.value = false;
-      }
-    });
   }
 
   void _loadConfig() async {
@@ -172,8 +164,6 @@ class _SellYourBikeState extends State<SellYourBike>
 
   @override
   void dispose() {
-    _scrollController.dispose();
-    _isCollapsedNotifier.dispose();
     sellerNameController.dispose();
     sellerContactController.dispose();
     brandController.dispose();
@@ -212,14 +202,8 @@ class _SellYourBikeState extends State<SellYourBike>
     }
   }
 
-  void _submitForm() async {
-    if (!_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill in all required fields')),
-      );
-      return;
-    }
-
+  Future<void> _submitForm() async {
+    // Per-step validation is handled by SteppedFormScaffold before this runs.
     if (!_termsAccepted) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -381,7 +365,6 @@ class _SellYourBikeState extends State<SellYourBike>
     );
 
     if (success) {
-      _formKey.currentState?.reset();
       sellerNameController.clear();
       sellerContactController.clear();
       brandController.clear();
@@ -417,33 +400,312 @@ class _SellYourBikeState extends State<SellYourBike>
     }
   }
 
-  Widget _buildAnimatedBanner() {
-    return ValueListenableBuilder<bool>(
-      valueListenable: _isCollapsedNotifier,
-      builder: (context, isCollapsed, child) {
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          height: isCollapsed ? 0 : _bannerHeight,
-          width: double.infinity,
-          color: Colors.red[400],
-          alignment: Alignment.center,
-          child: isCollapsed
-              ? null
-              : const Text(
-                  "Strictly Only 250CC and above Powered Bikes",
+  Widget _buildBanner() {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: BikerverseColors.accentFill,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: BikerverseColors.accent.withValues(alpha: 0.5)),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(width: 4, color: BikerverseColors.brightGreen),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(12, 12, 8, 12),
+              child: Icon(Icons.verified_user_outlined,
+                  color: BikerverseColors.brightGreen, size: 20),
+            ),
+            const Expanded(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(0, 12, 12, 12),
+                child: Text(
+                  "Strictly 250cc & above — powered bikes only",
                   style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
+                    color: BikerverseColors.textPrimary,
+                    fontWeight: FontWeight.w600,
+                    height: 1.3,
                   ),
                 ),
-        );
-      },
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    // --- Dynamic variables for brand/model logic ---
+  // Premium summary card shown atop the Bike step once brand/model are known.
+  Widget _buildBikeSummaryCard() {
+    final brand = selectedBrand == 'Others'
+        ? brandController.text
+        : (selectedBrand ?? '');
+    final model = (selectedBrand == 'Others' || selectedModel == 'Others')
+        ? modelController.text
+        : (selectedModel ?? '');
+
+    if (brand.isEmpty && model.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [BikerverseColors.accentFill, Color(0x00000000)],
+        ),
+        border: Border.all(color: BikerverseColors.outline),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: BikerverseColors.accent,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              brand.isNotEmpty ? brand[0].toUpperCase() : '?',
+              style: const TextStyle(
+                color: BikerverseColors.onGreen,
+                fontWeight: FontWeight.w800,
+                fontSize: 20,
+              ),
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  brand.toUpperCase(),
+                  style: const TextStyle(
+                    color: BikerverseColors.brightGreen,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  model.isNotEmpty ? model : "Your bike",
+                  style: const TextStyle(
+                    color: BikerverseColors.textPrimary,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 18,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _field(Widget child) =>
+      Padding(padding: const EdgeInsets.symmetric(vertical: 10.0), child: child);
+
+  String _ordinalLabel(String number) {
+    final n = int.tryParse(number) ?? 1;
+    final suffix = n == 1 ? 'st' : n == 2 ? 'nd' : n == 3 ? 'rd' : 'th';
+    return '$n$suffix owner';
+  }
+
+  Widget _buildChip(String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: BikerverseColors.cardElevated,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: BikerverseColors.outline),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: BikerverseColors.textSecondary,
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildListingSnapshot(BuildContext context) {
+    final brand = selectedBrand == 'Others'
+        ? brandController.text
+        : (selectedBrand ?? '');
+    final model = (selectedBrand == 'Others' || selectedModel == 'Others')
+        ? modelController.text
+        : (selectedModel ?? '');
+
+    final chips = <String>[];
+    if (kmDrivenController.text.isNotEmpty) {
+      chips.add('${kmDrivenController.text} km');
+    }
+    if (_areYouFirstOwner != null) {
+      chips.add(_ordinalLabel(_areYouFirstOwner!));
+    }
+    if (_selectedManufactureDate != null) {
+      chips.add(DateFormat('MMM yyyy').format(_selectedManufactureDate!));
+    }
+    if (cityController.text.isNotEmpty) {
+      chips.add(cityController.text);
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'YOUR LISTING',
+          style: TextStyle(
+            color: BikerverseColors.textMuted,
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.5,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: BikerverseColors.card,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: BikerverseColors.outline),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: BikerverseColors.accent,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      brand.isNotEmpty ? brand[0].toUpperCase() : '?',
+                      style: const TextStyle(
+                        color: BikerverseColors.onGreen,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 18,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (brand.isNotEmpty)
+                          Text(
+                            brand.toUpperCase(),
+                            style: const TextStyle(
+                              color: BikerverseColors.brightGreen,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                        Text(
+                          model.isNotEmpty ? model : 'Your bike',
+                          style: const TextStyle(
+                            color: BikerverseColors.textPrimary,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  TextButton.icon(
+                    onPressed: () => _stepController.jumpTo(1),
+                    icon: const Icon(Icons.edit_outlined, size: 14),
+                    label: const Text('Edit'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: BikerverseColors.textSecondary,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 6),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                  ),
+                ],
+              ),
+              if (chips.isNotEmpty) ...[
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: chips.map(_buildChip).toList(),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // --- Step 1: Seller details ---
+  Widget _buildSellerStep(BuildContext context) {
+    return Column(
+      children: [
+        _field(BottomSheetSelectorField<String>(
+          value: sellerCategory,
+          label: "Seller Category",
+          hint: "Choose Category",
+          prefixIcon: const Icon(Icons.person_outline,
+              size: 20, color: BikerverseColors.textMuted),
+          items: sellerCategories,
+          labelBuilder: (item) => item,
+          onChanged: (val) => setState(() => sellerCategory = val),
+          validator: (val) => val == null ? "Required" : null,
+        )),
+        _field(TextFormField(
+          controller: sellerNameController,
+          decoration: context.inputDecoration(
+              "Seller Name", "Enter your full name",
+              icon: Icons.badge_outlined),
+          validator: (val) => val!.isEmpty ? "Required" : null,
+        )),
+        _field(Row(
+          children: [
+            DropdownButton<String>(
+              value: selectedCountryCode,
+              items: countryCodes
+                  .map((code) =>
+                      DropdownMenuItem(value: code, child: Text(code)))
+                  .toList(),
+              onChanged: (val) => setState(() => selectedCountryCode = val!),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: TextFormField(
+                controller: sellerContactController,
+                decoration: context.inputDecoration(
+                    "Contact Number", "Enter phone number"),
+                validator: (val) => val!.isEmpty ? "Required" : null,
+              ),
+            ),
+          ],
+        )),
+      ],
+    );
+  }
+
+  // --- Step 2: Bike details ---
+  Widget _buildBikeStep(BuildContext context) {
     final bool isBrandOthers = selectedBrand == 'Others';
     final bool isModelOthers = selectedModel == 'Others';
 
@@ -454,511 +716,354 @@ class _SellYourBikeState extends State<SellYourBike>
     final modelListWithOthers =
         modelsForBrand.isNotEmpty ? [...modelsForBrand, 'Others'] : <String>[];
 
-    return Scaffold(
-      appBar: CommonAppBar(
-        titleWidget: TitleText(_isEditing ? 'Edit Your Bike' : 'Sell Your Bike'),
-      ),
-      body: WebConstrainedBox(
-        child: LoadingOverlay(
-        isLoading: _isLoading,
-        child: Column(
-          children: [
-            _buildAnimatedBanner(),
-            Expanded(
-              child: SingleChildScrollView(
-                controller: _scrollController,
-                padding: const EdgeInsets.all(16.0),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      // ... (Seller Name and Contact fields remain the same)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10.0),
-                        child: CustomDropdownFormField<String>(
-                          value: sellerCategory,
-                          label: "Seller Category",
-                          hint: "Choose Category",
-                          items: sellerCategories
-                              .map((b) =>
-                                  DropdownMenuItem(value: b, child: Text(b)))
-                              .toList(),
-                          onChanged: (val) {
-                            setState(() {
-                              sellerCategory = val;
-                            });
-                          },
-                          validator: (val) => val == null ? "Required" : null,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10.0),
-                        child: TextFormField(
-                          controller: sellerNameController,
-                          decoration: context.inputDecoration(
-                              "Seller Name", "Enter your full name"),
-                          validator: (val) => val!.isEmpty ? "Required" : null,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10.0),
-                        child: Row(
-                          children: [
-                            DropdownButton<String>(
-                              value: selectedCountryCode,
-                              items: countryCodes
-                                  .map((code) => DropdownMenuItem(
-                                      value: code, child: Text(code)))
-                                  .toList(),
-                              onChanged: (val) =>
-                                  setState(() => selectedCountryCode = val!),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: TextFormField(
-                                controller: sellerContactController,
-                                decoration: context.inputDecoration(
-                                    "Contact Number", "Enter phone number"),
-                                validator: (val) =>
-                                    val!.isEmpty ? "Required" : null,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      // --- DYNAMIC BRAND & MODEL FIELDS ---
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10.0),
-                        child: CustomDropdownFormField<String>(
-                          value: selectedBrand,
-                          label: "Brand Name",
-                          hint: "Choose brand",
-                          items: brandListWithOthers
-                              .map((b) =>
-                                  DropdownMenuItem(value: b, child: Text(b)))
-                              .toList(),
-                          onChanged: (val) {
-                            setState(() {
-                              selectedBrand = val;
-                              // Reset model state when brand changes
-                              selectedModel = null;
-                              modelController.clear();
-                              if (val != 'Others') {
-                                brandController.clear();
-                              } else {
-                                brandFocusNode.requestFocus();
-                              }
-                            });
-                          },
-                          validator: (val) => val == null ? "Required" : null,
-                        ),
-                      ),
-                      if (isBrandOthers)
-                        Padding(
-                          padding:
-                              const EdgeInsets.only(top: 10.0, bottom: 10.0),
-                          child: TextFormField(
-                            controller: brandController,
-                            focusNode: brandFocusNode,
-                            decoration: context.inputDecoration(
-                                "Enter Brand Name", "e.g., Custom Bikes"),
-                            validator: (val) =>
-                                val!.isEmpty ? "Required" : null,
-                          ),
-                        ),
-                      if (!isBrandOthers)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 10.0),
-                          child: CustomDropdownFormField<String>(
-                            value: selectedModel,
-                            label: "Model Name",
-                            hint: selectedBrand != null
-                                ? "Choose model"
-                                : "Select a brand first",
-                            items: modelListWithOthers
-                                .map((m) =>
-                                    DropdownMenuItem(value: m, child: Text(m)))
-                                .toList(),
-                            onChanged: selectedBrand != null
-                                ? (val) {
-                                    setState(() {
-                                      selectedModel = val;
-                                      if (val != 'Others') {
-                                        modelController.clear();
-                                      } else {
-                                        modelFocusNode.requestFocus();
-                                      }
-                                    });
-                                  }
-                                : null,
-                            validator: (val) => val == null ? "Required" : null,
-                          ),
-                        ),
-                      if (isModelOthers && !isBrandOthers)
-                        Padding(
-                          padding:
-                              const EdgeInsets.only(top: 10.0, bottom: 10.0),
-                          child: TextFormField(
-                            controller: modelController,
-                            focusNode: modelFocusNode,
-                            decoration: context.inputDecoration(
-                                "Enter Model Name", "e.g., Cafe Racer"),
-                            validator: (val) =>
-                                val!.isEmpty ? "Required" : null,
-                          ),
-                        ),
-                      if (isBrandOthers)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 10.0),
-                          child: TextFormField(
-                            controller: modelController,
-                            decoration: context.inputDecoration(
-                                "Model Name", "e.g., Custom Bobber"),
-                            validator: (val) =>
-                                val!.isEmpty ? "Required" : null,
-                          ),
-                        ),
-                      // ... (Rest of the form fields)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10.0),
-                        child: MonthYearPicker(
-                          enable: true,
-                          label: "Manufacture Date",
-                          hint: "Select month and year",
-                          selectOnlyMonthYear: true,
-                          selectedDate: _selectedManufactureDate,
-                          onDateSelected: (date) =>
-                              setState(() => _selectedManufactureDate = date),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10.0),
-                        child: MonthYearPicker(
-                          enable: true,
-                          label: "Registration Date",
-                          hint: "Select month and year",
-                          selectOnlyMonthYear: true,
-                          selectedDate: _selectedRegistrationDate,
-                          onDateSelected: (date) =>
-                              setState(() => _selectedRegistrationDate = date),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10.0),
-                        child: CustomDropdownFormField<String>(
-                          value: selectedState,
-                          label: "State",
-                          hint: "Select your state",
-                          items: stateNames
-                              .map((state) => DropdownMenuItem(
-                                  value: state, child: Text(state)))
-                              .toList(),
-                          onChanged: (val) =>
-                              setState(() => selectedState = val),
-                          validator: (val) => val == null ? "Required" : null,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10.0),
-                        child: TextFormField(
-                          maxLines: 1,
-                          controller: addressController,
-                          decoration: context.inputDecoration(
-                              "Address", "Enter Address name"),
-                          validator: (val) => val!.isEmpty ? "Required" : null,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      AutocompleteSearchField(
-                        label: "Area",
-                        hint: "Enter Area name",
-                        controller: areaController,
-                        icon: null,
-                        lat: stateCoordinates[selectedState]?['lat'] ?? 0.0,
-                        lon: stateCoordinates[selectedState]?['lon'] ?? 0.0,
-                        onPlaceSelected: (suggestion) {
-                          // Update all location controllers when a place is selected
-                          setState(() {
-                            areaController.text = suggestion.text;
-                            cityController.text = suggestion.municipality ?? '';
-                            pinCodeController.text =
-                                suggestion.postalCode ?? '';
-                          });
-                        },
-                        validator: (val) => val!.isEmpty ? "Required" : null,
-                      ),
-                      const SizedBox(height: 10),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10.0),
-                        child: TextFormField(
-                          controller: cityController,
-                          decoration: context.inputDecoration(
-                              "City", "Enter city name"),
-                          validator: (val) => val!.isEmpty ? "Required" : null,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10.0),
-                        child: TextFormField(
-                          controller: pinCodeController,
-                          decoration: context.inputDecoration(
-                              "Pin Code", "Enter Pin code"),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10.0),
-                        child: TextFormField(
-                          keyboardType: TextInputType.number,
-                          controller: kmDrivenController,
-                          decoration: context.inputDecoration(
-                              "KM Driven", "Enter kilometers driven"),
-                          validator: (val) => val!.isEmpty ? "Required" : null,
-                        ),
-                      ),
+    return Column(
+      children: [
+        _buildBikeSummaryCard(),
+        _field(BottomSheetSelectorField<String>(
+          value: selectedBrand,
+          label: "Brand Name",
+          hint: "Choose brand",
+          prefixIcon: const Icon(Icons.two_wheeler,
+              size: 20, color: BikerverseColors.textMuted),
+          items: brandListWithOthers,
+          labelBuilder: (item) => item,
+          onChanged: (val) {
+            setState(() {
+              selectedBrand = val;
+              selectedModel = null;
+              modelController.clear();
+              if (val != 'Others') {
+                brandController.clear();
+              } else {
+                brandFocusNode.requestFocus();
+              }
+            });
+          },
+          validator: (val) => val == null ? "Required" : null,
+        )),
+        if (isBrandOthers)
+          _field(TextFormField(
+            controller: brandController,
+            focusNode: brandFocusNode,
+            decoration: context.inputDecoration(
+                "Enter Brand Name", "e.g., Custom Bikes"),
+            validator: (val) => val!.isEmpty ? "Required" : null,
+          )),
+        if (!isBrandOthers)
+          _field(BottomSheetSelectorField<String>(
+            value: selectedModel,
+            label: "Model Name",
+            hint: selectedBrand != null
+                ? "Choose model"
+                : "Select a brand first",
+            enabled: selectedBrand != null,
+            items: modelListWithOthers,
+            labelBuilder: (item) => item,
+            onChanged: (val) {
+              setState(() {
+                selectedModel = val;
+                if (val != 'Others') {
+                  modelController.clear();
+                } else {
+                  modelFocusNode.requestFocus();
+                }
+              });
+            },
+            validator: (val) => val == null ? "Required" : null,
+          )),
+        if (isModelOthers && !isBrandOthers)
+          _field(TextFormField(
+            controller: modelController,
+            focusNode: modelFocusNode,
+            decoration:
+                context.inputDecoration("Enter Model Name", "e.g., Cafe Racer"),
+            validator: (val) => val!.isEmpty ? "Required" : null,
+          )),
+        if (isBrandOthers)
+          _field(TextFormField(
+            controller: modelController,
+            decoration:
+                context.inputDecoration("Model Name", "e.g., Custom Bobber"),
+            validator: (val) => val!.isEmpty ? "Required" : null,
+          )),
+        _field(MonthYearPicker(
+          enable: true,
+          label: "Manufacture Date",
+          hint: "Select month and year",
+          selectOnlyMonthYear: true,
+          selectedDate: _selectedManufactureDate,
+          onDateSelected: (date) =>
+              setState(() => _selectedManufactureDate = date),
+        )),
+        _field(MonthYearPicker(
+          enable: true,
+          label: "Registration Date",
+          hint: "Select month and year",
+          selectOnlyMonthYear: true,
+          selectedDate: _selectedRegistrationDate,
+          onDateSelected: (date) =>
+              setState(() => _selectedRegistrationDate = date),
+        )),
+        _field(TextFormField(
+          keyboardType: TextInputType.text,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          textInputAction: TextInputAction.done,
+          controller: kmDrivenController,
+          decoration: context.inputDecoration(
+              "KM Driven", "Enter kilometers driven",
+              icon: Icons.speed_outlined),
+          validator: (val) => val!.isEmpty ? "Required" : null,
+        )),
+        _field(BottomSheetSelectorField<String>(
+          label: 'Current Ownership number?',
+          hint: "Tap to select",
+          value: _areYouFirstOwner,
+          prefixIcon: const Icon(Icons.people_alt_outlined,
+              size: 20, color: BikerverseColors.textMuted),
+          items: firstOwnerNumber,
+          labelBuilder: (item) => item,
+          onChanged: (val) => setState(() => _areYouFirstOwner = val),
+          validator: (val) =>
+              val == null ? 'Please select ownership status' : null,
+        )),
+      ],
+    );
+  }
 
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10.0),
-                        child: TextFormField(
-                          keyboardType: TextInputType.number,
-                          controller: priceController,
-                          decoration: context.inputDecoration(
-                              "Expected Price", "Enter expected price"),
-                          validator: (val) => val!.isEmpty ? "Required" : null,
-                        ),
+  // --- Step 3: Documents & condition ---
+  Widget _buildDocsStep(BuildContext context) {
+    return Column(
+      children: [
+        _field(SegmentedSelectorField(
+          label: 'Invoice available?',
+          icon: Icons.description_outlined,
+          options: yesNo,
+          value: _invoiceAvailable,
+          onChanged: (val) => setState(() => _invoiceAvailable = val),
+          validator: (val) =>
+              val == null ? 'Please select Invoice availability' : null,
+        )),
+        _field(SegmentedSelectorField(
+          label: 'NOC available?',
+          icon: Icons.assignment_turned_in_outlined,
+          options: yesNoNA,
+          value: _nocAvailable,
+          onChanged: (val) => setState(() => _nocAvailable = val),
+          validator: (val) => val == null ? 'Please select NOC status' : null,
+        )),
+        _field(SegmentedSelectorField(
+          label: 'Insurance available?',
+          icon: Icons.shield_outlined,
+          options: yesNo,
+          value: _insuranceAvailable,
+          onChanged: (val) {
+            setState(() {
+              _insuranceAvailable = val;
+              if (val != 'Yes') _insuranceValidityTill = null;
+            });
+          },
+          validator: (val) =>
+              val == null ? 'Please select insurance availability' : null,
+        )),
+        _field(MonthYearPicker(
+          enable: _insuranceAvailable == 'Yes',
+          label: "Insurance validity till",
+          hint: "Select month and year",
+          selectedDate: _insuranceValidityTill,
+          onDateSelected: (date) =>
+              setState(() => _insuranceValidityTill = date),
+        )),
+        _field(BottomSheetSelectorField<String>(
+          label: 'Battery condition',
+          hint: 'Select battery condition',
+          value: _batteryCondition,
+          prefixIcon: const Icon(Icons.battery_charging_full_outlined,
+              size: 20, color: BikerverseColors.textMuted),
+          items: goodBadList,
+          labelBuilder: (item) => item,
+          onChanged: (val) => setState(() => _batteryCondition = val),
+          validator: (val) =>
+              val == null ? 'Please select battery condition' : null,
+        )),
+        _field(BottomSheetSelectorField<String>(
+          label: 'Tyre condition',
+          hint: 'Select tyre condition',
+          value: _tyreCondition,
+          prefixIcon: const Icon(Icons.album_outlined,
+              size: 20, color: BikerverseColors.textMuted),
+          items: tyreConditionList,
+          labelBuilder: (item) => item,
+          onChanged: (val) => setState(() => _tyreCondition = val),
+          validator: (val) =>
+              val == null ? 'Please select tyre condition' : null,
+        )),
+      ],
+    );
+  }
+
+  // --- Step 4: Location ---
+  Widget _buildLocationStep(BuildContext context) {
+    return Column(
+      children: [
+        _field(BottomSheetSelectorField<String>(
+          value: selectedState,
+          label: "State",
+          hint: "Select your state",
+          prefixIcon: const Icon(Icons.map_outlined,
+              size: 20, color: BikerverseColors.textMuted),
+          items: stateNames,
+          labelBuilder: (item) => item,
+          onChanged: (val) => setState(() => selectedState = val),
+          validator: (val) => val == null ? "Required" : null,
+        )),
+        _field(TextFormField(
+          maxLines: 1,
+          controller: addressController,
+          decoration: context.inputDecoration("Address", "Enter Address name",
+              icon: Icons.home_outlined),
+          validator: (val) => val!.isEmpty ? "Required" : null,
+        )),
+        _field(AutocompleteSearchField(
+          label: "Area",
+          hint: "Enter Area name",
+          controller: areaController,
+          icon: Icons.place_outlined,
+          lat: stateCoordinates[selectedState]?['lat'] ?? 0.0,
+          lon: stateCoordinates[selectedState]?['lon'] ?? 0.0,
+          onPlaceSelected: (suggestion) {
+            setState(() {
+              areaController.text = suggestion.text;
+              cityController.text = suggestion.municipality ?? '';
+              pinCodeController.text = suggestion.postalCode ?? '';
+            });
+          },
+          validator: (val) => val!.isEmpty ? "Required" : null,
+        )),
+        _field(TextFormField(
+          controller: cityController,
+          decoration: context.inputDecoration("City", "Enter city name",
+              icon: Icons.location_city_outlined),
+          validator: (val) => val!.isEmpty ? "Required" : null,
+        )),
+        _field(TextFormField(
+          controller: pinCodeController,
+          decoration: context.inputDecoration("Pin Code", "Enter Pin code",
+              icon: Icons.pin_drop_outlined),
+        )),
+      ],
+    );
+  }
+
+  // --- Step 5: Pricing, photos & review ---
+  Widget _buildPricingStep(BuildContext context) {
+    return Column(
+      children: [
+        _field(_buildListingSnapshot(context)),
+        _field(TextFormField(
+          keyboardType: TextInputType.text,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          textInputAction: TextInputAction.done,
+          controller: priceController,
+          decoration: context.inputDecoration(
+              "Expected Price", "Enter expected price",
+              icon: Icons.currency_rupee),
+          validator: (val) => val!.isEmpty ? "Required" : null,
+        )),
+        _field(TextFormField(
+          controller: additionalDetailsController,
+          decoration: context.inputDecoration(
+              "Additional Details", "Any extra info...",
+              icon: Icons.notes_outlined),
+          maxLines: 3,
+        )),
+        _field(ImagePickerSection(
+          images: _images,
+          allowGallery: _enableGallery,
+          allowMultipleImages: _enableGallery,
+          onImagesChanged: (images) => setState(() {
+            _images.clear();
+            _images.addAll(images);
+          }),
+        )),
+        _field(Row(
+          children: [
+            Checkbox(
+              value: _termsAccepted,
+              onChanged: (bool? newValue) {
+                setState(() {
+                  _termsAccepted = newValue ?? false;
+                });
+              },
+              activeColor: Colors.green,
+            ),
+            Expanded(
+              child: RichText(
+                text: TextSpan(
+                  style: Theme.of(context).textTheme.bodyMedium,
+                  children: [
+                    const TextSpan(text: 'I have read and agree to the '),
+                    TextSpan(
+                      text: 'Terms & Conditions',
+                      style: const TextStyle(
+                        color: Colors.blue,
+                        decoration: TextDecoration.underline,
                       ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10.0),
-                        child: CustomDropdownFormField(
-                          label: 'Current Ownership number?',
-                          hint: "Tap to select",
-                          value: _areYouFirstOwner,
-                          items: firstOwnerNumber
-                              .map((state) => DropdownMenuItem(
-                                  value: state, child: Text(state)))
-                              .toList(),
-                          onChanged: (val) =>
-                              setState(() => _areYouFirstOwner = val),
-                          validator: (val) => val == null
-                              ? 'Please select ownership status'
-                              : null,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10.0),
-                        child: CustomDropdownFormField(
-                          label: 'Invoice available?',
-                          hint: "Tap to select",
-                          value: _invoiceAvailable,
-                          items: yesNo
-                              .map((state) => DropdownMenuItem(
-                                  value: state, child: Text(state)))
-                              .toList(),
-                          onChanged: (val) =>
-                              setState(() => _invoiceAvailable = val),
-                          validator: (val) => val == null
-                              ? 'Please select Invoice availability'
-                              : null,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10.0),
-                        child: CustomDropdownFormField(
-                          label: 'NOC available?',
-                          hint: "Tap to select",
-                          value: _nocAvailable,
-                          items: yesNoNA
-                              .map((state) => DropdownMenuItem(
-                                  value: state, child: Text(state)))
-                              .toList(),
-                          onChanged: (val) =>
-                              setState(() => _nocAvailable = val),
-                          validator: (val) =>
-                              val == null ? 'Please select NOC status' : null,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10.0),
-                        child: CustomDropdownFormField<String>(
-                          label: 'Insurance available?',
-                          hint: 'Select insurance availability',
-                          value: _insuranceAvailable,
-                          items: yesNo
-                              .map((state) => DropdownMenuItem(
-                                  value: state, child: Text(state)))
-                              .toList(),
-                          onChanged: (val) {
-                            setState(() {
-                              _insuranceAvailable = val;
-                              if (val != 'Yes') _insuranceValidityTill = null;
-                            });
-                          },
-                          validator: (val) => val == null
-                              ? 'Please select insurance availability'
-                              : null,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10.0),
-                        child: MonthYearPicker(
-                          enable: _insuranceAvailable == 'Yes',
-                          label: "Insurance validity till",
-                          hint: "Select month and year",
-                          selectedDate: _insuranceValidityTill,
-                          onDateSelected: (date) =>
-                              setState(() => _insuranceValidityTill = date),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10.0),
-                        child: CustomDropdownFormField<String>(
-                          label: 'Battery condition',
-                          hint: 'Select battery condition',
-                          value: _batteryCondition,
-                          items: goodBadList
-                              .map((state) => DropdownMenuItem(
-                                  value: state, child: Text(state)))
-                              .toList(),
-                          onChanged: (val) =>
-                              setState(() => _batteryCondition = val),
-                          validator: (val) => val == null
-                              ? 'Please select battery condition'
-                              : null,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10.0),
-                        child: CustomDropdownFormField<String>(
-                          label: 'Tyre condition',
-                          hint: 'Select tyre condition',
-                          value: _tyreCondition,
-                          items: tyreConditionList
-                              .map((state) => DropdownMenuItem(
-                                  value: state, child: Text(state)))
-                              .toList(),
-                          onChanged: (val) =>
-                              setState(() => _tyreCondition = val),
-                          validator: (val) => val == null
-                              ? 'Please select tyre condition'
-                              : null,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10.0),
-                        child: TextFormField(
-                          controller: additionalDetailsController,
-                          decoration: context.inputDecoration(
-                              "Additional Details", "Any extra info..."),
-                          maxLines: 3,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10.0),
-                        child: ImagePickerSection(
-                          images: _images,
-                          allowGallery: _enableGallery,
-                          allowMultipleImages: _enableGallery,
-                          onImagesChanged: (images) => setState(() {
-                            _images.clear();
-                            _images.addAll(images);
-                          }),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10.0),
-                        child: Row(
-                          children: [
-                            Checkbox(
-                              value: _termsAccepted,
-                              onChanged: (bool? newValue) {
-                                setState(() {
-                                  _termsAccepted = newValue ?? false;
-                                });
-                              },
-                              activeColor: Colors.green,
-                            ),
-                            Expanded(
-                              child: RichText(
-                                text: TextSpan(
-                                  style: Theme.of(context).textTheme.bodyMedium,
-                                  children: [
-                                    const TextSpan(
-                                        text: 'I have read and agree to the '),
-                                    TextSpan(
-                                      text: 'Terms & Conditions',
-                                      style: const TextStyle(
-                                        color: Colors.blue,
-                                        decoration: TextDecoration.underline,
-                                      ),
-                                      recognizer: TapGestureRecognizer()
-                                        ..onTap = _openTermsLink,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+                      recognizer: TapGestureRecognizer()..onTap = _openTermsLink,
+                    ),
+                  ],
                 ),
               ),
             ),
           ],
-        ),
-      ),
-      ),
-      bottomNavigationBar: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          WebConstrainedBox(
-            child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: SizedBox(
-            height: 50,
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _isLoading ? null : _submitForm,
-              style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    _isLoading ? Colors.grey : Theme.of(context).primaryColor,
-                disabledBackgroundColor: Colors.grey,
-              ),
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                child: _isLoading
-                    ? const Row(
-                        key: ValueKey('loading'),
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          ),
-                          SizedBox(width: 12),
-                          Text("Submitting...",
-                              style: TextStyle(color: Colors.white)),
-                        ],
-                      )
-                    : Text(
-                        _isEditing ? "Update" : "Submit",
-                        key: const ValueKey('submit'),
-                        style: const TextStyle(color: Colors.white),
-                      ),
-              ),
-            ),
+        )),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return LoadingOverlay(
+      isLoading: _isLoading,
+      child: SteppedFormScaffold(
+        appBarTitle: _isEditing ? 'Edit Your Bike' : 'Sell Your Bike',
+        isLoading: _isLoading,
+        allowStepJump: _isEditing,
+        submitLabel: _isEditing ? "Update" : "Submit",
+        onSubmit: _submitForm,
+        controller: _stepController,
+        banner: _buildBanner(),
+        steps: [
+          FormStep(
+            title: "Seller details",
+            subtitle: "Tell buyers who they're dealing with",
+            formKey: _stepKeys[0],
+            builder: _buildSellerStep,
           ),
-        ),
-      ),
-      ),
-          ],
+          FormStep(
+            title: "Bike details",
+            subtitle: "The essentials about your bike",
+            formKey: _stepKeys[1],
+            builder: _buildBikeStep,
+          ),
+          FormStep(
+            title: "Documents & condition",
+            subtitle: "Paperwork and current condition",
+            formKey: _stepKeys[2],
+            builder: _buildDocsStep,
+          ),
+          FormStep(
+            title: "Location",
+            subtitle: "Where is the bike located?",
+            formKey: _stepKeys[3],
+            builder: _buildLocationStep,
+          ),
+          FormStep(
+            title: "Pricing & photos",
+            subtitle: "Set your price and add photos",
+            formKey: _stepKeys[4],
+            builder: _buildPricingStep,
+          ),
+        ],
       ),
     );
   }

@@ -18,8 +18,8 @@ final ThemeData bikerverseDarkTheme = ThemeData(
     secondary: BikerverseColors.accent,
     surface: BikerverseColors.surface,
     background: BikerverseColors.background,
-    onPrimary: Colors.black,
-    onSecondary: Colors.black,
+    onPrimary: BikerverseColors.onGreen,
+    onSecondary: BikerverseColors.onGreen,
     onSurface: BikerverseColors.textPrimary,
     onBackground: BikerverseColors.textPrimary,
     error: Color(0xFFE25C5C),
@@ -87,7 +87,7 @@ final ThemeData bikerverseDarkTheme = ThemeData(
   elevatedButtonTheme: ElevatedButtonThemeData(
     style: ElevatedButton.styleFrom(
       backgroundColor: BikerverseColors.accent,
-      foregroundColor: Colors.black,
+      foregroundColor: BikerverseColors.onGreen,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(30),

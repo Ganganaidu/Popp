@@ -171,6 +171,27 @@
       <excludeFolder url="file://$MODULE_DIR$/ios/.symlinks/plugins/sqflite_darwin/example/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/ios/.symlinks/plugins/sqflite_darwin/example/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/ios/.symlinks/plugins/sqflite_darwin/example/build" />
+      <excludeFolder url="file://$MODULE_DIR$/.claude/worktrees/agent-a4c85a2bfa75fedea/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/.claude/worktrees/agent-a4c85a2bfa75fedea/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/.claude/worktrees/agent-a4c85a2bfa75fedea/build" />
+      <excludeFolder url="file://$MODULE_DIR$/.claude/worktrees/agent-a5a9c783627db8441/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/.claude/worktrees/agent-a5a9c783627db8441/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/.claude/worktrees/agent-a5a9c783627db8441/build" />
+      <excludeFolder url="file://$MODULE_DIR$/.claude/worktrees/agent-a77c06e4b6e0bb563/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/.claude/worktrees/agent-a77c06e4b6e0bb563/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/.claude/worktrees/agent-a77c06e4b6e0bb563/build" />
+      <excludeFolder url="file://$MODULE_DIR$/.claude/worktrees/agent-a86cdbed77072fa62/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/.claude/worktrees/agent-a86cdbed77072fa62/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/.claude/worktrees/agent-a86cdbed77072fa62/build" />
+      <excludeFolder url="file://$MODULE_DIR$/.claude/worktrees/agent-a899ad723988f73e8/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/.claude/worktrees/agent-a899ad723988f73e8/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/.claude/worktrees/agent-a899ad723988f73e8/build" />
+      <excludeFolder url="file://$MODULE_DIR$/.claude/worktrees/agent-aeebb5219e64acfe5/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/.claude/worktrees/agent-aeebb5219e64acfe5/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/.claude/worktrees/agent-aeebb5219e64acfe5/build" />
+      <excludeFolder url="file://$MODULE_DIR$/.claude/worktrees/recursing-kapitsa-b67d19/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/.claude/worktrees/recursing-kapitsa-b67d19/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/.claude/worktrees/recursing-kapitsa-b67d19/build" />
     </content>
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Dart SDK" level="project" />

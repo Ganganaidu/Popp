@@ -5,6 +5,8 @@ import {
   SELLER_CATEGORIES, BIKE_BRANDS, BIKE_MODELS, ACCESSORY_CATEGORIES,
   PRODUCT_CONDITIONS, INDIAN_STATES, toSelectOptions,
 } from '@/lib/data/bikeData';
+import { auth } from '@/lib/firebase/config';
+import { createProduct } from '@/lib/firebase/firestore';
 import { StepBar }         from './StepBar';
 import { WizardFooter }    from './WizardFooter';
 import { FormField }       from './FormField';
@@ -122,9 +124,54 @@ export function SellAccessoryWizard() {
 
   async function handleSubmit() {
     setSubmitting(true);
-    await new Promise((r) => setTimeout(r, 1400));
-    setSubmitting(false);
-    alert('Listing published! (Firestore write wired in Phase 7)');
+    try {
+      const user = auth.currentUser;
+      if (!user) {
+        alert('Please sign in to list an item');
+        setSubmitting(false);
+        return;
+      }
+
+      const productData: Record<string, unknown> = {
+        categoryId: selectedCat?.id ?? 'cat_002',
+        category: selectedCat?.name ?? data.categoryId,
+        subCategory: data.subcategory,
+        brandName: data.brandName,
+        modelName: data.accessoryName,
+        expectedPrice: data.expectedPrice,
+        price: data.expectedPrice,
+        additionalDetails: data.additionalDetails,
+        city: data.city,
+        area: data.area,
+        state: data.state,
+        address: data.address,
+        pinCode: data.pinCode,
+        sellerName: data.sellerName,
+        sellerContactNumber: `${data.countryCode}${data.contactNumber}`,
+        sellerCategory: data.sellerCategory,
+        countryCode: data.countryCode,
+        productCondition: data.productCondition,
+        productSize: data.productSize,
+        isProductBikeSpecific: data.isBikeSpecific,
+        bikeBrandName: data.bikeBrandName,
+        bikeModelName: data.bikeModelName,
+        isApproved: false,
+        isSold: false,
+        isActive: true,
+      };
+
+      const docId = await createProduct(productData, user.uid);
+      if (docId) {
+        alert('Listing submitted for approval! It will be reviewed before going live.');
+      } else {
+        alert('Failed to submit listing. Please try again.');
+      }
+    } catch (err) {
+      console.error('handleSubmit error:', err);
+      alert('Failed to submit listing. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   const canProceed = Object.keys(errors).length === 0;

@@ -151,3 +151,95 @@ export interface AccessoryFilters {
   condition?: string;
   sortBy?: 'newest' | 'price-asc' | 'price-desc';
 }
+
+/* ─── Raw Firestore shapes (id added from doc ID, Timestamps converted to ISO) ── */
+
+export interface FirestoreProduct {
+  id: string;
+  brandName: string;
+  modelName: string;
+  expectedPrice: string;
+  price?: string;
+  imageUrl?: string;
+  thumbImageUrls?: string[];
+  categoryId: string;
+  category: string;
+  isApproved: boolean;
+  isActive?: boolean;
+  isSold: boolean;
+  city: string;
+  area?: string;
+  state?: string;
+  address?: string;
+  pinCode?: string;
+  kmDriven?: string;
+  mfgDate?: string;
+  registrationDate?: string;
+  registrationPlace?: string;
+  firstOwner?: string;
+  invoiceAvailable?: string;
+  nocAvailable?: string;
+  insuranceAvailable?: string;
+  insuranceValidTill?: string;
+  batteryCondition?: string;
+  tyreCondition?: string;
+  additionalDetails?: string;
+  sellerName?: string;
+  sellerContactNumber?: string;
+  sellerCategory?: string;
+  countryCode?: string;
+  userId?: string;
+  favoritedBy?: string[];
+  createdAt?: string;
+  subCategory?: string;
+}
+
+export interface FirestoreService {
+  id: string;
+  category: string;
+  subCategory?: string;
+  businessTitle?: string;
+  contactName?: string;
+  contactNumber?: string;
+  gstNumber?: string;
+  googleMapsLink?: string;
+  socialMediaLink?: string;
+  workingHours?: string;
+  address?: string;
+  area?: string;
+  city?: string;
+  pinCode?: string;
+  state?: string;
+  tags?: string[];
+  promoImageUrls?: string[];
+  shopImageUrls?: string[];
+  isApproved: boolean;
+  isActive?: boolean;
+  userId?: string;
+  createdAt?: string;
+  rating?: string | number;
+  reviewCount?: number;
+  isTrackDay?: boolean;
+  eventStartDate?: string;
+  eventEndDate?: string;
+  eventStartTime?: string;
+  eventEndTime?: string;
+  maxSlots?: string;
+  bikeProvision?: string;
+  riderSkillLevel?: string;
+  googleFormLink?: string;
+  doYouInspectPremiumBikes?: string;
+}
+
+export interface FirestoreAd {
+  id: string;
+  imageUrl: string;
+  title: string;
+  highlight: string;
+  subtitle: string;
+  points: string[];
+  buttonText: string;
+  buttonLink: string;
+  isActive: boolean;
+  hideOverlay: boolean;
+}

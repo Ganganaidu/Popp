@@ -7,6 +7,8 @@ import {
   TOWING_SERVICE_TYPES, SERVICE_COVERAGE_AREAS, INDIAN_STATES,
   toSelectOptions,
 } from '@/lib/data/bikeData';
+import { auth } from '@/lib/firebase/config';
+import { createService } from '@/lib/firebase/firestore';
 import { StepBar }         from './StepBar';
 import { WizardFooter }    from './WizardFooter';
 import { FormField }       from './FormField';
@@ -208,9 +210,78 @@ export function ListServiceWizard() {
 
   async function handleSubmit() {
     setSubmitting(true);
-    await new Promise((r) => setTimeout(r, 1400));
-    setSubmitting(false);
-    alert('Service listed! (Firestore write wired in Phase 7)');
+    try {
+      const user = auth.currentUser;
+      if (!user) {
+        alert('Please sign in to list a service');
+        setSubmitting(false);
+        return;
+      }
+
+      let serviceData: Record<string, unknown>;
+
+      if (isEvent(data.serviceCategory)) {
+        serviceData = {
+          category: data.serviceCategory,
+          businessTitle: data.eventName,
+          contactName: data.eventContactName,
+          contactNumber: `${data.eventCountryCode}${data.eventContactNumber}`,
+          address: data.locationAddress,
+          area: data.locationName,
+          city: data.city,
+          pinCode: data.pinCode,
+          state: data.state,
+          isTrackDay: true,
+          eventStartDate: `${data.eventStartDate.month}/${data.eventStartDate.year}`,
+          eventEndDate: `${data.eventEndDate.month}/${data.eventEndDate.year}`,
+          eventStartTime: data.eventStartTime,
+          eventEndTime: data.eventEndTime,
+          maxSlots: data.maxSlots,
+          bikeProvision: data.bikeProvision,
+          riderSkillLevel: data.riderSkillLevel,
+          googleFormLink: data.googleFormLink,
+          additionalDetails: data.eventDescription,
+        };
+      } else {
+        serviceData = {
+          category: data.serviceCategory,
+          businessTitle: data.shopName,
+          subCategory: data.businessTitle,
+          contactName: data.contactName,
+          contactNumber: `${data.countryCode}${data.contactNumber}`,
+          gstNumber: data.gstNumber,
+          googleMapsLink: data.googleMapsLink,
+          socialMediaLink: data.socialMediaLink,
+          workingHours: data.workingHours,
+          address: data.address,
+          area: data.area,
+          city: data.city,
+          pinCode: data.pinCode,
+          state: data.state,
+          doYouInspectPremiumBikes: isMechanic(data.serviceCategory) ? data.premiumBikeInspection : undefined,
+          isTrackDay: false,
+          ...(isTowing(data.serviceCategory) && {
+            bikeRSA: data.bikeRSA,
+            towingServiceName: data.towingServiceName,
+            businessName: data.businessName,
+            towingTypes: data.towingTypes,
+            serviceCoverageArea: data.serviceCoverageArea,
+          }),
+        };
+      }
+
+      const docId = await createService(serviceData, user.uid);
+      if (docId) {
+        alert('Service listed for approval! It will be reviewed before going live.');
+      } else {
+        alert('Failed to submit service listing. Please try again.');
+      }
+    } catch (err) {
+      console.error('handleSubmit error:', err);
+      alert('Failed to submit service listing. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   const lastStep = steps.length - 1;

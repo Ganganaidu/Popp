@@ -46,7 +46,7 @@ export function HeroSection() {
         <div className={styles.imageWrap}>
           <Slot
             label="Hero bike — Ducati Panigale, ¾ angle, off-black studio bg"
-            aspectRatio="4/5"
+            aspectRatio="4/3"
             className={styles.slot}
           />
           <CornerTicks corners={['tl', 'tr', 'bl', 'br']} offset={8} />

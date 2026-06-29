@@ -1,26 +1,38 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import { SectionHead } from '@/components/ds/SectionHead';
 import { BikeCard } from '@/components/cards/BikeCard';
+import { getProducts } from '@/lib/firebase/firestore';
+import type { FirestoreProduct } from '@/lib/types';
 import styles from './PremiumBikesRow.module.css';
 
-/* Static preview data — matches design handoff exactly */
-const BIKES = [
-  { name: 'Ducati Panigale V2',       priceInRupees: 1449000, kmDriven: 4700,  city: 'Mumbai',    year: '2021', featured: true  },
-  { name: 'Triumph Scrambler 400X',   priceInRupees:  250000, kmDriven: 12400, city: 'Bengaluru', year: '2024', featured: false },
-  { name: 'BMW S 1000 RR',            priceInRupees: 2550000, kmDriven: 8200,  city: 'Delhi NCR', year: '2022', featured: false },
-  { name: 'Kawasaki Ninja ZX-10R',    priceInRupees: 2070000, kmDriven: 5600,  city: 'Hyderabad', year: '2023', featured: false },
-] as const;
-
-/**
- * PremiumBikesRow — 4-column BikeCard grid with section header.
- * In production these would be fetched from Firestore; static for now.
- */
 export function PremiumBikesRow() {
+  const [products, setProducts] = useState<FirestoreProduct[]>([]);
+
+  useEffect(() => {
+    getProducts({ lim: 4, category: 'Premium Bikes' }).then(setProducts);
+  }, []);
+
   return (
     <section className={styles.section}>
-      <SectionHead title="PREMIUM BIKES" trailing="248 LIVE" trailingHref="/bikes" />
+      <SectionHead
+        title="PREMIUM BIKES"
+        trailing={products.length ? `${products.length} LIVE` : ''}
+        trailingHref="/bikes"
+      />
       <div className={styles.grid}>
-        {BIKES.map((bike, i) => (
-          <BikeCard key={i} {...bike} />
+        {products.map((p) => (
+          <BikeCard
+            key={p.id}
+            id={p.id}
+            name={`${p.brandName} ${p.modelName}`}
+            priceInRupees={parseFloat(p.expectedPrice) || 0}
+            kmDriven={parseInt(p.kmDriven ?? '0', 10) || 0}
+            city={p.city}
+            year={p.mfgDate ? new Date(p.mfgDate).getFullYear() : ''}
+            imageUrl={p.imageUrl || p.thumbImageUrls?.[0]}
+          />
         ))}
       </div>
     </section>

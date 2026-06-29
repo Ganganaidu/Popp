@@ -1,34 +1,45 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import { SectionHead } from '@/components/ds/SectionHead';
 import { GearCard } from '@/components/cards/GearCard';
 import { ShopRow } from '@/components/cards/ShopRow';
+import { getProducts, getServices } from '@/lib/firebase/firestore';
+import type { FirestoreProduct, FirestoreService } from '@/lib/types';
 import styles from './GearMechanicsRow.module.css';
 
-/* Static data — verbatim from design handoff §4.2.E */
-const GEAR = [
-  { name: 'Korda Modular Helmet',   priceInRupees: 3000 },
-  { name: 'Kawasaki Riding Jacket', priceInRupees: 7000 },
-] as const;
-
-const MECHANICS = [
-  { name: 'Weekendmech Pvt Ltd',   city: 'Jubilee Hills, Hyderabad',  rating: '4.9', tags: ['Akrapovic', 'Ducati', 'Triumph'] },
-  { name: 'GarageOne Performance', city: 'Andheri West, Mumbai',      rating: '4.8', tags: ['ECU tune', 'Suspension'] },
-  { name: "Apex Riders' Garage",   city: 'Indiranagar, Bengaluru',    rating: '4.7', tags: ['Track prep', 'Race fairings'] },
-] as const;
-
-/**
- * GearMechanicsRow — two-column split.
- * Left: 2-col GearCard grid.   Right: stacked ShopRow list.
- */
 export function GearMechanicsRow() {
+  const [accessories, setAccessories] = useState<FirestoreProduct[]>([]);
+  const [mechanics, setMechanics] = useState<FirestoreService[]>([]);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    Promise.all([
+      getProducts({ lim: 2, category: 'accessory' }),
+      getServices('mechanics', 3),
+    ]).then(([acc, mech]) => {
+      setAccessories(acc);
+      setMechanics(mech);
+      setLoaded(true);
+    });
+  }, []);
+
   return (
     <section className={styles.section}>
       {/* Left — Protection Gear */}
       <div>
         <SectionHead title="PROTECTION GEAR" trailing="VIEW ALL" trailingHref="/accessories" />
         <div className={styles.gearGrid}>
-          {GEAR.map((g, i) => (
-            <GearCard key={i} {...g} />
+          {accessories.map((p) => (
+            <GearCard
+              key={p.id}
+              id={p.id}
+              name={`${p.brandName} ${p.modelName}`}
+              priceInRupees={parseFloat(p.expectedPrice) || 0}
+              imageUrl={p.imageUrl || p.thumbImageUrls?.[0]}
+            />
           ))}
+          {loaded && accessories.length === 0 && <p>No listings found.</p>}
         </div>
       </div>
 
@@ -36,9 +47,19 @@ export function GearMechanicsRow() {
       <div>
         <SectionHead title="TRUSTED MECHANICS" trailing="FIND NEAR ME" trailingHref="/services/mechanics" />
         <div className={styles.shopList}>
-          {MECHANICS.map((m, i) => (
-            <ShopRow key={i} {...m} />
+          {mechanics.map((s) => (
+            <ShopRow
+              key={s.id}
+              id={s.id}
+              name={s.businessTitle ?? ''}
+              city={[s.area, s.city].filter(Boolean).join(', ')}
+              rating={s.rating ?? '—'}
+              tags={(s.tags ?? []) as string[]}
+              category="mechanics"
+              imageUrl={s.promoImageUrls?.[0] || s.shopImageUrls?.[0]}
+            />
           ))}
+          {loaded && mechanics.length === 0 && <p>No listings found.</p>}
         </div>
       </div>
     </section>

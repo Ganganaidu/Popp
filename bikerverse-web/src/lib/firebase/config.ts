@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { initializeFirestore, getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 /**
@@ -20,7 +20,24 @@ const firebaseConfig = {
 /* Prevent re-initialization on hot-reload */
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
-export const auth    = getAuth(app);
-export const db      = getFirestore(app);
+export const auth = getAuth(app);
+
+/*
+ * Force HTTP long-polling instead of gRPC WebChannel.
+ * gRPC is not available in Node.js server components (Next.js RSC/SSR),
+ * which causes "GRPC error has no .code" console errors.
+ * experimentalForceLongPolling works in both Node.js and browsers.
+ * On hot-reload initializeFirestore throws because it was already called —
+ * fall through to getFirestore() which returns the existing instance.
+ */
+function buildDb() {
+  try {
+    return initializeFirestore(app, { experimentalForceLongPolling: true });
+  } catch {
+    return getFirestore(app);
+  }
+}
+export const db = buildDb();
+
 export const storage = getStorage(app);
 export default app;

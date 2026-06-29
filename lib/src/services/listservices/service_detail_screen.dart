@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:popp/src/utils/app_loger.dart';
 import 'package:share_plus/share_plus.dart';
@@ -551,8 +552,10 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
             link['icon'] as IconData,
             link['label'] as String,
             link['value'] as String,
-            onTap: () {
-              final url = link['url'] as String;
+            onTap: () async {
+              var url = link['url'] as String;
+              final fallback = link['fallbackAddress'] as String? ?? '';
+              url = await _resolveMapUrl(url, fallback);
               launchUrlString(url, mode: LaunchMode.externalApplication);
             },
           ),
@@ -579,11 +582,16 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
 
       // Check for Map/Location links
       if (lowerKey.contains('googlemaplink')) {
+        final fallbackAddress = serviceData['businessAddress'] ??
+            serviceData['locationAddress'] ??
+            serviceData['address'] ??
+            '';
         links.add({
           'label': 'MAP',
           'value': 'Address',
           'icon': Icons.map_outlined,
           'url': value,
+          'fallbackAddress': fallbackAddress,
           'priority': 1,
         });
       }
@@ -623,6 +631,31 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     }
 
     return distinctLinks;
+  }
+
+  // Resolves share.google short links to a full maps.google.com URL.
+  // Falls back to an address search if DNS can't reach the share.google domain.
+  Future<String> _resolveMapUrl(String url, String fallbackAddress) async {
+    if (!url.toLowerCase().contains('share.google')) return url;
+    try {
+      final client = http.Client();
+      try {
+        final request = http.Request('GET', Uri.parse(url));
+        request.followRedirects = false;
+        final response =
+            await client.send(request).timeout(const Duration(seconds: 5));
+        final location = response.headers['location'];
+        if (location != null && location.isNotEmpty) return location;
+      } finally {
+        client.close();
+      }
+    } catch (_) {}
+    // DNS or network failure — fall back to address search
+    if (fallbackAddress.isNotEmpty) {
+      final encoded = Uri.encodeComponent(fallbackAddress);
+      return 'https://www.google.com/maps/search/?api=1&query=$encoded';
+    }
+    return url;
   }
 
   Widget _buildInfoBlock(IconData icon, String title, String content,
@@ -682,7 +715,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: maxLines > 1 ? 136 : 120,
+        height: maxLines > 1 ? 130 : 120,
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
         decoration: BoxDecoration(
           color: const Color(0xFF1E1E1E),
@@ -695,7 +728,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(icon, color: const Color(0xFF2ECC71), size: 22),
-            const SizedBox(height: 8),
+            const SizedBox(height: 5),
             Text(label,
                 style: const TextStyle(
                     color: Colors.grey,

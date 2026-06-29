@@ -1,43 +1,34 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { FormField } from '@/components/forms/FormField';
+import { PasswordField } from '@/components/forms/PasswordField';
 import { Btn } from '@/components/ds/Btn';
+import { signIn } from '@/lib/firebase/auth';
 import styles from './page.module.css';
 
-/* ── Eye icon SVGs ──────────────────────────────────────────────────────────── */
-function EyeIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-      <circle cx="12" cy="12" r="3" />
-    </svg>
-  );
-}
-
-function EyeOffIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94" />
-      <path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19" />
-      <line x1="1" y1="1" x2="23" y2="23" />
-    </svg>
-  );
-}
-
-/* ── Placeholder Firebase stub ──────────────────────────────────────────────── */
-async function signInWithEmailPassword(_email: string, _password: string): Promise<void> {
-  // TODO Phase 7: wire to src/lib/firebase/auth.ts
-  await new Promise((r) => setTimeout(r, 600));
-  // throw new Error('Invalid credentials'); // uncomment to test error state
+function mapAuthError(code: string): string {
+  switch (code) {
+    case 'auth/invalid-credential':
+    case 'auth/user-not-found':
+    case 'auth/wrong-password':
+      return 'Email or password is incorrect.';
+    case 'auth/too-many-requests':
+      return 'Too many failed attempts. Please try again later.';
+    case 'auth/user-disabled':
+      return 'This account has been disabled.';
+    default:
+      return 'Sign in failed. Please try again.';
+  }
 }
 
 /* ── Component ──────────────────────────────────────────────────────────────── */
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail]           = useState('');
   const [password, setPassword]     = useState('');
-  const [showPass, setShowPass]     = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading]       = useState(false);
   const [error, setError]           = useState('');
@@ -47,10 +38,11 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      await signInWithEmailPassword(email, password);
-      // TODO Phase 7: redirect to home or previous route
+      await signIn(email, password);
+      router.push('/');
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Sign in failed. Please try again.');
+      const code = (err as { code?: string })?.code ?? '';
+      setError(mapAuthError(code));
     } finally {
       setLoading(false);
     }
@@ -74,30 +66,14 @@ export default function LoginPage() {
           required
         />
 
-        <div>
-          <div className={styles.passwordWrap}>
-            <FormField
-              label="Password"
-              type={showPass ? 'text' : 'password'}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              autoComplete="current-password"
-              required
-              className={styles.passwordInput}
-            />
-            <button
-              type="button"
-              className={styles.passwordToggle}
-              onClick={() => setShowPass((v) => !v)}
-              aria-label={showPass ? 'Hide password' : 'Show password'}
-              tabIndex={-1}
-              style={{ bottom: 0, top: 'auto', transform: 'none', marginBottom: 2 }}
-            >
-              {showPass ? <EyeOffIcon /> : <EyeIcon />}
-            </button>
-          </div>
-        </div>
+        <PasswordField
+          label="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="••••••••"
+          autoComplete="current-password"
+          required
+        />
 
         <div className={styles.row}>
           <label className={styles.checkboxLabel}>

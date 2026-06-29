@@ -4,13 +4,8 @@ import { useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { FormField } from '@/components/forms/FormField';
 import { Btn } from '@/components/ds/Btn';
+import { resetPassword } from '@/lib/firebase/auth';
 import styles from './page.module.css';
-
-/* ── Placeholder Firebase stub ──────────────────────────────────────────────── */
-async function sendPasswordReset(_email: string): Promise<void> {
-  // TODO Phase 7: wire to src/lib/firebase/auth.ts
-  await new Promise((r) => setTimeout(r, 700));
-}
 
 /* ── Component ──────────────────────────────────────────────────────────────── */
 export default function ForgotPasswordPage() {
@@ -24,10 +19,15 @@ export default function ForgotPasswordPage() {
     setError('');
     setLoading(true);
     try {
-      await sendPasswordReset(email);
+      await resetPassword(email);
       setSent(true);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to send reset link. Please try again.');
+      const code = (err as { code?: string })?.code ?? '';
+      if (code === 'auth/user-not-found' || code === 'auth/invalid-email') {
+        setError('No account found with that email address.');
+      } else {
+        setError('Failed to send reset link. Please try again.');
+      }
     } finally {
       setLoading(false);
     }

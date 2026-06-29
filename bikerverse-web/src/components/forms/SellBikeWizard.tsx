@@ -1,11 +1,14 @@
 'use client';
 
 import { useState } from 'react';
+import { Timestamp } from 'firebase/firestore';
 import {
   SELLER_CATEGORIES, BIKE_BRANDS, BIKE_MODELS, OWNERSHIP_NUMBERS,
   YES_NO, YES_NO_NA, BATTERY_CONDITIONS, TYRE_CONDITIONS, INDIAN_STATES,
   toSelectOptions,
 } from '@/lib/data/bikeData';
+import { auth } from '@/lib/firebase/config';
+import { createProduct } from '@/lib/firebase/firestore';
 import { StepBar }        from './StepBar';
 import { WizardFooter }   from './WizardFooter';
 import { FormField }      from './FormField';
@@ -140,9 +143,71 @@ export function SellBikeWizard() {
 
   async function handleSubmit() {
     setSubmitting(true);
-    await new Promise((r) => setTimeout(r, 1400));
-    setSubmitting(false);
-    alert('Listing published! (Firestore write wired in Phase 7)');
+    try {
+      const user = auth.currentUser;
+      if (!user) {
+        alert('Please sign in to list a bike');
+        setSubmitting(false);
+        return;
+      }
+
+      function myToTimestamp(my: MY): Timestamp | undefined {
+        if (!my.month || !my.year) return undefined;
+        return Timestamp.fromDate(new Date(parseInt(my.year, 10), parseInt(my.month, 10) - 1, 1));
+      }
+
+      const productData: Record<string, unknown> = {
+        categoryId: 'cat_001',
+        category: 'Premium Bikes',
+        brandName: data.brandName === 'Others' ? data.modelOther : data.brandName,
+        modelName: data.modelName === 'Others' ? data.modelOther : data.modelName,
+        expectedPrice: data.expectedPrice,
+        price: data.expectedPrice,
+        additionalDetails: data.additionalDetails,
+        city: data.city,
+        area: data.area,
+        state: data.state,
+        address: data.address,
+        pinCode: data.pinCode,
+        sellerName: data.sellerName,
+        sellerContactNumber: `${data.countryCode}${data.contactNumber}`,
+        sellerCategory: data.sellerCategory,
+        countryCode: data.countryCode,
+        kmDriven: data.kmDriven,
+        firstOwner: data.ownershipNumber,
+        invoiceAvailable: data.invoiceAvailable,
+        nocAvailable: data.nocAvailable,
+        insuranceAvailable: data.insuranceAvailable,
+        batteryCondition: data.batteryCondition,
+        tyreCondition: data.tyreCondition,
+        isApproved: false,
+        isSold: false,
+        isActive: true,
+      };
+
+      const mfgTs = myToTimestamp(data.mfgDate);
+      if (mfgTs) productData.mfgDate = mfgTs;
+
+      const regTs = myToTimestamp(data.registrationDate);
+      if (regTs) productData.registrationDate = regTs;
+
+      if (data.insuranceAvailable === 'Yes') {
+        const insTs = myToTimestamp(data.insuranceValidTill);
+        if (insTs) productData.insuranceValidTill = insTs;
+      }
+
+      const docId = await createProduct(productData, user.uid);
+      if (docId) {
+        alert('Listing submitted for approval! It will be reviewed before going live.');
+      } else {
+        alert('Failed to submit listing. Please try again.');
+      }
+    } catch (err) {
+      console.error('handleSubmit error:', err);
+      alert('Failed to submit listing. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   const bikeName = [

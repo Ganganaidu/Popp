@@ -1,34 +1,18 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { FormField } from '@/components/forms/FormField';
+import { PasswordField } from '@/components/forms/PasswordField';
 import { FormSelect } from '@/components/forms/FormSelect';
 import { MonthYearPicker } from '@/components/forms/MonthYearPicker';
 import { PhoneField } from '@/components/forms/PhoneField';
 import { Btn } from '@/components/ds/Btn';
 import { BIKE_BRANDS, BIKE_MODELS, INDIAN_STATES, toSelectOptions } from '@/lib/data/bikeData';
+import { signUp } from '@/lib/firebase/auth';
+import { createUserDoc } from '@/lib/firebase/firestore';
 import styles from './page.module.css';
-
-/* ── Eye icons ──────────────────────────────────────────────────────────────── */
-function EyeIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-      <circle cx="12" cy="12" r="3" />
-    </svg>
-  );
-}
-
-function EyeOffIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94" />
-      <path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19" />
-      <line x1="1" y1="1" x2="23" y2="23" />
-    </svg>
-  );
-}
 
 /* ── Types ──────────────────────────────────────────────────────────────────── */
 interface BikeSlot {
@@ -38,14 +22,23 @@ interface BikeSlot {
   monthYear: { month: string; year: string };
 }
 
-/* ── Placeholder Firebase stub ──────────────────────────────────────────────── */
-async function createAccount(_data: Record<string, unknown>): Promise<void> {
-  // TODO Phase 7: wire to src/lib/firebase/auth.ts
-  await new Promise((r) => setTimeout(r, 800));
+function mapAuthError(code: string): string {
+  switch (code) {
+    case 'auth/email-already-in-use':
+      return 'An account with this email already exists.';
+    case 'auth/weak-password':
+      return 'Password must be at least 6 characters.';
+    case 'auth/invalid-email':
+      return 'Please enter a valid email address.';
+    default:
+      return 'Account creation failed. Please try again.';
+  }
 }
 
 /* ── Component ──────────────────────────────────────────────────────────────── */
 export default function SignupPage() {
+  const router = useRouter();
+
   // Core fields
   const [username, setUsername]       = useState('');
   const [email, setEmail]             = useState('');
@@ -53,8 +46,6 @@ export default function SignupPage() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword]       = useState('');
   const [confirmPass, setConfirmPass] = useState('');
-  const [showPass, setShowPass]       = useState(false);
-  const [showConf, setShowConf]       = useState(false);
 
   // Address fields
   const [address, setAddress]   = useState('');
@@ -118,14 +109,35 @@ export default function SignupPage() {
 
     setLoading(true);
     try {
-      await createAccount({
-        username, email, phone: `${phoneCode}${phoneNumber}`, password,
-        address, area, city, pinCode, state,
-        bikes: bikes.filter((b) => b.brand),
+      const credential = await signUp(email, password);
+      const user = credential.user;
+
+      await createUserDoc(user.uid, {
+        uid: user.uid,
+        email,
+        username,
+        displayName: username,
+        phoneNumber: `${phoneCode}${phoneNumber}`,
+        address,
+        area,
+        city,
+        pinCode,
+        stateName: state,
+        bikeData: bikes
+          .filter((b) => b.brand)
+          .map((b) => ({
+            brand: b.brand,
+            model: b.model,
+            monthYear: `${b.monthYear.month}/${b.monthYear.year}`,
+          })),
+        registrationComplete: true,
+        isSubscribed: false,
       });
-      // TODO Phase 7: redirect to home / onboarding
+
+      router.push('/');
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Account creation failed. Please try again.');
+      const code = (err as { code?: string })?.code ?? '';
+      setError(mapAuthError(code));
     } finally {
       setLoading(false);
     }
@@ -175,53 +187,25 @@ export default function SignupPage() {
           hint={fieldErrors.phone}
         />
 
-        {/* Password */}
-        <div className={styles.passwordWrap}>
-          <FormField
-            label="Password"
-            type={showPass ? 'text' : 'password'}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
-            autoComplete="new-password"
-            required
-            error={fieldErrors.password}
-            className={styles.passwordInput}
-          />
-          <button
-            type="button"
-            className={styles.passwordToggle}
-            onClick={() => setShowPass((v) => !v)}
-            aria-label={showPass ? 'Hide password' : 'Show password'}
-            tabIndex={-1}
-          >
-            {showPass ? <EyeOffIcon /> : <EyeIcon />}
-          </button>
-        </div>
+        <PasswordField
+          label="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="••••••••"
+          autoComplete="new-password"
+          required
+          error={fieldErrors.password}
+        />
 
-        {/* Confirm Password */}
-        <div className={styles.passwordWrap}>
-          <FormField
-            label="Confirm Password"
-            type={showConf ? 'text' : 'password'}
-            value={confirmPass}
-            onChange={(e) => setConfirmPass(e.target.value)}
-            placeholder="••••••••"
-            autoComplete="new-password"
-            required
-            error={fieldErrors.confirmPass}
-            className={styles.passwordInput}
-          />
-          <button
-            type="button"
-            className={styles.passwordToggle}
-            onClick={() => setShowConf((v) => !v)}
-            aria-label={showConf ? 'Hide confirm password' : 'Show confirm password'}
-            tabIndex={-1}
-          >
-            {showConf ? <EyeOffIcon /> : <EyeIcon />}
-          </button>
-        </div>
+        <PasswordField
+          label="Confirm Password"
+          value={confirmPass}
+          onChange={(e) => setConfirmPass(e.target.value)}
+          placeholder="••••••••"
+          autoComplete="new-password"
+          required
+          error={fieldErrors.confirmPass}
+        />
 
         <hr className={styles.divider} />
 

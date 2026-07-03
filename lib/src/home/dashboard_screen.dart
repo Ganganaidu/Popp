@@ -77,6 +77,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: Column(
         children: [
           AdCarouselWidget(),
+          SizedBox(height: 15.0),
           PopServicesWidgets(),
           SizedBox(height: 12.0),
           ProductListDashboardScreen(),
@@ -199,7 +200,8 @@ class _MobileHeroStack extends StatelessWidget {
         clipBehavior: Clip.none,
         children: [
           Positioned.fill(
-            bottom: 50, // Leave space at bottom so image doesn't go all the way down behind the list
+            bottom: 50,
+            // Leave space at bottom so image doesn't go all the way down behind the list
             child: AdCarouselWidget(),
           ),
           Positioned(

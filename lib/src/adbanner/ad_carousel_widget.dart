@@ -236,16 +236,19 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
           child: Stack(
             fit: StackFit.expand,
             children: [
+              // Solid backdrop so the letterboxed edges of a contained
+              // image blend with the dark theme instead of showing white.
+              Container(color: Colors.black),
               // Background image
               if (ad.imageUrl.isEmpty)
                 Image.asset(
                   'assets/book_track_trainings.png',
-                  fit: BoxFit.cover,
+                  fit: BoxFit.contain,
                 )
               else
                 AppNetworkImage(
                   imageUrl: ad.imageUrl,
-                  fit: BoxFit.cover,
+                  fit: BoxFit.contain,
                   placeholder: Shimmer.fromColors(
                     baseColor: Colors.grey[300]!,
                     highlightColor: Colors.grey[100]!,
@@ -253,7 +256,7 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
                   ),
                   errorWidget: Image.asset(
                     'assets/book_track_trainings.png',
-                    fit: BoxFit.cover,
+                    fit: BoxFit.contain,
                   ),
                 ),
               // Gradient overlay — darker toward bottom for text readability

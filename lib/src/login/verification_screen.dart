@@ -50,8 +50,21 @@ class _VerificationScreenState extends State<VerificationScreen> {
   void _startVerificationCheck() {
     _verificationTimer =
         Timer.periodic(const Duration(seconds: 3), (timer) async {
-      // Every 3 seconds, reload the user's data from Firebase
-      await FirebaseAuth.instance.currentUser?.reload();
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+
+      try {
+        // Every 3 seconds, reload the user's data from Firebase
+        await FirebaseAuth.instance.currentUser?.reload();
+      } catch (e) {
+        // Transient errors (e.g. network-request-failed) just retry on the
+        // next tick instead of crashing the periodic timer callback.
+        AppLogger.e("Error reloading user during verification check: $e");
+        return;
+      }
+
       final user = FirebaseAuth.instance.currentUser;
 
       // If the email is verified, finalize the account and navigate

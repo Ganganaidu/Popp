@@ -718,7 +718,6 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
         )),
         _field(TextFormField(
           controller: productSizeController,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           decoration: context.inputDecoration('Product Size', 'If applicable',
               icon: Icons.straighten_outlined),
         )),

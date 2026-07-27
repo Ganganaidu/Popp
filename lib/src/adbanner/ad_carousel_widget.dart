@@ -144,7 +144,8 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-        child: Column(
+        child: SingleChildScrollView(
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -211,6 +212,7 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
               ),
             ),
           ],
+          ),
         ),
       ),
     );

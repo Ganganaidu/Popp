@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:popp/src/toolbar/common_app_bar.dart';
 import 'package:intl/intl.dart';
 import 'package:popp/src/api/api_url.dart';
@@ -303,7 +304,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     const SizedBox(height: 15),
                     _buildTextField("Phone number", phoneNumberController,
                         icon: Icons.phone_outlined,
-                        keyboardType: TextInputType.number,
+                        keyboardType: TextInputType.phone,
                         isRequired: false),
                     const SizedBox(height: 15),
                     _buildTextField("Password", passwordController,
@@ -444,7 +445,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 const SizedBox(height: 20),
                 _buildTextField("Phone number", phoneNumberController,
                     icon: Icons.phone_outlined,
-                    keyboardType: TextInputType.number,
+                    keyboardType: TextInputType.phone,
                     isRequired: false),
                 const SizedBox(height: 20),
                 _buildTextField("Password", passwordController,
@@ -875,8 +876,17 @@ class _SignupScreenState extends State<SignupScreen> {
           isPasswordTextField ? !(currentPasswordVisibility ?? false) : false,
       maxLines: maxLines,
       keyboardType: keyboardType,
+      inputFormatters: hint == "Phone number"
+          ? [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(10),
+            ]
+          : null,
       style: TextStyle(fontSize: isWeb ? 16 : 14),
       validator: (value) {
+        if (hint == "Phone number") {
+          return AppUtils.phoneValidator(value, isRequired: isRequired);
+        }
         if (isRequired && (value == null || value.isEmpty)) {
           return '$hint is required';
         }

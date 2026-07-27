@@ -125,7 +125,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     final String deepLink = "${ApiUrl.productsPath}/$serviceId";
     final String shareText = "Check out $serviceName on Bikerverse! $deepLink";
     AppLogger.i("shareText $shareText");
-    Share.share(shareText, subject: 'Check out this product!');
+    SharePlus.instance.share(
+      ShareParams(text: shareText, subject: 'Check out this product!'),
+    );
   }
 
   bool get _isAdmin =>

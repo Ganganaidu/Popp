@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:popp/src/navigation/nav_router.dart';
 import 'package:popp/src/theme/bikerverse_colors.dart';
+import 'package:popp/src/utils/app_utils.dart';
 import 'package:popp/src/utils/build_extensions.dart';
 import 'package:popp/src/utils/product_utils.dart';
 import 'package:popp/src/widgets/app_dialogs.dart';
@@ -287,11 +288,15 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
         Expanded(
           child: TextFormField(
             controller: businessContactController,
-            keyboardType: TextInputType.text,
+            keyboardType: TextInputType.phone,
             textInputAction: TextInputAction.done,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(10),
+            ],
             decoration: context.inputDecoration(label, hint),
-            validator: (val) =>
-                val!.isEmpty ? '$label is mandatory' : null,
+            validator: (val) => AppUtils.phoneValidator(val,
+                countryCode: selectedCountryCode),
           ),
         ),
       ],
@@ -1205,13 +1210,21 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
           )),
           _field(TextFormField(
             controller: pincodeController,
-            keyboardType: TextInputType.text,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(6),
+            ],
             textInputAction: TextInputAction.done,
             decoration:
                 context.inputDecoration('Pin code', 'Enter pin code'),
-            validator: (val) =>
-                val!.isEmpty ? 'Pin code is mandatory' : null,
+            validator: (val) {
+              if (val == null || val.isEmpty) return 'Pin code is mandatory';
+              if (!RegExp(r'^[0-9]{6}$').hasMatch(val)) {
+                return 'Enter a valid 6-digit pincode';
+              }
+              return null;
+            },
           )),
           _field(TextFormField(
             controller: gstController,
@@ -1359,7 +1372,7 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                   t == null ? 'Event end time is mandatory' : null)),
           _field(TextFormField(
             controller: maxSlotsController,
-            keyboardType: TextInputType.text,
+            keyboardType: TextInputType.number,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             textInputAction: TextInputAction.done,
             decoration: context.inputDecoration(
@@ -1454,13 +1467,21 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
           )),
           _field(TextFormField(
             controller: pincodeController,
-            keyboardType: TextInputType.text,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(6),
+            ],
             textInputAction: TextInputAction.done,
             decoration:
                 context.inputDecoration('Pin code', 'Enter pin code'),
-            validator: (val) =>
-                val!.isEmpty ? 'Pin code is mandatory' : null,
+            validator: (val) {
+              if (val == null || val.isEmpty) return 'Pin code is mandatory';
+              if (!RegExp(r'^[0-9]{6}$').hasMatch(val)) {
+                return 'Enter a valid 6-digit pincode';
+              }
+              return null;
+            },
           )),
         ],
       );
@@ -1624,13 +1645,21 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
           )),
           _field(TextFormField(
             controller: pincodeController,
-            keyboardType: TextInputType.text,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(6),
+            ],
             textInputAction: TextInputAction.done,
             decoration:
                 context.inputDecoration('Pin code', 'Enter pin code'),
-            validator: (val) =>
-                val!.isEmpty ? 'Pin code is mandatory' : null,
+            validator: (val) {
+              if (val == null || val.isEmpty) return 'Pin code is mandatory';
+              if (!RegExp(r'^[0-9]{6}$').hasMatch(val)) {
+                return 'Enter a valid 6-digit pincode';
+              }
+              return null;
+            },
           )),
         ],
       );

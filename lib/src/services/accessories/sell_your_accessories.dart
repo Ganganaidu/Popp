@@ -672,12 +672,17 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
             const SizedBox(width: 8),
             Expanded(
               child: TextFormField(
-                keyboardType: TextInputType.text,
+                keyboardType: TextInputType.phone,
                 textInputAction: TextInputAction.done,
                 controller: sellerContactController,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(10),
+                ],
                 decoration:
                     context.inputDecoration('Contact Number', 'Enter phone number'),
-                validator: (val) => val!.isEmpty ? 'Required' : null,
+                validator: (val) => AppUtils.phoneValidator(val,
+                    countryCode: selectedCountryCode),
               ),
             ),
           ],
@@ -920,12 +925,22 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
           validator: (val) => val!.isEmpty ? 'Required' : null,
         )),
         _field(TextFormField(
-          keyboardType: TextInputType.text,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          keyboardType: TextInputType.number,
+          inputFormatters: [
+            FilteringTextInputFormatter.digitsOnly,
+            LengthLimitingTextInputFormatter(6),
+          ],
           textInputAction: TextInputAction.done,
           controller: pinCodeController,
           decoration: context.inputDecoration('Pin Code', 'Enter pin code',
               icon: Icons.pin_drop_outlined),
+          validator: (val) {
+            if (val == null || val.isEmpty) return 'Required';
+            if (!RegExp(r'^[0-9]{6}$').hasMatch(val)) {
+              return 'Enter a valid 6-digit pincode';
+            }
+            return null;
+          },
         )),
       ],
     );
@@ -938,7 +953,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
       children: [
         _field(_buildListingSnapshot()),
         _field(TextFormField(
-          keyboardType: TextInputType.text,
+          keyboardType: TextInputType.number,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           textInputAction: TextInputAction.done,
           controller: priceController,
@@ -996,11 +1011,98 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
     );
   }
 
+  // ── Discard changes ─────────────────────────────────────────────────────────
+
+  bool _hasFormData() {
+    final textControllers = <TextEditingController>[
+      sellerNameController,
+      accessoriesNameController,
+      brandNameController,
+      sellerContactController,
+      modelNameController,
+      priceController,
+      additionalDetailsController,
+      productSizeController,
+      warrantyLeftController,
+      addressController,
+      cityController,
+      areaController,
+      pinCodeController,
+    ];
+    for (final c in textControllers) {
+      if (c.text.trim().isNotEmpty) return true;
+    }
+    if (_images.isNotEmpty) return true;
+    if (selectedState != null) return true;
+    if (sellerCategory != null) return true;
+    if (_selectedManufactureDate != null) return true;
+    if (_selectedBillDate != null) return true;
+    if (_selectedWarrantyTillDate != null) return true;
+    if (_productCondition != null) return true;
+    if (selectedCategory != null) return true;
+    if (selectedSubcategory != null) return true;
+    if (selectedBikeBrand != null) return true;
+    if (isBikeSpecific) return true;
+    if (isBillAvailable) return true;
+    if (isWarrantyAvailable) return true;
+    if (_termsAccepted) return true;
+    if (_productAgingMonths != 0 || _productAgingYears != 0) return true;
+    return false;
+  }
+
+  Future<bool> _confirmDiscardChanges() async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Discard changes?'),
+        content: const Text(
+            'You have unsaved changes. If you go back now, your data will be lost.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+    return result == true;
+  }
+
+  Future<void> _handleBackPressed() async {
+    if (_hasFormData()) {
+      final discard = await _confirmDiscardChanges();
+      if (discard && mounted && Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+    } else {
+      if (mounted && Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+    }
+  }
+
   // ── Build ─────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
-    return LoadingOverlay(
+    return PopScope(
+      canPop: !_hasFormData(),
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        if (_hasFormData()) {
+          final discard = await _confirmDiscardChanges();
+          if (discard && mounted && Navigator.of(context).canPop()) {
+            Navigator.of(context).pop();
+          }
+        } else {
+          if (Navigator.of(context).canPop()) Navigator.of(context).pop();
+        }
+      },
+      child: LoadingOverlay(
       isLoading: _isLoading,
       child: SteppedFormScaffold(
         appBarTitle:
@@ -1011,6 +1113,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
         onSubmit: _submitForm,
         controller: _stepController,
         banner: _buildBanner(),
+        onBackPressed: _handleBackPressed,
         steps: [
           FormStep(
             title: 'Seller details',
@@ -1043,6 +1146,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
             builder: _buildPricingStep,
           ),
         ],
+      ),
       ),
     );
   }

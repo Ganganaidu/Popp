@@ -12,15 +12,25 @@ import '../api_url.dart';
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _fireStore = FirebaseFirestore.instance;
+  bool _googleSignInInitialized = false;
 
   Future<void> signInWithGoogle() async {
-    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-    if (googleUser == null) return; // canceled
+    final googleSignIn = GoogleSignIn.instance;
+    if (!_googleSignInInitialized) {
+      await googleSignIn.initialize();
+      _googleSignInInitialized = true;
+    }
 
-    final GoogleSignInAuthentication googleAuth =
-        await googleUser.authentication;
+    final GoogleSignInAccount googleUser;
+    try {
+      googleUser = await googleSignIn.authenticate();
+    } on GoogleSignInException catch (e) {
+      if (e.code == GoogleSignInExceptionCode.canceled) return;
+      rethrow;
+    }
+
+    final GoogleSignInAuthentication googleAuth = googleUser.authentication;
     final credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth.accessToken,
       idToken: googleAuth.idToken,
     );
     final userCredential = await _auth.signInWithCredential(credential);

@@ -2,7 +2,7 @@ import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:popp/src/utils/build_extensions.dart';
 
-class CustomDropdownFormField<T> extends StatelessWidget {
+class CustomDropdownFormField<T> extends StatefulWidget {
   final String label;
   final String hint;
   final T? value;
@@ -33,26 +33,55 @@ class CustomDropdownFormField<T> extends StatelessWidget {
   });
 
   @override
+  State<CustomDropdownFormField<T>> createState() =>
+      _CustomDropdownFormFieldState<T>();
+}
+
+class _CustomDropdownFormFieldState<T>
+    extends State<CustomDropdownFormField<T>> {
+  late final ValueNotifier<T?> _valueNotifier =
+      ValueNotifier<T?>(widget.value);
+
+  @override
+  void didUpdateWidget(covariant CustomDropdownFormField<T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.value != oldWidget.value) {
+      _valueNotifier.value = widget.value;
+    }
+  }
+
+  @override
+  void dispose() {
+    _valueNotifier.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField2<T>(
       isExpanded: true,
-      value: value,
-      decoration: decoration ??
-          context.inputDecoration(label, hint, enable: enabled).copyWith(
-                fillColor: fillColor,
+      valueListenable: _valueNotifier,
+      decoration: widget.decoration ??
+          context
+              .inputDecoration(widget.label, widget.hint,
+                  enable: widget.enabled)
+              .copyWith(
+                fillColor: widget.fillColor,
                 // When no explicit fillColor, keep the base decoration's fill
                 // (passing null to copyWith leaves `filled` unchanged).
-                filled: fillColor != null ? true : null,
-                prefixIcon: prefixIcon,
+                filled: widget.fillColor != null ? true : null,
+                prefixIcon: widget.prefixIcon,
               ),
-      items: items,
-      onChanged: enabled ? onChanged : null,
-      validator: validator,
-      style: style,
+      items: widget.items
+          .map((item) => DropdownItem<T>(value: item.value, child: item.child))
+          .toList(),
+      onChanged: widget.enabled ? widget.onChanged : null,
+      validator: widget.validator,
+      style: widget.style,
       dropdownStyleData: DropdownStyleData(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(14),
-          color: dropdownColor,
+          color: widget.dropdownColor,
         ),
         scrollbarTheme: ScrollbarThemeData(
           radius: const Radius.circular(40),

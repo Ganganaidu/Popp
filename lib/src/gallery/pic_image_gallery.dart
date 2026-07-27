@@ -30,7 +30,7 @@ Future<String> uploadImageToFirebase(
 }
 
 Future<List<File>> pickMultipleImages() async {
-  final result = await FilePicker.platform.pickFiles(
+  final result = await FilePicker.pickFiles(
     type: FileType.image,
     allowMultiple: true,
   );

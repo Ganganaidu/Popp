@@ -142,10 +142,10 @@ class _HomeScreenState extends State<HomeScreen> {
         // using flutter_local_notifications.
         if (android != null && !kIsWeb) {
           _flutterLocalNotificationsPlugin.show(
-            notification.hashCode,
-            notification.title,
-            notification.body,
-            NotificationDetails(
+            id: notification.hashCode,
+            title: notification.title,
+            body: notification.body,
+            notificationDetails: NotificationDetails(
               android: AndroidNotificationDetails(
                 _channel.id,
                 _channel.name,

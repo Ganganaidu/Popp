@@ -26,11 +26,61 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
     with SingleTickerProviderStateMixin {
   bool isExpanded = true;
 
+  static const int _collapseThreshold = 5;
+
   @override
   Widget build(BuildContext context) {
     final product =
         Product.fromJson(widget.productJson, widget.productJson["id"]);
     final theme = Theme.of(context).textTheme;
+
+    final expandableRows = <Widget>[
+      // if (product.kmDriven?.isNotEmpty ?? false)
+      //   detailRow("KM Driven", product.kmDriven!, theme),
+      if (product.registrationDate != null)
+        detailRow("Registration Date",
+            _formatDate(product.registrationDate, true), theme),
+      if (product.productAging?.isNotEmpty ?? false)
+        detailRow("Product Aging", product.productAging!, theme),
+      if (product.productSize?.isNotEmpty ?? false)
+        detailRow("Product Size", product.productSize!, theme),
+      if (product.productCondition?.isNotEmpty ?? false)
+        detailRow("Product Condition", product.productCondition!, theme),
+      if (product.insuranceAvailable != null)
+        detailRow(
+            "Insurance Available", product.insuranceAvailable!, theme),
+      if (product.insuranceValidTill != null)
+        detailRow("Insurance valid till",
+            _formatDate(product.insuranceValidTill, false), theme),
+      if (product.warrantyLimit?.isNotEmpty ?? false) ...[
+        detailRow("Warranty Available", "Yes", theme),
+        detailRow("Remaining Warranty", product.warrantyLimit!, theme),
+      ],
+      if (product.warrantyValidTill != null)
+        detailRow("Warranty Valid Till",
+            _formatDate(product.warrantyValidTill, true), theme),
+      if (product.isBillAvailable != null &&
+          product.isBillAvailable == true)
+        detailRow("Bill Available",
+            product.isBillAvailable == true ? 'Yes' : 'No', theme),
+      if (product.billDate != null)
+        detailRow(
+            "Purchase Date", _formatDate(product.billDate, true), theme),
+      if (product.invoiceAvailable != null)
+        detailRow("Invoice Available", product.invoiceAvailable!, theme),
+      if (product.category.contains(ProductUtils.premiumBikes) &&
+          product.nocAvailable != null)
+        detailRow("NOC Available", product.nocAvailable!, theme),
+      if (product.batteryCondition != null)
+        detailRow("Battery Condition", product.batteryCondition!, theme),
+      if (product.tyreCondition != null)
+        detailRow("Tyre Condition", product.tyreCondition!, theme),
+      // if (product.additionalDetails.isNotEmpty)
+      //   detailRow(
+      //       "Additional Details", product.additionalDetails, theme),
+    ];
+
+    final showToggle = expandableRows.length > _collapseThreshold;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -57,89 +107,51 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
 
         const SizedBox(height: 8),
 
-        // Expandable Section
-        AnimatedSize(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.fastOutSlowIn,
-          child: ConstrainedBox(
-            constraints: isExpanded
-                ? const BoxConstraints()
-                : const BoxConstraints(maxHeight: 0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // if (product.kmDriven?.isNotEmpty ?? false)
-                //   detailRow("KM Driven", product.kmDriven!, theme),
-                if (product.registrationDate != null)
-                  detailRow("Registration Date",
-                      _formatDate(product.registrationDate, true), theme),
-                if (product.productAging?.isNotEmpty ?? false)
-                  detailRow("Product Aging", product.productAging!, theme),
-                if (product.productSize?.isNotEmpty ?? false)
-                  detailRow("Product Size", product.productSize!, theme),
-                if (product.productCondition?.isNotEmpty ?? false)
-                  detailRow(
-                      "Product Condition", product.productCondition!, theme),
-                if (product.insuranceAvailable != null)
-                  detailRow("Insurance Available", product.insuranceAvailable!,
-                      theme),
-                if (product.insuranceValidTill != null)
-                  detailRow("Insurance valid till",
-                      _formatDate(product.insuranceValidTill, false), theme),
-                detailRow("Warranty Available",
-                    product.warrantyLimit != null ? "Yes" : "No", theme),
-                if (product.warrantyLimit?.isNotEmpty ?? false)
-                  detailRow(
-                      "Remaining Warranty", product.warrantyLimit!, theme),
-                if (product.warrantyValidTill != null)
-                  detailRow("Warranty Valid Till",
-                      _formatDate(product.warrantyValidTill, true), theme),
-                if (product.isBillAvailable != null &&
-                    product.isBillAvailable == true)
-                  detailRow("Bill Available",
-                      product.isBillAvailable == true ? 'Yes' : 'No', theme),
-                if (product.billDate != null)
-                  detailRow("Purchase Date",
-                      _formatDate(product.billDate, true), theme),
-                if (product.invoiceAvailable != null)
-                  detailRow(
-                      "Invoice Available", product.invoiceAvailable!, theme),
-                if (product.category.contains(ProductUtils.premiumBikes) &&
-                    product.nocAvailable != null)
-                  detailRow("NOC Available", product.nocAvailable!, theme),
-                if (product.batteryCondition != null)
-                  detailRow(
-                      "Battery Condition", product.batteryCondition!, theme),
-                if (product.tyreCondition != null)
-                  detailRow("Tyre Condition", product.tyreCondition!, theme),
-                // if (product.additionalDetails.isNotEmpty)
-                //   detailRow(
-                //       "Additional Details", product.additionalDetails, theme),
-              ],
+        // Expandable Section — only collapsible when there's enough content
+        // to be worth hiding; otherwise just show everything flat.
+        if (showToggle)
+          AnimatedSize(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.fastOutSlowIn,
+            child: ConstrainedBox(
+              constraints: isExpanded
+                  ? const BoxConstraints()
+                  : const BoxConstraints(maxHeight: 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: expandableRows,
+              ),
+            ),
+          )
+        else
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: expandableRows,
+          ),
+
+        if (showToggle) ...[
+          const SizedBox(height: 8),
+          // Show More / Show Less Button
+          Center(
+            child: TextButton.icon(
+              onPressed: () {
+                setState(() {
+                  isExpanded = !isExpanded;
+                });
+              },
+              icon: Icon(
+                isExpanded
+                    ? Icons.keyboard_arrow_up
+                    : Icons.keyboard_arrow_down,
+                color: Colors.blue,
+              ),
+              label: Text(
+                isExpanded ? "Show Less" : "Show More",
+                style: const TextStyle(color: Colors.blue),
+              ),
             ),
           ),
-        ),
-
-        const SizedBox(height: 8),
-
-        // Show More / Show Less Button
-        Center(
-          child: TextButton.icon(
-            onPressed: () {
-              setState(() {
-                isExpanded = !isExpanded;
-              });
-            },
-            icon: Icon(
-              isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-              color: Colors.blue,
-            ),
-            label: Text(
-              isExpanded ? "Show Less" : "Show More",
-              style: const TextStyle(color: Colors.blue),
-            ),
-          ),
-        ),
+        ],
       ],
     );
   }

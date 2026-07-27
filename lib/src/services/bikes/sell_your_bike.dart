@@ -6,6 +6,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:popp/src/utils/app_utils.dart';
 import 'package:popp/src/utils/build_extensions.dart';
 import 'package:popp/src/widgets/app_dialogs.dart';
 import 'package:popp/src/widgets/loading_overlay.dart';
@@ -693,9 +694,16 @@ class _SellYourBikeState extends State<SellYourBike> {
             Expanded(
               child: TextFormField(
                 controller: sellerContactController,
+                keyboardType: TextInputType.phone,
+                textInputAction: TextInputAction.done,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(10),
+                ],
                 decoration: context.inputDecoration(
                     "Contact Number", "Enter phone number"),
-                validator: (val) => val!.isEmpty ? "Required" : null,
+                validator: (val) => AppUtils.phoneValidator(val,
+                    countryCode: selectedCountryCode),
               ),
             ),
           ],
@@ -805,7 +813,7 @@ class _SellYourBikeState extends State<SellYourBike> {
               setState(() => _selectedRegistrationDate = date),
         )),
         _field(TextFormField(
-          keyboardType: TextInputType.text,
+          keyboardType: TextInputType.number,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           textInputAction: TextInputAction.done,
           controller: kmDrivenController,
@@ -960,7 +968,7 @@ class _SellYourBikeState extends State<SellYourBike> {
       children: [
         _field(_buildListingSnapshot(context)),
         _field(TextFormField(
-          keyboardType: TextInputType.text,
+          keyboardType: TextInputType.number,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           textInputAction: TextInputAction.done,
           controller: priceController,
@@ -1020,9 +1028,91 @@ class _SellYourBikeState extends State<SellYourBike> {
     );
   }
 
+  bool _hasFormData() {
+    final textControllers = <TextEditingController>[
+      sellerNameController,
+      sellerContactController,
+      brandController,
+      modelController,
+      kmDrivenController,
+      priceController,
+      additionalDetailsController,
+      addressController,
+      cityController,
+      areaController,
+      pinCodeController,
+    ];
+    for (final c in textControllers) {
+      if (c.text.trim().isNotEmpty) return true;
+    }
+    if (_images.isNotEmpty) return true;
+    if (selectedBrand != null) return true;
+    if (sellerCategory != null) return true;
+    if (selectedModel != null) return true;
+    if (selectedState != null) return true;
+    if (_areYouFirstOwner != null) return true;
+    if (_invoiceAvailable != null) return true;
+    if (_batteryCondition != null) return true;
+    if (_tyreCondition != null) return true;
+    if (_selectedManufactureDate != null) return true;
+    if (_selectedRegistrationDate != null) return true;
+    if (_insuranceAvailable != null) return true;
+    if (_insuranceValidityTill != null) return true;
+    if (_termsAccepted) return true;
+    return false;
+  }
+
+  Future<bool> _confirmDiscardChanges() async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Discard changes?'),
+        content: const Text(
+            'You have unsaved changes. If you go back now, your data will be lost.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+    return result == true;
+  }
+
+  Future<void> _handleBackPressed() async {
+    if (_hasFormData()) {
+      final discard = await _confirmDiscardChanges();
+      if (discard && mounted && Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+    } else {
+      if (mounted && Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return LoadingOverlay(
+    return PopScope(
+      canPop: !_hasFormData(),
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        if (_hasFormData()) {
+          final discard = await _confirmDiscardChanges();
+          if (discard && mounted && Navigator.of(context).canPop()) {
+            Navigator.of(context).pop();
+          }
+        } else {
+          if (Navigator.of(context).canPop()) Navigator.of(context).pop();
+        }
+      },
+      child: LoadingOverlay(
       isLoading: _isLoading,
       child: SteppedFormScaffold(
         appBarTitle: _isEditing ? 'Edit Your Bike' : 'Sell Your Bike',
@@ -1032,6 +1122,7 @@ class _SellYourBikeState extends State<SellYourBike> {
         onSubmit: _submitForm,
         controller: _stepController,
         banner: _buildBanner(),
+        onBackPressed: _handleBackPressed,
         steps: [
           FormStep(
             title: "Seller details",
@@ -1064,6 +1155,7 @@ class _SellYourBikeState extends State<SellYourBike> {
             builder: _buildPricingStep,
           ),
         ],
+      ),
       ),
     );
   }

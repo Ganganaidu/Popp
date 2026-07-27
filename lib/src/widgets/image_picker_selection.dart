@@ -62,7 +62,7 @@ class _ImagePickerSectionState extends State<ImagePickerSection> {
       return;
     }
     final remaining = _maxImages - widget.images.length;
-    final result = await FilePicker.platform.pickFiles(
+    final result = await FilePicker.pickFiles(
       type: FileType.image,
       allowMultiple: true,
     );

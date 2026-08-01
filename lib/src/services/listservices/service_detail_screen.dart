@@ -92,8 +92,10 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
         widget.serviceData['eventName'] ??
         'an amazing service';
 
-    // This is your deep link. Ensure your domain is correct.
-    final String deepLink = "${ApiUrl.servicePath}/$serviceId";
+    // Path must be singular ("service") to match the intent-filter /
+    // AppLinks parsing in main.dart — that's the actual deep link contract,
+    // not the Firestore collection name (ApiUrl.servicePath is plural).
+    final String deepLink = "${ApiUrl.baseUrl}service/$serviceId";
 
     final String shareText = "Check out $serviceName on Bikerverse! $deepLink";
     AppLogger.i("shareText $shareText");

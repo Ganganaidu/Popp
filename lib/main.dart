@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:ui'; // For PlatformDispatcher
 
 import 'package:app_links/app_links.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -12,15 +11,13 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:month_year_picker/month_year_picker.dart';
-import 'package:popp/src/api/api_url.dart';
 import 'package:popp/src/api/firebase/remote_config_service.dart';
 import 'package:popp/src/app_providers.dart';
+import 'package:popp/src/deeplink/product_service_deep_link.dart';
 import 'package:popp/src/home/home_screen.dart';
 import 'package:popp/src/login/login_screen.dart';
 import 'package:popp/src/login/sign_up_congrats_screen.dart';
 import 'package:popp/src/login/signup_screen.dart';
-import 'package:popp/src/products/product_detail_screen.dart';
-import 'package:popp/src/services/listservices/service_detail_screen.dart';
 import 'package:popp/src/systemalerts/auth_wrapper.dart';
 import 'package:popp/src/theme/theme_notifier.dart';
 
@@ -128,7 +125,9 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  /// Parses the URI and navigates to the correct screen.
+  /// Parses the URI and navigates to the correct screen. If the user isn't
+  /// signed in yet, the link is stashed in [PendingDeepLink] and consumed by
+  /// [AuthWrapper] right after login instead of being dropped.
   Future<void> _navigateToDetailScreen(Uri uri) async {
     final segments = uri.pathSegments;
     if (segments.length != 2 ||
@@ -138,46 +137,12 @@ class _MyAppState extends State<MyApp> {
 
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
+      PendingDeepLink.uri = uri;
       navigatorKey.currentState?.pushReplacementNamed('/login');
       return;
     }
 
-    final productType = segments[0];
-    final serviceId = segments[1];
-    final servicePath =
-        productType == 'service' ? ApiUrl.servicePath : ApiUrl.productsPath;
-
-    try {
-      final doc = await FirebaseFirestore.instance
-          .collection(servicePath)
-          .doc(serviceId)
-          .get();
-
-      if (!doc.exists) return;
-      final raw = doc.data() as Map<String, dynamic>;
-      final data = {...raw, 'id': doc.id};
-
-      if (productType == 'service') {
-        navigatorKey.currentState?.push(
-          MaterialPageRoute(
-            builder: (context) => ServiceDetailScreen(
-              serviceData: data,
-              category: data['category'] ?? '',
-            ),
-          ),
-        );
-      } else {
-        navigatorKey.currentState?.push(
-          MaterialPageRoute(
-            builder: (context) => ProductDetailScreen(
-              productJson: data,
-            ),
-          ),
-        );
-      }
-    } catch (e) {
-      // Optionally handle error
-    }
+    await openDeepLinkUri(uri);
   }
 
   @override

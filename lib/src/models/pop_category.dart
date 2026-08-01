@@ -31,6 +31,7 @@ final List<PopCategory> catList = [
       "Other Protectors",
     ],
   ),
+
   PopCategory(
     categoryId: "cat_003",
     name: "Luggage & Accessories",
@@ -63,7 +64,7 @@ final List<PopCategory> catList = [
     subcategories: [
       "Communication/Intercom Devices",
       "Charging Accessories",
-      "Dash cams",
+      "Action Cams/Dash Cams",
       "Autoplay Devices",
       "TPMS",
       "Other Electronic Accessories",

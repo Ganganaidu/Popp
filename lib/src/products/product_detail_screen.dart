@@ -121,8 +121,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   void _shareProduct(Map<String, dynamic> product) {
     final serviceId = product['id'];
-    final serviceName = product['title'] ?? '';
-    final String deepLink = "${ApiUrl.productsPath}/$serviceId";
+    final serviceName = ProductUtils.getTitle(product);
+    // Path must be singular ("product") to match the intent-filter /
+    // AppLinks parsing in main.dart — that's the actual deep link contract,
+    // not the Firestore collection name (ApiUrl.productsPath is plural).
+    final String deepLink = "${ApiUrl.baseUrl}product/$serviceId";
     final String shareText = "Check out $serviceName on Bikerverse! $deepLink";
     AppLogger.i("shareText $shareText");
     SharePlus.instance.share(

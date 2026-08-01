@@ -9,6 +9,7 @@ import 'package:popp/src/systemalerts/system_alerts_api_services.dart';
 import 'package:popp/src/utils/app_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../deeplink/product_service_deep_link.dart';
 import '../home/home_screen.dart';
 import '../utils/app_loger.dart';
 import 'blocking_screen.dart';
@@ -74,6 +75,13 @@ class _AuthWrapperState extends State<AuthWrapper> {
 
         // If user is logged in
         if (snapshot.hasData && (snapshot.data?.emailVerified ?? false)) {
+          final pendingLink = PendingDeepLink.uri;
+          if (pendingLink != null) {
+            PendingDeepLink.uri = null;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              openDeepLinkUri(pendingLink);
+            });
+          }
           return FutureBuilder<SystemMessage?>(
             future: _systemAlertsApiServices.getPriorityMessage(),
             builder: (context, messageSnapshot) {

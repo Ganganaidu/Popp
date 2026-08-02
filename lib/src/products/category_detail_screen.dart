@@ -245,7 +245,7 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
                                       final product = filteredProducts[index];
                                       return ListingCard(
                                           title:
-                                              ProductUtils.getServiceTitle(product),
+                                              ProductUtils.getBrandAndModelName(product),
                                           imageUrl:
                                               ProductUtils.extractAllImageUrls(
                                                   product),

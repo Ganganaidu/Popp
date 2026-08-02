@@ -41,30 +41,7 @@ class CategoryListWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isWeb = kIsWeb && context.isDesktop;
-    if (isWeb) {
-      return _buildWebLayout(context);
-    } else {
       return _buildMobileLayout(context);
-    }
-  }
-
-  Widget _buildWebLayout(BuildContext context) {
-    final theme = Theme
-        .of(context)
-        .textTheme;
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 32.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildCategoryHeader(context, theme, isWeb: true),
-          const SizedBox(height: 16),
-          _buildWebProductGrid(context),
-        ],
-      ),
-    );
   }
 
   Widget _buildMobileLayout(BuildContext context) {
@@ -186,42 +163,6 @@ class CategoryListWidget extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildWebProductGrid(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        // Responsive grid based on available width
-        int crossAxisCount;
-        int maxItems;
-        if (constraints.maxWidth > 500) {
-          crossAxisCount = 5;
-          maxItems = 10;
-        } else if (constraints.maxWidth > 400) {
-          crossAxisCount = 4;
-          maxItems = 8;
-        } else {
-          crossAxisCount = 4;
-          maxItems = 8;
-        }
-
-        return GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: crossAxisCount,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-            childAspectRatio: 0.75,
-          ),
-          itemCount: products.length > maxItems ? maxItems : products.length,
-          itemBuilder: (context, index) {
-            final product = products[index];
-            return _buildProductCard(context, product, 200, isWeb: true);
-          },
-        );
-      },
     );
   }
 

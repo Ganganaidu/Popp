@@ -1,9 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:popp/src/toolbar/pop_app_bar.dart';
 import 'package:popp/src/toolbar/web_menu_drawer.dart';
 import 'package:popp/src/toolbar/web_top_bar.dart';
@@ -37,6 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _setupNotifications();
+    _saveDeviceInfo();
     _navHelper.navigationChangeListener = _onNavigationChanged;
     _navHelper.updateAppBarTitle = _updateAppBarTitle;
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -97,6 +100,60 @@ class _HomeScreenState extends State<HomeScreen> {
       AppLogger.d('FCM Token saved to Firestore for user: ${user.uid}');
     } catch (e) {
       AppLogger.e('Error saving FCM Token to Firestore: $e');
+    }
+  }
+
+  /// Records basic device/app info on the user's document — not for
+  /// analytics, just so a specific user's platform, OS version, device
+  /// model, and app version are on hand when tracking down a reported bug.
+  /// Overwrites in place on every launch (latest device only, not a
+  /// per-device history) since that's all this is meant for.
+  Future<void> _saveDeviceInfo() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    try {
+      final packageInfo = await PackageInfo.fromPlatform();
+      final deviceInfoPlugin = DeviceInfoPlugin();
+
+      String platform;
+      String osVersion;
+      String deviceModel;
+
+      if (kIsWeb) {
+        final info = await deviceInfoPlugin.webBrowserInfo;
+        platform = 'web';
+        osVersion = info.userAgent ?? 'unknown';
+        deviceModel = info.browserName.name;
+      } else if (defaultTargetPlatform == TargetPlatform.iOS) {
+        final info = await deviceInfoPlugin.iosInfo;
+        platform = 'ios';
+        osVersion = info.systemVersion;
+        deviceModel = info.utsname.machine;
+      } else {
+        final info = await deviceInfoPlugin.androidInfo;
+        platform = 'android';
+        osVersion = 'Android ${info.version.release} (SDK ${info.version.sdkInt})';
+        deviceModel = '${info.manufacturer} ${info.model}';
+      }
+
+      final userRef =
+          FirebaseFirestore.instance.collection(ApiUrl.userPath).doc(user.uid);
+      await userRef.set(
+        {
+          'deviceInfo': {
+            'platform': platform,
+            'osVersion': osVersion,
+            'deviceModel': deviceModel,
+            'appVersion': packageInfo.version,
+            'buildNumber': packageInfo.buildNumber,
+            'updatedAt': FieldValue.serverTimestamp(),
+          },
+        },
+        SetOptions(merge: true),
+      );
+    } catch (e) {
+      AppLogger.e('Error saving device info to Firestore: $e');
     }
   }
 

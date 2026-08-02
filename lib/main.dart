@@ -2,12 +2,14 @@ import 'dart:async';
 import 'dart:ui'; // For PlatformDispatcher
 
 import 'package:app_links/app_links.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart'
+    show TargetPlatform, defaultTargetPlatform, kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:month_year_picker/month_year_picker.dart';
@@ -31,10 +33,38 @@ final ThemeNotifier themeNotifier = ThemeNotifier();
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
+final FirebaseAnalytics analytics = FirebaseAnalytics.instance;
+final FirebaseAnalyticsObserver analyticsObserver =
+    FirebaseAnalyticsObserver(analytics: analytics);
+
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+}
+
+/// Subscribes every install to broadcast topics, regardless of login state
+/// (unlike per-user FCM token storage in home_screen.dart, which only runs
+/// for authenticated users). 'all_users' lets an announcement (e.g. "new
+/// version released") be sent to everyone directly from the Firebase
+/// Console with no Cloud Function needed. The platform-specific topic is
+/// there for the day you need to announce something to only iOS or only
+/// Android users without pinging everyone else.
+Future<void> _subscribeToNotificationTopics() async {
+  try {
+    final messaging = FirebaseMessaging.instance;
+    await messaging.subscribeToTopic('all_users');
+
+    final String platformTopic = kIsWeb
+        ? 'platform_web'
+        : defaultTargetPlatform == TargetPlatform.iOS
+            ? 'platform_ios'
+            : 'platform_android';
+    await messaging.subscribeToTopic(platformTopic);
+  } catch (e) {
+    // Non-fatal — a failed subscription attempt is simply retried on the
+    // next app launch.
+  }
 }
 
 void main() async {
@@ -71,6 +101,7 @@ void main() async {
   }
 
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  unawaited(_subscribeToNotificationTopics());
 
   runApp(
     const AppProviders(
@@ -157,6 +188,7 @@ class _MyAppState extends State<MyApp> {
           theme: bikerverseLightTheme,
           darkTheme: bikerverseDarkTheme,
           home: const AuthWrapper(),
+          navigatorObservers: [analyticsObserver],
 
           routes: {
             '/login': (context) => const LoginScreen(),

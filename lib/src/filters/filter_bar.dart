@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:popp/src/utils/app_loger.dart';
-import 'package:popp/src/utils/build_extensions.dart';
 
 import '../models/pop_category.dart';
+import '../theme/bikerverse_colors.dart';
 import '../utils/product_content_data.dart';
-import '../widgets/checkbox_filter_widget.dart';
-import '../widgets/range_widget.dart';
+import '../utils/product_utils.dart';
+import '../widgets/filter_pill_chip.dart';
+import '../widgets/range_filter_widget.dart';
+import '../widgets/searchable_avatar_list_widget.dart';
+import '../widgets/searchable_brand_grid_widget.dart';
 
 class FilterBar extends StatefulWidget {
   final List<String> filters;
@@ -15,6 +17,12 @@ class FilterBar extends StatefulWidget {
   final List<String>? dynamicCities;
   final List<String>? dynamicAreas;
 
+  /// Full unfiltered product list. When provided, the sheet shows a live
+  /// "Show N bikes" count as filters are edited; when omitted (e.g. the
+  /// location-only usage in service listing screens), the footer falls
+  /// back to a plain "Apply" button.
+  final List<Map<String, dynamic>>? products;
+
   const FilterBar({
     super.key,
     required this.filters,
@@ -23,6 +31,7 @@ class FilterBar extends StatefulWidget {
     this.dynamicStates,
     this.dynamicCities,
     this.dynamicAreas,
+    this.products,
   });
 
   @override
@@ -30,24 +39,19 @@ class FilterBar extends StatefulWidget {
 }
 
 class _FilterBarState extends State<FilterBar> {
-  String? selectedFilter;
-  int _yearFrom = DateTime.now().year - 1; // Default to 1 years ago
-  int _yearTo = DateTime.now().year;
+  static const double _budgetMax = 20000;
+  static const double _kmMax = 200000;
 
-  String? _yearFromError;
-  String? _yearToError;
+  final int _currentYear = DateTime.now().year;
+  int get _yearBoundMin => _currentYear - 15;
 
   final Map<String, RangeValues> rangeFilterValues = {
-    'Budget': const RangeValues(0, 20000),
-    'By KM Driven': const RangeValues(0, 200000),
+    'Budget': const RangeValues(0, _budgetMax),
+    'By KM Driven': const RangeValues(0, _kmMax),
   };
-  String selectedBrand = 'Brand / Model';
-  String selectedState = 'By State';
-  String selectedCity = 'By City';
-  String selectedArea = 'By Area';
-  String selectedCategory = 'By Category';
-  String selectedSubCategory = 'By SubCategory';
-  String selectedYear = "By Year";
+
+  late int _yearFrom = _yearBoundMin;
+  late int _yearTo = _currentYear;
 
   List<String> _selectedBrands = [];
   List<String> _selectedStates = [];
@@ -63,10 +67,40 @@ class _FilterBarState extends State<FilterBar> {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       child: Row(
         children: [
-          const Icon(Icons.tune),
+          const Icon(Icons.tune, color: BikerverseColors.textSecondary),
           const SizedBox(width: 8),
           ...widget.filters.map(_buildFilterChip),
         ],
+      ),
+    );
+  }
+
+  int _countFor(String filterName) {
+    if (filterName == 'Brand / Model') return _selectedBrands.length;
+    if (filterName == 'By State') return _selectedStates.length;
+    if (filterName == 'By City') return _selectedCities.length;
+    if (filterName == 'By Area') return _selectedAreas.length;
+    if (filterName == 'By Category') return _selectedCategories.length;
+    if (filterName == 'By SubCategory') return _selectedSubCategories.length;
+    if (rangeFilterValues.containsKey(filterName)) {
+      final values = rangeFilterValues[filterName]!;
+      final max = filterName == 'Budget' ? _budgetMax : _kmMax;
+      return (values.start > 0 || values.end < max) ? 1 : 0;
+    }
+    if (filterName == 'By Year') {
+      return (_yearFrom != _yearBoundMin || _yearTo != _currentYear) ? 1 : 0;
+    }
+    return 0;
+  }
+
+  Widget _buildFilterChip(String filterName) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+      child: FilterPillChip(
+        label: filterName,
+        count: _countFor(filterName),
+        showDropdownIcon: true,
+        onTap: () => _openFilterBottomSheet(filterName),
       ),
     );
   }
@@ -79,8 +113,9 @@ class _FilterBarState extends State<FilterBar> {
       // Prevent closing by tapping outside
       enableDrag: false,
       // Prevent closing by dragging
+      backgroundColor: BikerverseColors.surface,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
         return StatefulBuilder(
@@ -102,35 +137,90 @@ class _FilterBarState extends State<FilterBar> {
 
             return StatefulBuilder(
               builder: (context, setSheetState) {
+                bool yearIsNonDefault() =>
+                    tempYearFrom != _yearBoundMin || tempYearTo != _currentYear;
+
+                Map<String, dynamic> buildLiveFilterMap() {
+                  final map = <String, dynamic>{
+                    ...tempValues,
+                    'Brand / Model': selectedBrands,
+                    'By State': selectedStates,
+                    'By City': selectedCities,
+                    'By Area': selectedAreas,
+                    'By Category': selectedCategories,
+                    'By SubCategory': selectedSubCategories,
+                  };
+                  if (yearIsNonDefault()) {
+                    map['By Year'] = [tempYearFrom, tempYearTo];
+                  }
+                  return map;
+                }
+
+                int tempCountFor(String filterName) {
+                  if (filterName == 'Brand / Model') return selectedBrands.length;
+                  if (filterName == 'By State') return selectedStates.length;
+                  if (filterName == 'By City') return selectedCities.length;
+                  if (filterName == 'By Area') return selectedAreas.length;
+                  if (filterName == 'By Category') {
+                    return selectedCategories.length;
+                  }
+                  if (filterName == 'By SubCategory') {
+                    return selectedSubCategories.length;
+                  }
+                  if (tempValues.containsKey(filterName)) {
+                    final values = tempValues[filterName]!;
+                    final max = filterName == 'Budget' ? _budgetMax : _kmMax;
+                    return (values.start > 0 || values.end < max) ? 1 : 0;
+                  }
+                  if (filterName == 'By Year') {
+                    return yearIsNonDefault() ? 1 : 0;
+                  }
+                  return 0;
+                }
+
+                final int? liveCount = widget.products != null
+                    ? ProductUtils.applyFilters(
+                            widget.products!, buildLiveFilterMap())
+                        .length
+                    : null;
+
                 void resetAll() {
+                  final defaultValues = {
+                    'Budget': const RangeValues(0, _budgetMax),
+                    'By KM Driven': const RangeValues(0, _kmMax),
+                  };
                   setSheetState(() {
-                    tempValues = {
-                      'Budget': const RangeValues(0, 20000),
-                      'By KM Driven': const RangeValues(0, 200000),
-                    };
+                    tempValues = Map<String, RangeValues>.from(defaultValues);
+                    selectedBrands = [];
+                    selectedStates = [];
+                    selectedCities = [];
+                    selectedAreas = [];
+                    selectedCategories = [];
+                    selectedSubCategories = [];
+                    tempYearFrom = _yearBoundMin;
+                    tempYearTo = _currentYear;
+                  });
+                  setState(() {
                     rangeFilterValues.clear();
-                    rangeFilterValues.addAll(tempValues);
+                    rangeFilterValues.addAll(defaultValues);
                     _selectedBrands = [];
                     _selectedStates = [];
                     _selectedCities = [];
                     _selectedAreas = [];
                     _selectedCategories = [];
                     _selectedSubCategories = [];
-                    _yearFrom = DateTime.now().year - 1;
-                    _yearTo = DateTime.now().year;
+                    _yearFrom = _yearBoundMin;
+                    _yearTo = _currentYear;
                   });
                   widget.onFiltersChanged({
-                    ...{
-                      'Budget': const RangeValues(0, 20000),
-                      'By KM Driven': const RangeValues(0, 200000),
-                      'Brand / Model': [],
-                      'By State': [],
-                      'By City': [],
-                      'By Area': [],
-                      'By Category': [],
-                      'By SubCategory': [],
-                      // Do not include 'By Year' on reset
-                    }
+                    ...defaultValues,
+                    'Brand / Model': [],
+                    'By State': [],
+                    'By City': [],
+                    'By Area': [],
+                    'By Category': [],
+                    'By SubCategory': [],
+                    // Do not include 'By Year' on reset
                   });
                   Navigator.pop(context); // Close on clear all
                 }
@@ -149,32 +239,28 @@ class _FilterBarState extends State<FilterBar> {
                     _yearFrom = tempYearFrom;
                     _yearTo = tempYearTo;
                   });
-                  final int defaultFrom = DateTime.now().year - 1;
-                  final int defaultTo = DateTime.now().year;
-                  final Map<String, dynamic> filterMap = {
-                    ...tempValues,
-                    'Brand / Model': selectedBrands,
-                    'By State': selectedStates,
-                    'By City': selectedCities,
-                    'By Area': selectedAreas,
-                    'By Category': selectedCategories,
-                    'By SubCategory': selectedSubCategories,
-                  };
-                  if (tempYearFrom != defaultFrom || tempYearTo != defaultTo) {
-                    filterMap['By Year'] = [tempYearFrom, tempYearTo];
-                  }
-                  widget.onFiltersChanged(filterMap);
+                  widget.onFiltersChanged(buildLiveFilterMap());
                   Navigator.pop(context); // Close on apply
                 }
 
                 return SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.8,
+                  height: MediaQuery.of(context).size.height * 0.85,
                   child: Column(
                     children: [
+                      const SizedBox(height: 10),
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: BikerverseColors.outline,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ),
                       // Header with title and close icon
                       Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 12),
+                        padding: const EdgeInsets.fromLTRB(16, 12, 8, 8),
                         child: Row(
                           children: [
                             const Text(
@@ -182,140 +268,148 @@ class _FilterBarState extends State<FilterBar> {
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
+                                color: BikerverseColors.textPrimary,
                               ),
                             ),
                             const Spacer(),
                             IconButton(
-                              icon: const Icon(Icons.close),
+                              icon: const Icon(Icons.close,
+                                  color: BikerverseColors.textSecondary),
                               onPressed: () => Navigator.pop(context),
                             ),
                           ],
                         ),
                       ),
-                      Expanded(
+                      // In-sheet tab strip (replaces the old sidebar list)
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Row(
-                          children: [
-                            // Left filter list
-                            Container(
-                              width: 150,
-                              color: Colors.grey[200],
-                              child: ListView.separated(
-                                itemCount: widget.filters.length,
-                                separatorBuilder: (context, index) =>
-                                    const Divider(height: 1),
-                                itemBuilder: (context, index) {
-                                  final filterName = widget.filters[index];
-                                  final isSelected =
-                                      filterName == currentFilter;
-                                  return ListTile(
-                                    selected: isSelected,
-                                    selectedTileColor: Colors.white,
-                                    title: Text(filterName,
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: isSelected
-                                              ? Colors.green
-                                              : Colors.black54,
-                                        )),
-                                    onTap: () {
-                                      setSheetState(() {
-                                        currentFilter = filterName;
-                                      });
-                                    },
-                                  );
-                                },
+                          children: widget.filters.map((filterName) {
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: FilterPillChip(
+                                label: filterName,
+                                count: tempCountFor(filterName),
+                                selected: filterName == currentFilter,
+                                onTap: () => setSheetState(
+                                    () => currentFilter = filterName),
                               ),
-                            ),
-                            // Right content
-                            Expanded(
-                              child: Container(
-                                padding: const EdgeInsets.all(16),
-                                child: _buildFilterOptions(
-                                  currentFilter,
-                                  tempValues,
-                                  (filter, val) {
-                                    setSheetState(() {
-                                      tempValues[filter] = val;
-                                    });
-                                  },
-                                  selectedBrands,
-                                  (brands) {
-                                    setSheetState(() {
-                                      selectedBrands = brands;
-                                    });
-                                  },
-                                  tempYearFrom,
-                                  (from) {
-                                    setSheetState(() {
-                                      tempYearFrom = from;
-                                    });
-                                  },
-                                  tempYearTo,
-                                  (to) {
-                                    setSheetState(() {
-                                      tempYearTo = to;
-                                    });
-                                  },
-                                  selectedStates,
-                                  (states) {
-                                    setSheetState(() {
-                                      selectedStates = states;
-                                    });
-                                  },
-                                  selectedCities,
-                                  (cities) {
-                                    setSheetState(() {
-                                      selectedCities = cities;
-                                    });
-                                  },
-                                  selectedAreas,
-                                  (areas) {
-                                    setSheetState(() {
-                                      selectedAreas = areas;
-                                    });
-                                  },
-                                  selectedCategories,
-                                  (categories) {
-                                    setSheetState(() {
-                                      selectedCategories = categories;
-                                    });
-                                  },
-                                  selectedSubCategories,
-                                  (subCategories) {
-                                    setSheetState(() {
-                                      selectedSubCategories = subCategories;
-                                    });
-                                  },
-                                ),
-                              ),
-                            ),
-                          ],
+                            );
+                          }).toList(),
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(
-                          16.0,
-                          16.0,
-                          16.0,
-                          50.0,
+                      const SizedBox(height: 16),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: _buildFilterOptions(
+                            currentFilter,
+                            tempValues,
+                            (filter, val) {
+                              setSheetState(() {
+                                tempValues[filter] = val;
+                              });
+                            },
+                            selectedBrands,
+                            (brands) {
+                              setSheetState(() {
+                                selectedBrands = brands;
+                              });
+                            },
+                            tempYearFrom,
+                            (from) {
+                              setSheetState(() {
+                                tempYearFrom = from;
+                              });
+                            },
+                            tempYearTo,
+                            (to) {
+                              setSheetState(() {
+                                tempYearTo = to;
+                              });
+                            },
+                            selectedStates,
+                            (states) {
+                              setSheetState(() {
+                                selectedStates = states;
+                              });
+                            },
+                            selectedCities,
+                            (cities) {
+                              setSheetState(() {
+                                selectedCities = cities;
+                              });
+                            },
+                            selectedAreas,
+                            (areas) {
+                              setSheetState(() {
+                                selectedAreas = areas;
+                              });
+                            },
+                            selectedCategories,
+                            (categories) {
+                              setSheetState(() {
+                                selectedCategories = categories;
+                              });
+                            },
+                            selectedSubCategories,
+                            (subCategories) {
+                              setSheetState(() {
+                                selectedSubCategories = subCategories;
+                              });
+                            },
+                          ),
                         ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: OutlinedButton(
-                                onPressed: resetAll,
-                                child: const Text('Clear All'),
+                      ),
+                      // Sticky footer
+                      SafeArea(
+                        top: false,
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: OutlinedButton(
+                                  onPressed: resetAll,
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: BikerverseColors.textPrimary,
+                                    side: const BorderSide(
+                                        color: BikerverseColors.outline),
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 16),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(28),
+                                    ),
+                                  ),
+                                  child: const Text('Clear all'),
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: ElevatedButton(
-                                onPressed: applyAll,
-                                child: const Text('Apply'),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                flex: 2,
+                                child: ElevatedButton(
+                                  onPressed: applyAll,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: BikerverseColors.accent,
+                                    foregroundColor: BikerverseColors.onGreen,
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 16),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(28),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    liveCount != null
+                                        ? 'Show $liveCount bikes'
+                                        : 'Apply',
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.w700),
+                                  ),
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ],
@@ -333,276 +427,146 @@ class _FilterBarState extends State<FilterBar> {
       String filterName,
       Map<String, RangeValues> tempValues,
       void Function(String, RangeValues) updateValue,
-      [List<String>? selectedBrands,
-      void Function(List<String>)? onBrandsChanged,
-      int? tempYearFrom,
-      void Function(int)? onYearFromChanged,
-      int? tempYearTo,
-      void Function(int)? onYearToChanged,
-      List<String>? selectedStates,
-      void Function(List<String>)? onStatesChanged,
-      List<String>? selectedCities,
-      void Function(List<String>)? onCitiesChanged,
-      List<String>? selectedAreas,
-      void Function(List<String>)? onAreasChanged,
-      List<String>? selectedCategories,
-      void Function(List<String>)? onCategoriesChanged,
-      List<String>? selectedSubCategories,
-      void Function(List<String>)? onSubCategoriesChanged]) {
-    AppLogger.d("filterName $filterName");
-    if (tempValues.containsKey(filterName)) {
-      final RangeValues values = tempValues[filterName]!;
-      final double max = filterName == 'Budget' ? 20000 : 200000;
-      final String unit = filterName == 'Budget' ? '₹' : 'km ';
-
+      List<String> selectedBrands,
+      void Function(List<String>) onBrandsChanged,
+      int tempYearFrom,
+      void Function(int) onYearFromChanged,
+      int tempYearTo,
+      void Function(int) onYearToChanged,
+      List<String> selectedStates,
+      void Function(List<String>) onStatesChanged,
+      List<String> selectedCities,
+      void Function(List<String>) onCitiesChanged,
+      List<String> selectedAreas,
+      void Function(List<String>) onAreasChanged,
+      List<String> selectedCategories,
+      void Function(List<String>) onCategoriesChanged,
+      List<String> selectedSubCategories,
+      void Function(List<String>) onSubCategoriesChanged) {
+    if (filterName == 'Budget') {
       return RangeFilterWidget(
-        title: 'Select $filterName Range',
-        unit: unit,
+        title: 'Select budget range',
+        subtitle: 'Drag either handle to set a min and max price',
         min: 0,
-        max: max,
-        values: values,
-        onChanged: (newValues) => updateValue(filterName, newValues),
+        max: _budgetMax,
+        divisions: 100,
+        values: tempValues['Budget']!,
+        formatValue: (v) => '₹${(v / 1000).round()}k',
+        quickPicks: const [
+          RangeQuickPick('Under ₹5k', RangeValues(0, 5000)),
+          RangeQuickPick('₹5k-10k', RangeValues(5000, 10000)),
+          RangeQuickPick('₹10k-15k', RangeValues(10000, 15000)),
+          RangeQuickPick('₹15k+', RangeValues(15000, _budgetMax)),
+        ],
+        onChanged: (v) => updateValue('Budget', v),
       );
     }
 
-    if (selectedBrand.contains(filterName.trim())) {
-      AppLogger.d("selectedBrand  $filterName");
-      return CheckboxFilterWidget(
-        displayList: bikeBrands,
-        selectedItems: selectedBrands ?? [],
-        key: ValueKey(selectedBrands?.join(',')), // Add key to force rebuild
-        onSelectionChanged: (updatedSet) {
-          if (onBrandsChanged != null) {
-            onBrandsChanged(List<String>.from(updatedSet));
-          }
+    if (filterName == 'By KM Driven') {
+      return RangeFilterWidget(
+        title: 'Select KM driven range',
+        subtitle: 'Drag either handle to set a min and max distance',
+        min: 0,
+        max: _kmMax,
+        divisions: 100,
+        values: tempValues['By KM Driven']!,
+        formatValue: (v) => '${(v / 1000).round()}k km',
+        quickPicks: const [
+          RangeQuickPick('Under 20k', RangeValues(0, 20000)),
+          RangeQuickPick('20k-50k', RangeValues(20000, 50000)),
+          RangeQuickPick('50k-100k', RangeValues(50000, 100000)),
+          RangeQuickPick('100k+', RangeValues(100000, _kmMax)),
+        ],
+        onChanged: (v) => updateValue('By KM Driven', v),
+      );
+    }
+
+    if (filterName == 'By Year') {
+      final double boundMin = _yearBoundMin.toDouble();
+      final double boundMax = _currentYear.toDouble();
+      return RangeFilterWidget(
+        title: 'Select model year range',
+        subtitle: 'Bikes registered within this range',
+        min: boundMin,
+        max: boundMax,
+        divisions: _currentYear - _yearBoundMin,
+        showPlusAtMax: false,
+        values: RangeValues(tempYearFrom.toDouble(), tempYearTo.toDouble()),
+        formatValue: (v) => '${v.round()}',
+        quickPicks: [
+          RangeQuickPick(
+            'Last 2 yrs',
+            RangeValues((_currentYear - 2).toDouble(), boundMax),
+          ),
+          RangeQuickPick(
+            'Last 6 yrs',
+            RangeValues((_currentYear - 6).toDouble(), boundMax),
+          ),
+          RangeQuickPick('Any year', RangeValues(boundMin, boundMax)),
+        ],
+        onChanged: (v) {
+          onYearFromChanged(v.start.round());
+          onYearToChanged(v.end.round());
         },
       );
     }
 
-    if (selectedCategory.contains(filterName.trim())) {
-      AppLogger.d("selectedCategory  $filterName");
-      return CheckboxFilterWidget(
-        displayList: getAllPopCategoryNames(),
-        selectedItems: selectedCategories ?? [],
-        key: ValueKey(selectedCategories?.join(',')),
-        onSelectionChanged: (updatedSet) {
-          if (onCategoriesChanged != null) {
-            onCategoriesChanged(List<String>.from(updatedSet));
-          }
-        },
-      );
-    }
-
-    if (selectedState.contains(filterName.trim())) {
-      AppLogger.d("selectedState  $filterName");
-      return CheckboxFilterWidget(
-        displayList: widget.dynamicStates ?? stateNames,
-        selectedItems: selectedStates ?? [],
-        key: ValueKey(selectedStates?.join(',')),
-        onSelectionChanged: (updatedSet) {
-          if (onStatesChanged != null) {
-            onStatesChanged(List<String>.from(updatedSet));
-          }
-        },
-      );
-    }
-
-    if (selectedCity.contains(filterName.trim())) {
-      AppLogger.d("selectedCity  $filterName");
-      return CheckboxFilterWidget(
-        displayList: widget.dynamicCities ?? [],
-        selectedItems: selectedCities ?? [],
-        key: ValueKey(selectedCities?.join(',')),
-        onSelectionChanged: (updatedSet) {
-          if (onCitiesChanged != null) {
-            onCitiesChanged(List<String>.from(updatedSet));
-          }
-        },
-      );
-    }
-
-    if (selectedArea.contains(filterName.trim())) {
-      AppLogger.d("selectedArea  $filterName");
-      return CheckboxFilterWidget(
-        displayList: widget.dynamicAreas ?? [],
-        selectedItems: selectedAreas ?? [],
-        key: ValueKey(selectedAreas?.join(',')),
-        onSelectionChanged: (updatedSet) {
-          if (onAreasChanged != null) {
-            onAreasChanged(List<String>.from(updatedSet));
-          }
-        },
-      );
-    }
-
-    if (selectedSubCategory.contains(filterName.trim())) {
-      AppLogger.d("selectedSubCategory  $filterName");
-      return CheckboxFilterWidget(
-        displayList: getAllPopSubCategoryNames(),
-        // You need to define subCategoryList somewhere
-        selectedItems: selectedSubCategories ?? [],
-        key: ValueKey(selectedSubCategories?.join(',')),
-        onSelectionChanged: (updatedSet) {
-          if (onSubCategoriesChanged != null) {
-            onSubCategoriesChanged(List<String>.from(updatedSet));
-          }
-        },
-      );
-    }
-
-    if (selectedYear.contains(filterName.trim())) {
-      AppLogger.d("selectedYear  $filterName");
-      return _yearFilterWidget(
-        tempYearFrom: tempYearFrom ?? _yearFrom,
-        onYearFromChanged: onYearFromChanged,
-        tempYearTo: tempYearTo ?? _yearTo,
-        onYearToChanged: onYearToChanged,
-      );
-    }
-
-    return Center(child: Text('Options for "$filterName"'));
-  }
-
-  Widget _buildFilterChip(String filterName) {
-    int count = 0;
     if (filterName == 'Brand / Model') {
-      count = _selectedBrands.length;
-    } else if (filterName == 'By State') {
-      count = _selectedStates.length;
-    } else if (filterName == 'By City') {
-      count = _selectedCities.length;
-    } else if (filterName == 'By Area') {
-      count = _selectedAreas.length;
-    } else if (filterName == 'By Category') {
-      count = _selectedCategories.length;
-    } else if (filterName == 'By SubCategory') {
-      count = _selectedSubCategories.length;
-    } else if (rangeFilterValues.containsKey(filterName)) {
-      final RangeValues values = rangeFilterValues[filterName]!;
-      // Count as selected if not default
-      if ((filterName == 'Budget' &&
-              (values.start > 0 || values.end < 20000)) ||
-          (filterName == 'By KM Driven' &&
-              (values.start > 0 || values.end < 200000))) {
-        count = 1;
-      }
-    } else if (filterName == 'By Year') {
-      // Show count if year range is not default
-      final int defaultFrom = DateTime.now().year - 1;
-      final int defaultTo = DateTime.now().year;
-      if (_yearFrom != defaultFrom || _yearTo != defaultTo) {
-        count = 1;
-      }
+      return SearchableBrandGridWidget(
+        displayList: bikeBrands,
+        selectedItems: selectedBrands,
+        onSelectionChanged: onBrandsChanged,
+      );
     }
-    final hasCount = count > 0;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4.0),
-      child: GestureDetector(
-        onTap: () => _openFilterBottomSheet(filterName),
-        child: Chip(
-          label: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('$filterName${hasCount ? ' ($count)' : ''}'),
-              const SizedBox(width: 4),
-              const Icon(Icons.arrow_drop_down, size: 20),
-            ],
-          ),
-          shape: StadiumBorder(
-            side: BorderSide(
-              color: hasCount ? Colors.green : Colors.white70,
-              width: 2,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+    if (filterName == 'By Category') {
+      return SearchableAvatarListWidget(
+        displayList: getAllPopCategoryNames(),
+        selectedItems: selectedCategories,
+        searchHint: 'Search category',
+        onSelectionChanged: onCategoriesChanged,
+      );
+    }
 
-  Widget _yearFilterWidget({
-    int? tempYearFrom,
-    void Function(int)? onYearFromChanged,
-    int? tempYearTo,
-    void Function(int)? onYearToChanged,
-  }) {
-    final int currentYear = DateTime.now().year;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(width: 35),
-        Row(
-          children: [
-            Expanded(
-              child: TextFormField(
-                keyboardType: TextInputType.number,
-                decoration: context.inputDecoration(
-                    "From year", "${tempYearFrom ?? _yearFrom}"),
-                onChanged: (val) {
-                  final parsed = int.tryParse(val);
-                  String? error;
-                  if (parsed == null) {
-                    error = 'Enter a valid year';
-                  } else if (parsed > currentYear) {
-                    error = 'Year cannot be in the future';
-                  } else if (parsed >= (tempYearTo ?? _yearTo)) {
-                    error = 'From year must be less than To year';
-                  }
-                  setState(() {
-                    _yearFromError = error;
-                  });
-                  if (parsed != null && onYearFromChanged != null) {
-                    onYearFromChanged(parsed);
-                  }
-                },
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: TextFormField(
-                keyboardType: TextInputType.number,
-                decoration: context.inputDecoration(
-                    "To year", "${tempYearTo ?? _yearTo}"),
-                onChanged: (val) {
-                  final parsed = int.tryParse(val);
-                  String? error;
-                  if (parsed == null) {
-                    error = 'Enter a valid year';
-                  } else if (parsed > currentYear) {
-                    error = 'Year cannot be in the future';
-                  } else if (parsed <= (tempYearFrom ?? _yearFrom)) {
-                    error = 'To year must be greater than From year';
-                  }
-                  setState(() {
-                    _yearToError = error;
-                  });
-                  if (parsed != null && onYearToChanged != null) {
-                    onYearToChanged(parsed);
-                  }
-                },
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(width: 30),
-        if (_yearFromError != null && _yearFromError!.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(top: 8.0, left: 4.0),
-            child: Text(
-              _yearFromError!,
-              style: const TextStyle(color: Colors.red, fontSize: 12),
-            ),
-          ),
-        const SizedBox(width: 20),
-        if (_yearToError != null && _yearToError!.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(top: 4.0, left: 4.0),
-            child: Text(
-              _yearToError!,
-              style: const TextStyle(color: Colors.red, fontSize: 12),
-            ),
-          ),
-      ],
+    if (filterName == 'By State') {
+      return SearchableAvatarListWidget(
+        displayList: widget.dynamicStates ?? stateNames,
+        selectedItems: selectedStates,
+        searchHint: 'Search state',
+        onSelectionChanged: onStatesChanged,
+      );
+    }
+
+    if (filterName == 'By City') {
+      return SearchableAvatarListWidget(
+        displayList: widget.dynamicCities ?? [],
+        selectedItems: selectedCities,
+        searchHint: 'Search city',
+        onSelectionChanged: onCitiesChanged,
+      );
+    }
+
+    if (filterName == 'By Area') {
+      return SearchableAvatarListWidget(
+        displayList: widget.dynamicAreas ?? [],
+        selectedItems: selectedAreas,
+        searchHint: 'Search area',
+        onSelectionChanged: onAreasChanged,
+      );
+    }
+
+    if (filterName == 'By SubCategory') {
+      return SearchableAvatarListWidget(
+        displayList: getAllPopSubCategoryNames(),
+        selectedItems: selectedSubCategories,
+        searchHint: 'Search subcategory',
+        onSelectionChanged: onSubCategoriesChanged,
+      );
+    }
+
+    return Center(
+      child: Text('Options for "$filterName"',
+          style: const TextStyle(color: BikerverseColors.textMuted)),
     );
   }
 }

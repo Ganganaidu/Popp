@@ -1,14 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-import '../../main.dart';
 import '../api/api_url.dart';
+import '../navigation/app_router.dart';
 import '../products/product_detail_screen.dart';
 import '../services/listservices/service_detail_screen.dart';
 
 /// Holds a product/service deep link that arrived while the user was signed
-/// out. Consumed once by [AuthWrapper] right after login succeeds so the
-/// user lands on the intended page instead of the link being dropped.
+/// out. Consumed once by the router's redirect callback right after login
+/// succeeds so the user lands on the intended page instead of the link
+/// being dropped.
 class PendingDeepLink {
   static Uri? uri;
 }

@@ -268,7 +268,8 @@ class _SellYourBikeState extends State<SellYourBike> {
         }
       }
 
-      final Map<String, dynamic> updateData = {
+      final bool wasApproved = widget.existingData!['isApproved'] == true;
+      final Map<String, dynamic> contentFields = {
         'sellerCategory': sellerCategory ?? "Individual",
         'sellerName': sellerNameController.text,
         'sellerContactNumber': '$selectedCountryCode ${sellerContactController.text}',
@@ -295,11 +296,27 @@ class _SellYourBikeState extends State<SellYourBike> {
         'additionalDetails': additionalDetailsController.text,
         'imageUrl': imageUrls.isNotEmpty ? imageUrls.first : null,
         'thumbImageUrls': imageUrls,
-        'status': 'pending',
-        'isApproved': false,
-        'adminFeedback': FieldValue.delete(),
         'searchKeywords': keywords,
       };
+
+      final Map<String, dynamic> updateData;
+      if (wasApproved) {
+        // Approved product: store changes as pending update, keep live listing unchanged
+        updateData = {
+          'pendingUpdate': contentFields,
+          'hasPendingUpdate': true,
+          'status': 'pending_update',
+          'pendingUpdateAt': FieldValue.serverTimestamp(),
+        };
+      } else {
+        // Not yet approved: update main fields and reset to pending review
+        updateData = {
+          ...contentFields,
+          'status': 'pending',
+          'isApproved': false,
+          'adminFeedback': FieldValue.delete(),
+        };
+      }
 
       await _handleLoading(true);
       final bool success = await _firebaseService.updateProduct(existingId, updateData);
@@ -308,7 +325,11 @@ class _SellYourBikeState extends State<SellYourBike> {
       if (!mounted) return;
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Listing updated! It is under review.')),
+          SnackBar(
+            content: Text(wasApproved
+                ? 'Update submitted for review. Your listing remains live.'
+                : 'Listing updated! It is under review.'),
+          ),
         );
         Navigator.pop(context);
       } else {

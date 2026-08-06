@@ -44,6 +44,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   late final PageController _pageController;
   bool _isApproved = false;
   bool _isSold = false;
+  bool _hasPendingUpdate = false;
+  Map<String, dynamic>? _pendingUpdate;
   bool _favButtonDisabled = false;
   String _status = '';
   String localizedPrice = '';
@@ -62,9 +64,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
     _isApproved = widget.productJson['isApproved'] == true;
     _isSold = widget.productJson['isSold'] == true;
+    _hasPendingUpdate = widget.productJson['hasPendingUpdate'] == true;
+    _pendingUpdate = widget.productJson['pendingUpdate'] as Map<String, dynamic>?;
     final docStatus = widget.productJson['status'] as String?;
     if (_isSold) {
       _status = 'Sold';
+    } else if (_isApproved && _hasPendingUpdate) {
+      _status = 'Pending Update';
     } else if (_isApproved) {
       _status = 'Approved';
     } else if (docStatus == 'sent_back') {
@@ -139,7 +145,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context).textTheme;
-    final product = widget.productJson;
+    // Admin reviews the proposed changes (pending update content) instead of live content
+    final product = (_isAdmin && _hasPendingUpdate && _pendingUpdate != null)
+        ? {...widget.productJson, ..._pendingUpdate!}
+        : widget.productJson;
     final imageUrls =
         (product['thumbImageUrls'] as List<dynamic>? ?? []).cast<String>();
 
@@ -287,6 +296,31 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 15),
+
+                  // Admin: highlight that this is a pending update review
+                  if (_isAdmin && _hasPendingUpdate)
+                    Container(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.orange.withOpacity(0.4)),
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(Icons.sync_outlined, color: Colors.orange, size: 18),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Reviewing pending update — approve to publish these changes, or reject to keep the current listing.',
+                              style: TextStyle(color: Colors.orange, fontSize: 13),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
                   // Title
                   Text(
                     ProductUtils.getTitle(product),
@@ -368,6 +402,58 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         ),
                       ),
                     ),
+                    // Edit & Resubmit — visible for approved listings with no pending update
+                    if (_isApproved && !_hasPendingUpdate) ...[
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue.shade700,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10)),
+                          ),
+                          onPressed: _openEditScreen,
+                          icon: const Icon(Icons.edit_outlined, size: 18),
+                          label: const Text(
+                            'Edit & Resubmit',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                    // Pending update notice — shown while an update awaits admin review
+                    if (_isApproved && _hasPendingUpdate) ...[
+                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                              color: Colors.blue.withOpacity(0.3)),
+                        ),
+                        child: const Row(
+                          children: [
+                            Icon(Icons.pending_outlined,
+                                color: Colors.blue, size: 18),
+                            SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Your update is pending admin review. Current listing is still live.',
+                                style:
+                                    TextStyle(color: Colors.blue, fontSize: 13),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 16),
                   ] else ...[
                     if (!isOwner)
@@ -476,11 +562,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     if (isOwner && _status == 'Sent Back') {
       return _buildUserEditButton();
     }
-    if (_isAdmin &&
-        _status != 'Approved' &&
-        _status != 'Rejected' &&
-        _status != 'Sold') {
-      return _buildAdminBottomBar();
+    if (_isAdmin && !_isSold) {
+      // Show admin bar for first-time pending reviews and for pending update reviews
+      final needsReview = _status != 'Approved' && _status != 'Rejected';
+      if (needsReview || _hasPendingUpdate) {
+        return _buildAdminBottomBar();
+      }
     }
     return null;
   }
@@ -538,6 +625,44 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   Widget _buildAdminActionRow() {
+    if (_hasPendingUpdate) {
+      // Reviewing a pending update on an already-approved listing
+      return Row(
+        children: [
+          Expanded(
+            child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+              ),
+              onPressed: () => _handleAdminAction('approve_update'),
+              icon: const Icon(Icons.check_circle_outline, size: 18),
+              label: const Text('Approve Update'),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+              ),
+              onPressed: () => _handleAdminAction('reject_update'),
+              icon: const Icon(Icons.cancel_outlined, size: 18),
+              label: const Text('Reject Update'),
+            ),
+          ),
+        ],
+      );
+    }
+
+    // Standard first-time review buttons
     return Row(
       children: [
         Expanded(
@@ -593,7 +718,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     if (productId.isEmpty) return;
 
     String? reason;
-    if (action == 'sent_back' || action == 'rejected') {
+    if (action == 'sent_back' || action == 'rejected' || action == 'reject_update') {
       reason = await _showReasonDialog(action);
       if (reason == null) return;
     }
@@ -621,11 +746,31 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               listingRef: listingRef, reason: reason);
           if (!mounted) return;
           setState(() => _status = 'Rejected');
+        case 'approve_update':
+          await AdminNotificationService.approvePendingUpdate(
+              listingRef: listingRef, pendingUpdate: _pendingUpdate!);
+          if (!mounted) return;
+          setState(() {
+            _hasPendingUpdate = false;
+            _pendingUpdate = null;
+            _status = 'Approved';
+          });
+        case 'reject_update':
+          await AdminNotificationService.rejectPendingUpdate(
+              listingRef: listingRef, feedback: reason);
+          if (!mounted) return;
+          setState(() {
+            _hasPendingUpdate = false;
+            _pendingUpdate = null;
+            _status = 'Approved';
+          });
       }
       if (mounted) {
         final msg = switch (action) {
           'approved' => 'Product approved. User will be notified.',
           'sent_back' => 'Sent back to user for corrections.',
+          'approve_update' => 'Update approved and published.',
+          'reject_update' => 'Update rejected. Original listing remains live.',
           _ => 'Listing rejected. User will be notified.',
         };
         ScaffoldMessenger.of(context).showSnackBar(
@@ -645,12 +790,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   Future<String?> _showReasonDialog(String action) async {
     final controller = TextEditingController();
     final isSendBack = action == 'sent_back';
+    final isRejectUpdate = action == 'reject_update';
 
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title:
-            Text(isSendBack ? 'Send Back for Corrections' : 'Reject Listing'),
+        title: Text(isSendBack
+            ? 'Send Back for Corrections'
+            : isRejectUpdate
+                ? 'Reject Update'
+                : 'Reject Listing'),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -658,7 +807,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             children: [
               Text(isSendBack
                   ? 'Provide feedback so the user knows what to correct:'
-                  : 'Provide a reason why this listing is not eligible for Bikerverse:'),
+                  : isRejectUpdate
+                      ? 'Provide a reason for rejecting this update (optional):'
+                      : 'Provide a reason why this listing is not eligible for Bikerverse:'),
               const SizedBox(height: 12),
               TextField(
                 controller: controller,
@@ -667,7 +818,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 decoration: InputDecoration(
                   hintText: isSendBack
                       ? 'e.g. Please upload clearer photos of the item.'
-                      : 'e.g. Does not meet Bikerverse guidelines.',
+                      : isRejectUpdate
+                          ? 'e.g. Price update not within guidelines.'
+                          : 'e.g. Does not meet Bikerverse guidelines.',
                   border: const OutlineInputBorder(),
                 ),
               ),
@@ -685,7 +838,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             ),
             onPressed: () => Navigator.of(ctx).pop(true),
             child: Text(
-              isSendBack ? 'Send Back' : 'Reject',
+              isSendBack ? 'Send Back' : isRejectUpdate ? 'Reject Update' : 'Reject',
               style: const TextStyle(color: Colors.white),
             ),
           ),
@@ -748,8 +901,29 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         return (Colors.blue.shade600, Icons.undo_outlined);
       case 'rejected':
         return (Colors.red.shade700, Icons.cancel_outlined);
+      case 'pending update':
+        return (Colors.purple.shade600, Icons.sync_outlined);
       default:
         return (Colors.orange.shade700, Icons.hourglass_top_outlined);
+    }
+  }
+
+  void _openEditScreen() {
+    final category = widget.productJson['category'] as String? ?? '';
+    if (category == ProductUtils.premiumBikes) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => SellYourBike(existingData: widget.productJson),
+        ),
+      );
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => SellYourAccessories(existingData: widget.productJson),
+        ),
+      );
     }
   }
 

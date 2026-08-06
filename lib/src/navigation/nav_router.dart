@@ -78,6 +78,25 @@ void onSellYourAccessoriesTap(BuildContext context) {
   );
 }
 
+void onEditListingTap(BuildContext context, Map<String, dynamic> productData) {
+  final category = productData['category'] as String? ?? '';
+  if (category == ProductUtils.premiumBikes) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => SellYourBike(existingData: productData),
+      ),
+    );
+  } else {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => SellYourAccessories(existingData: productData),
+      ),
+    );
+  }
+}
+
 void onSettingsTap(BuildContext context) {
   Navigator.push(
     context,

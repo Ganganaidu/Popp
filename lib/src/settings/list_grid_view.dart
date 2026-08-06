@@ -101,16 +101,19 @@ class _ListingsGridViewState extends State<ListingsGridView> {
             final price = data['expectedPrice']?.toString();
             bool isApproved = data['isApproved'] ?? false;
             bool isSold = data['isSold'] ?? false;
+            bool hasPendingUpdate = data['hasPendingUpdate'] ?? false;
             final docStatus = data['status'] as String?;
             final status = isSold
                 ? 'Sold'
-                : isApproved
-                    ? 'Approved'
-                    : docStatus == 'sent_back'
-                        ? 'Sent Back'
-                        : docStatus == 'rejected'
-                            ? 'Rejected'
-                            : 'Pending';
+                : isApproved && hasPendingUpdate
+                    ? 'Update Pending'
+                    : isApproved
+                        ? 'Approved'
+                        : docStatus == 'sent_back'
+                            ? 'Sent Back'
+                            : docStatus == 'rejected'
+                                ? 'Rejected'
+                                : 'Pending';
 
             return ListingCard(
               title: title,
@@ -128,6 +131,9 @@ class _ListingsGridViewState extends State<ListingsGridView> {
               },
               onEdit: () {
                 // Handle edit action
+              },
+              onEditApproved: () {
+                onEditListingTap(context, data);
               },
               onSold: () async {
                 final success = await AppDialogs.confirmAndMarkAsSold(

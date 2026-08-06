@@ -81,13 +81,19 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
           ListingsGridView(
             query: FirebaseFirestore.instance
                 .collection(ApiUrl.productsPath)
-                .where('isApproved', isEqualTo: false),
+                .where(Filter.or(
+                  Filter('isApproved', isEqualTo: false),
+                  Filter('hasPendingUpdate', isEqualTo: true),
+                )),
             showOptionsMenu: false,
           ),
           ListingsGridView(
             query: FirebaseFirestore.instance
                 .collection(ApiUrl.servicePath)
-                .where('isApproved', isEqualTo: false),
+                .where(Filter.or(
+                  Filter('isApproved', isEqualTo: false),
+                  Filter('hasPendingUpdate', isEqualTo: true),
+                )),
             showOptionsMenu: false,
           ),
           const AdListPage(),

@@ -75,4 +75,5 @@ design_handoff_bikerverse_rebrand/
 devtools_options.yaml
 test/service_detail_links_logic_dart.dart
 test/service_detail_links_logic_test.dart
+pubspec.lock
 

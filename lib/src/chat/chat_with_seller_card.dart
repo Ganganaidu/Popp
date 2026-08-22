@@ -90,35 +90,33 @@ class _ChatWithSellerCardState extends State<ChatWithSellerCard> {
             ),
             const SizedBox(width: 16),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(widget.receiverUserName,
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 16)),
-                  const SizedBox(height: 4),
-                  if (widget.isAdmin)
-                    const Text(
-                      'Tap to view contact details',
-                      style: TextStyle(color: Colors.orange, fontSize: 13),
-                    )
-                  else if (isSelfChat)
-                    const Text('Owner',
-                        style: TextStyle(
-                            color: Colors.green,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16))
-                  else
-                    Text(
-                      widget.isOwner ? 'Chat with Seller' : 'Chat with Provider',
-                      style: const TextStyle(color: Colors.grey),
-                    ),
-                ],
+              child: GestureDetector(
+                onTap: widget.isAdmin
+                    ? () => _showAdminContactSheet(context)
+                    : null,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(widget.receiverUserName,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16)),
+                    const SizedBox(height: 4),
+                    if (isSelfChat)
+                      const Text('Owner',
+                          style: TextStyle(
+                              color: Colors.green,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16))
+                    else
+                      Text(
+                        widget.isOwner ? 'Chat with Seller' : 'Chat with Provider',
+                        style: const TextStyle(color: Colors.grey),
+                      ),
+                  ],
+                ),
               ),
             ),
-            if (widget.isAdmin)
-              const Icon(Icons.info_outline, color: Colors.orange)
-            else if (!isSelfChat)
+            if (!isSelfChat)
               ElevatedButton.icon(
                 onPressed: chatEnabled
                     ? () => _openChatWithSeller(context)
@@ -157,13 +155,6 @@ class _ChatWithSellerCardState extends State<ChatWithSellerCard> {
       ),
     );
 
-    if (widget.isAdmin) {
-      return InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () => _showAdminContactSheet(context),
-        child: card,
-      );
-    }
     return card;
   }
 }

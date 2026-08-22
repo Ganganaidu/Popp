@@ -11,11 +11,13 @@ import '../widgets/listing_card.dart';
 class ListingsGridView extends StatefulWidget {
   final Query query;
   final bool showOptionsMenu;
+  final bool showAdminSoldOption;
 
   const ListingsGridView({
     super.key,
     required this.query,
     this.showOptionsMenu = false,
+    this.showAdminSoldOption = false,
   });
 
   @override
@@ -121,6 +123,7 @@ class _ListingsGridViewState extends State<ListingsGridView> {
               price: CurrencyService.getProductPrice(price, countryCode),
               status: status,
               showOptionsMenu: widget.showOptionsMenu,
+              showSoldOptionOnly: widget.showAdminSoldOption,
               onTap: () {
                 final category = data['category'] as String?;
                 if (!ProductUtils.listYourServiceCategories.contains(category)) {

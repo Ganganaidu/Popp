@@ -10,6 +10,7 @@ class ListingCard extends StatelessWidget {
   final String? price;
   final String? status;
   final bool showOptionsMenu;
+  final bool showSoldOptionOnly;
   final VoidCallback? onTap;
   final VoidCallback? onEdit;
   final VoidCallback? onSold;
@@ -24,6 +25,7 @@ class ListingCard extends StatelessWidget {
     this.price,
     this.status, // Default status is 'Pending'
     this.showOptionsMenu = false,
+    this.showSoldOptionOnly = false,
     this.onTap,
     this.onEdit,
     this.onSold,
@@ -82,9 +84,8 @@ class ListingCard extends StatelessWidget {
                         ? ShimmerImage(imageUrl: imageUrl!)
                         : _buildPlaceholderImage(),
                   ),
-                  if (showOptionsMenu &&
-                      (status?.toLowerCase() != 'pending' &&
-                          status?.toLowerCase() != 'sold'))
+                  if ((showOptionsMenu || showSoldOptionOnly) &&
+                      status?.toLowerCase() != 'sold')
                     Positioned(
                       top: 4,
                       right: 4,
@@ -172,6 +173,13 @@ class ListingCard extends StatelessWidget {
                     ),
                   ),
                   if (status != null) _buildStatusBanner(),
+                  if ((showOptionsMenu || showSoldOptionOnly) &&
+                      status?.toLowerCase() != 'sold')
+                    Positioned(
+                      top: 4,
+                      right: 4,
+                      child: _buildOptionsMenu(context),
+                    ),
                 ],
               ),
             ),
@@ -291,12 +299,12 @@ class ListingCard extends StatelessWidget {
         }
       },
       itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-        if (status?.toLowerCase() == 'pending')
+        if (!showSoldOptionOnly && status?.toLowerCase() == 'pending')
           const PopupMenuItem<String>(
               value: 'edit',
               child: ListTile(
                   leading: Icon(Icons.edit_outlined), title: Text('Edit'))),
-        if (status?.toLowerCase() == 'approved')
+        if (!showSoldOptionOnly && status?.toLowerCase() == 'approved')
           const PopupMenuItem<String>(
               value: 'edit_approved',
               child: ListTile(

@@ -513,6 +513,10 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                             receiverUserID: userId,
                             productId: widget.serviceData['id'] ?? '',
                             productTitle: title,
+                            isAdmin: isAdmin,
+                            listingPhone: (widget.serviceData['contactPhone'] ??
+                                widget.serviceData['pointOfContactPhone'] ??
+                                widget.serviceData['businessContact']) as String?,
                           ),
                       ],
 

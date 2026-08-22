@@ -1,8 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:popp/src/utils/build_extensions.dart';
 import 'package:provider/provider.dart';
 
+import '../api/api_url.dart';
 import '../api/firebase/remote_config_service.dart';
 import '../navigation/nav_router.dart';
 import '../subscription/subscription_provider.dart';
@@ -14,6 +17,8 @@ class ChatWithSellerCard extends StatefulWidget {
   final String productId;
   final String productTitle;
   final bool isOwner;
+  final bool isAdmin;
+  final String? listingPhone;
 
   const ChatWithSellerCard(
       {super.key,
@@ -21,7 +26,9 @@ class ChatWithSellerCard extends StatefulWidget {
       required this.receiverUserID,
       required this.productId,
       required this.productTitle,
-      this.isOwner = false});
+      this.isOwner = false,
+      this.isAdmin = false,
+      this.listingPhone});
 
   @override
   State<ChatWithSellerCard> createState() => _ChatWithSellerCardState();
@@ -48,6 +55,19 @@ class _ChatWithSellerCardState extends State<ChatWithSellerCard> {
         widget.productId, widget.productTitle);
   }
 
+  Future<void> _showAdminContactSheet(BuildContext context) async {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _AdminContactSheet(
+        userId: widget.receiverUserID,
+        displayName: widget.receiverUserName,
+        listingPhone: widget.listingPhone,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
@@ -56,7 +76,7 @@ class _ChatWithSellerCardState extends State<ChatWithSellerCard> {
     final isSelfChat = widget.receiverUserID == user?.uid;
     final bool chatEnabled = !_showSubscription || (canChat && !isSelfChat);
 
-    return Card(
+    final card = Card(
       elevation: 3,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
@@ -77,21 +97,28 @@ class _ChatWithSellerCardState extends State<ChatWithSellerCard> {
                       style: const TextStyle(
                           fontWeight: FontWeight.bold, fontSize: 16)),
                   const SizedBox(height: 4),
-                  isSelfChat
-                      ? const Text("Owner",
-                          style: TextStyle(
-                              color: Colors.green,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16))
-                      : Text(
-                          widget.isOwner
-                              ? "Chat with Seller"
-                              : "Chat with Provider",
-                          style: const TextStyle(color: Colors.grey)),
+                  if (widget.isAdmin)
+                    const Text(
+                      'Tap to view contact details',
+                      style: TextStyle(color: Colors.orange, fontSize: 13),
+                    )
+                  else if (isSelfChat)
+                    const Text('Owner',
+                        style: TextStyle(
+                            color: Colors.green,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16))
+                  else
+                    Text(
+                      widget.isOwner ? 'Chat with Seller' : 'Chat with Provider',
+                      style: const TextStyle(color: Colors.grey),
+                    ),
                 ],
               ),
             ),
-            if (!isSelfChat)
+            if (widget.isAdmin)
+              const Icon(Icons.info_outline, color: Colors.orange)
+            else if (!isSelfChat)
               ElevatedButton.icon(
                 onPressed: chatEnabled
                     ? () => _openChatWithSeller(context)
@@ -119,7 +146,7 @@ class _ChatWithSellerCardState extends State<ChatWithSellerCard> {
                             });
                       },
                 icon: const Icon(Icons.messenger_rounded),
-                label: const Text("Chat"),
+                label: const Text('Chat'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: chatEnabled ? Colors.green : Colors.grey,
                   foregroundColor: Colors.white,
@@ -127,6 +154,193 @@ class _ChatWithSellerCardState extends State<ChatWithSellerCard> {
               )
           ],
         ),
+      ),
+    );
+
+    if (widget.isAdmin) {
+      return InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () => _showAdminContactSheet(context),
+        child: card,
+      );
+    }
+    return card;
+  }
+}
+
+class _AdminContactSheet extends StatefulWidget {
+  final String userId;
+  final String displayName;
+  final String? listingPhone;
+
+  const _AdminContactSheet({
+    required this.userId,
+    required this.displayName,
+    this.listingPhone,
+  });
+
+  @override
+  State<_AdminContactSheet> createState() => _AdminContactSheetState();
+}
+
+class _AdminContactSheetState extends State<_AdminContactSheet> {
+  Map<String, dynamic>? _userData;
+  bool _loading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUser();
+  }
+
+  Future<void> _fetchUser() async {
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection(ApiUrl.userPath)
+          .doc(widget.userId)
+          .get();
+      if (!mounted) return;
+      setState(() {
+        _userData = doc.data();
+        _loading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = 'Failed to load user info.';
+        _loading = false;
+      });
+    }
+  }
+
+  void _copyToClipboard(String value) {
+    Clipboard.setData(ClipboardData(text: value));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Copied to clipboard'), duration: Duration(seconds: 1)),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color(0xFF1E1E1E),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.white24,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              const Icon(Icons.admin_panel_settings, color: Colors.orange, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'Seller Contact Info',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Visible to admin only',
+            style: TextStyle(color: Colors.orange, fontSize: 12),
+          ),
+          const SizedBox(height: 20),
+          if (_loading)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 24),
+                child: CircularProgressIndicator(),
+              ),
+            )
+          else if (_error != null)
+            Center(
+              child: Text(_error!,
+                  style: const TextStyle(color: Colors.red)),
+            )
+          else ...[
+            _buildInfoRow(
+              Icons.person_outline,
+              'Name',
+              _userData?['displayName'] ?? _userData?['username'] ?? widget.displayName,
+            ),
+            _buildInfoRow(
+              Icons.email_outlined,
+              'Email',
+              _userData?['email'] ?? '—',
+            ),
+            _buildInfoRow(
+              Icons.phone_outlined,
+              'Phone',
+              (widget.listingPhone ?? '').isNotEmpty ? widget.listingPhone! : '—',
+            ),
+            _buildInfoRow(
+              Icons.location_city_outlined,
+              'City / State',
+              [_userData?['city'], _userData?['stateName']]
+                  .where((v) => v != null && v.toString().isNotEmpty)
+                  .join(', ')
+                  .isNotEmpty
+                  ? [_userData?['city'], _userData?['stateName']]
+                      .where((v) => v != null && v.toString().isNotEmpty)
+                      .join(', ')
+                  : '—',
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String label, String value) {
+    final hasValue = value.isNotEmpty && value != '—';
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: Colors.green, size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                      color: Colors.grey, fontSize: 11, fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: const TextStyle(color: Colors.white, fontSize: 15),
+                ),
+              ],
+            ),
+          ),
+          if (hasValue)
+            GestureDetector(
+              onTap: () => _copyToClipboard(value),
+              child: const Icon(Icons.copy_outlined, color: Colors.grey, size: 18),
+            ),
+        ],
       ),
     );
   }

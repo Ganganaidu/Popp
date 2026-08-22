@@ -462,6 +462,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         receiverUserID: product['userId'],
                         productTitle: ProductUtils.getTitle(product),
                         productId: product['id'],
+                        isAdmin: _isAdmin,
+                        listingPhone: product['sellerContactNumber'] as String?,
                       ),
                   ],
 
@@ -568,6 +570,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       if (needsReview || _hasPendingUpdate) {
         return _buildAdminBottomBar();
       }
+      // For approved listings show a standalone Mark as Sold button
+      if (_status == 'Approved') {
+        return _buildAdminMarkSoldBar();
+      }
     }
     return null;
   }
@@ -611,6 +617,54 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildAdminMarkSoldBar() {
+    return WebConstrainedBox(
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+              ),
+              onPressed: _adminMarkAsSold,
+              icon: const Icon(Icons.check_circle_outline, size: 18),
+              label: const Text(
+                'Mark as Sold',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _adminMarkAsSold() async {
+    final productId = widget.productJson['id'] as String? ?? '';
+    if (productId.isEmpty) return;
+
+    final success = await AppDialogs.confirmAndMarkAsSold(
+      context: context,
+      docRef: FirebaseFirestore.instance
+          .collection(ApiUrl.productsPath)
+          .doc(productId),
+      successMessage: 'Product marked as sold.',
+    );
+
+    if (success && mounted) {
+      setState(() {
+        _isSold = true;
+        _status = 'Sold';
+      });
+    }
   }
 
   Widget _buildAdminBottomBar() {

@@ -59,6 +59,17 @@ class ProductRepository {
       AdminNotificationService.rejectListing(
           listingRef: productDoc(productId), reason: reason);
 
+  /// Publishes a pending update to an already-approved listing.
+  Future<void> approvePendingUpdate(
+          String productId, Map<String, dynamic> pendingUpdate) =>
+      AdminNotificationService.approvePendingUpdate(
+          listingRef: productDoc(productId), pendingUpdate: pendingUpdate);
+
+  /// Discards a pending update, keeping the original approved content.
+  Future<void> rejectPendingUpdate(String productId, String? feedback) =>
+      AdminNotificationService.rejectPendingUpdate(
+          listingRef: productDoc(productId), feedback: feedback);
+
   // --- Product create/edit (sell-your-bike / -accessories forms) -----------
   // These delegate to the existing, proven [FirebaseApiService] implementations
   // (which own the image-upload + snackbar orchestration), so the form screens

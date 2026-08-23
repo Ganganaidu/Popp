@@ -10,9 +10,11 @@ class ListingCard extends StatelessWidget {
   final String? price;
   final String? status;
   final bool showOptionsMenu;
+  final bool showSoldOptionOnly;
   final VoidCallback? onTap;
   final VoidCallback? onEdit;
   final VoidCallback? onSold;
+  final VoidCallback? onEditApproved;
   final double? width;
 
   const ListingCard({
@@ -23,9 +25,11 @@ class ListingCard extends StatelessWidget {
     this.price,
     this.status, // Default status is 'Pending'
     this.showOptionsMenu = false,
+    this.showSoldOptionOnly = false,
     this.onTap,
     this.onEdit,
     this.onSold,
+    this.onEditApproved,
   });
 
   // Helper to determine banner color and icon based on status ---
@@ -39,6 +43,8 @@ class ListingCard extends StatelessWidget {
         return (Colors.blue.shade600, Icons.undo_outlined);
       case 'rejected':
         return (Colors.red.shade700, Icons.cancel_outlined);
+      case 'update pending':
+        return (Colors.purple.shade600, Icons.sync_outlined);
       default: // 'Pending' or any other status
         return (Colors.orange.shade700, Icons.hourglass_top_outlined);
     }
@@ -78,9 +84,8 @@ class ListingCard extends StatelessWidget {
                         ? ShimmerImage(imageUrl: imageUrl!)
                         : _buildPlaceholderImage(),
                   ),
-                  if (showOptionsMenu &&
-                      (status?.toLowerCase() != 'pending' &&
-                          status?.toLowerCase() != 'sold'))
+                  if ((showOptionsMenu || showSoldOptionOnly) &&
+                      status?.toLowerCase() != 'sold')
                     Positioned(
                       top: 4,
                       right: 4,
@@ -168,6 +173,13 @@ class ListingCard extends StatelessWidget {
                     ),
                   ),
                   if (status != null) _buildStatusBanner(),
+                  if ((showOptionsMenu || showSoldOptionOnly) &&
+                      status?.toLowerCase() != 'sold')
+                    Positioned(
+                      top: 4,
+                      right: 4,
+                      child: _buildOptionsMenu(context),
+                    ),
                 ],
               ),
             ),
@@ -280,16 +292,25 @@ class ListingCard extends StatelessWidget {
       onSelected: (value) {
         if (value == 'edit') {
           onEdit?.call();
+        } else if (value == 'edit_approved') {
+          onEditApproved?.call();
         } else if (value == 'sold') {
           onSold?.call();
         }
       },
       itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-        if (status?.toLowerCase() == 'pending')
+        if (!showSoldOptionOnly && status?.toLowerCase() == 'pending')
           const PopupMenuItem<String>(
               value: 'edit',
               child: ListTile(
                   leading: Icon(Icons.edit_outlined), title: Text('Edit'))),
+        if (!showSoldOptionOnly && status?.toLowerCase() == 'approved')
+          const PopupMenuItem<String>(
+              value: 'edit_approved',
+              child: ListTile(
+                  leading: Icon(Icons.edit_outlined, color: Colors.blue),
+                  title: Text('Edit & Resubmit',
+                      style: TextStyle(color: Colors.blue)))),
         const PopupMenuItem<String>(
             value: 'sold',
             child: ListTile(

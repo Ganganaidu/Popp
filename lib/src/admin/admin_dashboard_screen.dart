@@ -25,7 +25,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 5, vsync: this);
   }
 
   @override
@@ -72,6 +72,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
             Tab(icon: Icon(Icons.storefront), text: "Products"),
             Tab(icon: Icon(Icons.miscellaneous_services), text: "Services"),
             Tab(icon: Icon(Icons.campaign), text: "Ads"),
+            Tab(icon: Icon(Icons.inventory_2_outlined), text: "All Products"),
+            Tab(icon: Icon(Icons.home_repair_service_outlined), text: "All Services"),
           ],
         ),
       ),
@@ -87,6 +89,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
             showOptionsMenu: false,
           ),
           const AdListPage(),
+          ListingsGridView(
+            query: _repository.approvedUnsoldProducts(),
+            showAdminSoldOption: true,
+          ),
+          ListingsGridView(
+            query: _repository.approvedUnsoldServices(),
+            showAdminSoldOption: true,
+          ),
         ],
       ),
     );

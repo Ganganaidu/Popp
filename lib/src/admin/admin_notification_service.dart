@@ -49,4 +49,40 @@ class AdminNotificationService {
     await listingRef.update(data);
     // Cloud Function onProductRejected / onServiceRejected fires automatically.
   }
+
+  /// Approves a pending update: merges pendingUpdate fields into the main document.
+  static Future<void> approvePendingUpdate({
+    required DocumentReference listingRef,
+    required Map<String, dynamic> pendingUpdate,
+  }) async {
+    final Map<String, dynamic> updateData = {
+      ...pendingUpdate,
+      'hasPendingUpdate': false,
+      'status': 'approved',
+      'isApproved': true,
+      'isActive': true,
+      'statusUpdatedAt': FieldValue.serverTimestamp(),
+      'pendingUpdate': FieldValue.delete(),
+      'pendingUpdateAt': FieldValue.delete(),
+    };
+    await listingRef.update(updateData);
+  }
+
+  /// Rejects a pending update: discards the pendingUpdate map, keeps original approved content.
+  static Future<void> rejectPendingUpdate({
+    required DocumentReference listingRef,
+    String? feedback,
+  }) async {
+    final Map<String, dynamic> data = {
+      'hasPendingUpdate': false,
+      'status': 'approved',
+      'pendingUpdate': FieldValue.delete(),
+      'pendingUpdateAt': FieldValue.delete(),
+      'statusUpdatedAt': FieldValue.serverTimestamp(),
+    };
+    if (feedback != null && feedback.trim().isNotEmpty) {
+      data['adminFeedback'] = feedback.trim();
+    }
+    await listingRef.update(data);
+  }
 }

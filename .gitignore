@@ -44,3 +44,36 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Local IDE / tooling
+.claude/
+.vscode/
+*.iml
+
+# Android build & tool artifacts
+android/app/.cxx/
+android/build/
+android/.gradle/
+android/local.properties
+
+# iOS build artifacts and exports
+**/ios/**/*.ipa
+**/ios/**/ExportOptions.plist
+**/ios/**/DistributionSummary.plist
+
+# Copilot / session files
+.copilot/
+.copilot-session/
+
+# Ensure specific dart tool files are ignored (covered by .dart_tool/ above)
+.dart_tool/package_config.json
+.dart_tool/version
+
+# Project-specific ignored artifacts
+cors.json
+design_handoff_bikerverse_rebrand/
+devtools_options.yaml
+test/service_detail_links_logic_dart.dart
+test/service_detail_links_logic_test.dart
+pubspec.lock
+

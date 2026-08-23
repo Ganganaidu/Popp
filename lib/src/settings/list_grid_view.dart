@@ -11,11 +11,13 @@ import '../widgets/listing_card.dart';
 class ListingsGridView extends StatefulWidget {
   final Query query;
   final bool showOptionsMenu;
+  final bool showAdminSoldOption;
 
   const ListingsGridView({
     super.key,
     required this.query,
     this.showOptionsMenu = false,
+    this.showAdminSoldOption = false,
   });
 
   @override
@@ -101,16 +103,19 @@ class _ListingsGridViewState extends State<ListingsGridView> {
             final price = data['expectedPrice']?.toString();
             bool isApproved = data['isApproved'] ?? false;
             bool isSold = data['isSold'] ?? false;
+            bool hasPendingUpdate = data['hasPendingUpdate'] ?? false;
             final docStatus = data['status'] as String?;
             final status = isSold
                 ? 'Sold'
-                : isApproved
-                    ? 'Approved'
-                    : docStatus == 'sent_back'
-                        ? 'Sent Back'
-                        : docStatus == 'rejected'
-                            ? 'Rejected'
-                            : 'Pending';
+                : isApproved && hasPendingUpdate
+                    ? 'Update Pending'
+                    : isApproved
+                        ? 'Approved'
+                        : docStatus == 'sent_back'
+                            ? 'Sent Back'
+                            : docStatus == 'rejected'
+                                ? 'Rejected'
+                                : 'Pending';
 
             return ListingCard(
               title: title,
@@ -118,6 +123,7 @@ class _ListingsGridViewState extends State<ListingsGridView> {
               price: CurrencyService.getProductPrice(price, countryCode),
               status: status,
               showOptionsMenu: widget.showOptionsMenu,
+              showSoldOptionOnly: widget.showAdminSoldOption,
               onTap: () {
                 final category = data['category'] as String?;
                 if (!ProductUtils.listYourServiceCategories.contains(category)) {
@@ -128,6 +134,9 @@ class _ListingsGridViewState extends State<ListingsGridView> {
               },
               onEdit: () {
                 // Handle edit action
+              },
+              onEditApproved: () {
+                context.pushEditListing(data);
               },
               onSold: () async {
                 final success = await AppDialogs.confirmAndMarkAsSold(

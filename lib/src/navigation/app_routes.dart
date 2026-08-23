@@ -255,6 +255,17 @@ extension AppNavigation on BuildContext {
     );
   }
 
+  /// Opens the edit form for an existing listing, routing to the bike or
+  /// accessories form based on the product's category. (Replaces the legacy
+  /// `onEditListingTap` helper.)
+  Future<T?> pushEditListing<T>(Map<String, dynamic> data) {
+    final category = data['category'] as String? ?? '';
+    if (category == ProductUtils.premiumBikes) {
+      return pushSellBike<T>(existingData: data);
+    }
+    return pushSellAccessories<T>(existingData: data);
+  }
+
   // --- Settings / profile -------------------------------------------------
 
   Future<T?> pushMoreMenu<T>() => push<T>(AppRoutes.moreMenu);

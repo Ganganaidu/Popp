@@ -18,6 +18,8 @@ class ProductDetailViewModel extends ChangeNotifier {
   bool favButtonDisabled = false;
   bool isApproved = false;
   bool isSold = false;
+  bool hasPendingUpdate = false;
+  Map<String, dynamic>? pendingUpdate;
   String status = '';
 
   ProductDetailViewModel({
@@ -30,9 +32,13 @@ class ProductDetailViewModel extends ChangeNotifier {
   void _initFromProduct() {
     isApproved = product['isApproved'] == true;
     isSold = product['isSold'] == true;
+    hasPendingUpdate = product['hasPendingUpdate'] == true;
+    pendingUpdate = product['pendingUpdate'] as Map<String, dynamic>?;
     final docStatus = product['status'] as String?;
     if (isSold) {
       status = 'Sold';
+    } else if (isApproved && hasPendingUpdate) {
+      status = 'Pending Update';
     } else if (isApproved) {
       status = 'Approved';
     } else if (docStatus == 'sent_back') {
@@ -55,6 +61,14 @@ class ProductDetailViewModel extends ChangeNotifier {
   bool get isAdmin => repository.currentUserId == Constants.adminUserId;
 
   bool get isOwner => !isAdmin && product['userId'] == repository.currentUserId;
+
+  /// When an admin is reviewing a pending update, show the proposed content
+  /// (live content overlaid with the pending changes); otherwise the live
+  /// content. The UI renders this instead of [product] directly.
+  Map<String, dynamic> get displayProduct =>
+      (isAdmin && hasPendingUpdate && pendingUpdate != null)
+          ? {...product, ...pendingUpdate!}
+          : product;
 
   Future<void> toggleFavorite() async {
     if (favButtonDisabled) return;
@@ -116,6 +130,20 @@ class ProductDetailViewModel extends ChangeNotifier {
         status = 'Rejected';
         notifyListeners();
         return 'Listing rejected. User will be notified.';
+      case 'approve_update':
+        await repository.approvePendingUpdate(productId, pendingUpdate ?? {});
+        hasPendingUpdate = false;
+        pendingUpdate = null;
+        status = 'Approved';
+        notifyListeners();
+        return 'Update approved and published.';
+      case 'reject_update':
+        await repository.rejectPendingUpdate(productId, reason);
+        hasPendingUpdate = false;
+        pendingUpdate = null;
+        status = 'Approved';
+        notifyListeners();
+        return 'Update rejected. Original listing remains live.';
       default:
         return null;
     }

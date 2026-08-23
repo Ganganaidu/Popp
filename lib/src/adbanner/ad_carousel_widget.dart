@@ -10,7 +10,7 @@ import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../deeplink/DeepLinkConfig.dart';
-import '../navigation/nav_router.dart';
+import '../navigation/app_routes.dart';
 import '../widgets/app_network_image.dart';
 
 class AdCarouselWidget extends StatefulWidget {
@@ -47,7 +47,7 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
         .value;
 
     if (config.requiresAuth && user == null) {
-      onLoginClicked(context, config.loginMessage);
+      context.showLoginPrompt(config.loginMessage);
       return;
     }
     config.action?.call(context);

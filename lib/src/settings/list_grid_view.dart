@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:popp/src/api/currency_service.dart';
-import 'package:popp/src/navigation/nav_router.dart';
+import 'package:popp/src/navigation/app_routes.dart';
 import 'package:popp/src/utils/product_utils.dart';
 import 'package:popp/src/widgets/app_dialogs.dart';
 
@@ -121,9 +121,9 @@ class _ListingsGridViewState extends State<ListingsGridView> {
               onTap: () {
                 final category = data['category'] as String?;
                 if (!ProductUtils.listYourServiceCategories.contains(category)) {
-                  onProductDetailsTap(context, data, true);
+                  context.pushProductDetail(data, showStatus: true);
                 } else {
-                  onServiceDetailsScreenTap(context, data, category!);
+                  context.pushServiceDetail(data, category!);
                 }
               },
               onEdit: () {
@@ -171,8 +171,7 @@ class _ListingsGridViewState extends State<ListingsGridView> {
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: () {
-                Navigator.pushNamedAndRemoveUntil(
-                    context, '/home', (route) => false);
+                context.goHome();
               },
               icon: const Icon(Icons.add_circle),
               label: Text(widget.showOptionsMenu

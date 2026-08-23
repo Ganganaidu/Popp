@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:popp/src/toolbar/common_app_bar.dart';
 import 'package:popp/src/api/api_url.dart';
+import 'package:popp/src/login/repository/auth_repository.dart';
 import 'package:popp/src/widgets/title_text.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
@@ -16,6 +17,7 @@ class ForgotPasswordScreen extends StatefulWidget {
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
+  final AuthRepository _authRepository = AuthRepository();
   bool _isLoading = false;
 
   @override
@@ -42,8 +44,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           androidMinimumVersion: '12');
 
       try {
-        await FirebaseAuth.instance.sendPasswordResetEmail(
-          email: email,
+        await _authRepository.sendPasswordResetEmail(
+          email,
           actionCodeSettings: acs, // Pass the settings here
         );
         if (!mounted) return;

@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
@@ -8,14 +7,13 @@ import 'package:popp/src/widgets/web_constrained_box.dart';
 import 'package:provider/provider.dart';
 
 import '../../main.dart';
-import '../api/api_url.dart';
 import '../api/firebase/remote_config_service.dart';
-import '../navigation/nav_router.dart';
+import '../login/repository/auth_repository.dart';
+import '../navigation/app_routes.dart';
 import '../subscription/subscribe_page_widget.dart';
 import '../subscription/subscription_provider.dart';
 import '../subscription/subscription_status_screen.dart';
 import '../utils/app_constants.dart';
-import '../utils/app_loger.dart';
 import '../widgets/title_text.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -27,6 +25,7 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _showSubscription = false;
+  final AuthRepository _authRepository = AuthRepository();
 
   @override
   void initState() {
@@ -41,23 +40,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     });
   }
 
-  Future<String> _fetchUsername(String uid) async {
-    try {
-      final doc = await FirebaseFirestore.instance
-          .collection(ApiUrl.userPath)
-          .doc(uid)
-          .get();
-      final data = doc.data();
-      if (data != null &&
-          data['username'] != null &&
-          data['username'].toString().isNotEmpty) {
-        return data['username'];
-      }
-    } catch (e) {
-      AppLogger.e("Error fetching username: $e");
-    }
-    return 'Rider'; // A more friendly default
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -206,7 +188,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           subtitle: user?.email ?? user?.phoneNumber,
           enabled: isLoggedIn,
           disableArrow: true,
-          onTap: () => {onProfileDetailsTap(context)},
+          onTap: () => {context.pushProfileDetails()},
         ),
         if (isLoggedIn && user.uid == Constants.adminUserId)
           _buildListTile(
@@ -214,7 +196,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             icon: Icons.admin_panel_settings_outlined,
             title: "Admin Dashboard",
             isHighlight: true,
-            onTap: () => onAdminDashboardTap(context),
+            onTap: () => context.pushAdminDashboard(),
           ),
         const SizedBox(height: 24),
         _buildSettingsSectionTitle("Activity"),
@@ -223,7 +205,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           icon: Icons.motorcycle_outlined,
           title: "My Listings",
           enabled: isLoggedIn,
-          onTap: () => onMyListingScreenTap(context, false),
+          onTap: () => context.pushMyListings(),
         ),
         if (_showSubscription)
           _buildListTile(
@@ -271,7 +253,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           context,
           icon: Icons.info_outline,
           title: "About Us",
-          onTap: () => onAboutUsTap(context),
+          onTap: () => context.pushAboutUs(),
         ),
         const SizedBox(height: 20), // Space for the bottom button
       ],
@@ -377,10 +359,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             )),
         onPressed: () async {
           if (isLoggedIn) {
-            await FirebaseAuth.instance.signOut();
+            await _authRepository.signOut();
           }
           if (context.mounted) {
-            onLoginTap(context);
+            context.goLogin();
           }
         },
         child: Text(isLoggedIn ? "Logout" : "Login",

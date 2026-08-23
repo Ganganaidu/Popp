@@ -5,7 +5,7 @@ import 'package:popp/src/utils/app_constants.dart';
 import 'package:popp/src/utils/build_extensions.dart';
 import 'package:popp/src/utils/product_utils.dart';
 import 'package:provider/provider.dart';
-import '../navigation/nav_router.dart';
+import '../navigation/app_routes.dart';
 
 class WebSideBar extends StatelessWidget {
   final int selectedIndex;
@@ -288,10 +288,11 @@ class WebSideBar extends StatelessWidget {
     if (!categoryName.contains(ProductUtils.premiumBikes) &&
         subCategory == null) {
       // It's a service listing
-      onServiceListingTap(context, categoryName, subCategory, false);
+      context.pushServiceListing(categoryName, subCategory: subCategory);
     } else {
       // It's a product listing
-      navigateToCategoryPage(context, categoryName, subCategory, null);
+      context.pushCategoryDetail(
+          CategoryDetailArgs.forCategory(categoryName, subCategory: subCategory));
     }
   }
 }

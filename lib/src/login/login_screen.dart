@@ -5,9 +5,10 @@ import 'package:popp/src/utils/build_extensions.dart';
 import 'package:popp/src/widgets/app_dialogs.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../navigation/nav_router.dart';
+import '../navigation/app_routes.dart';
 import '../utils/app_constants.dart';
 import '../utils/app_utils.dart';
+import 'repository/auth_repository.dart';
 import 'social_login_buttons.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -28,6 +29,7 @@ class _LoginScreenState extends State<LoginScreen>
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final AuthRepository _authRepository = AuthRepository();
 
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -103,15 +105,15 @@ class _LoginScreenState extends State<LoginScreen>
     setState(() => _isLoading = true);
 
     try {
-      final userCred = await FirebaseAuth.instance
-          .signInWithEmailAndPassword(email: email, password: password);
+      final userCred =
+          await _authRepository.signIn(email: email, password: password);
       if (userCred.user?.emailVerified == false) {
-        await FirebaseAuth.instance.signOut();
+        await _authRepository.signOut();
         if (!mounted) return;
         showVerificationDialog(email, password);
       } else {
         if (!mounted) return;
-        Navigator.pushReplacementNamed(context, '/home');
+        context.goHome();
       }
     } on FirebaseAuthException catch (e) {
       _showError(e.message ?? "Authentication failed");
@@ -131,7 +133,11 @@ class _LoginScreenState extends State<LoginScreen>
       content:
           "To keep your account secure, please verify your email address. Click 'Verify Now' to continue",
       onConfirm: () {
-        onVerificationScreenTap(context, null, email, password, false);
+        context.pushVerification(VerificationArgs(
+            userData: null,
+            email: email,
+            password: password,
+            isFromSignUp: false));
       },
       confirmText: "Verify Now",
     );
@@ -412,7 +418,7 @@ class _LoginScreenState extends State<LoginScreen>
         ),
         _buildTextButton(
           'Forgot Password?',
-          () => onForgotPasswordTap(context, false),
+          () => context.pushForgotPassword(false),
         )
       ],
     );
@@ -513,7 +519,7 @@ class _LoginScreenState extends State<LoginScreen>
             ),
             _buildTextButton(
               "Sign Up",
-              () => Navigator.pushReplacementNamed(context, '/signup'),
+              () => context.goSignup(),
             )
           ],
         ),
@@ -521,7 +527,7 @@ class _LoginScreenState extends State<LoginScreen>
           const SizedBox(height: 8),
           _buildTextButton(
             'Skip for now',
-            () => Navigator.pushReplacementNamed(context, '/home'),
+            () => context.goHome(),
             textColor: Colors.grey[600],
           ),
         ],

@@ -1,17 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:popp/src/navigation/nav_router.dart';
+import 'package:popp/src/login/repository/auth_repository.dart';
+import 'package:popp/src/navigation/app_routes.dart';
 import 'package:popp/src/utils/build_extensions.dart';
 
 class WebTopBar extends StatelessWidget implements PreferredSizeWidget {
-  final int selectedIndex;
-  final List<GlobalKey<NavigatorState>> navigatorKeys;
-
-  const WebTopBar({
-    super.key,
-    required this.selectedIndex,
-    required this.navigatorKeys,
-  });
+  const WebTopBar({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -81,7 +75,7 @@ class WebTopBar extends StatelessWidget implements PreferredSizeWidget {
         children: [
           // Search Button
           InkWell(
-            onTap: () => onSearchTap(context),
+            onTap: () => context.pushSearch(),
             child: Container(
               width: 50,
               decoration: const BoxDecoration(
@@ -99,7 +93,7 @@ class WebTopBar extends StatelessWidget implements PreferredSizeWidget {
           // Actual Search Input Area
           Expanded(
             child: InkWell(
-              onTap: () => onSearchTap(context),
+              onTap: () => context.pushSearch(),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 15),
                 child: Align(
@@ -122,7 +116,7 @@ class WebTopBar extends StatelessWidget implements PreferredSizeWidget {
 
   Widget _buildActions(BuildContext context) {
     return StreamBuilder<User?>(
-        stream: FirebaseAuth.instance.authStateChanges(),
+        stream: AuthRepository().authStateChanges(),
         builder: (context, snapshot) {
           final user = snapshot.data;
           return Row(
@@ -131,14 +125,14 @@ class WebTopBar extends StatelessWidget implements PreferredSizeWidget {
                 context,
                 icon: Icons.favorite_border_outlined,
                 label: "Favorites",
-                onTap: () => onFavScreenTap(context),
+                onTap: () => context.pushFavorites(),
               ),
               const SizedBox(width: 20),
               _buildActionButton(
                 context,
                 icon: Icons.settings_outlined,
                 label: "Settings",
-                onTap: () => onSettingsTap(context),
+                onTap: () => context.pushMoreMenu(),
               ),
               const SizedBox(width: 20),
               if (user == null)
@@ -146,7 +140,7 @@ class WebTopBar extends StatelessWidget implements PreferredSizeWidget {
                   context,
                   icon: Icons.login_outlined,
                   label: "Login",
-                  onTap: () => onLoginTap(context),
+                  onTap: () => context.goLogin(),
                 )
               else
                 _buildActionButton(
@@ -154,7 +148,7 @@ class WebTopBar extends StatelessWidget implements PreferredSizeWidget {
                   icon: Icons.logout_outlined,
                   label: "Logout",
                   onTap: () async {
-                    await FirebaseAuth.instance.signOut();
+                    await AuthRepository().signOut();
                   },
                 ),
             ],

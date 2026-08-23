@@ -4,7 +4,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
-import 'package:popp/src/navigation/nav_router.dart';
+import 'package:popp/src/navigation/app_routes.dart';
 import 'package:popp/src/theme/bikerverse_colors.dart';
 import 'package:popp/src/utils/app_utils.dart';
 import 'package:popp/src/utils/build_extensions.dart';
@@ -17,7 +17,7 @@ import 'package:popp/src/widgets/stepped_form_scaffold.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../api/api_url.dart';
-import '../../api/firebase/firebase_api_service.dart';
+import '../repository/service_repository.dart';
 import '../../api/firebase/remote_config_service.dart';
 import '../../gallery/pic_image_gallery.dart';
 import '../../search/autocomplete_search_field.dart';
@@ -37,7 +37,7 @@ class ListServiceFormScreen extends StatefulWidget {
 
 
 class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
-  final FirebaseApiService _productsService = FirebaseApiService();
+  final ServiceRepository _productsService = ServiceRepository();
   final SteppedFormController _stepController = SteppedFormController();
   final List<GlobalKey<FormState>> _stepKeys =
       List.generate(5, (_) => GlobalKey<FormState>());
@@ -707,7 +707,7 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
       if (!mounted) return;
       AppLogger.d('Form submission navigate to : $_selectedCategory');
       await AppDialogs.showServiceSubmitDialog(context, _selectedCategory!, () {
-        onServiceListingTap(context, _selectedCategory!, null, true);
+        context.pushServiceListing(_selectedCategory!, replace: true);
       });
     }
   }

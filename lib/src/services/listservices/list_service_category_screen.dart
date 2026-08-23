@@ -4,7 +4,7 @@ import 'package:popp/src/utils/build_extensions.dart';
 import 'package:popp/src/utils/product_utils.dart';
 import 'package:popp/src/widgets/title_text.dart';
 
-import 'list_service_form_screen.dart';
+import '../../navigation/app_routes.dart';
 
 class ListServiceCategoryScreen extends StatelessWidget {
   const ListServiceCategoryScreen({super.key});
@@ -44,14 +44,7 @@ class ListServiceCategoryScreen extends StatelessWidget {
         // Border removed as per request
       ),
       child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ListServiceFormScreen(category: category),
-            ),
-          );
-        },
+        onTap: () => context.pushListServiceForm(category: category),
         borderRadius: BorderRadius.circular(16),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

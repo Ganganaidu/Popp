@@ -1,12 +1,12 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import '../navigation/app_routes.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:popp/src/toolbar/common_app_bar.dart';
 import 'package:popp/src/widgets/title_text.dart';
 import 'package:popp/src/widgets/web_constrained_box.dart';
 
-import '../api/api_url.dart';
 import 'list_grid_view.dart';
+import 'repository/listings_repository.dart';
 
 class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
@@ -18,6 +18,7 @@ class FavoritesScreen extends StatefulWidget {
 class _FavoritesScreenState extends State<FavoritesScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  final ListingsRepository _repository = ListingsRepository();
 
   @override
   void initState() {
@@ -47,7 +48,7 @@ class _FavoritesScreenState extends State<FavoritesScreen>
                 const Text("Please log in to see your favorites."),
                 const SizedBox(height: 20),
                 ElevatedButton(
-                  onPressed: () => Navigator.pushNamed(context, '/login'),
+                  onPressed: () => context.goLogin(),
                   style: ElevatedButton.styleFrom(
                       backgroundColor: primaryColor,
                       foregroundColor: Colors.white),
@@ -80,17 +81,13 @@ class _FavoritesScreenState extends State<FavoritesScreen>
           children: [
             // Using the reusable widget for Products
             ListingsGridView(
-              query: FirebaseFirestore.instance
-                  .collection(ApiUrl.productsPath)
-                  .where('favoritedBy', arrayContains: user.uid),
-              showOptionsMenu: false, // Show edit/delete options
+              query: _repository.favoriteProducts(user.uid),
+              showOptionsMenu: false,
             ),
             // Using the reusable widget for Services
             ListingsGridView(
-              query: FirebaseFirestore.instance
-                  .collection(ApiUrl.servicePath)
-                  .where('favoritedBy', arrayContains: user.uid),
-              showOptionsMenu: false, // Show edit/delete options
+              query: _repository.favoriteServices(user.uid),
+              showOptionsMenu: false,
             ),
           ],
         ),

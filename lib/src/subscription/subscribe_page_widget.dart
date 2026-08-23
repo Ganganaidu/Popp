@@ -1,4 +1,5 @@
 import 'dart:io';
+import '../navigation/app_routes.dart';
 
 import 'package:flutter/material.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
@@ -288,8 +289,7 @@ class _SubscribePageWidgetState extends State<SubscribePageWidget> {
                       if (widget.isFromSettings) {
                         Navigator.pop(context);
                       } else {
-                        Navigator.pushReplacementNamed(
-                            context, '/finalCongrats');
+                        context.goFinalCongrats();
                       }
                     },
               child: Text(widget.isFromSettings ? "Cancel" : "Skip"),

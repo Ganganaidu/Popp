@@ -1,8 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import '../navigation/nav_router.dart';
-import 'listservices/service_listing_screen.dart';
+import '../navigation/app_routes.dart';
 import 'widgets/service_card.dart';
 import '../theme/bikerverse_colors.dart';
 
@@ -17,15 +16,7 @@ class ServiceCategoryListWidget extends StatelessWidget {
   });
 
   void _navigateToCategoryPage(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => ServiceListingScreen(
-          category: categoryName,
-          subCategory: null,
-        ),
-      ),
-    );
+    context.pushServiceListing(categoryName);
   }
 
   @override
@@ -81,7 +72,7 @@ class ServiceCategoryListWidget extends StatelessWidget {
                   category: categoryName,
                   width: itemWidth,
                   onTap: () {
-                    onServiceDetailsScreenTap(context, service, categoryName);
+                    context.pushServiceDetail(service, categoryName);
                   },
                   isApproved: service['isApproved'] == true,
                 );
@@ -221,7 +212,7 @@ class ServiceCategoryListWidget extends StatelessWidget {
               width: 300,
               // Fixed width for grid items if needed, but GridView controls width
               onTap: () {
-                onServiceDetailsScreenTap(context, service, categoryName);
+                context.pushServiceDetail(service, categoryName);
               },
 
               isApproved: service['isApproved'] == true,

@@ -8,7 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../api/api_url.dart';
 import '../api/firebase/auth_service.dart';
 import '../api/firebase/remote_config_service.dart';
-import '../navigation/nav_router.dart';
+import '../navigation/app_routes.dart';
 import '../subscription/subscribe_page_widget.dart';
 import '../widgets/app_dialogs.dart';
 import 'model/user_data_model.dart';
@@ -103,7 +103,7 @@ class _RegisterAndSubscribeScreenState
           );
         } else {
           if (!mounted) return;
-          Navigator.pushReplacementNamed(context, '/home');
+          context.goHome();
         }
       } else {
         await updateRegistrationComplete(
@@ -120,7 +120,7 @@ class _RegisterAndSubscribeScreenState
       if (!mounted) return;
       await AppDialogs.showUserExistsDialog(context, () {
         if (context.mounted) {
-          onLoginTap(context);
+          context.goLogin();
         }
       });
     } finally {

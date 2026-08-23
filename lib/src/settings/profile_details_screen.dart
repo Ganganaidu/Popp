@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:popp/src/api/api_url.dart';
@@ -9,10 +8,12 @@ import 'package:popp/src/utils/app_loger.dart';
 import 'package:popp/src/widgets/web_constrained_box.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../navigation/nav_router.dart';
+import '../login/repository/auth_repository.dart';
+import '../navigation/app_routes.dart';
 import '../utils/product_content_data.dart';
 import '../widgets/custom_dropdown_form_field.dart';
 import '../widgets/title_text.dart';
+import 'repository/user_profile_repository.dart';
 
 class ProfileDetailsScreen extends StatefulWidget {
   const ProfileDetailsScreen({super.key});
@@ -31,6 +32,8 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
   bool _isLoading = true;
   bool _isSaving = false;
   UserData? _userData;
+  final UserProfileRepository _repository = UserProfileRepository();
+  final AuthRepository _authRepository = AuthRepository();
 
   @override
   void initState() {
@@ -59,10 +62,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
     }
 
     try {
-      final doc = await FirebaseFirestore.instance
-          .collection(ApiUrl.userPath)
-          .doc(user.uid)
-          .get();
+      final doc = await _repository.getUserDoc(user.uid);
       if (doc.exists) {
         _userData = UserData.fromFirestore(doc);
         _nameController.text = _userData?.username ?? '';
@@ -98,10 +98,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
     }
 
     try {
-      await FirebaseFirestore.instance
-          .collection(ApiUrl.userPath)
-          .doc(user.uid)
-          .update({
+      await _repository.updateProfile(user.uid, {
         'username': _nameController.text.trim(),
         'address': _addressController.text.trim(),
         'city': _cityController.text.trim(),
@@ -268,7 +265,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                     icon: Icons.lock_outline,
                     title: "Change Password",
                     enabled: FirebaseAuth.instance.currentUser != null,
-                    onTap: () => onForgotPasswordTap(context, true),
+                    onTap: () => context.pushForgotPassword(true),
                   ),
                   const SizedBox(height: 10),
                   _buildDeletionInfo(),
@@ -451,11 +448,11 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
 
   Future<void> _logout() async {
     try {
-      await FirebaseAuth.instance.signOut();
+      await _authRepository.signOut();
       if (mounted) {
         // Navigate to login screen or splash screen after logout
         // Replace '/login' with your actual login route
-        Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+        context.goLogin();
       }
     } catch (e) {
       AppLogger.e("Error logging out: $e");

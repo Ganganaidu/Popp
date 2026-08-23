@@ -1,14 +1,10 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import '../api/currency_service.dart';
-import '../navigation/nav_router.dart';
-import '../utils/product_content_data.dart';
-import '../utils/build_extensions.dart';
-import '../utils/product_utils.dart';
-import '../widgets/listing_card.dart';
-import 'category_detail_screen.dart';
-import '../theme/bikerverse_colors.dart';
+import '../../api/currency_service.dart';
+import '../../navigation/app_routes.dart';
+import '../../theme/bikerverse_colors.dart';
+import '../../utils/product_utils.dart';
+import '../../widgets/listing_card.dart';
 
 class CategoryListWidget extends StatelessWidget {
   final String categoryName;
@@ -19,29 +15,22 @@ class CategoryListWidget extends StatelessWidget {
     super.key,
     required this.categoryName,
     required this.products,
-    required this.countryCode
+    required this.countryCode,
   });
 
   void _navigateToCategoryPage(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) =>
-            CategoryDetailScreen(
-              categoryName: categoryName,
-              subCategory: "",
-              products: products,
-              filters: categoryName.contains(ProductUtils.premiumBikes)
-                  ? bikeFilters
-                  : categoryFilters,
-            ),
+    context.pushCategoryDetail(
+      CategoryDetailArgs.forCategory(
+        categoryName,
+        subCategory: "",
+        products: products,
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-      return _buildMobileLayout(context);
+    return _buildMobileLayout(context);
   }
 
   Widget _buildMobileLayout(BuildContext context) {
@@ -57,7 +46,8 @@ class CategoryListWidget extends StatelessWidget {
           _buildCategoryHeader(context, theme, isWeb: false),
           const SizedBox(height: 15),
           SizedBox(
-            height: itemWidth * 1.2, // Adjust height based on aspect ratio of product cards
+            height: itemWidth *
+                1.2, // Adjust height based on aspect ratio of product cards
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: products.length,
@@ -166,9 +156,8 @@ class CategoryListWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildProductCard(BuildContext context,
-      Map<String, dynamic> product,
-      double width,
+  Widget _buildProductCard(
+      BuildContext context, Map<String, dynamic> product, double width,
       {required bool isWeb}) {
     return ListingCard(
       title: ProductUtils.getBrandAndModelName(product),
@@ -178,7 +167,7 @@ class CategoryListWidget extends StatelessWidget {
       status: product['isSold'] == true ? 'Sold' : null,
       showOptionsMenu: false,
       onTap: () {
-        onProductDetailsTap(context, product);
+        context.pushProductDetail(product);
       },
     );
   }

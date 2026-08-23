@@ -1,13 +1,12 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:popp/src/widgets/web_constrained_box.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../api/api_url.dart';
-import '../navigation/nav_router.dart';
+import '../login/repository/auth_repository.dart';
+import '../navigation/app_routes.dart';
 import '../utils/app_constants.dart';
-import '../utils/app_loger.dart';
 import '../widgets/app_dialogs.dart';
 
 class MoreScreen extends StatefulWidget {
@@ -18,23 +17,7 @@ class MoreScreen extends StatefulWidget {
 }
 
 class _MoreScreenState extends State<MoreScreen> {
-  Future<String> _fetchUsername(String uid) async {
-    try {
-      final doc = await FirebaseFirestore.instance
-          .collection(ApiUrl.userPath)
-          .doc(uid)
-          .get();
-      final data = doc.data();
-      if (data != null &&
-          data['username'] != null &&
-          data['username'].toString().isNotEmpty) {
-        return data['username'];
-      }
-    } catch (e) {
-      AppLogger.e("Error fetching username: $e");
-    }
-    return 'Rider'; // A more friendly default
-  }
+  final AuthRepository _authRepository = AuthRepository();
 
   @override
   Widget build(BuildContext context) {
@@ -120,11 +103,11 @@ class _MoreScreenState extends State<MoreScreen> {
   //               child: GestureDetector(
   //                 onTap: () {
   //                   if (isLoggedIn) {
-  //                     onProfileDetailsTap(context);
+  //                     context.pushProfileDetails();
   //                   } else {
   //                     AppDialogs.showUserLoginDialog(context, () {
   //                       if (context.mounted) {
-  //                         onLoginTap(context);
+  //                         context.goLogin();
   //                       }
   //                     }, "login to view profile");
   //                   }
@@ -182,10 +165,10 @@ class _MoreScreenState extends State<MoreScreen> {
           icon: Icons.person_outline,
           onTap: () {
             if (isLoggedIn) {
-              onProfileDetailsTap(context);
+              context.pushProfileDetails();
             } else {
               AppDialogs.showUserLoginDialog(context, () {
-                if (context.mounted) onLoginTap(context);
+                if (context.mounted) context.goLogin();
               }, "login to view profile");
             }
           },
@@ -195,20 +178,20 @@ class _MoreScreenState extends State<MoreScreen> {
             title: "Admin Dashboard",
             icon: Icons.admin_panel_settings_outlined,
             isHighlight: true,
-            onTap: () => onAdminDashboardTap(context),
+            onTap: () => context.pushAdminDashboard(),
           ),
         _buildListTile(
           title: "My Listings",
           icon: Icons.list_alt,
           enabled: isLoggedIn,
-          onTap: () => onMyListingScreenTap(context, false),
+          onTap: () => context.pushMyListings(),
         ),
         if (isAdmin)
           _buildListTile(
             title: 'Chat user list',
             icon: Icons.chat_bubble_outline,
             onTap: () {
-              onAgentChatTap(context);
+              context.pushChatList(Constants.adminUserId);
             },
           )
         else
@@ -219,12 +202,12 @@ class _MoreScreenState extends State<MoreScreen> {
               if (FirebaseAuth.instance.currentUser == null) {
                 AppDialogs.showUserLoginDialog(context, () {
                   if (context.mounted) {
-                    onLoginTap(context);
+                    context.goLogin();
                   }
                 }, "Chat with us");
                 return;
               } else {
-                onAgentToUserChatTap(context, Constants.adminUserId,
+                context.pushAgentUserChat(Constants.adminUserId,
                     FirebaseAuth.instance.currentUser?.uid ?? '');
               }
             },
@@ -234,7 +217,7 @@ class _MoreScreenState extends State<MoreScreen> {
         _buildListTile(
           title: "About Us",
           icon: Icons.info_outline,
-          onTap: () => onAboutUsTap(context),
+          onTap: () => context.pushAboutUs(),
         ),
         _buildListTile(
           title: 'Call us',
@@ -357,10 +340,10 @@ class _MoreScreenState extends State<MoreScreen> {
             )),
         onPressed: () async {
           if (isLoggedIn) {
-            await FirebaseAuth.instance.signOut();
+            await _authRepository.signOut();
           }
           if (context.mounted) {
-            onLoginTap(context);
+            context.goLogin();
           }
         },
         child: Row(

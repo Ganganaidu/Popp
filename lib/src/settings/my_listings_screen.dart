@@ -1,12 +1,12 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import '../navigation/app_routes.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import '../api/api_url.dart';
 import 'package:popp/src/toolbar/common_app_bar.dart';
 import '../widgets/title_text.dart';
 import 'package:popp/src/widgets/web_constrained_box.dart';
 import 'list_grid_view.dart';
+import 'repository/listings_repository.dart';
 
 class MyListingsScreen extends StatefulWidget {
   const MyListingsScreen({super.key});
@@ -18,6 +18,7 @@ class MyListingsScreen extends StatefulWidget {
 class _MyListingsScreenState extends State<MyListingsScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  final ListingsRepository _repository = ListingsRepository();
 
   @override
   void initState() {
@@ -46,7 +47,7 @@ class _MyListingsScreenState extends State<MyListingsScreen>
               const Text("Please log in to see your listings."),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: () => Navigator.pushNamed(context, '/login'),
+                onPressed: () => context.goLogin(),
                 style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                     foregroundColor: Colors.white),
@@ -79,17 +80,13 @@ class _MyListingsScreenState extends State<MyListingsScreen>
         children: [
           // Using the reusable widget for Products
           ListingsGridView(
-            query: FirebaseFirestore.instance
-                .collection(ApiUrl.productsPath)
-                .where('userId', isEqualTo: user.uid),
-            showOptionsMenu: true, // Show edit/delete options
+            query: _repository.myProducts(user.uid),
+            showOptionsMenu: true,
           ),
           // Using the reusable widget for Services
           ListingsGridView(
-            query: FirebaseFirestore.instance
-                .collection(ApiUrl.servicePath)
-                .where('userId', isEqualTo: user.uid),
-            showOptionsMenu: true, // Show edit/delete options
+            query: _repository.myServices(user.uid),
+            showOptionsMenu: true,
           ),
         ],
       ),

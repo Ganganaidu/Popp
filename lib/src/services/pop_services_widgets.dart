@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../deeplink/DeepLinkConfig.dart';
 import '../models/pop_service_item.dart';
-import '../navigation/nav_router.dart';
+import '../navigation/app_routes.dart';
 import '../theme/bikerverse_colors.dart';
 import '../utils/build_extensions.dart';
 
@@ -39,7 +39,7 @@ class _PopServicesWidgetsState extends State<PopServicesWidgets> {
     final config = deepLinkConfigs[deepLinkKey];
     if (config == null) return;
     if (config.requiresAuth && user == null) {
-      onLoginClicked(context, config.loginMessage);
+      context.showLoginPrompt(config.loginMessage);
       return;
     }
     config.action?.call(context);

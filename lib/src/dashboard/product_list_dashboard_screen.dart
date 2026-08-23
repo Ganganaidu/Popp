@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
-import '../products/category_list_widget.dart';
+import '../products/ui/category_list_widget.dart';
 import 'viewmodel/dashboard_viewmodel.dart';
 import 'viewmodel/service_viewmodel.dart';
 

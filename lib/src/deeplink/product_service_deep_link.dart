@@ -1,14 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-import '../../main.dart';
 import '../api/api_url.dart';
-import '../products/product_detail_screen.dart';
+import '../navigation/app_router.dart';
+import '../navigation/app_routes.dart';
 import '../services/listservices/service_detail_screen.dart';
 
 /// Holds a product/service deep link that arrived while the user was signed
-/// out. Consumed once by [AuthWrapper] right after login succeeds so the
-/// user lands on the intended page instead of the link being dropped.
+/// out. Consumed once by the router's redirect callback right after login
+/// succeeds so the user lands on the intended page instead of the link
+/// being dropped.
 class PendingDeepLink {
   static Uri? uri;
 }
@@ -39,6 +40,8 @@ Future<void> openDeepLinkUri(Uri uri) async {
     final data = {...raw, 'id': doc.id};
 
     if (productType == 'service') {
+      // TODO(arch): migrate onto a go_router route when the services feature
+      // is moved to the new architecture.
       navigatorKey.currentState?.push(
         MaterialPageRoute(
           builder: (context) => ServiceDetailScreen(
@@ -48,10 +51,9 @@ Future<void> openDeepLinkUri(Uri uri) async {
         ),
       );
     } else {
-      navigatorKey.currentState?.push(
-        MaterialPageRoute(
-          builder: (context) => ProductDetailScreen(productJson: data),
-        ),
+      router.push(
+        AppRoutes.productDetail,
+        extra: ProductDetailArgs(product: data),
       );
     }
   } catch (e) {

@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:ui'; // For PlatformDispatcher
 
 import 'package:app_links/app_links.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -16,11 +15,7 @@ import 'package:month_year_picker/month_year_picker.dart';
 import 'package:popp/src/api/firebase/remote_config_service.dart';
 import 'package:popp/src/app_providers.dart';
 import 'package:popp/src/deeplink/product_service_deep_link.dart';
-import 'package:popp/src/home/home_screen.dart';
-import 'package:popp/src/login/login_screen.dart';
-import 'package:popp/src/login/sign_up_congrats_screen.dart';
-import 'package:popp/src/login/signup_screen.dart';
-import 'package:popp/src/systemalerts/auth_wrapper.dart';
+import 'package:popp/src/navigation/app_router.dart';
 import 'package:popp/src/theme/theme_notifier.dart';
 
 import 'firebase_options.dart';
@@ -30,12 +25,6 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
 final ThemeNotifier themeNotifier = ThemeNotifier();
-
-final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-
-final FirebaseAnalytics analytics = FirebaseAnalytics.instance;
-final FirebaseAnalyticsObserver analyticsObserver =
-    FirebaseAnalyticsObserver(analytics: analytics);
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(
@@ -158,7 +147,7 @@ class _MyAppState extends State<MyApp> {
 
   /// Parses the URI and navigates to the correct screen. If the user isn't
   /// signed in yet, the link is stashed in [PendingDeepLink] and consumed by
-  /// [AuthWrapper] right after login instead of being dropped.
+  /// [app_router]'s redirect right after login instead of being dropped.
   Future<void> _navigateToDetailScreen(Uri uri) async {
     final segments = uri.pathSegments;
     if (segments.length != 2 ||
@@ -169,7 +158,7 @@ class _MyAppState extends State<MyApp> {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       PendingDeepLink.uri = uri;
-      navigatorKey.currentState?.pushReplacementNamed('/login');
+      router.go('/login');
       return;
     }
 
@@ -181,21 +170,12 @@ class _MyAppState extends State<MyApp> {
     return ValueListenableBuilder<ThemeMode>(
       valueListenable: themeNotifier,
       builder: (context, currentThemeMode, _) {
-        return MaterialApp(
-          navigatorKey: navigatorKey,
+        return MaterialApp.router(
+          routerConfig: router,
           title: 'BikerVerse',
           themeMode: currentThemeMode,
           theme: bikerverseLightTheme,
           darkTheme: bikerverseDarkTheme,
-          home: const AuthWrapper(),
-          navigatorObservers: [analyticsObserver],
-
-          routes: {
-            '/login': (context) => const LoginScreen(),
-            '/signup': (context) => const SignupScreen(),
-            '/home': (context) => const HomeScreen(),
-            '/finalCongrats': (context) => const SignUpCongratsScreen()
-          },
           debugShowCheckedModeBanner: false,
           localizationsDelegates: const [
             MonthYearPickerLocalizations.delegate,

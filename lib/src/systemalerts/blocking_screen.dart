@@ -1,4 +1,5 @@
 import 'dart:io' show Platform;
+import '../navigation/app_routes.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -244,7 +245,7 @@ class BlockingScreen extends StatelessWidget {
                             .saveMessageId(systemMessage);
                         if (!isHighPriority) {
                           if (context.mounted) {
-                            Navigator.pushReplacementNamed(context, '/home');
+                            context.goHome();
                           }
                         }
                       }

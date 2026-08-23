@@ -3,7 +3,7 @@ import 'package:popp/src/home/search_screen.dart';
 import 'package:popp/src/models/pop_category.dart';
 import 'package:popp/src/utils/app_loger.dart';
 
-import '../navigation/nav_router.dart';
+import '../navigation/app_routes.dart';
 import '../utils/product_utils.dart';
 
 class ExploreScreen extends StatelessWidget {
@@ -32,9 +32,10 @@ class ExploreScreen extends StatelessWidget {
     if (!categoryName.contains(ProductUtils.premiumBikes) &&
         subCategory == null) {
       AppLogger.d('Navigating to service listing for: $categoryName');
-      onServiceListingTap(context, categoryName, subCategory, false);
+      context.pushServiceListing(categoryName, subCategory: subCategory);
     } else {
-      navigateToCategoryPage(context, categoryName, subCategory, null);
+      context.pushCategoryDetail(
+          CategoryDetailArgs.forCategory(categoryName, subCategory: subCategory));
     }
   }
 

@@ -14,12 +14,12 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../api/api_url.dart';
-import '../../api/firebase/firebase_api_service.dart';
+import '../../products/repository/product_repository.dart';
 import '../../api/firebase/remote_config_service.dart';
 import '../../gallery/pic_image_gallery.dart';
 import '../../models/pop_category.dart';
 import '../../models/product.dart';
-import '../../navigation/nav_router.dart';
+import '../../navigation/app_routes.dart';
 import '../../search/autocomplete_search_field.dart';
 import '../../theme/bikerverse_colors.dart';
 import '../../utils/app_loger.dart';
@@ -40,7 +40,7 @@ class SellYourBike extends StatefulWidget {
 }
 
 class _SellYourBikeState extends State<SellYourBike> {
-  final FirebaseApiService _firebaseService = FirebaseApiService();
+  final ProductRepository _firebaseService = ProductRepository();
   final SteppedFormController _stepController = SteppedFormController();
 
   // One form key per wizard step so each validates independently.
@@ -415,9 +415,9 @@ class _SellYourBikeState extends State<SellYourBike> {
       });
       if (!mounted) return;
       AppDialogs.showProductSuccessDialog(context, () {
-        onMyListingScreenTap(context, true);
+        context.pushMyListings(replace: true);
       }, () {
-        Navigator.pushReplacementNamed(context, '/home');
+        context.goHome();
       });
     }
   }

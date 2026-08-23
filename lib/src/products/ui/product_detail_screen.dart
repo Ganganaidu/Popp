@@ -1,54 +1,33 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:popp/src/api/currency_service.dart';
-import 'package:popp/src/utils/app_loger.dart';
 import 'package:popp/src/utils/product_utils.dart';
-import 'package:share_plus/share_plus.dart';
+import 'package:provider/provider.dart';
 
-import '../admin/admin_notification_service.dart';
-import '../api/api_url.dart';
-import '../api/firebase/firebase_api_service.dart';
-import '../chat/chat_with_seller_card.dart';
-import '../services/accessories/sell_your_accessories.dart';
-import '../services/bikes/sell_your_bike.dart';
-import '../toolbar/AppBarIconButton.dart';
-import '../utils/app_constants.dart';
-import '../widgets/app_dialogs.dart';
-import '../widgets/app_network_image.dart';
-import '../widgets/expandable_product_details_widget.dart';
-import '../widgets/full_screen_image_screen.dart';
-import '../widgets/web_constrained_box.dart';
+import '../../chat/chat_with_seller_card.dart';
+import '../../navigation/app_routes.dart';
+import '../../toolbar/AppBarIconButton.dart';
+import '../../widgets/app_dialogs.dart';
+import '../../widgets/app_network_image.dart';
+import '../../widgets/expandable_product_details_widget.dart';
+import '../../widgets/full_screen_image_screen.dart';
+import '../../widgets/web_constrained_box.dart';
+import '../viewmodel/product_detail_viewmodel.dart';
 
+/// Product detail screen. All state and Firestore work lives in
+/// [ProductDetailViewModel], provided at the route (see `app_router.dart`). This
+/// widget only renders that state and forwards user intent.
 class ProductDetailScreen extends StatefulWidget {
-  final Map<String, dynamic> productJson;
-  final bool showStatus;
-
-  const ProductDetailScreen({
-    super.key,
-    required this.productJson,
-    this.showStatus = false,
-  });
+  const ProductDetailScreen({super.key});
 
   @override
   State<ProductDetailScreen> createState() => _ProductDetailScreenState();
 }
 
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
-  final FirebaseApiService _firebaseApiService = FirebaseApiService();
-
   late final ValueNotifier<int> selectedImageIndexNotifier;
-  bool isFavorite = false;
   late final PageController _pageController;
-  bool _isApproved = false;
-  bool _isSold = false;
-  bool _hasPendingUpdate = false;
-  Map<String, dynamic>? _pendingUpdate;
-  bool _favButtonDisabled = false;
-  String _status = '';
-  String localizedPrice = '';
   bool _didInitPrice = false;
   String countryCode = '';
 
@@ -61,35 +40,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     super.initState();
     selectedImageIndexNotifier = ValueNotifier<int>(0);
     _pageController = PageController(initialPage: 0);
-
-    _isApproved = widget.productJson['isApproved'] == true;
-    _isSold = widget.productJson['isSold'] == true;
-    _hasPendingUpdate = widget.productJson['hasPendingUpdate'] == true;
-    _pendingUpdate = widget.productJson['pendingUpdate'] as Map<String, dynamic>?;
-    final docStatus = widget.productJson['status'] as String?;
-    if (_isSold) {
-      _status = 'Sold';
-    } else if (_isApproved && _hasPendingUpdate) {
-      _status = 'Pending Update';
-    } else if (_isApproved) {
-      _status = 'Approved';
-    } else if (docStatus == 'sent_back') {
-      _status = 'Sent Back';
-    } else if (docStatus == 'rejected') {
-      _status = 'Rejected';
-    } else {
-      _status = 'Pending';
-    }
-
-    AppLogger.d("ProductDetailScreen initState: status = $_status");
-
-    final favoritedBy = widget.productJson['favoritedBy'] as List<dynamic>?;
-    final currentUser = FirebaseAuth.instance.currentUser;
-    if (favoritedBy != null && currentUser != null) {
-      isFavorite = favoritedBy.contains(currentUser.uid);
-    } else {
-      isFavorite = false;
-    }
   }
 
   @override
@@ -108,61 +58,26 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     super.dispose();
   }
 
-  void _toggleFavorite() async {
-    setState(() {
-      isFavorite = !isFavorite;
-      _favButtonDisabled = true;
-    });
-    final prev = isFavorite;
-    final result = await _firebaseApiService.toggleFavoriteProduct(
-        ApiUrl.productsPath, widget.productJson['id']);
-    if (!mounted) return;
-    setState(() {
-      _favButtonDisabled = false;
-      if (!result) {
-        isFavorite = !prev;
-      }
-    });
-  }
-
-  void _shareProduct(Map<String, dynamic> product) {
-    final serviceId = product['id'];
-    final serviceName = ProductUtils.getTitle(product);
-    // Path must be singular ("product") to match the intent-filter /
-    // AppLinks parsing in main.dart — that's the actual deep link contract,
-    // not the Firestore collection name (ApiUrl.productsPath is plural).
-    final String deepLink = "${ApiUrl.baseUrl}product/$serviceId";
-    final String shareText = "Check out $serviceName on Bikerverse! $deepLink";
-    AppLogger.i("shareText $shareText");
-    SharePlus.instance.share(
-      ShareParams(text: shareText, subject: 'Check out this product!'),
-    );
-  }
-
-  bool get _isAdmin =>
-      FirebaseAuth.instance.currentUser?.uid == Constants.adminUserId;
-
   @override
   Widget build(BuildContext context) {
+    final vm = context.watch<ProductDetailViewModel>();
     final theme = Theme.of(context).textTheme;
-    // Admin reviews the proposed changes (pending update content) instead of live content
-    final product = (_isAdmin && _hasPendingUpdate && _pendingUpdate != null)
-        ? {...widget.productJson, ..._pendingUpdate!}
-        : widget.productJson;
+    // When an admin is reviewing a pending update, [displayProduct] is the
+    // live content overlaid with the proposed changes.
+    final product = vm.displayProduct;
     final imageUrls =
         (product['thumbImageUrls'] as List<dynamic>? ?? []).cast<String>();
 
     return Scaffold(
-      body: _buildMobileLayout(context, imageUrls, product, theme),
-      bottomNavigationBar: _buildBottomBar(),
+      body: _buildMobileLayout(context, vm, imageUrls, product, theme),
+      bottomNavigationBar: _buildBottomBar(vm),
     );
   }
 
-  Widget _buildMobileLayout(BuildContext context, List<String> imageUrls,
-      Map<String, dynamic> product, TextTheme theme) {
+  Widget _buildMobileLayout(BuildContext context, ProductDetailViewModel vm,
+      List<String> imageUrls, Map<String, dynamic> product, TextTheme theme) {
     final screenHeight = MediaQuery.of(context).size.height;
-    final currentUid = FirebaseAuth.instance.currentUser?.uid;
-    final isOwner = !_isAdmin && product['userId'] == currentUid;
+    final isOwner = vm.isOwner;
 
     return Scaffold(
       backgroundColor: const Color(0xFF121212), // Dark background
@@ -181,16 +96,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             actions: [
               AppBarIconButton(
                 icon: Icons.share,
-                onTap: () => _shareProduct(product),
+                onTap: vm.shareProduct,
               ),
               const SizedBox(width: 12),
               AppBarIconButton(
-                  icon: isFavorite ? Icons.favorite : Icons.favorite_border,
-                  onTap: () {
-                    // Ensure we call the toggle function immediately.
-                    if (!_favButtonDisabled) _toggleFavorite();
-                  },
-                  iconColor: isFavorite ? Colors.red : null),
+                  icon: vm.isFavorite ? Icons.favorite : Icons.favorite_border,
+                  onTap: vm.toggleFavorite,
+                  iconColor: vm.isFavorite ? Colors.red : null),
               const SizedBox(width: 16),
             ],
             flexibleSpace: FlexibleSpaceBar(
@@ -298,23 +210,26 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   const SizedBox(height: 15),
 
                   // Admin: highlight that this is a pending update review
-                  if (_isAdmin && _hasPendingUpdate)
+                  if (vm.isAdmin && vm.hasPendingUpdate)
                     Container(
                       margin: const EdgeInsets.only(bottom: 16),
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: Colors.orange.withOpacity(0.15),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.orange.withOpacity(0.4)),
+                        border:
+                            Border.all(color: Colors.orange.withOpacity(0.4)),
                       ),
                       child: const Row(
                         children: [
-                          Icon(Icons.sync_outlined, color: Colors.orange, size: 18),
+                          Icon(Icons.sync_outlined,
+                              color: Colors.orange, size: 18),
                           SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               'Reviewing pending update — approve to publish these changes, or reject to keep the current listing.',
-                              style: TextStyle(color: Colors.orange, fontSize: 13),
+                              style: TextStyle(
+                                  color: Colors.orange, fontSize: 13),
                             ),
                           ),
                         ],
@@ -379,7 +294,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
                   const SizedBox(height: 20),
 
-                  if (isOwner && !_isSold) ...[
+                  if (isOwner && !vm.isSold) ...[
                     const SizedBox(height: 16),
                     SizedBox(
                       width: double.infinity,
@@ -391,7 +306,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10)),
                         ),
-                        onPressed: _markAsSold,
+                        onPressed: () => _markAsSold(vm),
                         icon: const Icon(Icons.check_circle_outline, size: 18),
                         label: const Text(
                           'Mark as Sold',
@@ -402,8 +317,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         ),
                       ),
                     ),
-                    // Edit & Resubmit — visible for approved listings with no pending update
-                    if (_isApproved && !_hasPendingUpdate) ...[
+                    // Edit & Resubmit — visible for approved listings with no
+                    // pending update.
+                    if (vm.isApproved && !vm.hasPendingUpdate) ...[
                       const SizedBox(height: 12),
                       SizedBox(
                         width: double.infinity,
@@ -415,7 +331,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10)),
                           ),
-                          onPressed: _openEditScreen,
+                          onPressed: () => context.pushEditListing(vm.product),
                           icon: const Icon(Icons.edit_outlined, size: 18),
                           label: const Text(
                             'Edit & Resubmit',
@@ -427,16 +343,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         ),
                       ),
                     ],
-                    // Pending update notice — shown while an update awaits admin review
-                    if (_isApproved && _hasPendingUpdate) ...[
+                    // Pending update notice — shown while an update awaits review.
+                    if (vm.isApproved && vm.hasPendingUpdate) ...[
                       const SizedBox(height: 12),
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: Colors.blue.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                              color: Colors.blue.withOpacity(0.3)),
+                          border:
+                              Border.all(color: Colors.blue.withOpacity(0.3)),
                         ),
                         child: const Row(
                           children: [
@@ -462,7 +378,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         receiverUserID: product['userId'],
                         productTitle: ProductUtils.getTitle(product),
                         productId: product['id'],
-                        isAdmin: _isAdmin,
+                        isAdmin: vm.isAdmin,
                         listingPhone: product['sellerContactNumber'] as String?,
                       ),
                   ],
@@ -557,28 +473,26 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     );
   }
 
-  Widget? _buildBottomBar() {
+  Widget? _buildBottomBar(ProductDetailViewModel vm) {
     if (kIsWeb) return null;
-    final currentUid = FirebaseAuth.instance.currentUser?.uid;
-    final isOwner = !_isAdmin && widget.productJson['userId'] == currentUid;
-    if (isOwner && _status == 'Sent Back') {
-      return _buildUserEditButton();
+    if (vm.isOwner && vm.status == 'Sent Back') {
+      return _buildUserEditButton(vm);
     }
-    if (_isAdmin && !_isSold) {
-      // Show admin bar for first-time pending reviews and for pending update reviews
-      final needsReview = _status != 'Approved' && _status != 'Rejected';
-      if (needsReview || _hasPendingUpdate) {
-        return _buildAdminBottomBar();
+    if (vm.isAdmin && !vm.isSold) {
+      // Admin bar for first-time pending reviews and pending update reviews.
+      final needsReview = vm.status != 'Approved' && vm.status != 'Rejected';
+      if (needsReview || vm.hasPendingUpdate) {
+        return _buildAdminBottomBar(vm);
       }
-      // For approved listings show a standalone Mark as Sold button
-      if (_status == 'Approved') {
-        return _buildAdminMarkSoldBar();
+      // Approved listings get a standalone Mark as Sold button.
+      if (vm.status == 'Approved') {
+        return _buildAdminMarkSoldBar(vm);
       }
     }
     return null;
   }
 
-  Widget _buildUserEditButton() {
+  Widget _buildUserEditButton(ProductDetailViewModel vm) {
     return WebConstrainedBox(
       child: SafeArea(
         child: Padding(
@@ -591,26 +505,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)),
             ),
-            onPressed: () {
-              final category = widget.productJson['category'] as String? ?? '';
-              if (category == ProductUtils.premiumBikes) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) =>
-                        SellYourBike(existingData: widget.productJson),
-                  ),
-                );
-              } else {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) =>
-                        SellYourAccessories(existingData: widget.productJson),
-                  ),
-                );
-              }
-            },
+            onPressed: () => context.pushEditListing(vm.product),
             icon: const Icon(Icons.edit_outlined, size: 18),
             label: const Text('Edit & Resubmit'),
           ),
@@ -619,7 +514,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     );
   }
 
-  Widget _buildAdminMarkSoldBar() {
+  Widget _buildAdminMarkSoldBar(ProductDetailViewModel vm) {
     return WebConstrainedBox(
       child: SafeArea(
         child: Padding(
@@ -634,7 +529,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10)),
               ),
-              onPressed: _adminMarkAsSold,
+              onPressed: () => _markAsSold(vm),
               icon: const Icon(Icons.check_circle_outline, size: 18),
               label: const Text(
                 'Mark as Sold',
@@ -647,40 +542,20 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     );
   }
 
-  Future<void> _adminMarkAsSold() async {
-    final productId = widget.productJson['id'] as String? ?? '';
-    if (productId.isEmpty) return;
-
-    final success = await AppDialogs.confirmAndMarkAsSold(
-      context: context,
-      docRef: FirebaseFirestore.instance
-          .collection(ApiUrl.productsPath)
-          .doc(productId),
-      successMessage: 'Product marked as sold.',
-    );
-
-    if (success && mounted) {
-      setState(() {
-        _isSold = true;
-        _status = 'Sold';
-      });
-    }
-  }
-
-  Widget _buildAdminBottomBar() {
+  Widget _buildAdminBottomBar(ProductDetailViewModel vm) {
     return WebConstrainedBox(
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: _buildAdminActionRow(),
+          child: _buildAdminActionRow(vm),
         ),
       ),
     );
   }
 
-  Widget _buildAdminActionRow() {
-    if (_hasPendingUpdate) {
-      // Reviewing a pending update on an already-approved listing
+  Widget _buildAdminActionRow(ProductDetailViewModel vm) {
+    if (vm.hasPendingUpdate) {
+      // Reviewing a pending update on an already-approved listing.
       return Row(
         children: [
           Expanded(
@@ -692,7 +567,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10)),
               ),
-              onPressed: () => _handleAdminAction('approve_update'),
+              onPressed: () => _handleAdminAction(vm, 'approve_update'),
               icon: const Icon(Icons.check_circle_outline, size: 18),
               label: const Text('Approve Update'),
             ),
@@ -707,7 +582,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10)),
               ),
-              onPressed: () => _handleAdminAction('reject_update'),
+              onPressed: () => _handleAdminAction(vm, 'reject_update'),
               icon: const Icon(Icons.cancel_outlined, size: 18),
               label: const Text('Reject Update'),
             ),
@@ -716,7 +591,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       );
     }
 
-    // Standard first-time review buttons
+    // Standard first-time review buttons.
     return Row(
       children: [
         Expanded(
@@ -728,7 +603,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)),
             ),
-            onPressed: () => _handleAdminAction('approved'),
+            onPressed: () => _handleAdminAction(vm, 'approved'),
             icon: const Icon(Icons.check_circle_outline, size: 18),
             label: const Text('Approve'),
           ),
@@ -743,7 +618,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)),
             ),
-            onPressed: () => _handleAdminAction('sent_back'),
+            onPressed: () => _handleAdminAction(vm, 'sent_back'),
             icon: const Icon(Icons.undo_outlined, size: 18),
             label: const Text('Send Back'),
           ),
@@ -758,7 +633,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)),
             ),
-            onPressed: () => _handleAdminAction('rejected'),
+            onPressed: () => _handleAdminAction(vm, 'rejected'),
             icon: const Icon(Icons.cancel_outlined, size: 18),
             label: const Text('Reject'),
           ),
@@ -767,66 +642,19 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     );
   }
 
-  Future<void> _handleAdminAction(String action) async {
-    final productId = widget.productJson['id'] as String? ?? '';
-    if (productId.isEmpty) return;
-
+  Future<void> _handleAdminAction(
+      ProductDetailViewModel vm, String action) async {
     String? reason;
-    if (action == 'sent_back' || action == 'rejected' || action == 'reject_update') {
+    if (action == 'sent_back' ||
+        action == 'rejected' ||
+        action == 'reject_update') {
       reason = await _showReasonDialog(action);
       if (reason == null) return;
     }
 
-    final listingRef = FirebaseFirestore.instance
-        .collection(ApiUrl.productsPath)
-        .doc(productId);
-
     try {
-      switch (action) {
-        case 'approved':
-          await AdminNotificationService.approveListing(listingRef: listingRef);
-          if (!mounted) return;
-          setState(() {
-            _isApproved = true;
-            _status = 'Approved';
-          });
-        case 'sent_back':
-          await AdminNotificationService.sendBackListing(
-              listingRef: listingRef, feedback: reason);
-          if (!mounted) return;
-          setState(() => _status = 'Sent Back');
-        case 'rejected':
-          await AdminNotificationService.rejectListing(
-              listingRef: listingRef, reason: reason);
-          if (!mounted) return;
-          setState(() => _status = 'Rejected');
-        case 'approve_update':
-          await AdminNotificationService.approvePendingUpdate(
-              listingRef: listingRef, pendingUpdate: _pendingUpdate!);
-          if (!mounted) return;
-          setState(() {
-            _hasPendingUpdate = false;
-            _pendingUpdate = null;
-            _status = 'Approved';
-          });
-        case 'reject_update':
-          await AdminNotificationService.rejectPendingUpdate(
-              listingRef: listingRef, feedback: reason);
-          if (!mounted) return;
-          setState(() {
-            _hasPendingUpdate = false;
-            _pendingUpdate = null;
-            _status = 'Approved';
-          });
-      }
-      if (mounted) {
-        final msg = switch (action) {
-          'approved' => 'Product approved. User will be notified.',
-          'sent_back' => 'Sent back to user for corrections.',
-          'approve_update' => 'Update approved and published.',
-          'reject_update' => 'Update rejected. Original listing remains live.',
-          _ => 'Listing rejected. User will be notified.',
-        };
+      final msg = await vm.runAdminAction(action, reason: reason);
+      if (mounted && msg != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(msg), backgroundColor: Colors.green),
         );
@@ -872,9 +700,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 decoration: InputDecoration(
                   hintText: isSendBack
                       ? 'e.g. Please upload clearer photos of the item.'
-                      : isRejectUpdate
-                          ? 'e.g. Price update not within guidelines.'
-                          : 'e.g. Does not meet Bikerverse guidelines.',
+                      : 'e.g. Does not meet Bikerverse guidelines.',
                   border: const OutlineInputBorder(),
                 ),
               ),
@@ -892,7 +718,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             ),
             onPressed: () => Navigator.of(ctx).pop(true),
             child: Text(
-              isSendBack ? 'Send Back' : isRejectUpdate ? 'Reject Update' : 'Reject',
+              isSendBack
+                  ? 'Send Back'
+                  : isRejectUpdate
+                      ? 'Reject Update'
+                      : 'Reject',
               style: const TextStyle(color: Colors.white),
             ),
           ),
@@ -908,23 +738,17 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     return text;
   }
 
-  Future<void> _markAsSold() async {
-    final productId = widget.productJson['id'] as String? ?? '';
-    if (productId.isEmpty) return;
+  Future<void> _markAsSold(ProductDetailViewModel vm) async {
+    if (vm.productId.isEmpty) return;
 
     final success = await AppDialogs.confirmAndMarkAsSold(
       context: context,
-      docRef: FirebaseFirestore.instance
-          .collection(ApiUrl.productsPath)
-          .doc(productId),
-      successMessage: 'Item marked as sold.',
+      docRef: vm.repository.productDoc(vm.productId),
+      successMessage: 'Product marked as sold.',
     );
 
     if (success && mounted) {
-      setState(() {
-        _isSold = true;
-        _status = 'Sold';
-      });
+      vm.onMarkedSold();
     }
   }
 
@@ -943,88 +767,5 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     final String displayFormat =
         selectOnlyMonthYear ? 'MMMM yyyy' : 'd MMM yyyy';
     return DateFormat(displayFormat).format(dt);
-  }
-
-  (Color, IconData) _getStatusStyle(String status) {
-    switch (status.toLowerCase()) {
-      case 'sold':
-        return (Colors.grey.shade700, Icons.money_off_outlined);
-      case 'approved':
-        return (Colors.green.shade600, Icons.check_circle_outline);
-      case 'sent back':
-        return (Colors.blue.shade600, Icons.undo_outlined);
-      case 'rejected':
-        return (Colors.red.shade700, Icons.cancel_outlined);
-      case 'pending update':
-        return (Colors.purple.shade600, Icons.sync_outlined);
-      default:
-        return (Colors.orange.shade700, Icons.hourglass_top_outlined);
-    }
-  }
-
-  void _openEditScreen() {
-    final category = widget.productJson['category'] as String? ?? '';
-    if (category == ProductUtils.premiumBikes) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => SellYourBike(existingData: widget.productJson),
-        ),
-      );
-    } else {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => SellYourAccessories(existingData: widget.productJson),
-        ),
-      );
-    }
-  }
-
-  Widget _buildStatusBanner() {
-    final (color, icon) = _getStatusStyle(_status);
-    return Positioned(
-      top: 0,
-      left: 0,
-      child: GestureDetector(
-        onTap: () {
-          AppDialogs.showProductSuccessDialog(context, () {}, () {},
-              title: 'Product Status: $_status',
-              cancelText: null,
-              confirmText: 'okay');
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(0),
-              bottomRight: Radius.circular(12),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.25),
-                blurRadius: 5,
-                offset: const Offset(2, 2),
-              )
-            ],
-          ),
-          child: Row(
-            children: [
-              Icon(icon, color: Colors.white, size: 16),
-              const SizedBox(width: 6),
-              Text(
-                _status,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }

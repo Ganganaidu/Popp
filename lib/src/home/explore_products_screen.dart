@@ -1,11 +1,10 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-import '../api/api_url.dart';
 import '../models/shortcut_category.dart';
-import '../navigation/nav_router.dart';
+import '../navigation/app_routes.dart';
 import '../utils/product_utils.dart';
 import '../widgets/app_network_image.dart';
+import 'repository/search_repository.dart';
 
 class ExploreProductsScreen extends StatefulWidget {
   const ExploreProductsScreen({super.key});
@@ -16,6 +15,7 @@ class ExploreProductsScreen extends StatefulWidget {
 
 class _ExploreProductsScreenState extends State<ExploreProductsScreen> {
   final TextEditingController _searchController = TextEditingController();
+  final SearchRepository _searchRepository = SearchRepository();
   bool _isLoading = false;
   List<Map<String, dynamic>> _results = [];
 
@@ -30,30 +30,8 @@ class _ExploreProductsScreenState extends State<ExploreProductsScreen> {
     setState(() {
       _isLoading = true;
     });
-    final fireStore = FirebaseFirestore.instance;
-    final List<Map<String, dynamic>> results = [];
-    // Search products
-    final productsSnap = await fireStore
-        .collection(ApiUrl.productsPath)
-        .where('searchKeywords', arrayContainsAny: [query.toLowerCase()]).get();
-    results.addAll(productsSnap.docs
-        .map((doc) => {
-              ...doc.data(),
-              'type': 'product',
-              'id': doc.id,
-            })
-        .where((item) => item['isSold'] != true && item['status'] != 'Sold'));
-    // Search services
-    final servicesSnap = await fireStore
-        .collection(ApiUrl.servicePath)
-        .where('searchKeywords', arrayContainsAny: [query.toLowerCase()]).get();
-    results.addAll(servicesSnap.docs
-        .map((doc) => {
-              ...doc.data(),
-              'type': 'service',
-              'id': doc.id,
-            })
-        .where((item) => item['isSold'] != true && item['status'] != 'Sold'));
+    final results = await _searchRepository.search(query);
+    if (!mounted) return;
     setState(() {
       _results = results;
       _isLoading = false;
@@ -184,10 +162,10 @@ class _ExploreProductsScreenState extends State<ExploreProductsScreen> {
                       ),
                       onTap: () {
                         if (item['type'] == 'product') {
-                          onProductDetailsTap(context, item);
+                          context.pushProductDetail(item);
                         } else if (item['type'] == 'service') {
-                          onServiceDetailsScreenTap(context, item,
-                              item['category'] ?? 'Uncategorized');
+                          context.pushServiceDetail(
+                              item, item['category'] ?? 'Uncategorized');
                         }
                       },
                     );

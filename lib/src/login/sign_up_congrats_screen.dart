@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../navigation/app_routes.dart';
 import 'package:lottie/lottie.dart';
 
 class SignUpCongratsScreen extends StatelessWidget {
@@ -103,7 +104,7 @@ class SignUpCongratsScreen extends StatelessWidget {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () =>
-                        Navigator.pushReplacementNamed(context, '/home'),
+                        context.goHome(),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
                       foregroundColor: Colors.white,

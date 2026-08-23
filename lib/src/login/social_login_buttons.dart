@@ -1,4 +1,5 @@
 import 'dart:io' show Platform;
+import '../navigation/app_routes.dart';
 import 'package:flutter/material.dart';
 import '../api/firebase/auth_service.dart';
 
@@ -63,7 +64,7 @@ class SocialLoginButtons extends StatelessWidget {
       if (!context.mounted) return;
 
       Navigator.pop(context); // Close loading dialog
-      Navigator.pushReplacementNamed(context, '/home');
+      context.goHome();
     } catch (e) {
       if (!context.mounted) return;
 

@@ -15,12 +15,12 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../api/api_url.dart';
-import '../../api/firebase/firebase_api_service.dart';
+import '../../products/repository/product_repository.dart';
 import '../../api/firebase/remote_config_service.dart';
 import '../../gallery/pic_image_gallery.dart';
 import '../../models/pop_category.dart';
 import '../../models/product.dart';
-import '../../navigation/nav_router.dart';
+import '../../navigation/app_routes.dart';
 import '../../search/autocomplete_search_field.dart';
 import '../../theme/bikerverse_colors.dart';
 import '../../utils/product_content_data.dart';
@@ -42,7 +42,7 @@ class SellYourAccessories extends StatefulWidget {
 
 
 class _SellYourAccessoriesState extends State<SellYourAccessories> {
-  final FirebaseApiService _firebaseApiService = FirebaseApiService();
+  final ProductRepository _firebaseApiService = ProductRepository();
   final SteppedFormController _stepController = SteppedFormController();
 
   final List<GlobalKey<FormState>> _stepKeys =
@@ -472,9 +472,9 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
       });
       if (!mounted) return;
       AppDialogs.showProductSuccessDialog(context, () {
-        onMyListingScreenTap(context, true);
+        context.pushMyListings(replace: true);
       }, () {
-        Navigator.pushReplacementNamed(context, '/home');
+        context.goHome();
       });
     }
   }

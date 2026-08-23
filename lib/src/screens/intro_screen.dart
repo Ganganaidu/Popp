@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:popp/src/toolbar/common_app_bar.dart';
-import 'package:popp/src/systemalerts/auth_wrapper.dart';
 import 'package:popp/src/utils/app_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'intro_page.dart';
@@ -124,12 +124,9 @@ class IntroScreen extends StatelessWidget {
     await prefs.setBool('hasSeenIntro', true);
 
     if (context.mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const AuthWrapper(),
-        ),
-      );
+      // Hand back to the router; its redirect sends the user to /home when
+      // authenticated, or /login otherwise.
+      context.go('/home');
     }
   }
 }

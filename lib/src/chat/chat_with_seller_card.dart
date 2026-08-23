@@ -7,7 +7,7 @@ import 'package:provider/provider.dart';
 
 import '../api/api_url.dart';
 import '../api/firebase/remote_config_service.dart';
-import '../navigation/nav_router.dart';
+import '../navigation/app_routes.dart';
 import '../subscription/subscription_provider.dart';
 import '../widgets/app_dialogs.dart';
 
@@ -51,8 +51,12 @@ class _ChatWithSellerCardState extends State<ChatWithSellerCard> {
   }
 
   void _openChatWithSeller(BuildContext context) async {
-    onUserToUserChatTap(context, widget.receiverUserName, widget.receiverUserID,
-        widget.productId, widget.productTitle);
+    context.pushUserChat(UserChatArgs(
+      receiverUserName: widget.receiverUserName,
+      receiverUserID: widget.receiverUserID,
+      productId: widget.productId,
+      productTitle: widget.productTitle,
+    ));
   }
 
   Future<void> _showAdminContactSheet(BuildContext context) async {
@@ -137,9 +141,9 @@ class _ChatWithSellerCardState extends State<ChatWithSellerCard> {
                             confirmText: confirmText,
                             onConfirm: () {
                               if (user == null) {
-                                onLoginTap(context);
+                                context.goLogin();
                               } else {
-                                onSettingsTap(context);
+                                context.pushMoreMenu();
                               }
                             });
                       },

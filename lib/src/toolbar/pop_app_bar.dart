@@ -1,25 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:popp/src/navigation/nav_router.dart';
+import 'package:popp/src/navigation/app_routes.dart';
 import 'package:popp/src/notifications/notification_service.dart';
 import 'package:popp/src/theme/bikerverse_colors.dart';
 import 'AppBarIconButton.dart';
 
 class PopAppBar extends StatelessWidget implements PreferredSizeWidget {
-  final String title;
-  final int selectedIndex;
-  final List<Widget>? actions;
-  final List<GlobalKey<NavigatorState>> navigatorKeys;
-  final bool canPopOverride;
-
-  const PopAppBar({
-    super.key,
-    required this.title,
-    this.actions,
-    required this.navigatorKeys,
-    required this.selectedIndex,
-    this.canPopOverride = false,
-  });
+  const PopAppBar({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -32,39 +19,11 @@ class PopAppBar extends StatelessWidget implements PreferredSizeWidget {
         elevation: 0,
         automaticallyImplyLeading: false,
         titleSpacing: 0.0,
-        title: Padding(
-          padding: const EdgeInsets.only(left: 16.0),
+        title: const Padding(
+          padding: EdgeInsets.only(left: 16.0),
           child: Row(
             children: [
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                transitionBuilder: (child, animation) {
-                  return SlideTransition(
-                    position: Tween<Offset>(
-                      begin: const Offset(-1.0, 0.0),
-                      end: Offset.zero,
-                    ).animate(animation),
-                    child: FadeTransition(
-                      opacity: animation,
-                      child: child,
-                    ),
-                  );
-                },
-                child: canPopOverride
-                    ? Hero(
-                        tag: 'backButtonHero',
-                        child: IconButton(
-                          key: const ValueKey('backButton'),
-                          icon: const Icon(Icons.arrow_back,
-                              color: BikerverseColors.textPrimary),
-                          onPressed: () {
-                            navigatorKeys[selectedIndex].currentState?.pop();
-                          },
-                        ),
-                      )
-                    : const SizedBox.shrink(key: ValueKey('emptySpace')),
-              ),
-              const Row(children: [
+              Row(children: [
                 Text("Biker",
                     style: TextStyle(
                         fontSize: 25,
@@ -86,12 +45,12 @@ class PopAppBar extends StatelessWidget implements PreferredSizeWidget {
           AppBarIconButton(
             iconSemanticLabel: "Search",
             icon: Icons.search,
-            onTap: () => onSearchTap(context),
+            onTap: () => context.pushSearch(),
           ),
           AppBarIconButton(
             iconSemanticLabel: "Favorites",
             icon: Icons.favorite_border_outlined,
-            onTap: () => onFavScreenTap(context),
+            onTap: () => context.pushFavorites(),
           ),
           // Notification bell with unread badge
           _NotificationBell(uid: currentUser?.uid),
@@ -114,7 +73,7 @@ class _NotificationBell extends StatelessWidget {
     if (uid == null) {
       return AppBarIconButton(
         icon: Icons.notifications_outlined,
-        onTap: () => onNotificationsTap(context),
+        onTap: () => context.pushNotifications(),
       );
     }
     return StreamBuilder<int>(
@@ -127,7 +86,7 @@ class _NotificationBell extends StatelessWidget {
             AppBarIconButton(
               iconSemanticLabel: "Notifications",
               icon: Icons.notifications_outlined,
-              onTap: () => onNotificationsTap(context),
+              onTap: () => context.pushNotifications(),
             ),
             if (count > 0)
               Positioned(

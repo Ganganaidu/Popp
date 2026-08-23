@@ -9,7 +9,7 @@ import 'package:url_launcher/url_launcher_string.dart';
 
 import '../../admin/admin_notification_service.dart';
 import '../../api/api_url.dart';
-import '../../api/firebase/firebase_api_service.dart';
+import '../repository/service_repository.dart';
 import '../../chat/chat_with_seller_card.dart';
 import '../../toolbar/AppBarIconButton.dart';
 import '../../utils/app_constants.dart';
@@ -40,7 +40,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
   int _selectedImageIndex = 0;
   bool _isFav = false;
   bool _favButtonDisabled = false;
-  final FirebaseApiService _firebaseApiService = FirebaseApiService();
+  final ServiceRepository _repository = ServiceRepository();
 
   @override
   void initState() {
@@ -74,8 +74,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
       _favButtonDisabled = true;
     });
     final prev = _isFav;
-    final result = await _firebaseApiService.toggleFavoriteProduct(
-        ApiUrl.servicePath, widget.serviceData['id']);
+    final result = await _repository.toggleFavorite(widget.serviceData['id']);
     if (!mounted) return;
     setState(() {
       _favButtonDisabled = false;
@@ -1116,9 +1115,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
       if (reason == null) return;
     }
 
-    final listingRef = FirebaseFirestore.instance
-        .collection(ApiUrl.servicePath)
-        .doc(serviceId);
+    final listingRef = _repository.serviceDoc(serviceId);
 
     try {
       switch (action) {
@@ -1227,9 +1224,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
 
     final success = await AppDialogs.confirmAndMarkAsSold(
       context: context,
-      docRef: FirebaseFirestore.instance
-          .collection(ApiUrl.servicePath)
-          .doc(serviceId),
+      docRef: _repository.serviceDoc(serviceId),
       successMessage: 'Service marked as sold.',
     );
 

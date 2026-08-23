@@ -1,10 +1,10 @@
 import 'dart:async';
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:popp/src/toolbar/common_app_bar.dart';
 import 'package:popp/src/login/model/user_data_model.dart';
-import 'package:popp/src/navigation/nav_router.dart';
+import 'package:popp/src/login/repository/auth_repository.dart';
+import 'package:popp/src/navigation/app_routes.dart';
 import 'package:popp/src/widgets/title_text.dart';
 
 import '../utils/app_loger.dart';
@@ -28,6 +28,7 @@ class VerificationScreen extends StatefulWidget {
 }
 
 class _VerificationScreenState extends State<VerificationScreen> {
+  final AuthRepository _authRepository = AuthRepository();
   Timer? _verificationTimer;
   int _resendCooldown = 60;
   Timer? _resendTimer;
@@ -57,7 +58,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
 
       try {
         // Every 3 seconds, reload the user's data from Firebase
-        await FirebaseAuth.instance.currentUser?.reload();
+        await _authRepository.reloadCurrentUser();
       } catch (e) {
         // Transient errors (e.g. network-request-failed) just retry on the
         // next tick instead of crashing the periodic timer callback.
@@ -65,7 +66,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
         return;
       }
 
-      final user = FirebaseAuth.instance.currentUser;
+      final user = _authRepository.currentUser;
 
       // If the email is verified, finalize the account and navigate
       if (user?.emailVerified ?? false) {
@@ -80,16 +81,16 @@ class _VerificationScreenState extends State<VerificationScreen> {
   Future<void> _finalizeAccountSetup() async {
     try {
       // Sign in again to ensure the auth state is current
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
+      await _authRepository.signIn(
         email: widget.userData?.email ?? widget.email,
         password: widget.password,
       );
       if (mounted) {
         if (widget.isFromSignUp) {
-          onRegisterAndSubscribeTap(context, widget.userData!);
+          context.pushRegisterSubscribe(widget.userData!);
         } else {
           // If not from sign up, just navigate to home
-          Navigator.pushReplacementNamed(context, '/home');
+          context.goHome();
         }
       }
     } catch (e) {
@@ -121,7 +122,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
   Future<void> _resendLink() async {
     if (_isResending) return;
     try {
-      await FirebaseAuth.instance.currentUser?.sendEmailVerification();
+      await _authRepository.sendEmailVerification();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Verification link resent.')),

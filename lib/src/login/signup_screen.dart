@@ -9,12 +9,13 @@ import 'package:popp/src/toolbar/common_app_bar.dart';
 import 'package:intl/intl.dart';
 import 'package:popp/src/api/api_url.dart';
 import 'package:popp/src/login/model/user_data_model.dart';
+import 'package:popp/src/login/repository/auth_repository.dart';
 import 'package:popp/src/login/validation_requiremen_text.dart';
 import 'package:popp/src/utils/app_loger.dart';
 import 'package:popp/src/utils/build_extensions.dart';
 import 'package:popp/src/widgets/title_text.dart';
 
-import '../navigation/nav_router.dart';
+import '../navigation/app_routes.dart';
 import '../search/autocomplete_search_field.dart';
 import '../utils/app_constants.dart';
 import '../utils/app_utils.dart';
@@ -31,6 +32,7 @@ class SignupScreen extends StatefulWidget {
 
 class _SignupScreenState extends State<SignupScreen> {
   final _formKey = GlobalKey<FormState>();
+  final AuthRepository _authRepository = AuthRepository();
   String? selectedState;
 
   final TextEditingController usernameController = TextEditingController();
@@ -119,9 +121,8 @@ class _SignupScreenState extends State<SignupScreen> {
     setState(() => isSubmitting = true);
 
     try {
-      final userCredential = await FirebaseAuth.instance
-          .createUserWithEmailAndPassword(
-              email: emailController.text, password: passwordController.text);
+      final userCredential = await _authRepository.signUp(
+          email: emailController.text, password: passwordController.text);
 
       final user = userCredential.user;
       if (user == null) throw Exception("User creation failed.");
@@ -133,7 +134,8 @@ class _SignupScreenState extends State<SignupScreen> {
           androidPackageName: Constants.appBundleId,
           androidInstallApp: true,
           androidMinimumVersion: '12');
-      await user.sendEmailVerification(acs);
+      await _authRepository.sendEmailVerification(
+          user: user, actionCodeSettings: acs);
 
       final bikeDataList = bikes
           .map((bikeData) {
@@ -192,8 +194,12 @@ class _SignupScreenState extends State<SignupScreen> {
 
       if (!mounted) return;
 
-      onVerificationScreenTap(
-          context, userData, userData.email, passwordController.text, true);
+      context.pushVerification(VerificationArgs(
+        userData: userData,
+        email: userData.email,
+        password: passwordController.text,
+        isFromSignUp: true,
+      ));
     } on FirebaseAuthException catch (e) {
       String errorMessage;
       switch (e.code) {
@@ -232,7 +238,7 @@ class _SignupScreenState extends State<SignupScreen> {
       appBar: CommonAppBar(
         titleWidget: const TitleText("Create Account"),
         showBackButton: true,
-        onBackPressed: () => onLoginTap(context),
+        onBackPressed: () => context.goLogin(),
         backgroundColor: Colors.transparent,
       ),
       body: Container(
@@ -280,7 +286,7 @@ class _SignupScreenState extends State<SignupScreen> {
       appBar: CommonAppBar(
         titleWidget: const TitleText("Create Account"),
         showBackButton: true,
-        onBackPressed: () => onLoginTap(context),
+        onBackPressed: () => context.goLogin(),
       ),
       body: Form(
         key: _formKey,

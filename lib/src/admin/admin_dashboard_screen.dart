@@ -1,12 +1,11 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:popp/src/toolbar/common_app_bar.dart';
 import 'package:popp/src/utils/app_constants.dart';
 
 import '../adbanner/ui/ad_list_page.dart';
-import '../api/api_url.dart';
 import '../settings/list_grid_view.dart';
+import 'repository/admin_repository.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -18,6 +17,7 @@ class AdminDashboardScreen extends StatefulWidget {
 class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  final AdminRepository _repository = AdminRepository();
 
   bool get _isAdmin =>
       FirebaseAuth.instance.currentUser?.uid == Constants.adminUserId;
@@ -81,38 +81,20 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
         controller: _tabController,
         children: [
           ListingsGridView(
-            query: FirebaseFirestore.instance
-                .collection(ApiUrl.productsPath)
-                .where(Filter.or(
-                  Filter('isApproved', isEqualTo: false),
-                  Filter('hasPendingUpdate', isEqualTo: true),
-                )),
+            query: _repository.pendingProducts(),
             showOptionsMenu: false,
           ),
           ListingsGridView(
-            query: FirebaseFirestore.instance
-                .collection(ApiUrl.servicePath)
-                .where(Filter.or(
-                  Filter('isApproved', isEqualTo: false),
-                  Filter('hasPendingUpdate', isEqualTo: true),
-                )),
+            query: _repository.pendingServices(),
             showOptionsMenu: false,
           ),
           const AdListPage(),
           ListingsGridView(
-            query: FirebaseFirestore.instance
-                .collection(ApiUrl.productsPath)
-                .where('isApproved', isEqualTo: true)
-                .where('isSold', isEqualTo: false)
-                .orderBy('createdAt', descending: true),
+            query: _repository.approvedUnsoldProducts(),
             showAdminSoldOption: true,
           ),
           ListingsGridView(
-            query: FirebaseFirestore.instance
-                .collection(ApiUrl.servicePath)
-                .where('isApproved', isEqualTo: true)
-                .where('isSold', isEqualTo: false)
-                .orderBy('createdAt', descending: true),
+            query: _repository.approvedUnsoldServices(),
             showAdminSoldOption: true,
           ),
         ],

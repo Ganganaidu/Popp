@@ -77,6 +77,9 @@ class ListServiceCategoryScreen extends StatelessWidget {
   }
 
   Widget _getCategoryIcon(String category, BuildContext context) {
+    // Use the current theme's icon color so icons adapt to light/dark modes
+    final Color iconColor = Theme.of(context).iconTheme.color ?? Theme.of(context).colorScheme.onSurface;
+
     String assetPath;
 
     if (category == ProductUtils.findMechanic) {
@@ -97,14 +100,19 @@ class ListServiceCategoryScreen extends StatelessWidget {
       return Icon(
         Icons.category_outlined,
         size: 32,
-        color: context.primaryColor,
+        color: iconColor,
       );
     }
 
+    // Tint the asset with the theme icon color. This works best for monochrome/transparent
+    // assets. Use srcIn so the provided color replaces the image color.
     return Image.asset(
       assetPath,
-      width: 200,
-      height: 200,
+      width: 64,
+      height: 64,
+      fit: BoxFit.contain,
+      color: iconColor,
+      colorBlendMode: BlendMode.srcIn,
     );
   }
 }

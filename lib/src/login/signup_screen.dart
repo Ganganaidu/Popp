@@ -382,10 +382,11 @@ class _SignupScreenState extends State<SignupScreen> {
                   shape: const StadiumBorder(),
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   backgroundColor: context.primaryColor,
-                  foregroundColor: Colors.white,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
                 ),
                 child: isSubmitting
-                    ? const CircularProgressIndicator(color: Colors.white)
+                    ? CircularProgressIndicator(
+                        color: Theme.of(context).colorScheme.onPrimary)
                     : const Text("Create Account",
                         style: TextStyle(fontSize: 18)),
               ),
@@ -539,7 +540,7 @@ class _SignupScreenState extends State<SignupScreen> {
               onPressed: isSubmitting ? null : _createAccountAndContinue,
               style: ElevatedButton.styleFrom(
                 backgroundColor: context.primaryColor,
-                foregroundColor: Colors.white,
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -547,11 +548,11 @@ class _SignupScreenState extends State<SignupScreen> {
                 elevation: 2,
               ),
               child: isSubmitting
-                  ? const SizedBox(
+                  ? SizedBox(
                       height: 20,
                       width: 20,
                       child: CircularProgressIndicator(
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onPrimary,
                         strokeWidth: 2,
                       ),
                     )

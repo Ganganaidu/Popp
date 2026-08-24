@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:popp/src/theme/bikerverse_colors.dart';
 import 'package:popp/src/utils/build_extensions.dart';
 
 /// A form field that opens a themed bottom sheet for selection instead of a dropdown.
@@ -49,10 +48,11 @@ class _BottomSheetSelectorFieldState<T>
 
   Future<void> _showPicker() async {
     if (!widget.enabled) return;
+    final cs = Theme.of(context).colorScheme;
     final result = await showModalBottomSheet<T>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: BikerverseColors.surface,
+      backgroundColor: cs.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -71,6 +71,7 @@ class _BottomSheetSelectorFieldState<T>
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return FormField<T>(
       key: _fieldKey,
       initialValue: widget.value,
@@ -86,8 +87,8 @@ class _BottomSheetSelectorFieldState<T>
               suffixIcon: Icon(
                 Icons.keyboard_arrow_down,
                 color: widget.enabled
-                    ? Colors.grey
-                    : BikerverseColors.textMuted,
+                    ? cs.onSurface.withOpacity(0.5)
+                    : cs.onSurface.withOpacity(0.38),
               ),
               errorText: state.hasError ? state.errorText : null,
             );
@@ -102,7 +103,7 @@ class _BottomSheetSelectorFieldState<T>
                 ? Text(
                     displayText,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: BikerverseColors.textPrimary,
+                          color: cs.onSurface,
                         ),
                   )
                 : null,
@@ -128,6 +129,7 @@ class _SelectorSheet<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return DraggableScrollableSheet(
       initialChildSize: 0.6,
       minChildSize: 0.3,
@@ -142,7 +144,7 @@ class _SelectorSheet<T> extends StatelessWidget {
                 height: 4,
                 margin: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
-                  color: BikerverseColors.textMuted,
+                  color: cs.outlineVariant,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -153,15 +155,15 @@ class _SelectorSheet<T> extends StatelessWidget {
                 alignment: Alignment.centerLeft,
                 child: Text(
                   title,
-                  style: const TextStyle(
-                    color: BikerverseColors.textPrimary,
+                  style: TextStyle(
+                    color: cs.onSurface,
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
             ),
-            const Divider(color: BikerverseColors.divider, height: 1),
+            Divider(color: cs.outlineVariant, height: 1),
             Expanded(
               child: ListView.builder(
                 controller: scrollController,
@@ -199,6 +201,7 @@ class _SelectionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
       child: InkWell(
@@ -208,10 +211,10 @@ class _SelectionTile extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: isSelected
               ? BoxDecoration(
-                  color: BikerverseColors.accentFill,
+                  color: cs.primary.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: BikerverseColors.accent.withValues(alpha: 0.3),
+                    color: cs.primary.withOpacity(0.3),
                   ),
                 )
               : null,
@@ -221,9 +224,7 @@ class _SelectionTile extends StatelessWidget {
                 child: Text(
                   label,
                   style: TextStyle(
-                    color: isSelected
-                        ? BikerverseColors.textPrimary
-                        : BikerverseColors.textSecondary,
+                    color: isSelected ? cs.onSurface : cs.onSurface.withOpacity(0.6),
                     fontWeight:
                         isSelected ? FontWeight.w600 : FontWeight.w400,
                     fontSize: 16,
@@ -231,9 +232,9 @@ class _SelectionTile extends StatelessWidget {
                 ),
               ),
               if (isSelected)
-                const Icon(
+                Icon(
                   Icons.check,
-                  color: BikerverseColors.brightGreen,
+                  color: cs.primary,
                   size: 20,
                 ),
             ],

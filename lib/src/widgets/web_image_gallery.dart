@@ -24,6 +24,7 @@ class _WebImageGalleryState extends State<WebImageGallery> {
     return ValueListenableBuilder<int>(
       valueListenable: widget.selectedIndexNotifier,
       builder: (context, selectedIndex, _) {
+        final cs = Theme.of(context).colorScheme;
         final currentImageUrl = widget.imageUrls.isNotEmpty
             ? widget.imageUrls[selectedIndex]
             : ApiUrl.defaultPlaceholderImage;
@@ -48,11 +49,11 @@ class _WebImageGalleryState extends State<WebImageGallery> {
                 }
               },
               child: Container(
-                height: 500, // Fixed height for main image area
+                height: 500,
                 width: double.infinity,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
-                  color: Colors.grey[200],
+                  color: cs.surfaceContainerHighest,
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(16),
@@ -60,13 +61,13 @@ class _WebImageGalleryState extends State<WebImageGallery> {
                     imageUrl: currentImageUrl,
                     fit: BoxFit.cover,
                     placeholder: Shimmer.fromColors(
-                      baseColor: Colors.grey[300]!,
-                      highlightColor: Colors.grey[100]!,
-                      child: Container(color: Colors.grey[300]),
+                      baseColor: cs.surfaceContainerHighest,
+                      highlightColor: cs.surface,
+                      child: Container(color: cs.surfaceContainerHighest),
                     ),
-                    errorWidget: const Center(
+                    errorWidget: Center(
                         child: Icon(Icons.broken_image,
-                            size: 50, color: Colors.grey)),
+                            size: 50, color: cs.onSurface.withOpacity(0.4))),
                   ),
                 ),
               ),
@@ -101,8 +102,8 @@ class _WebImageGalleryState extends State<WebImageGallery> {
                           child: AppNetworkImage(
                             imageUrl: widget.imageUrls[index],
                             fit: BoxFit.cover,
-                            errorWidget: const Icon(Icons.broken_image,
-                                size: 20, color: Colors.grey),
+                            errorWidget: Icon(Icons.broken_image,
+                                size: 20, color: cs.onSurface.withOpacity(0.4)),
                           ),
                         ),
                       ),

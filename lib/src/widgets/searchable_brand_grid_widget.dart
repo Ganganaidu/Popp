@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../theme/bikerverse_colors.dart';
 import '../utils/avatar_color_utils.dart';
 
 /// A searchable, multi-select 2-column grid of brand chips — colored
@@ -78,28 +77,34 @@ class _SearchableBrandGridWidgetState
       children: [
         TextField(
           controller: _searchController,
-          style: const TextStyle(color: BikerverseColors.textPrimary),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
           decoration: InputDecoration(
             hintText: 'Search brand',
-            hintStyle: const TextStyle(color: BikerverseColors.textMuted),
-            prefixIcon: const Icon(Icons.search,
-                size: 20, color: BikerverseColors.textMuted),
+            hintStyle: TextStyle(
+                color:
+                    Theme.of(context).colorScheme.onSurface.withOpacity(0.38)),
+            prefixIcon: Icon(Icons.search,
+                size: 20,
+                color:
+                    Theme.of(context).colorScheme.onSurface.withOpacity(0.38)),
             filled: true,
-            fillColor: BikerverseColors.cardElevated,
+            fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: BikerverseColors.outline),
+              borderSide:
+                  BorderSide(color: Theme.of(context).colorScheme.outline),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: BikerverseColors.outline),
+              borderSide:
+                  BorderSide(color: Theme.of(context).colorScheme.outline),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                  color: BikerverseColors.brightGreen, width: 1.5),
+              borderSide: BorderSide(
+                  color: Theme.of(context).colorScheme.primary, width: 1.5),
             ),
           ),
           onChanged: (val) => setState(() => _query = val),
@@ -107,9 +112,13 @@ class _SearchableBrandGridWidgetState
         const SizedBox(height: 12),
         Expanded(
           child: filtered.isEmpty
-              ? const Center(
+              ? Center(
                   child: Text('No results',
-                      style: TextStyle(color: BikerverseColors.textMuted)),
+                      style: TextStyle(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withOpacity(0.38))),
                 )
               : GridView.builder(
                   gridDelegate:
@@ -155,11 +164,12 @@ class _BrandChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
-          color: BikerverseColors.cardElevated,
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color:
-                selected ? BikerverseColors.accent : BikerverseColors.outline,
+            color: selected
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.outline,
             width: selected ? 1.6 : 1.0,
           ),
         ),
@@ -187,13 +197,17 @@ class _BrandChip extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.all(2),
                       decoration: BoxDecoration(
-                        color: BikerverseColors.accent,
+                        color: Theme.of(context).colorScheme.primary,
                         shape: BoxShape.circle,
                         border: Border.all(
-                            color: BikerverseColors.cardElevated, width: 1.5),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest,
+                            width: 1.5),
                       ),
-                      child: const Icon(Icons.check,
-                          size: 10, color: BikerverseColors.onGreen),
+                      child: Icon(Icons.check,
+                          size: 10,
+                          color: Theme.of(context).colorScheme.onPrimary),
                     ),
                   ),
               ],
@@ -203,8 +217,8 @@ class _BrandChip extends StatelessWidget {
               child: Text(
                 name,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: BikerverseColors.textPrimary,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                 ),

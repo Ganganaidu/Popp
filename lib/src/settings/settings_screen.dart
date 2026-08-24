@@ -95,9 +95,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       backgroundColor: Theme.of(context).primaryColor,
       flexibleSpace: FlexibleSpaceBar(
         centerTitle: true,
-        title: const TitleText(
+        title: TitleText(
           "Settings",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(color: Theme.of(context).colorScheme.onPrimary, fontWeight: FontWeight.bold),
         ),
         background: Stack(
           fit: StackFit.expand,
@@ -218,13 +218,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(0.1),
+                      color: Theme.of(context).colorScheme.primaryContainer,
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Text(
+                    child: Text(
                       'ACTIVE',
                       style: TextStyle(
-                        color: Colors.green,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
                         fontWeight: FontWeight.bold,
                         fontSize: 12,
                       ),
@@ -248,7 +248,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         const SizedBox(height: 24),
         _buildSettingsSectionTitle("App Settings"),
-       // _buildDarkModeSwitch(),
+        _buildLightThemeSwitch(),
         _buildListTile(
           context,
           icon: Icons.info_outline,
@@ -266,7 +266,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Text(
         title.toUpperCase(),
         style: TextStyle(
-          color: Colors.grey.shade600,
+          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
           fontWeight: FontWeight.bold,
           fontSize: 12,
           letterSpacing: 1.1,
@@ -313,7 +313,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildDarkModeSwitch() {
+  Widget _buildLightThemeSwitch() {
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
@@ -325,14 +325,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         valueListenable: themeNotifier,
         builder: (context, themeMode, _) {
           return SwitchListTile(
-            title: const Text("Dark Mode"),
-            secondary: const Icon(Icons.brightness_6_outlined),
-            value: themeMode == ThemeMode.dark ||
-                (themeMode == ThemeMode.system &&
-                    MediaQuery.of(context).platformBrightness ==
-                        Brightness.dark),
-            onChanged: (value) {
-              themeNotifier.toggle(value);
+            title: const Text("Light Theme"),
+            secondary: const Icon(Icons.light_mode_outlined),
+            value: themeMode == ThemeMode.light,
+            onChanged: (isLight) {
+              themeNotifier.toggle(!isLight);
             },
           );
         },
@@ -352,7 +349,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
             backgroundColor: isLoggedIn ? Colors.redAccent : Colors.orange,
-            foregroundColor: Colors.white,
+            foregroundColor: Theme.of(context).colorScheme.onPrimary,
             padding: const EdgeInsets.symmetric(vertical: 16),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(30),

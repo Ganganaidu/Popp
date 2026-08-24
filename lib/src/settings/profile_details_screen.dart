@@ -2,7 +2,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:popp/src/api/api_url.dart';
 import 'package:popp/src/login/model/user_data_model.dart'; // Adjust path to your UserData model
-import 'package:popp/src/theme/bikerverse_colors.dart';
 import 'package:popp/src/toolbar/common_app_bar.dart';
 import 'package:popp/src/utils/app_loger.dart';
 import 'package:popp/src/widgets/web_constrained_box.dart';
@@ -183,9 +182,11 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                         color: Colors.white.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Text(
+                      child: Text(
                         "Preview",
-                        style: TextStyle(fontSize: 12, color: Colors.white),
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: Theme.of(context).colorScheme.onSurface),
                       ),
                     ),
                     validator: (value) => value == null || value.isEmpty
@@ -204,19 +205,31 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                             : selectedState,
                         label: "",
                         hint: "Select your state",
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
-                            color: Colors.white),
-                        dropdownColor: BikerverseColors.cardElevated,
-                        fillColor: BikerverseColors.cardElevated,
-                        prefixIcon:
-                            const Icon(Icons.apartment, color: Colors.grey),
+                            color: Theme.of(context).colorScheme.onSurface),
+                        dropdownColor: Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerHighest,
+                        fillColor: Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerHighest,
+                        prefixIcon: Icon(Icons.apartment,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withOpacity(0.5)),
                         decoration: InputDecoration(
                           filled: true,
-                          fillColor: BikerverseColors.cardElevated,
-                          prefixIcon:
-                              const Icon(Icons.apartment, color: Colors.grey),
+                          fillColor: Theme.of(context)
+                              .colorScheme
+                              .surfaceContainerHighest,
+                          prefixIcon: Icon(Icons.apartment,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withOpacity(0.5)),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide: BorderSide.none,
@@ -224,12 +237,13 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide: BorderSide(
-                                color: Colors.white.withOpacity(0.1), width: 1),
+                                color: Theme.of(context).colorScheme.outline,
+                                width: 1),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: const BorderSide(
-                                color: BikerverseColors.accent),
+                            borderSide: BorderSide(
+                                color: Theme.of(context).colorScheme.primary),
                           ),
                           contentPadding: const EdgeInsets.symmetric(
                               horizontal: 16, vertical: 16),
@@ -285,8 +299,8 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
       padding: const EdgeInsets.only(bottom: 12.0, top: 20.0),
       child: Text(
         title.toUpperCase(),
-        style: const TextStyle(
-          color: BikerverseColors.accent,
+        style: TextStyle(
+          color: Theme.of(context).colorScheme.primary,
           fontSize: 14,
           fontWeight: FontWeight.w900,
           letterSpacing: 1.2,
@@ -311,12 +325,15 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
         TextFormField(
           controller: controller,
           maxLines: maxLines,
-          style: const TextStyle(
-              fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white),
+          style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Theme.of(context).colorScheme.onSurface),
           decoration: InputDecoration(
             filled: true,
-            fillColor: BikerverseColors.cardElevated,
-            prefixIcon: Icon(icon, color: Colors.grey),
+            fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+            prefixIcon: Icon(icon,
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5)),
             suffixIcon: suffix,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
@@ -324,12 +341,13 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide:
-                  BorderSide(color: Colors.white.withOpacity(0.1), width: 1),
+              borderSide: BorderSide(
+                  color: Theme.of(context).colorScheme.outline, width: 1),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: BikerverseColors.accent),
+              borderSide:
+                  BorderSide(color: Theme.of(context).colorScheme.primary),
             ),
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -350,20 +368,23 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
         TextFormField(
           initialValue: value,
           readOnly: true,
-          style: const TextStyle(
-              fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white),
+          style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Theme.of(context).colorScheme.onSurface),
           decoration: InputDecoration(
             filled: true,
-            fillColor: BikerverseColors.cardElevated,
-            prefixIcon: Icon(icon, color: Colors.grey),
+            fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+            prefixIcon: Icon(icon,
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5)),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
               borderSide: BorderSide.none,
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide:
-                  BorderSide(color: Colors.white.withOpacity(0.1), width: 1),
+              borderSide: BorderSide(
+                  color: Theme.of(context).colorScheme.outline, width: 1),
             ),
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -376,12 +397,11 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
   Widget _buildLabel(String label) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      color: BikerverseColors.background,
-      // Match background to hide line if needed, or just overlay
+      color: Theme.of(context).colorScheme.surface,
       child: Text(
         label.toUpperCase(),
-        style: const TextStyle(
-          color: Colors.grey,
+        style: TextStyle(
+          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
           fontSize: 12,
           fontWeight: FontWeight.w800,
           letterSpacing: 1.0,
@@ -428,16 +448,15 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
           const SizedBox(height: 24),
           GestureDetector(
             onTap: _launchDeleteAccountUrl,
-            child: const Text(
+            child: Text(
               'PROCEED TO ACCOUNT DELETION',
               style: TextStyle(
                 fontWeight: FontWeight.w900,
                 fontSize: 14,
                 letterSpacing: 1.2,
-                color: Color(0xFF5FACE3),
-                // Blue link color
+                color: Theme.of(context).colorScheme.primary,
                 decoration: TextDecoration.underline,
-                decorationColor: Color(0xFF5FACE3),
+                decorationColor: Theme.of(context).colorScheme.primary,
               ),
             ),
           ),
@@ -480,14 +499,14 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  backgroundColor: const Color(0xFFE25C5C), // Red color
+                  backgroundColor: const Color(0xFFE25C5C),
                   foregroundColor: Colors.white,
                   elevation: 0,
                 ),
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.logout, color: Colors.white, size: 20),
+                    Icon(Icons.logout, size: 20),
                     SizedBox(width: 8),
                     Text(
                       'LOGOUT',
@@ -495,7 +514,6 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                         fontSize: 14,
                         fontWeight: FontWeight.w900,
                         letterSpacing: 1.0,
-                        color: Colors.white,
                       ),
                     ),
                   ],
@@ -515,29 +533,33 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  backgroundColor: BikerverseColors.accent,
-                  foregroundColor: Colors.black,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
                   elevation: 0,
                 ),
                 child: _isSaving
-                    ? const SizedBox(
+                    ? SizedBox(
                         height: 24,
                         width: 24,
                         child: CircularProgressIndicator(
-                            color: Colors.black, strokeWidth: 3),
+                            color: Theme.of(context).colorScheme.onPrimary,
+                            strokeWidth: 3),
                       )
-                    : const Row(
+                    : Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.save_outlined, color: Colors.black, size: 20),
-                          SizedBox(width: 8),
+                          Icon(Icons.save_outlined,
+                              color: Theme.of(context).colorScheme.onPrimary,
+                              size: 20),
+                          const SizedBox(width: 8),
                           Text(
                             'SAVE',
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w900,
                               letterSpacing: 1.0,
-                              color: Colors.black,
+                              color:
+                                  Theme.of(context).colorScheme.onPrimary,
                             ),
                           ),
                         ],
@@ -563,9 +585,10 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: BikerverseColors.cardElevated,
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        border: Border.all(
+            color: Theme.of(context).colorScheme.outline.withOpacity(0.15)),
       ),
       margin: const EdgeInsets.symmetric(vertical: 6),
       child: ListTile(
@@ -573,16 +596,18 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
         leading: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color:
+                Theme.of(context).colorScheme.onSurface.withOpacity(0.06),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(icon, color: Colors.white, size: 20),
+          child: Icon(icon,
+              color: Theme.of(context).colorScheme.onSurface, size: 20),
         ),
         title: Text(
           title.toUpperCase(),
-          style: const TextStyle(
+          style: TextStyle(
             fontWeight: FontWeight.w800,
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.onSurface,
             fontSize: 16,
             letterSpacing: 0.5,
           ),
@@ -590,8 +615,12 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
         subtitle: subtitle != null ? Text(subtitle) : null,
         trailing: trailing ??
             (disableArrow && enabled
-                ? const Icon(Icons.arrow_forward_ios,
-                    size: 16, color: Colors.grey)
+                ? Icon(Icons.arrow_forward_ios,
+                    size: 16,
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withOpacity(0.4))
                 : null),
         enabled: enabled,
         onTap: enabled ? onTap : null,

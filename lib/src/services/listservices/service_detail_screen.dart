@@ -145,8 +145,8 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
           Expanded(
             flex: 2,
             child: Text(label,
-                style: const TextStyle(
-                    color: Colors.grey,
+                style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                     fontSize: 13,
                     fontWeight: FontWeight.bold)),
           ),
@@ -160,14 +160,19 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                   Expanded(
                       child: Text(value,
                           style: TextStyle(
-                              color: isLink ? Colors.blue : Colors.white,
+                              color: isLink
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Theme.of(context).colorScheme.onSurface,
                               fontSize: 13,
                               decoration:
                                   isLink ? TextDecoration.underline : null))),
                   if (icon != null) ...[
                     const SizedBox(width: 4),
                     Icon(icon,
-                        color: isLink ? Colors.blue : Colors.grey, size: 14)
+                        color: isLink
+                            ? Theme.of(context).colorScheme.primary
+                            : Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                        size: 14)
                   ]
                 ],
               ),
@@ -279,13 +284,13 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF121212), // Dark background
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Stack(
         children: [
           CustomScrollView(
             slivers: [
               SliverAppBar(
-                backgroundColor: const Color(0xFF121212),
+                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                 expandedHeight: screenHeight * 0.45,
                 pinned: true,
                 leading: Center(
@@ -336,17 +341,17 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                               child: AppNetworkImage(
                                 imageUrl: allImageUrls[index],
                                 fit: BoxFit.cover,
-                                errorWidget: Container(color: Colors.grey[900]),
+                                errorWidget: Container(color: Theme.of(context).colorScheme.surface),
                               ),
                             );
                           },
                         )
                       else
                         Container(
-                          color: Colors.grey[900],
-                          child: const Center(
+                          color: Theme.of(context).colorScheme.surface,
+                          child: Center(
                             child: Icon(Icons.image_not_supported,
-                                color: Colors.white24, size: 50),
+                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.2), size: 50),
                           ),
                         ),
 
@@ -377,11 +382,11 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                         right: 0,
                         child: Container(
                           padding: const EdgeInsets.only(top: 80, bottom: 20),
-                          decoration: const BoxDecoration(
+                          decoration: BoxDecoration(
                             gradient: LinearGradient(
                               begin: Alignment.bottomCenter,
                               end: Alignment.topCenter,
-                              colors: [Color(0xFF121212), Colors.transparent],
+                              colors: [Theme.of(context).scaffoldBackgroundColor, Colors.transparent],
                             ),
                           ),
                           child: Row(
@@ -417,8 +422,8 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                       const SizedBox(height: 15),
                       // Category Tag
                       Text(category.toUpperCase(),
-                          style: const TextStyle(
-                              color: Color(0xFF2ECC71),
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.primary,
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 1.2)),
@@ -426,8 +431,8 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                       // Title
                       Text(
                         title,
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
                           height: 1.1,
@@ -461,17 +466,19 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                       const SizedBox(height: 20),
 
                       // Description
-                      const Text("DESCRIPTION",
+                      Text("DESCRIPTION",
                           style: TextStyle(
-                              color: Colors.white,
+                              color: Theme.of(context).colorScheme.onSurface,
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                               fontStyle: FontStyle.italic)),
                       const SizedBox(height: 16),
                       Text(
                         description,
-                        style: const TextStyle(
-                            color: Colors.white, fontSize: 14, height: 1.5),
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface,
+                            fontSize: 14,
+                            height: 1.5),
                       ),
 
                       const SizedBox(height: 24),
@@ -488,7 +495,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                           child: ElevatedButton.icon(
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.green,
-                              foregroundColor: Colors.white,
+                              foregroundColor: Theme.of(context).colorScheme.onPrimary,
                               padding: const EdgeInsets.symmetric(vertical: 14),
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10)),
@@ -665,18 +672,16 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
 
   Widget _buildInfoBlock(IconData icon, String title, String content,
       {String? subText}) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: const BoxDecoration(
-        color: Colors.transparent,
-      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E1E1E),
+              color: cs.surface,
               borderRadius: BorderRadius.circular(50),
             ),
             child: Icon(icon, color: const Color(0xFF2ECC71), size: 24),
@@ -687,15 +692,15 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(title,
-                    style: const TextStyle(
-                        color: Colors.grey,
+                    style: TextStyle(
+                        color: cs.onSurface.withOpacity(0.6),
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 1.0)),
                 const SizedBox(height: 8),
                 Text(content,
-                    style: const TextStyle(
-                        color: Colors.white,
+                    style: TextStyle(
+                        color: cs.onSurface,
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         height: 1.3)),
@@ -717,17 +722,18 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
 
   Widget _buildHighlightCard(IconData icon, String label, String value,
       {VoidCallback? onTap, int maxLines = 1}) {
+    final cs = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         height: maxLines > 1 ? 130 : 120,
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
         decoration: BoxDecoration(
-          color: const Color(0xFF1E1E1E),
+          color: cs.surface,
           borderRadius: BorderRadius.circular(16),
           border: onTap != null
               ? Border.all(color: const Color(0xFF2ECC71).withOpacity(0.3))
-              : null,
+              : Border.all(color: cs.onSurface.withOpacity(0.06)),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -735,15 +741,15 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
             Icon(icon, color: const Color(0xFF2ECC71), size: 22),
             const SizedBox(height: 5),
             Text(label,
-                style: const TextStyle(
-                    color: Colors.grey,
+                style: TextStyle(
+                    color: cs.onSurface.withOpacity(0.6),
                     fontSize: 10,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 0.5)),
             const SizedBox(height: 4),
             Text(value,
-                style: const TextStyle(
-                    color: Colors.white,
+                style: TextStyle(
+                    color: cs.onSurface,
                     fontSize: 13,
                     fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
@@ -909,9 +915,9 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(" DETAILS ",
+        Text(" DETAILS ",
             style: TextStyle(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.onSurface,
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 fontStyle: FontStyle.italic)),
@@ -1022,7 +1028,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
           child: ElevatedButton.icon(
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.blue.shade700,
-              foregroundColor: Colors.white,
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
@@ -1061,7 +1067,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
           child: ElevatedButton.icon(
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.green,
-              foregroundColor: Colors.white,
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)),
@@ -1076,7 +1082,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
           child: ElevatedButton.icon(
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.orange,
-              foregroundColor: Colors.white,
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)),
@@ -1091,7 +1097,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
           child: ElevatedButton.icon(
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)),
@@ -1203,7 +1209,8 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
             onPressed: () => Navigator.of(ctx).pop(true),
             child: Text(
               isSendBack ? 'Send Back' : 'Reject',
-              style: const TextStyle(color: Colors.white),
+              style: TextStyle(
+                  color: Theme.of(ctx).colorScheme.onPrimary),
             ),
           ),
         ],

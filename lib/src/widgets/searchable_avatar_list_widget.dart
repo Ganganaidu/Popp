@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../theme/bikerverse_colors.dart';
 import '../utils/avatar_color_utils.dart';
 
 /// A searchable, multi-select list where each row shows a colored initials
@@ -80,28 +79,32 @@ class _SearchableAvatarListWidgetState
       children: [
         TextField(
           controller: _searchController,
-          style: const TextStyle(color: BikerverseColors.textPrimary),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
           decoration: InputDecoration(
             hintText: widget.searchHint,
-            hintStyle: const TextStyle(color: BikerverseColors.textMuted),
-            prefixIcon: const Icon(Icons.search,
-                size: 20, color: BikerverseColors.textMuted),
+            hintStyle: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.38)),
+            prefixIcon: Icon(Icons.search,
+                size: 20,
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.38)),
             filled: true,
-            fillColor: BikerverseColors.cardElevated,
+            fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: BikerverseColors.outline),
+              borderSide:
+                  BorderSide(color: Theme.of(context).colorScheme.outline),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: BikerverseColors.outline),
+              borderSide:
+                  BorderSide(color: Theme.of(context).colorScheme.outline),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                  color: BikerverseColors.brightGreen, width: 1.5),
+              borderSide: BorderSide(
+                  color: Theme.of(context).colorScheme.primary, width: 1.5),
             ),
           ),
           onChanged: (val) => setState(() => _query = val),
@@ -109,9 +112,13 @@ class _SearchableAvatarListWidgetState
         const SizedBox(height: 8),
         Expanded(
           child: filtered.isEmpty
-              ? const Center(
+              ? Center(
                   child: Text('No results',
-                      style: TextStyle(color: BikerverseColors.textMuted)),
+                      style: TextStyle(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withOpacity(0.38))),
                 )
               : ListView.builder(
                   itemCount: filtered.length,
@@ -166,8 +173,8 @@ class _AvatarRow extends StatelessWidget {
             Expanded(
               child: Text(
                 name,
-                style: const TextStyle(
-                  color: BikerverseColors.textPrimary,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
                 ),
@@ -176,8 +183,8 @@ class _AvatarRow extends StatelessWidget {
             Icon(
               selected ? Icons.check_circle : Icons.circle_outlined,
               color: selected
-                  ? BikerverseColors.accent
-                  : BikerverseColors.outline,
+                  ? Theme.of(context).colorScheme.primary
+                  : Theme.of(context).colorScheme.outline,
               size: 22,
             ),
           ],

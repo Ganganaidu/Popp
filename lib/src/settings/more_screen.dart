@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:popp/src/widgets/web_constrained_box.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../main.dart';
 import '../api/api_url.dart';
 import '../login/repository/auth_repository.dart';
 import '../navigation/app_routes.dart';
@@ -212,6 +213,7 @@ class _MoreScreenState extends State<MoreScreen> {
               }
             },
           ),
+        _buildLightThemeSwitch(),
         const SizedBox(height: 24),
         _buildSectionTitle("SUPPORT & HELP"),
         _buildListTile(
@@ -265,7 +267,7 @@ class _MoreScreenState extends State<MoreScreen> {
       child: Text(
         title.toUpperCase(),
         style: TextStyle(
-          color: Colors.grey.shade600,
+          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
           fontWeight: FontWeight.bold,
           fontSize: 12,
           letterSpacing: 1.1,
@@ -313,12 +315,54 @@ class _MoreScreenState extends State<MoreScreen> {
         subtitle: subtitle != null ? Text(subtitle) : null,
         trailing: trailing ??
             (enabled
-                ? const Icon(Icons.arrow_forward_ios,
-                    size: 14, color: Colors.grey)
+                ? Icon(Icons.arrow_forward_ios,
+                    size: 14,
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4))
                 : null),
         enabled: enabled,
         onTap: enabled ? onTap : null,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      ),
+    );
+  }
+
+  Widget _buildLightThemeSwitch() {
+    return Card(
+      elevation: 0,
+      color: Theme.of(context).cardColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.grey.withOpacity(0.1)),
+      ),
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      child: ValueListenableBuilder<ThemeMode>(
+        valueListenable: themeNotifier,
+        builder: (context, themeMode, _) {
+          return SwitchListTile(
+            title: const Text(
+              "Light Theme",
+              style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
+            ),
+            secondary: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.grey.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                Icons.light_mode_outlined,
+                color: Theme.of(context).iconTheme.color,
+                size: 20,
+              ),
+            ),
+            value: themeMode == ThemeMode.light,
+            onChanged: (isLight) {
+              themeNotifier.toggle(!isLight);
+            },
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          );
+        },
       ),
     );
   }
@@ -331,7 +375,7 @@ class _MoreScreenState extends State<MoreScreen> {
             backgroundColor: isLoggedIn
                 ? Colors.redAccent.withOpacity(0.1)
                 : Theme.of(context).primaryColor,
-            foregroundColor: isLoggedIn ? Colors.redAccent : Colors.white,
+            foregroundColor: isLoggedIn ? Colors.redAccent : Theme.of(context).colorScheme.onPrimary,
             elevation: 0,
             padding: const EdgeInsets.symmetric(vertical: 16),
             side: isLoggedIn ? const BorderSide(color: Colors.redAccent) : null,

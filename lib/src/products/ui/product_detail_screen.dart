@@ -80,11 +80,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     final isOwner = vm.isOwner;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF121212), // Dark background
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            backgroundColor: const Color(0xFF121212),
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             expandedHeight: screenHeight * 0.45,
             pinned: true,
             leading: Center(
@@ -133,7 +133,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         child: AppNetworkImage(
                           imageUrl: imageUrls[index],
                           fit: BoxFit.cover,
-                          errorWidget: Container(color: Colors.grey[900]),
+                          errorWidget: Container(color: Theme.of(context).colorScheme.surface),
                         ),
                       );
                     },
@@ -163,12 +163,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     right: 0,
                     child: Container(
                       padding: const EdgeInsets.only(top: 80, bottom: 20),
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         gradient: LinearGradient(
                           begin: Alignment.bottomCenter,
                           end: Alignment.topCenter,
                           colors: [
-                            Color(0xFF121212),
+                            Theme.of(context).scaffoldBackgroundColor,
                             Colors.transparent,
                           ],
                         ),
@@ -239,8 +239,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   // Title
                   Text(
                     ProductUtils.getTitle(product),
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
                       height: 1.1,
@@ -251,8 +251,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   Text(
                     CurrencyService.getProductPrice(
                         product['expectedPrice'], countryCode),
-                    style: const TextStyle(
-                      color: Color(0xFF2ECC71), // Bright Green
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.primary,
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
@@ -264,9 +264,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
                   const SizedBox(height: 32),
 
-                  const Text(" DETAILS ",
+                  Text(" DETAILS ",
                       style: TextStyle(
-                          color: Colors.white,
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 18,
                           fontWeight: FontWeight.bold)),
                   const SizedBox(height: 24),
@@ -280,16 +280,18 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   ),
 
                   if (product['additionalDetails'].isNotEmpty)
-                    const Text("DESCRIPTION",
+                    Text("DESCRIPTION",
                         style: TextStyle(
-                            color: Colors.white,
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontSize: 18,
                             fontWeight: FontWeight.bold)),
                   const SizedBox(height: 16),
                   Text(
                     product['additionalDetails'],
-                    style: const TextStyle(
-                        color: Colors.white, fontSize: 14, height: 1.5),
+                    style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontSize: 14,
+                        height: 1.5),
                   ),
 
                   const SizedBox(height: 20),
@@ -301,7 +303,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       child: ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.green,
-                          foregroundColor: Colors.white,
+                          foregroundColor: Theme.of(context).colorScheme.onPrimary,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10)),
@@ -326,7 +328,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         child: ElevatedButton.icon(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blue.shade700,
-                            foregroundColor: Colors.white,
+                            foregroundColor: Theme.of(context).colorScheme.onPrimary,
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10)),
@@ -354,16 +356,19 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           border:
                               Border.all(color: Colors.blue.withOpacity(0.3)),
                         ),
-                        child: const Row(
+                        child: Row(
                           children: [
                             Icon(Icons.pending_outlined,
-                                color: Colors.blue, size: 18),
-                            SizedBox(width: 8),
+                                color: Theme.of(context).colorScheme.primary,
+                                size: 18),
+                            const SizedBox(width: 8),
                             Expanded(
                               child: Text(
                                 'Your update is pending admin review. Current listing is still live.',
-                                style:
-                                    TextStyle(color: Colors.blue, fontSize: 13),
+                                style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
+                                    fontSize: 13),
                               ),
                             ),
                           ],
@@ -443,26 +448,27 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   Widget _buildHighlightCard(IconData icon, String label, String value) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E1E1E),
+        color: cs.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white10),
+        border: Border.all(color: cs.onSurface.withOpacity(0.08)),
       ),
       child: Column(
         children: [
           Icon(icon, color: Colors.green, size: 20),
           const SizedBox(height: 8),
           Text(label,
-              style: const TextStyle(
-                  color: Colors.grey,
+              style: TextStyle(
+                  color: cs.onSurface.withOpacity(0.6),
                   fontSize: 10,
                   fontWeight: FontWeight.w600)),
           const SizedBox(height: 4),
           Text(value,
-              style: const TextStyle(
-                  color: Colors.white,
+              style: TextStyle(
+                  color: cs.onSurface,
                   fontSize: 12,
                   fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
@@ -500,7 +506,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           child: ElevatedButton.icon(
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.blue.shade700,
-              foregroundColor: Colors.white,
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)),
@@ -524,7 +530,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             child: ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
-                foregroundColor: Colors.white,
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10)),
@@ -562,7 +568,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             child: ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
-                foregroundColor: Colors.white,
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10)),
@@ -577,7 +583,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             child: ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10)),
@@ -598,7 +604,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           child: ElevatedButton.icon(
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.green,
-              foregroundColor: Colors.white,
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)),
@@ -613,7 +619,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           child: ElevatedButton.icon(
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.orange,
-              foregroundColor: Colors.white,
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)),
@@ -628,7 +634,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           child: ElevatedButton.icon(
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)),
@@ -723,7 +729,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   : isRejectUpdate
                       ? 'Reject Update'
                       : 'Reject',
-              style: const TextStyle(color: Colors.white),
+              style: TextStyle(
+                  color: Theme.of(ctx).colorScheme.onPrimary),
             ),
           ),
         ],

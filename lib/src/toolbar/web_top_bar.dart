@@ -9,10 +9,9 @@ class WebTopBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      height: 65, // Increased height for better spacing
-      color: isDarkMode ? context.primaryColorDark : Colors.grey[50], // User requested black theme
+      height: 65,
+      color: Theme.of(context).colorScheme.surface,
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: SafeArea(
         child: Row(
@@ -42,11 +41,11 @@ class WebTopBar extends StatelessWidget implements PreferredSizeWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Text(
+        Text(
           "Biker",
           style: TextStyle(
             fontSize: 24,
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.primary,
             fontWeight: FontWeight.bold,
             fontFamily: 'Orbitron',
           ),
@@ -55,7 +54,7 @@ class WebTopBar extends StatelessWidget implements PreferredSizeWidget {
           "verse",
           style: TextStyle(
             fontSize: 24,
-            color: context.primaryColor, // Branding Green
+            color: Theme.of(context).colorScheme.onSurface,
             fontWeight: FontWeight.bold,
             fontFamily: 'Orbitron',
           ),
@@ -68,7 +67,7 @@ class WebTopBar extends StatelessWidget implements PreferredSizeWidget {
     return Container(
       height: 40, // Slightly taller search bar
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(4),
       ),
       child: Row(
@@ -101,7 +100,7 @@ class WebTopBar extends StatelessWidget implements PreferredSizeWidget {
                   child: Text(
                     "Search produce and services ...",
                     style: TextStyle(
-                      color: Colors.grey.shade600,
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                       fontSize: 16,
                     ),
                   ),

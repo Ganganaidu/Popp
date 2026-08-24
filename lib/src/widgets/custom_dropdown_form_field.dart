@@ -89,10 +89,10 @@ class _CustomDropdownFormFieldState<T>
           thumbVisibility: WidgetStateProperty.all(true),
         ),
       ),
-      iconStyleData: const IconStyleData(
+      iconStyleData: IconStyleData(
         icon: Icon(
           Icons.keyboard_arrow_down,
-          color: Colors.grey,
+          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
         ),
       ),
     );

@@ -50,7 +50,7 @@ class _MyListingsScreenState extends State<MyListingsScreen>
                 onPressed: () => context.goLogin(),
                 style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
-                    foregroundColor: Colors.white),
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary),
                 child: const Text("Login"),
               )
             ],

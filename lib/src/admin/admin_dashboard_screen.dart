@@ -39,21 +39,21 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     if (!_isAdmin) {
       return Scaffold(
         appBar: const CommonAppBar(title: 'Admin Dashboard'),
-        body: const Center(
+        body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.lock_outline, size: 80, color: Colors.red),
-              SizedBox(height: 20),
-              Text(
+              const Icon(Icons.lock_outline, size: 80, color: Colors.red),
+              const SizedBox(height: 20),
+              const Text(
                 'Access Denied',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               Text(
                 'You do not have administrative privileges to view this page.',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, color: Colors.grey),
+                style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
               ),
             ],
           ),
@@ -67,7 +67,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
           controller: _tabController,
           indicatorColor: Colors.green,
           labelColor: Colors.green,
-          unselectedLabelColor: Colors.grey,
+          unselectedLabelColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
           tabs: const [
             Tab(icon: Icon(Icons.storefront), text: "Products"),
             Tab(icon: Icon(Icons.miscellaneous_services), text: "Services"),

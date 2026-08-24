@@ -16,12 +16,11 @@ class WebMenuDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor = isDarkMode ? context.primaryColorDark : Colors.white;
-    final textColor = isDarkMode ? Colors.white : Colors.black87;
+    final cs = Theme.of(context).colorScheme;
+    final textColor = cs.onSurface;
 
     return Drawer(
-      backgroundColor: backgroundColor,
+      backgroundColor: cs.surface,
       child: Column(
         children: [
           DrawerHeader(
@@ -32,11 +31,11 @@ class WebMenuDrawer extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
+                  Text(
                     "Biker",
                     style: TextStyle(
                       fontSize: 24,
-                      color: Colors.white,
+                      color: cs.onPrimary,
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Orbitron',
                     ),

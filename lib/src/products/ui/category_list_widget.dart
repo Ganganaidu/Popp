@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../api/currency_service.dart';
 import '../../navigation/app_routes.dart';
-import '../../theme/bikerverse_colors.dart';
 import '../../utils/product_utils.dart';
 import '../../widgets/listing_card.dart';
 
@@ -46,8 +45,7 @@ class CategoryListWidget extends StatelessWidget {
           _buildCategoryHeader(context, theme, isWeb: false),
           const SizedBox(height: 15),
           SizedBox(
-            height: itemWidth *
-                1.2, // Adjust height based on aspect ratio of product cards
+            height: itemWidth * 1.2, // Adjust height based on aspect ratio of product cards
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: products.length,
@@ -80,10 +78,10 @@ class CategoryListWidget extends StatelessWidget {
                   children: [
                     Text(
                       categoryName.toUpperCase(),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w800,
-                        color: BikerverseColors.textPrimary,
+                        color: Theme.of(context).colorScheme.onSurface,
                         letterSpacing: 0.6,
                       ),
                     ),
@@ -92,7 +90,7 @@ class CategoryListWidget extends StatelessWidget {
                       width: 44,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: BikerverseColors.accent,
+                        color: Theme.of(context).colorScheme.primary,
                         borderRadius: BorderRadius.circular(999),
                       ),
                     ),
@@ -102,12 +100,12 @@ class CategoryListWidget extends StatelessWidget {
               InkWell(
                 onTap: () => _navigateToCategoryPage(context),
                 borderRadius: BorderRadius.circular(20),
-                child: const Row(
+                child: Row(
                   children: [
                     Text(
                       'VIEW ALL',
                       style: TextStyle(
-                        color: BikerverseColors.textSecondary,
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.55),
                         fontWeight: FontWeight.w600,
                         letterSpacing: 1.1,
                         fontSize: 12,
@@ -117,7 +115,7 @@ class CategoryListWidget extends StatelessWidget {
                     Icon(
                       Icons.arrow_forward_ios,
                       size: 14,
-                      color: BikerverseColors.accent,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                   ],
                 ),

@@ -1,8 +1,8 @@
 import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:popp/src/theme/bikerverse_colors.dart';
 import 'package:popp/src/utils/app_constants.dart';
 
 class ImagePickerSection extends StatefulWidget {
@@ -114,11 +114,11 @@ class _ImagePickerSectionState extends State<ImagePickerSection> {
   void _showImageSourceSheet() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: BikerverseColors.surface,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (_) => SafeArea(
+      builder: (sheetCtx) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -127,18 +127,22 @@ class _ImagePickerSectionState extends State<ImagePickerSection> {
               height: 4,
               margin: const EdgeInsets.symmetric(vertical: 12),
               decoration: BoxDecoration(
-                color: BikerverseColors.textMuted,
+                color: Theme.of(sheetCtx).colorScheme.outlineVariant,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
             if (widget.allowGallery)
               ListTile(
-                leading: const Icon(Icons.photo_library_outlined,
-                    color: BikerverseColors.textSecondary),
-                title: const Text('Choose from Gallery',
-                    style: TextStyle(color: BikerverseColors.textPrimary)),
+                leading: Icon(Icons.photo_library_outlined,
+                    color: Theme.of(sheetCtx)
+                        .colorScheme
+                        .onSurface
+                        .withOpacity(0.6)),
+                title: Text('Choose from Gallery',
+                    style: TextStyle(
+                        color: Theme.of(sheetCtx).colorScheme.onSurface)),
                 onTap: () {
-                  Navigator.pop(context);
+                  Navigator.pop(sheetCtx);
                   if (widget.allowMultipleImages) {
                     _pickMultipleImages();
                   } else {
@@ -148,12 +152,16 @@ class _ImagePickerSectionState extends State<ImagePickerSection> {
               ),
             if (widget.allowCamera)
               ListTile(
-                leading: const Icon(Icons.camera_alt_outlined,
-                    color: BikerverseColors.textSecondary),
-                title: const Text('Take a Photo',
-                    style: TextStyle(color: BikerverseColors.textPrimary)),
+                leading: Icon(Icons.camera_alt_outlined,
+                    color: Theme.of(sheetCtx)
+                        .colorScheme
+                        .onSurface
+                        .withOpacity(0.6)),
+                title: Text('Take a Photo',
+                    style: TextStyle(
+                        color: Theme.of(sheetCtx).colorScheme.onSurface)),
                 onTap: () {
-                  Navigator.pop(context);
+                  Navigator.pop(sheetCtx);
                   _pickSingleImage(ImageSource.camera);
                 },
               ),
@@ -177,16 +185,17 @@ class _ImagePickerSectionState extends State<ImagePickerSection> {
           children: [
             Text(
               widget.title,
-              style: const TextStyle(
-                color: BikerverseColors.textPrimary,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface,
                 fontWeight: FontWeight.w700,
                 fontSize: 16,
               ),
             ),
             Text(
               '$count/$_maxImages · first is cover',
-              style: const TextStyle(
-                color: BikerverseColors.textMuted,
+              style: TextStyle(
+                color:
+                    Theme.of(context).colorScheme.onSurface.withOpacity(0.38),
                 fontSize: 12,
               ),
             ),
@@ -223,22 +232,23 @@ class _AddPhotoTile extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: CustomPaint(
-        painter: const _DashedBorderPainter(color: BikerverseColors.accent),
+        painter: _DashedBorderPainter(
+            color: Theme.of(context).colorScheme.primary),
         child: Container(
           decoration: BoxDecoration(
-            color: BikerverseColors.accentFill,
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.12),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: const Column(
+          child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(Icons.camera_alt_outlined,
-                  color: BikerverseColors.accent, size: 28),
-              SizedBox(height: 6),
+                  color: Theme.of(context).colorScheme.primary, size: 28),
+              const SizedBox(height: 6),
               Text(
                 'Add photo',
                 style: TextStyle(
-                  color: BikerverseColors.accent,
+                  color: Theme.of(context).colorScheme.primary,
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),
@@ -277,13 +287,13 @@ class _ImageTile extends StatelessWidget {
               padding:
                   const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: BikerverseColors.accent,
+                color: Theme.of(context).colorScheme.primary,
                 borderRadius: BorderRadius.circular(4),
               ),
-              child: const Text(
+              child: Text(
                 'COVER',
                 style: TextStyle(
-                  color: BikerverseColors.onGreen,
+                  color: Theme.of(context).colorScheme.onPrimary,
                   fontSize: 9,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 0.5,

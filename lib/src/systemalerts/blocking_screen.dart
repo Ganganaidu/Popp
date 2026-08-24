@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:popp/src/systemalerts/system_alerts_api_services.dart';
+import 'package:popp/src/theme/theme.dart';
 import 'package:popp/src/utils/app_constants.dart';
 import 'package:popp/src/utils/app_loger.dart';
 import 'message_data.dart';
@@ -53,31 +54,32 @@ class BlockingScreen extends StatelessWidget {
 
     AppLogger.d("message : ${systemMessage.priority}");
 
-    return PopScope(
+    return Theme(
+      data: bikerverseDarkTheme,
+      child: PopScope(
       canPop: !isHighPriority && !isAppUpdate,
       child: Scaffold(
-        backgroundColor: const Color(0xFF0F1110), // Dark background
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: SafeArea(
           child: Column(
             children: [
               // 1. Logo Header
-              const Padding(
-                padding: EdgeInsets.only(top: 20.0),
+              Padding(
+                padding: const EdgeInsets.only(top: 20.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text("Biker",
+                    const Text("Biker",
                         style: TextStyle(
                             fontSize: 24,
                             color: Color(0xFF2ECC71),
-                            // Green color
                             fontWeight: FontWeight.bold,
                             fontFamily: 'Orbitron',
                             fontStyle: FontStyle.italic)),
                     Text("verse",
                         style: TextStyle(
                             fontSize: 24,
-                            color: Colors.white,
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontWeight: FontWeight.bold,
                             fontFamily: 'Orbitron',
                             fontStyle: FontStyle.italic))
@@ -117,12 +119,12 @@ class BlockingScreen extends StatelessWidget {
                     ? "UPDATE REQUIRED"
                     : getPriorityMessageTitle(systemMessage.priority)
                         .toUpperCase(),
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 25,
                   fontFamily: 'Orbitron',
                   fontWeight: FontWeight.w900,
                   fontStyle: FontStyle.italic,
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.onSurface,
                   letterSpacing: 1.2,
                 ),
                 textAlign: TextAlign.center,
@@ -158,10 +160,10 @@ class BlockingScreen extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(width: 12),
-                          const Text(
+                          Text(
                             "WHAT'S NEW",
                             style: TextStyle(
-                              color: Colors.white,
+                              color: Theme.of(context).colorScheme.onSurface,
                               fontWeight: FontWeight.bold,
                               fontSize: 14,
                               letterSpacing: 0.5,
@@ -172,8 +174,8 @@ class BlockingScreen extends StatelessWidget {
                       const SizedBox(height: 12),
                       Text(
                         systemMessage.message,
-                        style: const TextStyle(
-                          color: Colors.grey,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                           height: 1.5,
                           fontSize: 14,
                         ),
@@ -197,7 +199,7 @@ class BlockingScreen extends StatelessWidget {
                   child: Text(
                     "REQUIRED VERSION: ${systemMessage.versionCode ?? 'LATEST'}",
                     style: TextStyle(
-                      color: Colors.grey[400],
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1,
@@ -213,7 +215,7 @@ class BlockingScreen extends StatelessWidget {
                   child: Text(
                     'Tap "Open store" to open the store. The app will quit so you can install the update. Re-open the app after installing to continue.',
                     style: TextStyle(
-                      color: Colors.grey[600],
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                       fontSize: 12,
                     ),
                     textAlign: TextAlign.center,
@@ -281,6 +283,7 @@ class BlockingScreen extends StatelessWidget {
           ),
         ),
       ),
+    ),
     );
   }
 }

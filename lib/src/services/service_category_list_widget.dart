@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 
 import '../navigation/app_routes.dart';
 import 'widgets/service_card.dart';
-import '../theme/bikerverse_colors.dart';
 
 class ServiceCategoryListWidget extends StatelessWidget {
   final String categoryName;
@@ -100,11 +99,11 @@ class ServiceCategoryListWidget extends StatelessWidget {
                   children: [
                     Text(
                       categoryName.toUpperCase(),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w800,
                         fontStyle: FontStyle.italic,
-                        color: BikerverseColors.textPrimary,
+                        color: Theme.of(context).colorScheme.onSurface,
                         letterSpacing: 0.6,
                       ),
                     ),
@@ -113,7 +112,7 @@ class ServiceCategoryListWidget extends StatelessWidget {
                       width: 44,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: BikerverseColors.accent,
+                        color: Theme.of(context).colorScheme.primary,
                         borderRadius: BorderRadius.circular(999),
                       ),
                     ),
@@ -124,11 +123,11 @@ class ServiceCategoryListWidget extends StatelessWidget {
                 onTap: () => _navigateToCategoryPage(context),
                 borderRadius: BorderRadius.circular(20),
                 child: Row(
-                  children: const [
+                  children: [
                     Text(
                       'VIEW ALL',
                       style: TextStyle(
-                        color: BikerverseColors.textSecondary,
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.55),
                         fontWeight: FontWeight.w600,
                         letterSpacing: 1.1,
                         fontSize: 12,
@@ -138,7 +137,7 @@ class ServiceCategoryListWidget extends StatelessWidget {
                     Icon(
                       Icons.arrow_forward_ios,
                       size: 14,
-                      color: BikerverseColors.accent,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                   ],
                 ),

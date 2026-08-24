@@ -9,60 +9,59 @@ class Disclaimers extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
-      color: Colors.blueGrey,
+      color: cs.surfaceContainerHigh,
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
           // Header
-          const Text(
+          Text(
             'Important Disclaimers',
             style: TextStyle(
-                fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+                fontSize: 24, fontWeight: FontWeight.bold, color: cs.onSurface),
           ),
           const SizedBox(height: 16),
 
           // Description with Hyperlink
-          const Text(
+          Text(
             'Please read the following disclaimers carefully. By using our app, you agree to our ',
-            style: TextStyle(color: Colors.white),
+            style: TextStyle(color: cs.onSurface),
           ),
           const SizedBox(height: 16),
           InkWell(
             onTap: () => launchUrl(Uri.parse(ApiUrl.privacyLink)),
-            child: const Text(
+            child: Text(
               'Terms of Use & Privacy Policy',
               style: TextStyle(
-                  color: Colors.white, decoration: TextDecoration.underline),
+                  color: cs.primary, decoration: TextDecoration.underline),
             ),
           ),
           const SizedBox(height: 16),
           // Phone Number and Email
-          const Text('Contact Us:', style: TextStyle(color: Colors.white)),
+          Text('Contact Us:', style: TextStyle(color: cs.onSurface)),
           InkWell(
             onTap: () => launchUrl(Uri(scheme: 'tel', path: Constants.contactNumber)),
-            child: const Row(
+            child: Row(
               children: [
-                Icon(Icons.call_end_outlined,
-                    color: Colors.green, size: 32),
-                SizedBox(width: 16),
+                Icon(Icons.call_end_outlined, color: cs.primary, size: 32),
+                const SizedBox(width: 16),
                 Text('+91 995 5995 8899',
-                    style: TextStyle(color: Colors.white)),
+                    style: TextStyle(color: cs.onSurface)),
               ],
             ),
           ),
           InkWell(
             onTap: () => launchUrl(Uri(
                 scheme: 'mailto', path: Constants.contactEmail)),
-            child: const Row(
+            child: Row(
               children: [
-                Icon(Icons.email_outlined,
-                    color: Colors.green, size: 32),
-                SizedBox(width: 16),
+                Icon(Icons.email_outlined, color: cs.primary, size: 32),
+                const SizedBox(width: 16),
                 Text('support@poppapp.in',
-                    style: TextStyle(color: Colors.white)),
+                    style: TextStyle(color: cs.onSurface)),
               ],
             ),
           ),

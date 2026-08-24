@@ -1,0 +1,76 @@
+.section {
+  padding: 24px 32px 48px;
+  border-top: 1px solid var(--bv-border);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.titleWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.title {
+  font-family: var(--font-archivo), system-ui, sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--bv-text);
+  line-height: 1;
+  margin: 0;
+}
+
+/* Flutter-style 4px green pill accent bar */
+.accent {
+  width: 44px;
+  height: 4px;
+  background: var(--bv-green);
+  border-radius: 999px;
+}
+
+.viewAll {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-jetbrains-mono), 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--bv-text-2);
+  text-decoration: none;
+  text-transform: uppercase;
+  padding-top: 4px;
+  transition: color 0.15s ease;
+}
+
+.viewAll:hover {
+  color: var(--bv-green);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+@media (max-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .section {
+    padding: 20px 20px 36px;
+  }
+}

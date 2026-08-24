@@ -4,7 +4,6 @@ import 'package:shimmer/shimmer.dart';
 
 import '../../api/api_url.dart';
 import '../../utils/product_utils.dart';
-import '../../theme/bikerverse_colors.dart';
 import '../../widgets/app_network_image.dart';
 
 class ServiceCard extends StatelessWidget {
@@ -250,14 +249,14 @@ class ServiceCard extends StatelessWidget {
         width: width,
         child: Container(
           decoration: BoxDecoration(
-            color: BikerverseColors.card,
+            color: Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(26),
-            border: Border.all(color: BikerverseColors.outline),
+            border: Border.all(color: Theme.of(context).dividerColor),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.45),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 14,
+                offset: const Offset(0, 6),
               ),
             ],
           ),
@@ -322,7 +321,7 @@ class ServiceCard extends StatelessWidget {
                       Text(
                         title,
                         style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              color: BikerverseColors.textPrimary,
+                              color: Colors.white,
                               fontWeight: FontWeight.w700,
                             ),
                         maxLines: 1,
@@ -333,23 +332,23 @@ class ServiceCard extends StatelessWidget {
                         context,
                         Icons.calendar_today,
                         dateTime,
-                        iconColor: BikerverseColors.textMuted,
-                        textColor: BikerverseColors.textSecondary,
+                        iconColor: Colors.white54,
+                        textColor: Colors.white70,
                       ),
                       _buildInfoRow(
                         context,
                         Icons.location_on,
                         location,
-                        iconColor: BikerverseColors.textMuted,
-                        textColor: BikerverseColors.textSecondary,
+                        iconColor: Colors.white54,
+                        textColor: Colors.white70,
                       ),
                       if (capacity != 'N/A')
                         _buildInfoRow(
                           context,
                           Icons.people,
                           capacity,
-                          iconColor: BikerverseColors.textMuted,
-                          textColor: BikerverseColors.textSecondary,
+                          iconColor: Colors.white54,
+                          textColor: Colors.white70,
                         ),
                     ],
                   ),

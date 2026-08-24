@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../models/pop_category.dart';
-import '../theme/bikerverse_colors.dart';
 import '../utils/product_content_data.dart';
 import '../utils/product_utils.dart';
 import '../widgets/filter_pill_chip.dart';
@@ -67,7 +66,8 @@ class _FilterBarState extends State<FilterBar> {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       child: Row(
         children: [
-          const Icon(Icons.tune, color: BikerverseColors.textSecondary),
+          Icon(Icons.tune,
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
           const SizedBox(width: 8),
           ...widget.filters.map(_buildFilterChip),
         ],
@@ -113,7 +113,7 @@ class _FilterBarState extends State<FilterBar> {
       // Prevent closing by tapping outside
       enableDrag: false,
       // Prevent closing by dragging
-      backgroundColor: BikerverseColors.surface,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -253,7 +253,7 @@ class _FilterBarState extends State<FilterBar> {
                           width: 40,
                           height: 4,
                           decoration: BoxDecoration(
-                            color: BikerverseColors.outline,
+                            color: Theme.of(context).colorScheme.outlineVariant,
                             borderRadius: BorderRadius.circular(2),
                           ),
                         ),
@@ -263,18 +263,21 @@ class _FilterBarState extends State<FilterBar> {
                         padding: const EdgeInsets.fromLTRB(16, 12, 8, 8),
                         child: Row(
                           children: [
-                            const Text(
+                            Text(
                               'Filters & Sort',
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
-                                color: BikerverseColors.textPrimary,
+                                color: Theme.of(context).colorScheme.onSurface,
                               ),
                             ),
                             const Spacer(),
                             IconButton(
-                              icon: const Icon(Icons.close,
-                                  color: BikerverseColors.textSecondary),
+                              icon: Icon(Icons.close,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurface
+                                      .withOpacity(0.6)),
                               onPressed: () => Navigator.pop(context),
                             ),
                           ],
@@ -373,9 +376,10 @@ class _FilterBarState extends State<FilterBar> {
                                 child: OutlinedButton(
                                   onPressed: resetAll,
                                   style: OutlinedButton.styleFrom(
-                                    foregroundColor: BikerverseColors.textPrimary,
-                                    side: const BorderSide(
-                                        color: BikerverseColors.outline),
+                                    foregroundColor:
+                                        Theme.of(context).colorScheme.onSurface,
+                                    side: BorderSide(
+                                        color: Theme.of(context).colorScheme.outline),
                                     padding:
                                         const EdgeInsets.symmetric(vertical: 16),
                                     shape: RoundedRectangleBorder(
@@ -391,8 +395,10 @@ class _FilterBarState extends State<FilterBar> {
                                 child: ElevatedButton(
                                   onPressed: applyAll,
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: BikerverseColors.accent,
-                                    foregroundColor: BikerverseColors.onGreen,
+                                    backgroundColor:
+                                        Theme.of(context).colorScheme.primary,
+                                    foregroundColor:
+                                        Theme.of(context).colorScheme.onPrimary,
                                     padding:
                                         const EdgeInsets.symmetric(vertical: 16),
                                     shape: RoundedRectangleBorder(
@@ -566,7 +572,11 @@ class _FilterBarState extends State<FilterBar> {
 
     return Center(
       child: Text('Options for "$filterName"',
-          style: const TextStyle(color: BikerverseColors.textMuted)),
+          style: TextStyle(
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withOpacity(0.38))),
     );
   }
 }

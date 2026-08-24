@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../theme/bikerverse_colors.dart';
 
 class AppBarIconButton extends StatelessWidget {
   final IconData icon;
@@ -20,8 +19,8 @@ class AppBarIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final borderColor =
-        accent ? BikerverseColors.accent : BikerverseColors.outline;
+    final cs = Theme.of(context).colorScheme;
+    final borderColor = accent ? cs.primary : cs.onSurface.withOpacity(0.12);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
@@ -32,16 +31,14 @@ class AppBarIconButton extends StatelessWidget {
           width: 44,
           height: 44,
           decoration: BoxDecoration(
-            color: BikerverseColors.iconButtonBg,
+            color: cs.surface,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: borderColor, width: 1.2),
           ),
           child: Icon(icon,
               semanticLabel: iconSemanticLabel,
               color: iconColor ??
-                  (accent
-                      ? BikerverseColors.accent
-                      : BikerverseColors.textPrimary),
+                  (accent ? cs.primary : cs.onSurface),
               size: 22),
         ),
       ),

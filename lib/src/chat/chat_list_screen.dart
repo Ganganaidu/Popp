@@ -79,7 +79,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
                         Text(
                           user['lastMessage'],
                           style:
-                              const TextStyle(fontSize: 12, color: Colors.grey),
+                              TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
                           overflow: TextOverflow.ellipsis,
                         ),
                       if (user['unreadCount'] != null &&
@@ -147,11 +147,10 @@ class _ChatListScreenState extends State<ChatListScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.storefront_outlined,
-                      // Icon related to shopping/products
                       size: 60,
-                      color: Colors.grey,
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
                     ),
                     const SizedBox(height: 20),
                     Text(
@@ -160,18 +159,18 @@ class _ChatListScreenState extends State<ChatListScreen> {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 10),
-                    const Text(
+                    Text(
                       'It looks like you haven\'t contacted any sellers yet.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.grey),
+                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
                     ),
                     const SizedBox(height: 5),
-                    const Text(
+                    Text(
                       'Explore our Products and services, '
                       'and connect with sellers for more details!',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                          color: Colors.grey, fontWeight: FontWeight.bold),
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6), fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
@@ -243,8 +242,8 @@ class _ChatListScreenState extends State<ChatListScreen> {
                               if (timeDisplay.isNotEmpty)
                                 Text(
                                   timeDisplay,
-                                  style: const TextStyle(
-                                      fontSize: 12, color: Colors.grey),
+                                  style: TextStyle(
+                                      fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5)),
                                 ),
                               if (msg['unreadCount'] != null &&
                                   msg['unreadCount'] > 0)
@@ -278,7 +277,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
                       Text(
                         msg['productTitle'] ?? 'General Chat',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Colors.white70,
+                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
                               fontWeight: FontWeight.w500,
                             ),
                         overflow: TextOverflow.ellipsis,
@@ -290,7 +289,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
                       Text(
                         msg['lastMessage'] ?? 'Tap to view conversation...',
                         style:
-                            const TextStyle(color: Colors.white60, fontSize: 14),
+                            TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6), fontSize: 14),
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
                       ),

@@ -22,7 +22,6 @@ import '../../models/pop_category.dart';
 import '../../models/product.dart';
 import '../../navigation/app_routes.dart';
 import '../../search/autocomplete_search_field.dart';
-import '../../theme/bikerverse_colors.dart';
 import '../../utils/product_content_data.dart';
 import '../../widgets/app_dialogs.dart';
 import '../../widgets/bottom_sheet_selector_field.dart';
@@ -487,32 +486,31 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
   // ── Banner ────────────────────────────────────────────────────────────────
 
   Widget _buildBanner() {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: BikerverseColors.accentFill,
+        color: cs.primary.withOpacity(0.12),
         borderRadius: BorderRadius.circular(14),
-        border:
-            Border.all(color: BikerverseColors.accent.withValues(alpha: 0.5)),
+        border: Border.all(color: cs.primary.withOpacity(0.5)),
       ),
       clipBehavior: Clip.antiAlias,
       child: IntrinsicHeight(
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Container(width: 4, color: BikerverseColors.brightGreen),
-            const Padding(
-              padding: EdgeInsets.fromLTRB(12, 12, 8, 12),
-              child: Icon(Icons.build_outlined,
-                  color: BikerverseColors.brightGreen, size: 20),
+            Container(width: 4, color: cs.primary),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 12, 8, 12),
+              child: Icon(Icons.build_outlined, color: cs.primary, size: 20),
             ),
-            const Expanded(
+            Expanded(
               child: Padding(
-                padding: EdgeInsets.fromLTRB(0, 12, 12, 12),
+                padding: const EdgeInsets.fromLTRB(0, 12, 12, 12),
                 child: Text(
                   'Helmets, riding gear, parts & all bike accessories',
                   style: TextStyle(
-                    color: BikerverseColors.textPrimary,
+                    color: cs.onSurface,
                     fontWeight: FontWeight.w600,
                     height: 1.3,
                   ),
@@ -528,17 +526,18 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
   // ── Listing Snapshot (Step 5 header) ─────────────────────────────────────
 
   Widget _buildChip(String label) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: BikerverseColors.cardElevated,
+        color: cs.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: BikerverseColors.outline),
+        border: Border.all(color: cs.outline),
       ),
       child: Text(
         label,
-        style: const TextStyle(
-          color: BikerverseColors.textSecondary,
+        style: TextStyle(
+          color: cs.onSurface.withOpacity(0.6),
           fontSize: 12,
           fontWeight: FontWeight.w500,
         ),
@@ -564,10 +563,10 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'YOUR LISTING',
           style: TextStyle(
-            color: BikerverseColors.textMuted,
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.38),
             fontSize: 11,
             fontWeight: FontWeight.w700,
             letterSpacing: 1.5,
@@ -577,9 +576,9 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
         Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: BikerverseColors.card,
+            color: Theme.of(context).colorScheme.surfaceContainerHigh,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: BikerverseColors.outline),
+            border: Border.all(color: Theme.of(context).colorScheme.outline),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -591,13 +590,13 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
                     height: 40,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: BikerverseColors.accent,
+                      color: Theme.of(context).colorScheme.primary,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
                       avatarLetter,
-                      style: const TextStyle(
-                        color: BikerverseColors.onGreen,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onPrimary,
                         fontWeight: FontWeight.w800,
                         fontSize: 18,
                       ),
@@ -611,8 +610,8 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
                         if (brand.isNotEmpty)
                           Text(
                             brand.toUpperCase(),
-                            style: const TextStyle(
-                              color: BikerverseColors.brightGreen,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.primary,
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
                               letterSpacing: 1.2,
@@ -620,8 +619,8 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
                           ),
                         Text(
                           name.isNotEmpty ? name : 'Your accessory',
-                          style: const TextStyle(
-                            color: BikerverseColors.textPrimary,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
                           ),
@@ -634,7 +633,7 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
                     icon: const Icon(Icons.edit_outlined, size: 14),
                     label: const Text('Edit'),
                     style: TextButton.styleFrom(
-                      foregroundColor: BikerverseColors.textSecondary,
+                      foregroundColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 6),
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -666,8 +665,8 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
           value: sellerCategory,
           label: 'Seller Category',
           hint: 'Choose Category',
-          prefixIcon: const Icon(Icons.person_outline,
-              size: 20, color: BikerverseColors.textMuted),
+          prefixIcon: Icon(Icons.person_outline,
+              size: 20, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.38)),
           items: sellerCategories,
           labelBuilder: (item) => item,
           onChanged: (val) => setState(() => sellerCategory = val),
@@ -746,8 +745,8 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
           label: 'Product Condition',
           hint: 'Tap to select',
           value: _productCondition,
-          prefixIcon: const Icon(Icons.star_outline,
-              size: 20, color: BikerverseColors.textMuted),
+          prefixIcon: Icon(Icons.star_outline,
+              size: 20, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.38)),
           items: productConditionList,
           labelBuilder: (item) => item,
           onChanged: (val) => setState(() => _productCondition = val),
@@ -769,8 +768,8 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
             value: selectedBikeBrand,
             label: 'Bike Brand',
             hint: 'Choose brand',
-            prefixIcon: const Icon(Icons.two_wheeler,
-                size: 20, color: BikerverseColors.textMuted),
+            prefixIcon: Icon(Icons.two_wheeler,
+                size: 20, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.38)),
             items: bikeBrands,
             labelBuilder: (item) => item,
             onChanged: (val) => setState(() => selectedBikeBrand = val),
@@ -825,8 +824,8 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
           decoration: context
               .inputDecoration('Product Age', '', enable: false)
               .copyWith(
-                prefixIcon: const Icon(Icons.access_time_outlined,
-                    size: 20, color: BikerverseColors.textMuted),
+                prefixIcon: Icon(Icons.access_time_outlined,
+                    size: 20, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.38)),
               ),
           isEmpty: _selectedBillDate == null,
           child: Text(
@@ -835,8 +834,8 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
                 : _formatMonthAndYear(_productAgingYears, _productAgingMonths),
             style: TextStyle(
               color: _selectedBillDate == null
-                  ? BikerverseColors.textMuted
-                  : BikerverseColors.textPrimary,
+                  ? Theme.of(context).colorScheme.onSurface.withOpacity(0.38)
+                  : Theme.of(context).colorScheme.onSurface,
               fontSize: 15,
             ),
           ),
@@ -908,8 +907,8 @@ class _SellYourAccessoriesState extends State<SellYourAccessories> {
           value: selectedState,
           label: 'State',
           hint: 'Select your state',
-          prefixIcon: const Icon(Icons.map_outlined,
-              size: 20, color: BikerverseColors.textMuted),
+          prefixIcon: Icon(Icons.map_outlined,
+              size: 20, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.38)),
           items: stateNames,
           labelBuilder: (item) => item,
           onChanged: (val) => setState(() => selectedState = val),

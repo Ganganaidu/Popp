@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:popp/src/navigation/app_routes.dart';
-import 'package:popp/src/theme/bikerverse_colors.dart';
 import 'package:popp/src/utils/app_utils.dart';
 import 'package:popp/src/utils/build_extensions.dart';
 import 'package:popp/src/utils/product_utils.dart';
@@ -236,22 +235,25 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
   Widget _field(Widget child) =>
       Padding(padding: const EdgeInsets.symmetric(vertical: 8), child: child);
 
-  Widget _buildChip(String label) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        decoration: BoxDecoration(
-          color: BikerverseColors.cardElevated,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: BikerverseColors.outline),
+  Widget _buildChip(String label) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: cs.outline),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: cs.onSurface.withOpacity(0.6),
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
         ),
-        child: Text(
-          label,
-          style: const TextStyle(
-            color: BikerverseColors.textSecondary,
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      );
+      ),
+    );
+  }
 
   Widget _buildCountryCodeRow(BuildContext context,
       {required String label, required String hint}) {
@@ -261,23 +263,23 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
         Container(
           margin: const EdgeInsets.only(top: 4),
           decoration: BoxDecoration(
-            color: BikerverseColors.surface,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: BikerverseColors.outline),
+            border: Border.all(color: Theme.of(context).colorScheme.outline),
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               value: selectedCountryCode,
-              dropdownColor: BikerverseColors.surface,
-              style: const TextStyle(
-                  color: BikerverseColors.textPrimary, fontSize: 15),
+              dropdownColor: Theme.of(context).colorScheme.surface,
+              style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface, fontSize: 15),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
               items: countryCodes
                   .map((code) => DropdownMenuItem(
                         value: code,
                         child: Text(code,
-                            style: const TextStyle(
-                                color: BikerverseColors.textPrimary)),
+                            style: TextStyle(
+                                color: Theme.of(context).colorScheme.onSurface)),
                       ))
                   .toList(),
               onChanged: (val) => setState(() => selectedCountryCode = val!),
@@ -308,11 +310,12 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
   // ---------------------------------------------------------------------------
 
   void _showCategorySelectionSheet() async {
+    final cs = Theme.of(context).colorScheme;
     final selected = await showModalBottomSheet<String>(
       context: context,
       isDismissible: false,
       enableDrag: false,
-      backgroundColor: BikerverseColors.surface,
+      backgroundColor: cs.surface,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       builder: (ctx) => SafeArea(
         child: Column(
@@ -322,25 +325,25 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
               padding: const EdgeInsets.fromLTRB(20, 20, 16, 16),
               child: Row(
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: Text(
                       'Select Service Category',
                       style: TextStyle(
-                        color: BikerverseColors.textPrimary,
+                        color: cs.onSurface,
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close,
-                        color: BikerverseColors.textMuted),
+                    icon: Icon(Icons.close,
+                        color: cs.onSurface.withOpacity(0.38)),
                     onPressed: () => Navigator.of(ctx).pop(),
                   ),
                 ],
               ),
             ),
-            const Divider(color: BikerverseColors.divider, height: 1),
+            Divider(color: cs.outlineVariant, height: 1),
             const SizedBox(height: 8),
             ...ProductUtils.listYourServiceCategories.map(
               (category) => Padding(
@@ -354,15 +357,15 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 16),
                     decoration: BoxDecoration(
-                      color: BikerverseColors.card,
+                      color: cs.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: BikerverseColors.outline),
+                      border: Border.all(color: cs.outline),
                     ),
                     child: Text(
                       category,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: BikerverseColors.textPrimary,
+                      style: TextStyle(
+                        color: cs.onSurface,
                         fontWeight: FontWeight.w600,
                         fontSize: 16,
                       ),
@@ -717,6 +720,7 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
   // ---------------------------------------------------------------------------
 
   Widget _buildListingSnapshot(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final isTrack = ProductUtils.isTrackAndTrainingCategory(_selectedCategory);
     final name = isTrack
         ? (eventNameController.text.isNotEmpty
@@ -743,10 +747,10 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'YOUR LISTING',
           style: TextStyle(
-            color: BikerverseColors.textMuted,
+            color: cs.onSurface.withOpacity(0.38),
             fontSize: 11,
             fontWeight: FontWeight.w700,
             letterSpacing: 1.5,
@@ -756,9 +760,9 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: BikerverseColors.card,
+            color: cs.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: BikerverseColors.outline),
+            border: Border.all(color: cs.outline),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -769,15 +773,15 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                   Container(
                     width: 40,
                     height: 40,
-                    decoration: const BoxDecoration(
-                      color: BikerverseColors.accent,
+                    decoration: BoxDecoration(
+                      color: cs.primary,
                       shape: BoxShape.circle,
                     ),
                     alignment: Alignment.center,
                     child: Text(
                       letter,
-                      style: const TextStyle(
-                        color: BikerverseColors.onGreen,
+                      style: TextStyle(
+                        color: cs.onPrimary,
                         fontSize: 18,
                         fontWeight: FontWeight.w800,
                       ),
@@ -790,8 +794,8 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                       children: [
                         Text(
                           _selectedCategory?.toUpperCase() ?? '',
-                          style: const TextStyle(
-                            color: BikerverseColors.brightGreen,
+                          style: TextStyle(
+                            color: cs.primary,
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 1.2,
@@ -800,8 +804,8 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                         const SizedBox(height: 2),
                         Text(
                           name,
-                          style: const TextStyle(
-                            color: BikerverseColors.textPrimary,
+                          style: TextStyle(
+                            color: cs.onSurface,
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
                           ),
@@ -809,8 +813,8 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                         if (subtitle.isNotEmpty)
                           Text(
                             subtitle,
-                            style: const TextStyle(
-                              color: BikerverseColors.textSecondary,
+                            style: TextStyle(
+                              color: cs.onSurface.withOpacity(0.6),
                               fontSize: 13,
                             ),
                           ),
@@ -819,12 +823,12 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                   ),
                   TextButton.icon(
                     onPressed: () => _stepController.jumpTo(0),
-                    icon: const Icon(Icons.edit_outlined,
-                        size: 14, color: BikerverseColors.accent),
-                    label: const Text(
+                    icon: Icon(Icons.edit_outlined,
+                        size: 14, color: cs.primary),
+                    label: Text(
                       'Edit',
                       style: TextStyle(
-                          color: BikerverseColors.accent, fontSize: 13),
+                          color: cs.primary, fontSize: 13),
                     ),
                     style: TextButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
@@ -860,14 +864,16 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
       initialValue: _termsAccepted,
       validator: (val) =>
           (val != true) ? 'Please accept the Terms & Conditions' : null,
-      builder: (state) => Column(
+      builder: (state) {
+        final cs = Theme.of(context).colorScheme;
+        return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Checkbox(
                 value: _termsAccepted,
-                activeColor: BikerverseColors.accent,
+                activeColor: cs.primary,
                 onChanged: (v) {
                   setState(() => _termsAccepted = v ?? false);
                   state.didChange(v ?? false);
@@ -876,14 +882,14 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
               Expanded(
                 child: RichText(
                   text: TextSpan(
-                    style: const TextStyle(
-                        color: BikerverseColors.textSecondary, fontSize: 14),
+                    style: TextStyle(
+                        color: cs.onSurface.withOpacity(0.6), fontSize: 14),
                     children: [
                       const TextSpan(text: 'I have read and agree to the '),
                       TextSpan(
                         text: 'Terms & Conditions',
-                        style: const TextStyle(
-                          color: BikerverseColors.brightGreen,
+                        style: TextStyle(
+                          color: cs.primary,
                           decoration: TextDecoration.underline,
                         ),
                         recognizer: TapGestureRecognizer()
@@ -904,7 +910,8 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
               ),
             ),
         ],
-      ),
+      );
+      },
     );
   }
 
@@ -938,16 +945,16 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
             decoration: context
                 .inputDecoration('Towing Service Types', 'Select all that apply')
                 .copyWith(
-                  suffixIcon: const Icon(Icons.keyboard_arrow_down,
-                      color: Colors.grey),
+                  suffixIcon: Icon(Icons.keyboard_arrow_down,
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5)),
                   errorText: state.hasError ? state.errorText : null,
                 ),
             isEmpty: selectedText == null,
             child: selectedText != null
                 ? Text(
                     selectedText,
-                    style: const TextStyle(
-                        color: BikerverseColors.textPrimary, fontSize: 15),
+                    style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface, fontSize: 15),
                     overflow: TextOverflow.ellipsis,
                   )
                 : null,
@@ -958,10 +965,11 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
   }
 
   void _showTowingTypeSheet(FormFieldState<List<String>> state) {
+    final cs = Theme.of(context).colorScheme;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: BikerverseColors.surface,
+      backgroundColor: cs.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -980,26 +988,26 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                     height: 4,
                     margin: const EdgeInsets.symmetric(vertical: 12),
                     decoration: BoxDecoration(
-                      color: BikerverseColors.textMuted,
+                      color: cs.outlineVariant,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
                 ),
-                const Padding(
-                  padding: EdgeInsets.fromLTRB(20, 4, 20, 14),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 4, 20, 14),
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
                       'Towing Service Types',
                       style: TextStyle(
-                        color: BikerverseColors.textPrimary,
+                        color: cs.onSurface,
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
                 ),
-                const Divider(color: BikerverseColors.divider, height: 1),
+                Divider(color: cs.outlineVariant, height: 1),
                 Expanded(
                   child: ListView(
                     controller: scrollController,
@@ -1029,11 +1037,10 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                                 horizontal: 16, vertical: 14),
                             decoration: isSelected
                                 ? BoxDecoration(
-                                    color: BikerverseColors.accentFill,
+                                    color: cs.primary.withOpacity(0.12),
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
-                                      color: BikerverseColors.accent
-                                          .withValues(alpha: 0.3),
+                                      color: cs.primary.withOpacity(0.3),
                                     ),
                                   )
                                 : null,
@@ -1044,8 +1051,8 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                                       ? Icons.check_box_rounded
                                       : Icons.check_box_outline_blank_rounded,
                                   color: isSelected
-                                      ? BikerverseColors.accent
-                                      : BikerverseColors.textMuted,
+                                      ? cs.primary
+                                      : cs.onSurface.withOpacity(0.38),
                                   size: 22,
                                 ),
                                 const SizedBox(width: 14),
@@ -1054,8 +1061,8 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                                     item,
                                     style: TextStyle(
                                       color: isSelected
-                                          ? BikerverseColors.textPrimary
-                                          : BikerverseColors.textSecondary,
+                                          ? cs.onSurface
+                                          : cs.onSurface.withOpacity(0.6),
                                       fontWeight: isSelected
                                           ? FontWeight.w600
                                           : FontWeight.w400,
@@ -1078,14 +1085,14 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
                     child: ElevatedButton(
                       onPressed: () => Navigator.of(ctx).pop(),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: BikerverseColors.accent,
+                        backgroundColor: cs.primary,
                         minimumSize: const Size.fromHeight(52),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(28)),
                       ),
-                      child: const Text('Done',
+                      child: Text('Done',
                           style: TextStyle(
-                              color: BikerverseColors.onGreen,
+                              color: cs.onPrimary,
                               fontWeight: FontWeight.w700,
                               fontSize: 16)),
                     ),
@@ -1894,8 +1901,8 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
               actions: [
                 if (widget.category == null)
                   IconButton(
-                    icon: const Icon(Icons.swap_horiz_rounded,
-                        color: BikerverseColors.textSecondary),
+                    icon: Icon(Icons.swap_horiz_rounded,
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
                     tooltip: 'Change service category',
                     onPressed: _showCategorySelectionSheet,
                   ),
@@ -1905,22 +1912,22 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
   }
 
   Widget _buildCategoryPlaceholder(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: BikerverseColors.background,
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(32),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.category_outlined,
-                  size: 64, color: BikerverseColors.textMuted),
+              Icon(Icons.category_outlined,
+                  size: 64, color: cs.onSurface.withOpacity(0.38)),
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 'Choose a service category to get started',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: BikerverseColors.textSecondary,
+                  color: cs.onSurface.withOpacity(0.6),
                   fontSize: 16,
                 ),
               ),
@@ -1928,8 +1935,8 @@ class _ListServiceFormScreenState extends State<ListServiceFormScreen> {
               ElevatedButton(
                 onPressed: _showCategorySelectionSheet,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: BikerverseColors.accent,
-                  foregroundColor: BikerverseColors.onGreen,
+                  backgroundColor: cs.primary,
+                  foregroundColor: cs.onPrimary,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(24)),
                   padding: const EdgeInsets.symmetric(

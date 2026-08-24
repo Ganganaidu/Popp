@@ -228,10 +228,14 @@ class _SubscribePageWidgetState extends State<SubscribePageWidget> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   if (isCurrentSubscription)
-                    const Chip(
-                        label: Text('Active'),
-                        backgroundColor: Colors.blue,
-                        labelStyle: TextStyle(color: Colors.white)),
+                    Chip(
+                        label: const Text('Active'),
+                        backgroundColor:
+                            Theme.of(context).colorScheme.primaryContainer,
+                        labelStyle: TextStyle(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onPrimaryContainer)),
                   const Spacer(),
                   Text(productDetails.price,
                       style: TextStyle(
@@ -307,9 +311,9 @@ class _SubscribePageWidgetState extends State<SubscribePageWidget> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(color: Colors.white),
-            SizedBox(height: 20),
-            Text('Processing purchase...',
+            const CircularProgressIndicator(color: Colors.white),
+            const SizedBox(height: 20),
+            const Text('Processing purchase...',
                 style: TextStyle(color: Colors.white, fontSize: 16)),
           ],
         ),

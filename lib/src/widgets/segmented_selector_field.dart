@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../theme/bikerverse_colors.dart';
 
 /// A segmented single-select control styled like the app's premium dark theme.
 ///
@@ -30,13 +29,13 @@ class SegmentedSelectorField extends FormField<String> {
                 Row(
                   children: [
                     if (icon != null) ...[
-                      Icon(icon, size: 18, color: BikerverseColors.textMuted),
+                      Icon(icon, size: 18, color: Theme.of(field.context).colorScheme.onSurface.withOpacity(0.38)),
                       const SizedBox(width: 8),
                     ],
                     Text(
                       label,
-                      style: const TextStyle(
-                        color: BikerverseColors.textSecondary,
+                      style: TextStyle(
+                        color: Theme.of(field.context).colorScheme.onSurface.withOpacity(0.6),
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),
@@ -95,16 +94,16 @@ class _Segment extends StatelessWidget {
         height: 52,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: selected ? BikerverseColors.accent : Colors.transparent,
+          color: selected ? Theme.of(context).colorScheme.primary : Colors.transparent,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: selected ? BikerverseColors.accent : BikerverseColors.outline,
+            color: selected ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.outline,
             width: 1.2,
           ),
           boxShadow: selected
               ? [
                   BoxShadow(
-                    color: BikerverseColors.accentGlow,
+                    color: Theme.of(context).colorScheme.primary.withOpacity(0.4),
                     blurRadius: 16,
                     spreadRadius: 1,
                   ),
@@ -115,8 +114,8 @@ class _Segment extends StatelessWidget {
           label,
           style: TextStyle(
             color: selected
-                ? BikerverseColors.onGreen
-                : BikerverseColors.textSecondary,
+                ? Theme.of(context).colorScheme.onPrimary
+                : Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
             fontWeight: FontWeight.w700,
             fontSize: 15,
           ),

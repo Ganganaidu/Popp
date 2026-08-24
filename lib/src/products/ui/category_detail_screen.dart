@@ -106,19 +106,19 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.search_off, size: 80, color: Colors.grey[400]),
+          Icon(Icons.search_off, size: 80, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.35)),
           const SizedBox(height: 24),
           Text(
             'No products available',
             style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
-                color: Colors.grey[700]),
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
           ),
           const SizedBox(height: 8),
           Text(
             'Try adjusting your filters or check back later.',
-            style: TextStyle(fontSize: 16, color: Colors.grey[500]),
+            style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5)),
           ),
         ],
       ),

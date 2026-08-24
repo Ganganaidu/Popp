@@ -24,6 +24,10 @@ final ThemeData bikerverseDarkTheme = ThemeData(
     onBackground: BikerverseColors.textPrimary,
     error: Color(0xFFE25C5C),
     onError: Colors.white,
+    outline: BikerverseColors.outline,
+    outlineVariant: BikerverseColors.divider,
+    surfaceContainerHighest: BikerverseColors.card,
+    shadow: Colors.black,
   ),
   textTheme: const TextTheme(
     displayMedium: TextStyle(
@@ -161,6 +165,10 @@ final ThemeData bikerverseLightTheme = ThemeData(
     onBackground: BikerverseColors.lightTextPrimary,
     error: Color(0xFFE25C5C),
     onError: Colors.white,
+    outline: BikerverseColors.lightOutline,
+    outlineVariant: Color(0xFFEEEEEE),
+    surfaceContainerHighest: BikerverseColors.lightCardElevated,
+    shadow: Colors.black,
   ),
   textTheme: const TextTheme(
     displayMedium: TextStyle(

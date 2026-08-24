@@ -57,7 +57,7 @@ class _ComingSoonScreenState extends State<ComingSoonScreen>
                 errorBuilder: (context, error, stackTrace) => Icon(
                   Icons.construction,
                   size: 100,
-                  color: Colors.grey[400],
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.35),
                 ),
               ),
               const SizedBox(height: 40),
@@ -73,7 +73,7 @@ class _ComingSoonScreenState extends State<ComingSoonScreen>
               Text(
                 'We’re building something awesome. Stay tuned!',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Colors.grey[700],
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                     ),
                 textAlign: TextAlign.center,
               ),

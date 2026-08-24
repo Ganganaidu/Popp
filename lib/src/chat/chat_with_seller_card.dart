@@ -150,8 +150,10 @@ class _ChatWithSellerCardState extends State<ChatWithSellerCard> {
                 icon: const Icon(Icons.messenger_rounded),
                 label: const Text('Chat'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: chatEnabled ? Colors.green : Colors.grey,
-                  foregroundColor: Colors.white,
+                  backgroundColor: chatEnabled
+                      ? Colors.green
+                      : Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
                 ),
               )
           ],
@@ -218,10 +220,11 @@ class _AdminContactSheetState extends State<_AdminContactSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFF1E1E1E),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
       child: Column(
@@ -233,7 +236,7 @@ class _AdminContactSheetState extends State<_AdminContactSheet> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.white24,
+                color: cs.outlineVariant,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -246,7 +249,7 @@ class _AdminContactSheetState extends State<_AdminContactSheet> {
               Text(
                 'Seller Contact Info',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Colors.white,
+                      color: cs.onSurface,
                       fontWeight: FontWeight.bold,
                     ),
               ),
@@ -319,13 +322,17 @@ class _AdminContactSheetState extends State<_AdminContactSheet> {
               children: [
                 Text(
                   label,
-                  style: const TextStyle(
-                      color: Colors.grey, fontSize: 11, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   value,
-                  style: const TextStyle(color: Colors.white, fontSize: 15),
+                  style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                      fontSize: 15),
                 ),
               ],
             ),
@@ -333,7 +340,9 @@ class _AdminContactSheetState extends State<_AdminContactSheet> {
           if (hasValue)
             GestureDetector(
               onTap: () => _copyToClipboard(value),
-              child: const Icon(Icons.copy_outlined, color: Colors.grey, size: 18),
+              child: Icon(Icons.copy_outlined,
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                  size: 18),
             ),
         ],
       ),

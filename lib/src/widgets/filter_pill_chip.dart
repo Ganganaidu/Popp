@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../theme/bikerverse_colors.dart';
-
 /// A single rounded filter pill, shared by the outer horizontal filter row
 /// and the in-sheet tab strip inside the "Filters & Sort" bottom sheet.
 ///
@@ -29,13 +27,11 @@ class FilterPillChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color background =
-        selected ? BikerverseColors.accent : BikerverseColors.cardElevated;
-    final Color border = selected
-        ? BikerverseColors.accent
-        : (_hasCount ? BikerverseColors.accent : BikerverseColors.outline);
-    final Color textColor =
-        selected ? BikerverseColors.onGreen : BikerverseColors.textPrimary;
+    final cs = Theme.of(context).colorScheme;
+    final Color background = selected ? cs.primary : cs.surfaceContainerHighest;
+    final Color border =
+        selected ? cs.primary : (_hasCount ? cs.primary : cs.outline);
+    final Color textColor = selected ? cs.onPrimary : cs.onSurface;
 
     return GestureDetector(
       onTap: onTap,
@@ -81,20 +77,21 @@ class _CountBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       constraints: const BoxConstraints(minWidth: 18),
       padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
       decoration: BoxDecoration(
         color: onFilledChip
-            ? BikerverseColors.onGreen.withOpacity(0.18)
-            : BikerverseColors.accent,
+            ? cs.onPrimary.withOpacity(0.18)
+            : cs.primary,
         borderRadius: BorderRadius.circular(10),
       ),
       child: Text(
         '$count',
         textAlign: TextAlign.center,
         style: TextStyle(
-          color: onFilledChip ? BikerverseColors.onGreen : BikerverseColors.onGreen,
+          color: onFilledChip ? cs.onPrimary : cs.onPrimary,
           fontWeight: FontWeight.w700,
           fontSize: 11,
         ),

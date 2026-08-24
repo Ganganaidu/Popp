@@ -175,10 +175,10 @@ class _VerificationScreenState extends State<VerificationScreen> {
               const SizedBox(height: 24),
               Column(
                 children: [
-                  const Text(
+                  Text(
                     style: TextStyle(
                       fontSize: 16,
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontStyle: FontStyle.italic,
                     ),
                     'Click the link in the email to complete your registration. This screen will update automatically.',

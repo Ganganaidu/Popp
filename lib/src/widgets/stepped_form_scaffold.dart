@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../theme/bikerverse_colors.dart';
 import '../toolbar/common_app_bar.dart';
 import 'title_text.dart';
 import 'web_constrained_box.dart';
@@ -167,7 +166,6 @@ class _SteppedFormScaffoldState extends State<SteppedFormScaffold> {
     final step = widget.steps[_current];
 
     return Scaffold(
-      backgroundColor: BikerverseColors.background,
       appBar: CommonAppBar(
         titleWidget: TitleText(widget.appBarTitle),
         actions: widget.actions,
@@ -177,15 +175,6 @@ class _SteppedFormScaffoldState extends State<SteppedFormScaffold> {
         onTap: () => FocusScope.of(context).unfocus(),
         behavior: HitTestBehavior.translucent,
         child: Container(
-          // Subtle top radial glow over the base.
-          decoration: const BoxDecoration(
-            gradient: RadialGradient(
-              center: Alignment(0, -1.1),
-              radius: 1.1,
-              colors: [BikerverseColors.glowTop, BikerverseColors.background],
-              stops: [0.0, 0.46],
-            ),
-          ),
           child: WebConstrainedBox(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -223,6 +212,7 @@ class _SteppedFormScaffoldState extends State<SteppedFormScaffold> {
   }
 
   Widget _buildProgressBar(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final children = <Widget>[];
     for (int i = 0; i < widget.steps.length; i++) {
       final bool done = i < _current;
@@ -235,9 +225,7 @@ class _SteppedFormScaffoldState extends State<SteppedFormScaffold> {
             height: 2,
             margin: const EdgeInsets.symmetric(horizontal: 4),
             decoration: BoxDecoration(
-              color: i <= _current
-                  ? BikerverseColors.accent
-                  : BikerverseColors.outline,
+              color: i <= _current ? cs.primary : cs.outline,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -254,16 +242,15 @@ class _SteppedFormScaffoldState extends State<SteppedFormScaffold> {
             height: 30,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: filled ? BikerverseColors.accent : Colors.transparent,
+              color: filled ? cs.primary : Colors.transparent,
               border: Border.all(
-                color:
-                    filled ? BikerverseColors.accent : BikerverseColors.outline,
+                color: filled ? cs.primary : cs.outline,
                 width: 2,
               ),
               boxShadow: active
                   ? [
-                      const BoxShadow(
-                        color: BikerverseColors.accentGlow,
+                      BoxShadow(
+                        color: cs.primary.withOpacity(0.4),
                         blurRadius: 14,
                         spreadRadius: 2,
                       ),
@@ -272,16 +259,15 @@ class _SteppedFormScaffoldState extends State<SteppedFormScaffold> {
             ),
             alignment: Alignment.center,
             child: done
-                ? const Icon(Icons.check,
-                    size: 16, color: BikerverseColors.onGreen)
+                ? Icon(Icons.check, size: 16, color: cs.onPrimary)
                 : Text(
                     '${i + 1}',
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.bold,
                       color: active
-                          ? BikerverseColors.onGreen
-                          : BikerverseColors.textMuted,
+                          ? cs.onPrimary
+                          : cs.onSurface.withOpacity(0.38),
                     ),
                   ),
           ),
@@ -296,6 +282,7 @@ class _SteppedFormScaffoldState extends State<SteppedFormScaffold> {
   }
 
   Widget _buildStepHeader(BuildContext context, FormStep step) {
+    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 10, 20, 6),
       child: Column(
@@ -303,8 +290,8 @@ class _SteppedFormScaffoldState extends State<SteppedFormScaffold> {
         children: [
           Text(
             'STEP ${_current + 1} OF ${widget.steps.length}',
-            style: const TextStyle(
-              color: BikerverseColors.brightGreen,
+            style: TextStyle(
+              color: cs.primary,
               fontWeight: FontWeight.w700,
               fontSize: 12,
               letterSpacing: 2.0,
@@ -313,8 +300,8 @@ class _SteppedFormScaffoldState extends State<SteppedFormScaffold> {
           const SizedBox(height: 6),
           Text(
             step.title,
-            style: const TextStyle(
-              color: BikerverseColors.textPrimary,
+            style: TextStyle(
+              color: cs.onSurface,
               fontSize: 26,
               fontWeight: FontWeight.w800,
               letterSpacing: -0.4,
@@ -324,8 +311,8 @@ class _SteppedFormScaffoldState extends State<SteppedFormScaffold> {
             const SizedBox(height: 4),
             Text(
               step.subtitle!,
-              style: const TextStyle(
-                color: BikerverseColors.textSecondary,
+              style: TextStyle(
+                color: cs.onSurface.withOpacity(0.6),
                 fontSize: 14,
               ),
             ),
@@ -336,8 +323,9 @@ class _SteppedFormScaffoldState extends State<SteppedFormScaffold> {
   }
 
   Widget _buildBottomBar(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
-      color: BikerverseColors.background,
+      color: cs.surface,
       child: WebConstrainedBox(
         child: SafeArea(
           child: Padding(
@@ -350,8 +338,8 @@ class _SteppedFormScaffoldState extends State<SteppedFormScaffold> {
                       onPressed: widget.isLoading ? null : _onBack,
                       style: OutlinedButton.styleFrom(
                         minimumSize: const Size.fromHeight(56),
-                        foregroundColor: BikerverseColors.textPrimary,
-                        side: const BorderSide(color: BikerverseColors.outline),
+                        foregroundColor: cs.onSurface,
+                        side: BorderSide(color: cs.outline),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(28),
                         ),
@@ -395,25 +383,26 @@ class _PrimaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(28),
         gradient: isLoading
             ? null
-            : const LinearGradient(
+            : LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [BikerverseColors.accent, BikerverseColors.deepGreen],
+                colors: [cs.primary, cs.primary.withOpacity(0.7)],
               ),
-        color: isLoading ? Colors.grey : null,
+        color: isLoading ? cs.onSurface.withOpacity(0.3) : null,
         boxShadow: isLoading
             ? null
             : [
-                const BoxShadow(
-                  color: BikerverseColors.accentGlow,
+                BoxShadow(
+                  color: cs.primary.withOpacity(0.4),
                   blurRadius: 20,
                   spreadRadius: 1,
-                  offset: Offset(0, 6),
+                  offset: const Offset(0, 6),
                 ),
               ],
       ),
@@ -431,21 +420,21 @@ class _PrimaryButton extends StatelessWidget {
         child: AnimatedSwitcher(
           duration: const Duration(milliseconds: 250),
           child: isLoading
-              ? const Row(
-                  key: ValueKey('loading'),
+              ? Row(
+                  key: const ValueKey('loading'),
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     SizedBox(
                       height: 20,
                       width: 20,
                       child: CircularProgressIndicator(
-                        color: Colors.white,
+                        color: cs.onPrimary,
                         strokeWidth: 2,
                       ),
                     ),
-                    SizedBox(width: 12),
+                    const SizedBox(width: 12),
                     Text("Submitting...",
-                        style: TextStyle(color: Colors.white)),
+                        style: TextStyle(color: cs.onPrimary)),
                   ],
                 )
               : Row(
@@ -454,8 +443,8 @@ class _PrimaryButton extends StatelessWidget {
                   children: [
                     Text(
                       label,
-                      style: const TextStyle(
-                        color: BikerverseColors.onGreen,
+                      style: TextStyle(
+                        color: cs.onPrimary,
                         fontWeight: FontWeight.w800,
                         fontSize: 16,
                       ),
@@ -464,7 +453,7 @@ class _PrimaryButton extends StatelessWidget {
                     Icon(
                       isLastStep ? Icons.check_rounded : Icons.arrow_forward,
                       size: 20,
-                      color: BikerverseColors.onGreen,
+                      color: cs.onPrimary,
                     ),
                   ],
                 ),

@@ -51,7 +51,7 @@ class _FavoritesScreenState extends State<FavoritesScreen>
                   onPressed: () => context.goLogin(),
                   style: ElevatedButton.styleFrom(
                       backgroundColor: primaryColor,
-                      foregroundColor: Colors.white),
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary),
                   child: const Text("Login"),
                 )
               ],

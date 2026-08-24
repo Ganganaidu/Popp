@@ -70,19 +70,19 @@ class NotificationScreen extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.notifications_none_outlined,
-              size: 72, color: Colors.grey.shade500),
+              size: 72, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4)),
           const SizedBox(height: 16),
           Text('No notifications yet',
               style: Theme.of(context)
                   .textTheme
                   .titleMedium
-                  ?.copyWith(color: Colors.grey)),
+                  ?.copyWith(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6))),
           const SizedBox(height: 8),
           Text('You\'ll see listing updates and alerts here.',
               style: Theme.of(context)
                   .textTheme
                   .bodyMedium
-                  ?.copyWith(color: Colors.grey)),
+                  ?.copyWith(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5))),
         ],
       ),
     );
@@ -173,7 +173,7 @@ class _NotificationTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isRead
-                ? Colors.grey.withOpacity(0.15)
+                ? Theme.of(context).colorScheme.outlineVariant.withOpacity(0.5)
                 : Theme.of(context).colorScheme.primary.withOpacity(0.35),
           ),
         ),
@@ -227,16 +227,16 @@ class _NotificationTile extends StatelessWidget {
                                               ? FontWeight.normal
                                               : FontWeight.bold,
                                           color: isRead
-                                              ? Colors.grey
+                                              ? Theme.of(context).colorScheme.onSurface.withOpacity(0.5)
                                               : null,
                                         ),
                                   ),
                                 ),
                                 Text(
                                   _formatTime(),
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                       fontSize: 11,
-                                      color: Colors.grey),
+                                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5)),
                                 ),
                               ],
                             ),
@@ -245,9 +245,7 @@ class _NotificationTile extends StatelessWidget {
                               body,
                               style: TextStyle(
                                 fontSize: 13,
-                                color: isRead
-                                    ? Colors.grey.shade500
-                                    : Colors.grey.shade300,
+                                color: Theme.of(context).colorScheme.onSurface.withOpacity(isRead ? 0.5 : 0.8),
                                 height: 1.4,
                               ),
                             ),
@@ -256,7 +254,7 @@ class _NotificationTile extends StatelessWidget {
                               Text('Tap to mark as read',
                                   style: TextStyle(
                                       fontSize: 11,
-                                      color: Colors.grey.shade500)),
+                                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4))),
                             ],
                           ],
                         ),

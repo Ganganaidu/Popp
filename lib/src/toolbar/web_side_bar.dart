@@ -19,18 +19,16 @@ class WebSideBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor =
-        isDarkMode ? context.primaryColorDark : Colors.white;
-    final textColor = isDarkMode ? Colors.white : Colors.black87;
+    final cs = Theme.of(context).colorScheme;
+    final textColor = cs.onSurface;
 
     return Container(
       width: 250,
       decoration: BoxDecoration(
-        color: backgroundColor,
+        color: cs.surface,
         border: Border(
           right: BorderSide(
-            color: Colors.grey.withOpacity(0.2),
+            color: cs.outlineVariant,
             width: 1,
           ),
         ),
@@ -44,7 +42,7 @@ class WebSideBar extends StatelessWidget {
               children: [
                 _buildMenuSection(context, textColor),
                 const Divider(height: 32, thickness: 1),
-                _buildCategoriesSection(context, textColor, isDarkMode),
+                _buildCategoriesSection(context, textColor, cs),
               ],
             ),
           ),
@@ -59,12 +57,11 @@ class WebSideBar extends StatelessWidget {
       alignment: Alignment.centerLeft,
       child: Row(
         children: [
-          const Text(
+          Text(
             "Biker",
             style: TextStyle(
               fontSize: 24,
-              color: Colors.black,
-              // Or dynamic based on theme, but design showed black/green
+              color: Theme.of(context).colorScheme.primary,
               fontWeight: FontWeight.bold,
               fontFamily: 'Orbitron',
             ),
@@ -167,7 +164,7 @@ class WebSideBar extends StatelessWidget {
               label: Text('${badgeCount ?? 0}'),
               child: Icon(
                 isSelected ? activeIcon : icon,
-                color: isSelected ? Colors.white : Colors.grey,
+                color: isSelected ? Theme.of(context).colorScheme.onPrimary : Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                 size: 22,
               ),
             ),
@@ -175,7 +172,7 @@ class WebSideBar extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? Colors.white : textColor,
+                color: isSelected ? Theme.of(context).colorScheme.onPrimary : textColor,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                 fontSize: 14,
               ),
@@ -187,7 +184,7 @@ class WebSideBar extends StatelessWidget {
   }
 
   Widget _buildCategoriesSection(
-      BuildContext context, Color textColor, bool isDarkMode) {
+      BuildContext context, Color textColor, ColorScheme cs) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -196,7 +193,7 @@ class WebSideBar extends StatelessWidget {
           child: Text(
             "CATEGORIES",
             style: TextStyle(
-              color: Colors.grey[600],
+              color: cs.onSurface.withOpacity(0.5),
               fontWeight: FontWeight.bold,
               fontSize: 12,
               letterSpacing: 1.2,
@@ -227,7 +224,7 @@ class WebSideBar extends StatelessWidget {
                 style: TextStyle(fontSize: 14, color: textColor),
               ),
               childrenPadding: const EdgeInsets.only(left: 16),
-              collapsedIconColor: Colors.grey,
+              collapsedIconColor: cs.onSurface.withOpacity(0.5),
               iconColor: context.primaryColor,
               shape: const Border(),
               // Remove default borders

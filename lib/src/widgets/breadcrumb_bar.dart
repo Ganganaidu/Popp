@@ -25,7 +25,7 @@ class BreadcrumbBar extends StatelessWidget implements PreferredSizeWidget {
     final isLight = theme.brightness == Brightness.light;
 
     return AppBar(
-      backgroundColor: isLight ? Colors.white : theme.scaffoldBackgroundColor,
+      backgroundColor: theme.colorScheme.surface,
       elevation: 0,
       scrolledUnderElevation: 1,
       leading: IconButton(
@@ -47,7 +47,7 @@ class BreadcrumbBar extends StatelessWidget implements PreferredSizeWidget {
         child: Divider(
           height: 1,
           thickness: 1,
-          color: isLight ? Colors.grey.shade200 : Colors.grey.shade800,
+          color: theme.colorScheme.outlineVariant,
         ),
       ),
     );
@@ -79,10 +79,10 @@ class BreadcrumbBar extends StatelessWidget implements PreferredSizeWidget {
               fontSize: 13,
               fontWeight: isLast ? FontWeight.w600 : FontWeight.w400,
               color: isLast
-                  ? theme.textTheme.bodyLarge?.color
-                  : Colors.orange,
+                  ? theme.colorScheme.onSurface
+                  : theme.colorScheme.primary,
               decoration: isLast ? null : TextDecoration.underline,
-              decorationColor: Colors.orange,
+              decorationColor: theme.colorScheme.primary,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -97,7 +97,7 @@ class BreadcrumbBar extends StatelessWidget implements PreferredSizeWidget {
             child: Icon(
               Icons.chevron_right_rounded,
               size: 16,
-              color: Colors.grey.shade500,
+              color: theme.colorScheme.onSurface.withOpacity(0.4),
             ),
           ),
         );

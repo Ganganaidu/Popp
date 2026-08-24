@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../theme/bikerverse_colors.dart';
 import 'filter_pill_chip.dart';
 
 /// A named shortcut range (e.g. "Under ₹5k") shown as a quick-pick chip
@@ -55,8 +54,8 @@ class RangeFilterWidget extends StatelessWidget {
       children: [
         Text(
           title,
-          style: const TextStyle(
-            color: BikerverseColors.textPrimary,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
             fontSize: 18,
             fontWeight: FontWeight.w700,
           ),
@@ -64,8 +63,8 @@ class RangeFilterWidget extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           subtitle,
-          style: const TextStyle(
-            color: BikerverseColors.textSecondary,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
             fontSize: 13,
           ),
         ),
@@ -80,11 +79,11 @@ class RangeFilterWidget extends StatelessWidget {
         const SizedBox(height: 16),
         SliderTheme(
           data: SliderTheme.of(context).copyWith(
-            activeTrackColor: BikerverseColors.brightGreen,
-            inactiveTrackColor: BikerverseColors.outline,
-            thumbColor: Colors.white,
-            overlayColor: BikerverseColors.accentGlow,
-            valueIndicatorColor: BikerverseColors.accent,
+            activeTrackColor: Theme.of(context).colorScheme.primary,
+            inactiveTrackColor: Theme.of(context).colorScheme.outline,
+            thumbColor: Theme.of(context).colorScheme.onPrimary,
+            overlayColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+            valueIndicatorColor: Theme.of(context).colorScheme.primary,
             rangeThumbShape:
                 const RoundRangeSliderThumbShape(enabledThumbRadius: 9),
             trackHeight: 4,
@@ -136,17 +135,17 @@ class _ValueBox extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: BikerverseColors.cardElevated,
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: BikerverseColors.outline),
+        border: Border.all(color: Theme.of(context).colorScheme.outline),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,
-            style: const TextStyle(
-              color: BikerverseColors.textMuted,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.38),
               fontSize: 11,
               fontWeight: FontWeight.w700,
               letterSpacing: 1.0,
@@ -155,8 +154,8 @@ class _ValueBox extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             value,
-            style: const TextStyle(
-              color: BikerverseColors.textPrimary,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
               fontSize: 16,
               fontWeight: FontWeight.w700,
             ),

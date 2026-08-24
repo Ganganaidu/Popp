@@ -299,9 +299,9 @@ class _GenericChatScreenState extends State<GenericChatScreen> {
         children: [
           Text(
             data['senderEmail'] ?? 'Unknown User', // Display sender's email
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
-              color: Colors.grey,
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -342,7 +342,7 @@ class _GenericChatScreenState extends State<GenericChatScreen> {
           FloatingActionButton(
             onPressed: sendMessage,
             backgroundColor: context.primaryColor,
-            child: const Icon(Icons.send, color: Colors.white),
+            child: Icon(Icons.send, color: Theme.of(context).colorScheme.onPrimary),
           )
         ],
       ),

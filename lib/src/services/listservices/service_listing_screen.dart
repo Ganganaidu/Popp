@@ -63,18 +63,22 @@ class _ServiceListingScreenState extends State<ServiceListingScreen> {
             Icon(
               Icons.inventory_2_outlined,
               size: 100,
-              color: Colors.grey[400],
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.35),
             ),
             const SizedBox(height: 20),
-            const Text(
+            Text(
               'No services found for this category yet.',
-              style: TextStyle(fontSize: 18, color: Colors.grey),
+              style: TextStyle(
+                  fontSize: 18,
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 10),
             Text(
               'Be the first to list a "${widget.category}" service!',
-              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+              style: TextStyle(
+                  fontSize: 16,
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5)),
               textAlign: TextAlign.center,
             ),
           ],
@@ -94,11 +98,13 @@ class _ServiceListingScreenState extends State<ServiceListingScreen> {
           onFiltersChanged: vm.onFiltersChanged,
         ),
         if (services.isEmpty)
-          const Expanded(
+          Expanded(
             child: Center(
               child: Text(
                 'No services match your filters.',
-                style: TextStyle(fontSize: 16, color: Colors.grey),
+                style: TextStyle(
+                    fontSize: 16,
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
               ),
             ),
           ),

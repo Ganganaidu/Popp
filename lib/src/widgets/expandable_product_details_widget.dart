@@ -143,11 +143,12 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
                 isExpanded
                     ? Icons.keyboard_arrow_up
                     : Icons.keyboard_arrow_down,
-                color: Colors.blue,
+                color: Theme.of(context).colorScheme.primary,
               ),
               label: Text(
                 isExpanded ? "Show Less" : "Show More",
-                style: const TextStyle(color: Colors.blue),
+                style: TextStyle(
+                    color: Theme.of(context).colorScheme.primary),
               ),
             ),
           ),
@@ -164,7 +165,10 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title, style: const TextStyle(color: Colors.grey, fontSize: 14)),
+          Text(title,
+              style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                  fontSize: 14)),
           Expanded(
             child: isRegistrationPlace && value.isNotEmpty
                 ? GestureDetector(
@@ -178,7 +182,7 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
                     child: Text(
                       value,
                       style: theme.bodyMedium?.copyWith(
-                        color: Colors.blue,
+                        color: Theme.of(context).colorScheme.primary,
                         decoration: TextDecoration.underline,
                       ),
                       textAlign: TextAlign.right,
@@ -186,9 +190,9 @@ class _ExpandableProductDetailsState extends State<ExpandableProductDetails>
                   )
                 : Text(
                     value.isEmpty ? "-" : value,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontWeight: FontWeight.w500,
                     ),
                     textAlign: TextAlign.right,

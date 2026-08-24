@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:popp/src/utils/build_extensions.dart';
 import 'package:popp/src/widgets/shimmer_image.dart';
-import 'package:popp/src/theme/bikerverse_colors.dart';
 
 class ListingCard extends StatelessWidget {
   final String title;
@@ -134,14 +133,14 @@ class ListingCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(15),
       child: Container(
         decoration: BoxDecoration(
-          color: BikerverseColors.card,
+          color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(15),
-          border: Border.all(color: BikerverseColors.outline),
+          border: Border.all(color: Theme.of(context).dividerColor),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.45),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
+              color: Colors.black.withOpacity(0.15),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
             ),
           ],
         ),
@@ -192,7 +191,7 @@ class ListingCard extends StatelessWidget {
                     title,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w700,
-                          color: BikerverseColors.textPrimary,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -217,7 +216,7 @@ class ListingCard extends StatelessWidget {
                                 .textTheme
                                 .titleMedium
                                 ?.copyWith(
-                                  color: BikerverseColors.priceGreen,
+                                  color: Theme.of(context).colorScheme.primary,
                                   fontWeight: FontWeight.w800,
                                 ),
                           ),
@@ -225,14 +224,14 @@ class ListingCard extends StatelessWidget {
                         Container(
                           width: 30,
                           height: 30,
-                          decoration: const BoxDecoration(
-                            color: BikerverseColors.textPrimary,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primary,
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.arrow_forward_ios,
                             size: 16,
-                            color: Colors.black,
+                            color: Theme.of(context).colorScheme.onPrimary,
                           ),
                         ),
                       ],
@@ -305,19 +304,22 @@ class ListingCard extends StatelessWidget {
               child: ListTile(
                   leading: Icon(Icons.edit_outlined), title: Text('Edit'))),
         if (!showSoldOptionOnly && status?.toLowerCase() == 'approved')
-          const PopupMenuItem<String>(
+          PopupMenuItem<String>(
               value: 'edit_approved',
               child: ListTile(
-                  leading: Icon(Icons.edit_outlined, color: Colors.blue),
+                  leading: Icon(Icons.edit_outlined,
+                      color: Theme.of(context).colorScheme.primary),
                   title: Text('Edit & Resubmit',
-                      style: TextStyle(color: Colors.blue)))),
-        const PopupMenuItem<String>(
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.primary)))),
+        PopupMenuItem<String>(
             value: 'sold',
             child: ListTile(
-                leading:
-                    Icon(Icons.monetization_on_outlined, color: Colors.green),
+                leading: Icon(Icons.monetization_on_outlined,
+                    color: Theme.of(context).colorScheme.primary),
                 title: Text('Mark as Sold',
-                    style: TextStyle(color: Colors.green)))),
+                    style: TextStyle(
+                        color: Theme.of(context).colorScheme.primary)))),
       ],
       icon: Container(
         decoration: BoxDecoration(
@@ -328,13 +330,16 @@ class ListingCard extends StatelessWidget {
   }
 
   Widget _buildPlaceholderImage() {
-    return Container(
-      color: BikerverseColors.cardElevated,
-      child: Icon(
-        Icons.two_wheeler,
-        color: Colors.white.withOpacity(0.35),
-        size: 40,
-      ),
-    );
+    return Builder(builder: (context) {
+      final cs = Theme.of(context).colorScheme;
+      return Container(
+        color: cs.surface,
+        child: Icon(
+          Icons.two_wheeler,
+          color: cs.onSurface.withOpacity(0.25),
+          size: 40,
+        ),
+      );
+    });
   }
 }

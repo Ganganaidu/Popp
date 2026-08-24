@@ -2,7 +2,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:popp/src/navigation/app_routes.dart';
 import 'package:popp/src/notifications/notification_service.dart';
-import 'package:popp/src/theme/bikerverse_colors.dart';
 import 'AppBarIconButton.dart';
 
 class PopAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -14,27 +13,28 @@ class PopAppBar extends StatelessWidget implements PreferredSizeWidget {
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
-      color: BikerverseColors.background,
+      color: Theme.of(context).scaffoldBackgroundColor,
       child: AppBar(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
         automaticallyImplyLeading: false,
         titleSpacing: 0.0,
-        title: const Padding(
-          padding: EdgeInsets.only(left: 16.0),
+        title: Padding(
+          padding: const EdgeInsets.only(left: 16.0),
           child: Row(
             children: [
               Row(children: [
                 Text("Biker",
                     style: TextStyle(
                         fontSize: 25,
-                        color: BikerverseColors.accent,
+                        color: Theme.of(context).colorScheme.primary,
                         fontWeight: FontWeight.bold,
                         fontFamily: 'Orbitron')),
                 Text("verse",
                     style: TextStyle(
                         fontSize: 25,
                         fontWeight: FontWeight.bold,
-                        color: BikerverseColors.textPrimary,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontFamily: 'Orbitron'))
               ]),
             ],

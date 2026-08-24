@@ -103,13 +103,12 @@ class ListServiceCategoryScreen extends StatelessWidget {
         color: iconColor,
       );
     }
-
     // Tint the asset with the theme icon color. This works best for monochrome/transparent
     // assets. Use srcIn so the provided color replaces the image color.
     return Image.asset(
       assetPath,
-      width: 64,
-      height: 64,
+      width: 200,
+      height: 200,
       fit: BoxFit.contain,
       color: iconColor,
       colorBlendMode: BlendMode.srcIn,

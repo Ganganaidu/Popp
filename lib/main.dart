@@ -5,10 +5,10 @@ import 'package:app_links/app_links.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart'
-    show TargetPlatform, defaultTargetPlatform, kDebugMode, kIsWeb;
+    show TargetPlatform, defaultTargetPlatform, kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:month_year_picker/month_year_picker.dart';
@@ -44,11 +44,9 @@ Future<void> _subscribeToNotificationTopics() async {
     final messaging = FirebaseMessaging.instance;
     await messaging.subscribeToTopic('all_users');
 
-    final String platformTopic = kIsWeb
-        ? 'platform_web'
-        : defaultTargetPlatform == TargetPlatform.iOS
-            ? 'platform_ios'
-            : 'platform_android';
+    final String platformTopic = defaultTargetPlatform == TargetPlatform.iOS
+        ? 'platform_ios'
+        : 'platform_android';
     await messaging.subscribeToTopic(platformTopic);
   } catch (e) {
     // Non-fatal — a failed subscription attempt is simply retried on the
@@ -78,16 +76,10 @@ void main() async {
   final remoteConfigService = await RemoteConfigService.getInstance();
   await remoteConfigService.fetchAndActivate();
 
-  if (kIsWeb) {
-    await FirebaseAppCheck.instance.activate(
-      webProvider: ReCaptchaV3Provider('YOUR_RECAPTCHA_SITE_KEY'),
-    );
-  } else {
-    await FirebaseAppCheck.instance.activate(
-      androidProvider: kDebugMode ? AndroidProvider.debug : AndroidProvider.playIntegrity,
-      appleProvider: kDebugMode ? AppleProvider.debug : AppleProvider.appAttest,
-    );
-  }
+  await FirebaseAppCheck.instance.activate(
+    androidProvider: kDebugMode ? AndroidProvider.debug : AndroidProvider.playIntegrity,
+    appleProvider: kDebugMode ? AppleProvider.debug : AppleProvider.appAttest,
+  );
 
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   unawaited(_subscribeToNotificationTopics());

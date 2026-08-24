@@ -26,7 +26,7 @@ class _AdCarouselWidgetState extends State<AdCarouselWidget> {
   int _current = 0;
   final CarouselSliderController _controller = CarouselSliderController();
 
-  deepLinkToTarget(String deepLink) async {
+  Future<void> deepLinkToTarget(String deepLink) async {
     try {
       final uri = Uri.parse(deepLink);
       if (uri.hasScheme && (uri.scheme == 'http' || uri.scheme == 'https')) {

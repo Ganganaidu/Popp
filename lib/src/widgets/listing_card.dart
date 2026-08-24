@@ -1,6 +1,4 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:popp/src/utils/build_extensions.dart';
 import 'package:popp/src/widgets/shimmer_image.dart';
 
 class ListingCard extends StatelessWidget {
@@ -58,73 +56,7 @@ class ListingCard extends StatelessWidget {
   }
 
   Widget _buildCard(BuildContext context) {
-    final isWeb = kIsWeb && context.isDesktop;
-    if (isWeb) {
-      return _buildWebCard(context);
-    }
     return _buildMobileCard(context);
-  }
-
-  Widget _buildWebCard(BuildContext context) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Expanded(
-              child: Stack(
-                children: [
-                  SizedBox.expand(
-                    child: imageUrl != null && imageUrl!.isNotEmpty
-                        ? ShimmerImage(imageUrl: imageUrl!)
-                        : _buildPlaceholderImage(),
-                  ),
-                  if ((showOptionsMenu || showSoldOptionOnly) &&
-                      status?.toLowerCase() != 'sold')
-                    Positioned(
-                      top: 4,
-                      right: 4,
-                      child: _buildOptionsMenu(context),
-                    ),
-                  if (status != null) _buildStatusBanner(),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(
-                    title,
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                  ),
-                  if (price != null && price!.isNotEmpty) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      price!,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: context.primaryColor,
-                            fontWeight: FontWeight.bold,
-                          ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   Widget _buildMobileCard(BuildContext context) {
@@ -136,13 +68,6 @@ class ListingCard extends StatelessWidget {
           color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(15),
           border: Border.all(color: Theme.of(context).dividerColor),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.15),
-              blurRadius: 12,
-              offset: const Offset(0, 6),
-            ),
-          ],
         ),
         clipBehavior: Clip.antiAlias,
         child: Column(
@@ -189,7 +114,7 @@ class ListingCard extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.w700,
                           color: Theme.of(context).colorScheme.onSurface,
                         ),
@@ -197,15 +122,6 @@ class ListingCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   if (price != null && price!.isNotEmpty) ...[
-                    // const SizedBox(height: 10),
-                    // Text(
-                    //   'STARTING FROM',
-                    //   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    //         color: BikerverseColors.textMuted,
-                    //         letterSpacing: 1.2,
-                    //         fontWeight: FontWeight.w600,
-                    //       ),
-                    // ),
                     const SizedBox(height: 6),
                     Row(
                       children: [
@@ -214,7 +130,7 @@ class ListingCard extends StatelessWidget {
                             price!,
                             style: Theme.of(context)
                                 .textTheme
-                                .titleMedium
+                                .titleSmall
                                 ?.copyWith(
                                   color: Theme.of(context).colorScheme.primary,
                                   fontWeight: FontWeight.w800,

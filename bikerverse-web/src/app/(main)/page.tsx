@@ -1,9 +1,7 @@
 import type { Metadata } from 'next';
 import { HeroSection }      from '@/components/home/HeroSection';
-import { RatingCarousel }   from '@/components/home/RatingCarousel';
 import { ActionGrid }       from '@/components/home/ActionGrid';
-import { PremiumBikesRow }  from '@/components/home/PremiumBikesRow';
-import { GearMechanicsRow } from '@/components/home/GearMechanicsRow';
+import { CategorySection }  from '@/components/home/CategorySection';
 
 export const metadata: Metadata = {
   title: 'Bikerverse — One-stop hub for riders in India',
@@ -11,23 +9,25 @@ export const metadata: Metadata = {
     'Buy & sell premium pre-owned bikes and accessories. Find trusted mechanics, tyre shops and accessory stores. Book track days & training events — all in one place.',
 };
 
-/**
- * Home page — Phase 2 complete.
- * Sections (in order, matching design handoff screen 02):
- *   A. Hero — two-column + corner ticks
- *   B. Testimonial carousel — auto-advance, 3 cards, progress bar
- *   C. Action grid — "Pick a Lane", 6 tiles
- *   D. Premium bikes — 4-column BikeCard row
- *   E. Two-up — Protection Gear + Trusted Mechanics
- */
+const PRODUCT_CATEGORIES = [
+  { name: 'Premium Bikes',             href: '/bikes' },
+  { name: 'Protection Gear',           href: '/accessories?cat=protection-gear' },
+  { name: 'Luggage & Accessories',     href: '/accessories?cat=luggage' },
+  { name: 'Lights & Mounts',           href: '/accessories?cat=lights-mounts' },
+  { name: 'Electronic Accessories',    href: '/accessories?cat=electronics' },
+  { name: 'Universal Bike Accessories', href: '/accessories?cat=universal' },
+  { name: 'Other Products',            href: '/accessories?cat=other' },
+] as const;
+
 export default function HomePage() {
   return (
     <>
       <HeroSection />
-      <RatingCarousel />
+      {/* <RatingCarousel /> — hidden until ratings API is ready */}
       <ActionGrid />
-      <PremiumBikesRow />
-      <GearMechanicsRow />
+      {PRODUCT_CATEGORIES.map(({ name, href }) => (
+        <CategorySection key={name} categoryName={name} viewAllHref={href} limit={4} />
+      ))}
     </>
   );
 }

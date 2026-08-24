@@ -78,8 +78,10 @@ export async function getProducts(opts?: { lim?: number; category?: string }): P
   try {
     const col = collection(db, 'products');
     const lim_ = opts?.lim ?? 20;
+    const category = opts?.category ?? 'Premium Bikes';
 
-    if (!opts?.category || opts.category === 'Premium Bikes') {
+    if (category === 'Premium Bikes') {
+      // Uses the existing composite index (isApproved, isActive, isSold, category, createdAt DESC)
       const q = query(
         col,
         where('isApproved', '==', true),
@@ -93,21 +95,17 @@ export async function getProducts(opts?: { lim?: number; category?: string }): P
       return snap.docs.map(docToProduct);
     }
 
-    // Accessories: products where category != 'Premium Bikes'
-    // Firestore doesn't support != queries with orderBy on different fields, so we query
-    // all approved active unsold and filter client-side for accessories.
+    // Accessory categories — simple equality filters, no orderBy to avoid requiring new indexes
     const q = query(
       col,
       where('isApproved', '==', true),
       where('isActive', '==', true),
       where('isSold', '==', false),
-      orderBy('createdAt', 'desc'),
-      limit(lim_ * 4), // over-fetch since we'll filter
+      where('category', '==', category),
+      limit(lim_),
     );
     const snap = await getDocs(q);
-    const all = snap.docs.map(docToProduct);
-    const accessories = all.filter((p) => p.category !== 'Premium Bikes');
-    return accessories.slice(0, lim_);
+    return snap.docs.map(docToProduct);
   } catch (err) {
     console.error('[firestore] getProducts error:', err);
     return [];

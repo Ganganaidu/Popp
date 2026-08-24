@@ -2,18 +2,15 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Wordmark, IconBtn, Btn, SearchIcon, HeartIcon, GearIcon, MoonIcon, SunIcon } from '@/components/ds';
+import { Wordmark, IconBtn, Btn, SearchIcon, HeartIcon, MoonIcon, SunIcon } from '@/components/ds';
 import { useTheme } from '@/components/ds/ThemeProvider';
 import styles from './BVTopBar.module.css';
 
 const NAV_LINKS = [
-  { key: 'home',      label: 'Home',       href: '/' },
-  { key: 'explore',   label: 'Explore',    href: '/explore' },
-  { key: 'sell',      label: 'Sell',       href: '/sell/bike' },
-  { key: 'rent',      label: 'Rent',       href: '/services/bike-rentals' },
-  { key: 'mechanics', label: 'Mechanics',  href: '/services/mechanics' },
-  { key: 'track',     label: 'Track days', href: '/services/track-day' },
-  { key: 'chat',      label: 'Chat',       href: '/chat' },
+  { key: 'home',     label: 'Home',     href: '/' },
+  { key: 'explore',  label: 'Explore',  href: '/explore' },
+  { key: 'chat',     label: 'Chat',     href: '/chat' },
+  { key: 'settings', label: 'Settings', href: '/settings' },
 ] as const;
 
 interface BVTopBarProps {
@@ -33,11 +30,8 @@ export function BVTopBar({ activeKey }: BVTopBarProps) {
   function resolveActive(): string {
     if (activeKey) return activeKey;
     if (pathname === '/') return 'home';
-    if (pathname.startsWith('/sell') || pathname.startsWith('/list-service')) return 'sell';
-    if (pathname.startsWith('/services/bike-rentals')) return 'rent';
-    if (pathname.startsWith('/services/mechanics')) return 'mechanics';
-    if (pathname.startsWith('/services/track')) return 'track';
     if (pathname.startsWith('/chat')) return 'chat';
+    if (pathname.startsWith('/settings')) return 'settings';
     return 'explore';
   }
 
@@ -80,11 +74,6 @@ export function BVTopBar({ activeKey }: BVTopBarProps) {
           {/* Heart */}
           <IconBtn size={40} aria-label="Saved items">
             <HeartIcon color="var(--bv-text)" size={16} />
-          </IconBtn>
-
-          {/* Settings / account */}
-          <IconBtn size={40} aria-label="Account settings">
-            <GearIcon color="var(--bv-text)" size={16} />
           </IconBtn>
 
           {/* Theme toggle */}

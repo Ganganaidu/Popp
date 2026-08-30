@@ -8,14 +8,11 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:popp/src/toolbar/pop_app_bar.dart';
-import 'package:popp/src/toolbar/web_menu_drawer.dart';
-import 'package:popp/src/toolbar/web_top_bar.dart';
 import 'package:popp/src/utils/app_loger.dart';
 
 import '../api/api_url.dart';
 import '../chat/active_chat_provider.dart';
 import '../navigation/custom_bottom_nav_bar.dart';
-import '../toolbar/web_side_bar.dart';
 
 /// Root shell for the four bottom-nav tabs, hosted by a
 /// [StatefulShellRoute.indexedStack] in `app_router.dart`. Replaces the legacy
@@ -121,12 +118,7 @@ class _HomeShellState extends State<HomeShell> {
       String osVersion;
       String deviceModel;
 
-      if (kIsWeb) {
-        final info = await deviceInfoPlugin.webBrowserInfo;
-        platform = 'web';
-        osVersion = info.userAgent ?? 'unknown';
-        deviceModel = info.browserName.name;
-      } else if (defaultTargetPlatform == TargetPlatform.iOS) {
+      if (defaultTargetPlatform == TargetPlatform.iOS) {
         final info = await deviceInfoPlugin.iosInfo;
         platform = 'ios';
         osVersion = info.systemVersion;
@@ -194,7 +186,7 @@ class _HomeShellState extends State<HomeShell> {
       if (notification != null) {
         AppLogger.d(
             'Message also contained a notification: ${notification.title}');
-        if (android != null && !kIsWeb) {
+        if (android != null) {
           _flutterLocalNotificationsPlugin.show(
             id: notification.hashCode,
             title: notification.title,
@@ -229,33 +221,15 @@ class _HomeShellState extends State<HomeShell> {
   Widget build(BuildContext context) {
     final int currentIndex = widget.navigationShell.currentIndex;
     return Scaffold(
-      drawer: kIsWeb
-          ? WebMenuDrawer(
-              selectedIndex: currentIndex,
-              onItemTapped: _goBranch,
-            )
-          : null,
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(kIsWeb ? 150 : kToolbarHeight),
-        child: kIsWeb ? const WebTopBar() : const PopAppBar(),
+      appBar: const PreferredSize(
+        preferredSize: Size.fromHeight(kToolbarHeight),
+        child: PopAppBar(),
       ),
-      body: kIsWeb
-          ? Row(
-              children: [
-                WebSideBar(
-                  selectedIndex: currentIndex,
-                  onItemTapped: _goBranch,
-                ),
-                Expanded(child: widget.navigationShell),
-              ],
-            )
-          : widget.navigationShell,
-      bottomNavigationBar: kIsWeb
-          ? null
-          : CustomBottomNavBar(
-              selectedIndex: currentIndex,
-              onItemTapped: _goBranch,
-            ),
+      body: widget.navigationShell,
+      bottomNavigationBar: CustomBottomNavBar(
+        selectedIndex: currentIndex,
+        onItemTapped: _goBranch,
+      ),
     );
   }
 }

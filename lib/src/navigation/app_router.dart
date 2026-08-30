@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -59,7 +58,7 @@ import 'app_routes.dart';
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 /// Publicly reachable without an authenticated session.
-const Set<String> _publicRoutes = {'/intro', '/login', '/signup'};
+const Set<String> _publicRoutes = {'/intro', '/login', '/signup', '/forgot-password', '/verification'};
 
 final SystemAlertsApiServices _systemAlertsApiServices =
     SystemAlertsApiServices();
@@ -67,6 +66,13 @@ final SystemAlertsApiServices _systemAlertsApiServices =
 /// Cleared on every sign-in/sign-out so a newly active blocking message is
 /// re-checked once per session rather than on every navigation.
 bool _blockingMessageCheckedThisSession = false;
+
+/// Set to true when the user taps "Skip for now" on the login screen so the
+/// redirect allows unauthenticated access to the home shell.
+bool _guestModeActive = false;
+
+/// Call this before navigating home as a guest (unauthenticated).
+void enableGuestMode() => _guestModeActive = true;
 
 final GoRouter router = GoRouter(
   navigatorKey: navigatorKey,
@@ -306,14 +312,6 @@ class _LoadingScreen extends StatelessWidget {
 Future<String?> _redirect(BuildContext context, GoRouterState state) async {
   final String location = state.matchedLocation;
 
-  // Web skips both the intro carousel and login entirely.
-  if (kIsWeb) {
-    if (location == '/' || location == '/intro' || location == '/login') {
-      return '/home';
-    }
-    return null;
-  }
-
   if (location != '/intro') {
     final prefs = await SharedPreferences.getInstance();
     final hasSeenIntro = prefs.getBool('hasSeenIntro') ?? false;
@@ -325,7 +323,7 @@ Future<String?> _redirect(BuildContext context, GoRouterState state) async {
 
   if (!authenticated) {
     _blockingMessageCheckedThisSession = false;
-    if (!_publicRoutes.contains(location)) return '/login';
+    if (!_publicRoutes.contains(location) && !_guestModeActive) return '/login';
     return null;
   }
 
@@ -373,8 +371,9 @@ class GoRouterRefreshStream extends ChangeNotifier {
 
   GoRouterRefreshStream(Stream<dynamic> stream) {
     notifyListeners();
-    _subscription = stream.asBroadcastStream().listen((_) {
+    _subscription = stream.asBroadcastStream().listen((user) {
       _blockingMessageCheckedThisSession = false;
+      if (user == null) _guestModeActive = false;
       notifyListeners();
     });
   }

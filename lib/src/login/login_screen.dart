@@ -1,10 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:popp/src/utils/build_extensions.dart';
 import 'package:popp/src/widgets/app_dialogs.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../navigation/app_router.dart' show enableGuestMode;
 import '../navigation/app_routes.dart';
 import '../utils/app_constants.dart';
 import '../utils/app_utils.dart';
@@ -146,88 +146,7 @@ class _LoginScreenState extends State<LoginScreen>
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    
-    if (kIsWeb && context.isDesktop) {
-      return _buildWebLayout(context, isDarkMode);
-    } else {
-      return _buildMobileLayout(context, isDarkMode);
-    }
-  }
-
-  Widget _buildWebLayout(BuildContext context, bool isDarkMode) {
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: isDarkMode
-                ? [Colors.grey[850]!, Colors.grey[900]!]
-                : [const Color(0xFFFDFBFB), const Color(0xFFEBEDEE)],
-          ),
-        ),
-        child: Row(
-          children: [
-            // Left side - Branding
-            Expanded(
-              flex: 1,
-              child: Container(
-                padding: const EdgeInsets.all(60),
-                child: FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Image.asset(
-                        'assets/app_icon_trans.png',
-                        width: 120,
-                        height: 120,
-                        fit: BoxFit.contain,
-                      ),
-                      const SizedBox(height: 24),
-                      Text(
-                        Constants.appName,
-                        style: TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Orbitron',
-                          color: isDarkMode ? Colors.white : Colors.black87,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Welcome back! Sign in to continue your journey.',
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: isDarkMode ? Colors.white70 : Colors.black54,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            // Right side - Login Form
-            Expanded(
-              flex: 1,
-              child: Container(
-                padding: const EdgeInsets.all(60),
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 400),
-                    child: FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: _buildLoginForm(context),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+    return _buildMobileLayout(context, isDarkMode);
   }
 
   Widget _buildMobileLayout(BuildContext context, bool isDarkMode) {
@@ -252,7 +171,7 @@ class _LoginScreenState extends State<LoginScreen>
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const SizedBox(height: 30),
-                    _buildHeader(),
+                    _buildHeader(isDarkMode),
                     const SizedBox(height: 30),
                     _buildLoginForm(context),
                     const SizedBox(height: 20),
@@ -269,29 +188,6 @@ class _LoginScreenState extends State<LoginScreen>
   Widget _buildLoginForm(BuildContext context) {
     return Column(
       children: [
-        if (kIsWeb && context.isDesktop) ...[
-          Text(
-            'Sign In',
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).brightness == Brightness.dark 
-                  ? Colors.white 
-                  : Colors.black87,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Enter your credentials to access your account',
-            style: TextStyle(
-              fontSize: 16,
-              color: Theme.of(context).brightness == Brightness.dark 
-                  ? Colors.white70 
-                  : Colors.black54,
-            ),
-          ), 
-          const SizedBox(height: 40),
-        ],
         _buildEmailField(),
         const SizedBox(height: 20),
         _buildPasswordField(),
@@ -311,7 +207,7 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(bool isDarkMode) {
     return Column(
       children: [
         // You can replace this with an Image.asset for your logo
@@ -320,6 +216,7 @@ class _LoginScreenState extends State<LoginScreen>
           'assets/app_icon_trans.png',
           width: 80,
           height: 80,
+          color: isDarkMode ? null : Colors.green,
           fit: BoxFit.contain,
         ),
         // const SizedBox(height: 16),
@@ -338,30 +235,24 @@ class _LoginScreenState extends State<LoginScreen>
       bool isPasswordField = false,
       bool? isPasswordVisible,
       VoidCallback? onTogglePasswordVisibility}) {
-    final isWeb = kIsWeb && context.isDesktop;
-    
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
       obscureText: isPasswordField ? !(isPasswordVisible ?? false) : false,
-      style: TextStyle(fontSize: isWeb ? 16 : 14),
+      style: const TextStyle(fontSize: 14),
       decoration: context.inputDecoration(
         '',
         hint,
         icon: icon,
-        borderRadius: isWeb ? 8.0 : 8.0,
       ).copyWith(
-        contentPadding: EdgeInsets.symmetric(
-          horizontal: isWeb ? 20 : 16,
-          vertical: isWeb ? 18 : 16,
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         suffixIcon: isPasswordField
             ? IconButton(
                 icon: Icon(
                   (isPasswordVisible ?? false)
                       ? Icons.visibility
                       : Icons.visibility_off,
-                  size: isWeb ? 20 : 18,
+                  size: 18,
                 ),
                 onPressed: onTogglePasswordVisibility,
               )
@@ -391,7 +282,6 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   Widget _buildActionsRow() {
-    final isWeb = kIsWeb && context.isDesktop;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -401,16 +291,14 @@ class _LoginScreenState extends State<LoginScreen>
               value: rememberMe,
               onChanged: _onRememberMeChanged,
               activeColor: context.primaryColor,
-              materialTapTargetSize: isWeb 
-                  ? MaterialTapTargetSize.shrinkWrap 
-                  : MaterialTapTargetSize.padded,
+              materialTapTargetSize: MaterialTapTargetSize.padded,
             ),
             Text(
               'Remember me',
               style: TextStyle(
-                fontSize: isWeb ? 14 : 12,
-                color: Theme.of(context).brightness == Brightness.dark 
-                    ? Colors.white70 
+                fontSize: 12,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white70
                     : Colors.black87,
               ),
             ),
@@ -425,7 +313,6 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   Widget _buildButton(String text, VoidCallback? onPressed, {bool isLoading = false}) {
-    final isWeb = kIsWeb && context.isDesktop;
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
@@ -434,28 +321,25 @@ class _LoginScreenState extends State<LoginScreen>
           backgroundColor: context.primaryColor,
           foregroundColor: Theme.of(context).colorScheme.onPrimary,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(isWeb ? 8 : 30),
+            borderRadius: BorderRadius.circular(30),
           ),
-          padding: EdgeInsets.symmetric(
-            vertical: isWeb ? 18 : 16,
-            horizontal: isWeb ? 24 : 16,
-          ),
-          elevation: isWeb ? 2 : 5,
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+          elevation: 5,
           shadowColor: context.primaryColor.withOpacity(0.4),
         ),
         child: isLoading
-            ? SizedBox(
-                height: isWeb ? 20 : 18,
-                width: isWeb ? 20 : 18,
-                child: const CircularProgressIndicator(
+            ? const SizedBox(
+                height: 18,
+                width: 18,
+                child: CircularProgressIndicator(
                   color: Colors.white,
                   strokeWidth: 2,
                 ),
               )
             : Text(
                 text,
-                style: TextStyle(
-                  fontSize: isWeb ? 16 : 18,
+                style: const TextStyle(
+                  fontSize: 18,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -481,28 +365,23 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   Widget _buildTextButton(String text, VoidCallback? onPressed, {Color? textColor}) {
-    final isWeb = kIsWeb && context.isDesktop;
     return TextButton(
       onPressed: onPressed,
       style: TextButton.styleFrom(
-        padding: EdgeInsets.symmetric(
-          horizontal: isWeb ? 8 : 4,
-          vertical: isWeb ? 4 : 2,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
       ),
       child: Text(
         text,
         style: TextStyle(
           color: textColor ?? context.primaryColor,
           fontWeight: FontWeight.w600,
-          fontSize: isWeb ? 14 : 12,
+          fontSize: 12,
         ),
       ),
     );
   }
 
   Widget _buildFooter() {
-    final isWeb = kIsWeb && context.isDesktop;
     return Column(
       children: [
         Row(
@@ -511,9 +390,9 @@ class _LoginScreenState extends State<LoginScreen>
             Text(
               "Don't have an account?",
               style: TextStyle(
-                fontSize: isWeb ? 14 : 12,
-                color: Theme.of(context).brightness == Brightness.dark 
-                    ? Colors.white70 
+                fontSize: 12,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white70
                     : Colors.black54,
               ),
             ),
@@ -523,14 +402,15 @@ class _LoginScreenState extends State<LoginScreen>
             )
           ],
         ),
-        if (!isWeb) ...[
-          const SizedBox(height: 8),
-          _buildTextButton(
-            'Skip for now',
-            () => context.goHome(),
-            textColor: Colors.grey[600],
-          ),
-        ],
+        const SizedBox(height: 8),
+        _buildTextButton(
+          'Skip for now',
+          () {
+            enableGuestMode();
+            context.goHome();
+          },
+          textColor: Colors.grey[600],
+        ),
       ],
     );
   }

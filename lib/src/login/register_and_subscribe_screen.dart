@@ -145,7 +145,7 @@ class _RegisterAndSubscribeScreenState
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text("Welcome To POPP!",
+                  Text("Welcome To Bikerverse!",
                       style: textTheme.headlineMedium
                           ?.copyWith(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
@@ -329,7 +329,7 @@ class _RegisterAndSubscribeScreenState
                       );
                     }
                   },
-                  activeColor: Colors.orange,
+                  activeColor: Colors.green,
                 ),
                 Expanded(
                   child: RichText(
@@ -359,7 +359,7 @@ class _RegisterAndSubscribeScreenState
             child: ElevatedButton(
               onPressed: isSubmitting ? null : submitToFireStore,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
+                backgroundColor: Colors.green,
                 foregroundColor: Theme.of(context).colorScheme.onPrimary,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
@@ -371,7 +371,7 @@ class _RegisterAndSubscribeScreenState
                   if (states.contains(WidgetState.disabled)) {
                     return Colors.grey;
                   }
-                  return Colors.orange; // Use the component's default.
+                  return Colors.green; // Use the component's default.
                 },
               )),
               child: isSubmitting

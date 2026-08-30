@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:popp/src/api/currency_service.dart';
@@ -480,7 +479,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   Widget? _buildBottomBar(ProductDetailViewModel vm) {
-    if (kIsWeb) return null;
     if (vm.isOwner && vm.status == 'Sent Back') {
       return _buildUserEditButton(vm);
     }

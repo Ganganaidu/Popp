@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:popp/src/utils/app_loger.dart';
 
@@ -23,7 +22,7 @@ class _SplashScreenState extends State<SplashScreen> {
     // A short delay can sometimes help prevent a jarring transition.
     // This is optional and you can adjust the duration.
     await Future.delayed(
-        kIsWeb ? const Duration(milliseconds: 500) : const Duration(milliseconds: 50));
+        const Duration(milliseconds: 50));
 
     if (mounted) {
       try {

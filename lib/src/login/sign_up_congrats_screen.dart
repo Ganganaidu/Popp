@@ -73,7 +73,7 @@ class SignUpCongratsScreen extends StatelessWidget {
                         child: Column(
                           children: [
                             Text(
-                              "🏍️ Welcome to POPP!",
+                              "🏍️ Welcome to Bikerverse!",
                               style: textTheme.titleLarge?.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),

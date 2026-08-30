@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -24,7 +23,6 @@ class ServiceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const isWeb = kIsWeb;
     // Determine the background image
     String? imageUrl;
     List<dynamic>? promoImages;
@@ -80,17 +78,6 @@ class ServiceCard extends StatelessWidget {
       }
     }
 
-    if (isWeb) {
-      return _buildWebCard(
-        context,
-        title,
-        dateTime,
-        location,
-        capacity,
-        imageUrl,
-      );
-    }
-
     return _buildMobileCard(
       context,
       title,
@@ -98,140 +85,6 @@ class ServiceCard extends StatelessWidget {
       location,
       capacity,
       imageUrl,
-    );
-  }
-
-  Widget _buildWebCard(
-    BuildContext context,
-    String title,
-    String dateTime,
-    String location,
-    String capacity,
-    String? imageUrl,
-  ) {
-    return GestureDetector(
-      onTap: onTap,
-      child: SizedBox(
-        width: width,
-        child: Card(
-          elevation: 5,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15.0),
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(15.0),
-            child: Stack(
-              children: [
-                // Background Image with shadow
-                ShaderMask(
-                  shaderCallback: (rect) {
-                    return const LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [Colors.transparent, Colors.black87],
-                    ).createShader(
-                        Rect.fromLTRB(0, 0, rect.width, rect.height));
-                  },
-                  blendMode: BlendMode.darken,
-                  child: Stack(
-                    children: [
-                      Shimmer.fromColors(
-                        baseColor: Colors.grey[300]!,
-                        highlightColor: Colors.grey[100]!,
-                        child: Container(
-                          width: double.infinity,
-                          height: double.infinity,
-                          color: Colors.grey[300],
-                        ),
-                      ),
-                      AppNetworkImage(
-                        imageUrl: imageUrl ?? ApiUrl.defaultPlaceholderImage,
-                        width: double.infinity,
-                        height: double.infinity,
-                        fit: BoxFit.cover,
-                        placeholder: Shimmer.fromColors(
-                          baseColor: Colors.grey[300]!,
-                          highlightColor: Colors.grey[100]!,
-                          child: Container(
-                            width: double.infinity,
-                            height: double.infinity,
-                            color: Colors.grey[300],
-                          ),
-                        ),
-                        errorWidget: AppNetworkImage(
-                          imageUrl: ApiUrl.defaultPlaceholderImage,
-                          width: double.infinity,
-                          height: double.infinity,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // Content Overlay
-                Positioned.fill(
-                  child: Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          title,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-                        _buildInfoRow(
-                          context,
-                          Icons.calendar_today,
-                          dateTime,
-                        ),
-                        _buildInfoRow(
-                          context,
-                          Icons.location_on,
-                          location,
-                        ),
-                        if (capacity != 'N/A')
-                          _buildInfoRow(
-                            context,
-                            Icons.people,
-                            capacity,
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-                if (!isApproved)
-                  Positioned(
-                    top: 12.0,
-                    right: 12.0,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8.0, vertical: 4.0),
-                      decoration: BoxDecoration(
-                        color: Colors.orangeAccent,
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                      child: const Text(
-                        'Pending',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 

@@ -25,14 +25,21 @@ class NotificationService {
     });
   }
 
+  static Timestamp get _cutoff => Timestamp.fromDate(
+      DateTime.now().subtract(const Duration(days: 15)));
+
   static Stream<int> unreadCountStream(String uid) => _col(uid)
       .where('isRead', isEqualTo: false)
+      .where('createdAt', isGreaterThanOrEqualTo: _cutoff)
       .snapshots()
       .map((s) => s.docs.length);
 
   static Stream<QuerySnapshot<Map<String, dynamic>>> notificationsStream(
           String uid) =>
-      _col(uid).orderBy('createdAt', descending: true).snapshots();
+      _col(uid)
+          .where('createdAt', isGreaterThanOrEqualTo: _cutoff)
+          .orderBy('createdAt', descending: true)
+          .snapshots();
 
   static Future<void> markAsRead(String uid, String notifId) =>
       _col(uid).doc(notifId).update({'isRead': true});

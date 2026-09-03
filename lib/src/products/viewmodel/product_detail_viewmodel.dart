@@ -107,6 +107,13 @@ class ProductDetailViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Admin-only: permanently deletes this listing. Throws on failure so the UI
+  /// can surface an error; on success the caller should leave the screen.
+  Future<void> deleteProduct() async {
+    if (productId.isEmpty) return;
+    await repository.deleteProduct(productId);
+  }
+
   /// Runs an admin moderation action. [reason] is required for `sent_back` and
   /// `rejected`. Returns a user-facing result message, or null if [action] is
   /// unknown.

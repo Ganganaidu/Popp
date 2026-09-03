@@ -83,19 +83,24 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
           ListingsGridView(
             query: _repository.pendingProducts(),
             showOptionsMenu: false,
+            isAdmin: true,
           ),
           ListingsGridView(
             query: _repository.pendingServices(),
             showOptionsMenu: false,
+            isAdmin: true,
           ),
           const AdListPage(),
           ListingsGridView(
-            query: _repository.approvedUnsoldProducts(),
+            query: _repository.approvedProducts(),
             showAdminSoldOption: true,
+            isAdmin: true,
           ),
+          // Services (repair shops, stores, events…) are never "sold", so this
+          // tab shows all approved services with no sold filter / sold action.
           ListingsGridView(
-            query: _repository.approvedUnsoldServices(),
-            showAdminSoldOption: true,
+            query: _repository.approvedServices(),
+            isAdmin: true,
           ),
         ],
       ),

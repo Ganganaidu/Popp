@@ -35,7 +35,6 @@ class ServiceDetailScreen extends StatefulWidget {
 
 class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
   late bool _isApproved;
-  bool _isSold = false;
   String _status = 'Pending';
   int _selectedImageIndex = 0;
   bool _isFav = false;
@@ -46,11 +45,8 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
   void initState() {
     super.initState();
     _isApproved = widget.serviceData['isApproved'] == true;
-    _isSold = widget.serviceData['isSold'] == true || widget.serviceData['status'] == 'Sold';
     final docStatus = widget.serviceData['status'] as String?;
-    if (_isSold) {
-      _status = 'Sold';
-    } else if (_isApproved) {
+    if (_isApproved) {
       _status = 'Approved';
     } else if (docStatus == 'sent_back') {
       _status = 'Sent Back';
@@ -311,6 +307,15 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                         if (!_favButtonDisabled) _toggleFavorite();
                       },
                       iconColor: _isFav ? Colors.red : null),
+                  if (isAdmin) ...[
+                    const SizedBox(width: 12),
+                    AppBarIconButton(
+                      icon: Icons.delete_outline,
+                      iconColor: Colors.red,
+                      iconSemanticLabel: 'Delete service',
+                      onTap: _deleteService,
+                    ),
+                  ],
                   const SizedBox(width: 16),
                 ],
                 flexibleSpace: FlexibleSpaceBar(
@@ -488,43 +493,20 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
 
                       const SizedBox(height: 32),
 
-                      if (isOwner && !_isSold) ...[
-                        const SizedBox(height: 16),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green,
-                              foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10)),
-                            ),
-                            onPressed: _markAsSold,
-                            icon: const Icon(Icons.check_circle_outline, size: 18),
-                            label: const Text(
-                              'Mark as Sold',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
+                      // Services (repair shops, stores, events…) are never
+                      // "sold", so there's no owner sold action here — just the
+                      // contact card for non-owners.
+                      if (!isOwner)
+                        ChatWithSellerCard(
+                          receiverUserName: contactName,
+                          receiverUserID: userId,
+                          productId: widget.serviceData['id'] ?? '',
+                          productTitle: title,
+                          isAdmin: isAdmin,
+                          listingPhone: (widget.serviceData['contactPhone'] ??
+                              widget.serviceData['pointOfContactPhone'] ??
+                              widget.serviceData['businessContact']) as String?,
                         ),
-                        const SizedBox(height: 16),
-                      ] else ...[
-                        if (!isOwner)
-                          ChatWithSellerCard(
-                            receiverUserName: contactName,
-                            receiverUserID: userId,
-                            productId: widget.serviceData['id'] ?? '',
-                            productTitle: title,
-                            isAdmin: isAdmin,
-                            listingPhone: (widget.serviceData['contactPhone'] ??
-                                widget.serviceData['pointOfContactPhone'] ??
-                                widget.serviceData['businessContact']) as String?,
-                          ),
-                      ],
 
                       const SizedBox(height: 100), // Spacing for bottom overlay
                     ],
@@ -1225,21 +1207,31 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     return text;
   }
 
-  Future<void> _markAsSold() async {
+  Future<void> _deleteService() async {
     final serviceId = widget.serviceData['id'] as String? ?? '';
     if (serviceId.isEmpty) return;
 
-    final success = await AppDialogs.confirmAndMarkAsSold(
+    final confirmed = await AppDialogs.confirmDeleteListing(
       context: context,
-      docRef: _repository.serviceDoc(serviceId),
-      successMessage: 'Service marked as sold.',
+      itemLabel: 'service',
     );
+    if (!confirmed) return;
 
-    if (success && mounted) {
-      setState(() {
-        _isSold = true;
-        _status = 'Sold';
-      });
+    try {
+      await _repository.deleteService(serviceId);
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Service deleted.'), backgroundColor: Colors.green),
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Delete failed: $e'), backgroundColor: Colors.red),
+        );
+      }
     }
   }
 }

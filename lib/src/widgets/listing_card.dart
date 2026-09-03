@@ -12,6 +12,9 @@ class ListingCard extends StatelessWidget {
   final VoidCallback? onEdit;
   final VoidCallback? onSold;
   final VoidCallback? onEditApproved;
+  /// Admin-only: when provided, a red "Delete" entry is shown in the options
+  /// menu regardless of the listing's status.
+  final VoidCallback? onDelete;
   final double? width;
 
   const ListingCard({
@@ -27,6 +30,7 @@ class ListingCard extends StatelessWidget {
     this.onEdit,
     this.onSold,
     this.onEditApproved,
+    this.onDelete,
   });
 
   // Helper to determine banner color and icon based on status ---
@@ -97,8 +101,8 @@ class ListingCard extends StatelessWidget {
                     ),
                   ),
                   if (status != null) _buildStatusBanner(),
-                  if ((showOptionsMenu || showSoldOptionOnly) &&
-                      status?.toLowerCase() != 'sold')
+                  if ((showOptionsMenu || showSoldOptionOnly || onDelete != null) &&
+                      (onDelete != null || status?.toLowerCase() != 'sold'))
                     Positioned(
                       top: 4,
                       right: 4,
@@ -211,15 +215,19 @@ class ListingCard extends StatelessWidget {
           onEditApproved?.call();
         } else if (value == 'sold') {
           onSold?.call();
+        } else if (value == 'delete') {
+          onDelete?.call();
         }
       },
       itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-        if (!showSoldOptionOnly && status?.toLowerCase() == 'pending')
+        // Edit / Edit & Resubmit are owner actions ("My Listings" only). Admin
+        // management tabs (showOptionsMenu == false) only get Delete.
+        if (showOptionsMenu && status?.toLowerCase() == 'pending')
           const PopupMenuItem<String>(
               value: 'edit',
               child: ListTile(
                   leading: Icon(Icons.edit_outlined), title: Text('Edit'))),
-        if (!showSoldOptionOnly && status?.toLowerCase() == 'approved')
+        if (showOptionsMenu && status?.toLowerCase() == 'approved')
           PopupMenuItem<String>(
               value: 'edit_approved',
               child: ListTile(
@@ -228,14 +236,23 @@ class ListingCard extends StatelessWidget {
                   title: Text('Edit & Resubmit',
                       style: TextStyle(
                           color: Theme.of(context).colorScheme.primary)))),
-        PopupMenuItem<String>(
-            value: 'sold',
-            child: ListTile(
-                leading: Icon(Icons.monetization_on_outlined,
-                    color: Theme.of(context).colorScheme.primary),
-                title: Text('Mark as Sold',
-                    style: TextStyle(
-                        color: Theme.of(context).colorScheme.primary)))),
+        if ((showOptionsMenu || showSoldOptionOnly) &&
+            status?.toLowerCase() != 'sold')
+          PopupMenuItem<String>(
+              value: 'sold',
+              child: ListTile(
+                  leading: Icon(Icons.monetization_on_outlined,
+                      color: Theme.of(context).colorScheme.primary),
+                  title: Text('Mark as Sold',
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.primary)))),
+        if (onDelete != null)
+          const PopupMenuItem<String>(
+              value: 'delete',
+              child: ListTile(
+                  leading: Icon(Icons.delete_outline, color: Colors.red),
+                  title: Text('Delete',
+                      style: TextStyle(color: Colors.red)))),
       ],
       icon: Container(
         decoration: BoxDecoration(

@@ -114,6 +114,41 @@ class AppDialogs {
     );
   }
 
+  /// Admin-only confirmation before permanently deleting a listing. Returns true
+  /// only when the admin explicitly confirms. [itemLabel] is 'product' or
+  /// 'service' so the copy reads naturally.
+  static Future<bool> confirmDeleteListing({
+    required BuildContext context,
+    String itemLabel = 'listing',
+  }) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        title: Text('Delete $itemLabel?'),
+        content: Text(
+          'This will permanently remove the $itemLabel and its images. '
+          'This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(
+              'Delete',
+              style: TextStyle(color: Theme.of(dialogContext).colorScheme.onPrimary),
+            ),
+          ),
+        ],
+      ),
+    );
+    return confirmed == true;
+  }
+
   static Future<void> showConfirmationDialog({
     required BuildContext context,
     required String title,

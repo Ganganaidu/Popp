@@ -207,6 +207,88 @@ export async function getAds(): Promise<FirestoreAd[]> {
   }
 }
 
+/* ── READ: Explore page ───────────────────────────────────────────────────── */
+
+const SHOP_CATEGORIES = ['Find Mechanic', 'Bike Rentals', 'Accessory Store', 'Tyre Shops', 'Towing Service'];
+const EVENT_CATEGORIES = ['Track day', 'Training day'];
+
+/** Latest approved bikes — used for Trending Now on the Explore page. */
+export async function getLatestProducts(lim_: number = 12): Promise<FirestoreProduct[]> {
+  try {
+    const col = collection(db, 'products');
+    const q = query(
+      col,
+      where('isApproved', '==', true),
+      where('isActive', '==', true),
+      where('isSold', '==', false),
+      where('category', '==', 'Premium Bikes'),
+      orderBy('createdAt', 'desc'),
+      limit(lim_),
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map(docToProduct);
+  } catch (err) {
+    console.error('[firestore] getLatestProducts error:', err);
+    return [];
+  }
+}
+
+/** Approved active shop-type services (mechanics, rentals, tyre, etc.). */
+export async function getShopServices(lim_: number = 10): Promise<FirestoreService[]> {
+  try {
+    const col = collection(db, 'services');
+    const q = query(
+      col,
+      where('isApproved', '==', true),
+      where('isActive', '==', true),
+      where('category', 'in', SHOP_CATEGORIES),
+      limit(lim_),
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map(docToService);
+  } catch (err) {
+    console.error('[firestore] getShopServices error:', err);
+    return [];
+  }
+}
+
+/** Approved active event services (track day, training day). */
+export async function getEventServices(lim_: number = 10): Promise<FirestoreService[]> {
+  try {
+    const col = collection(db, 'services');
+    const q = query(
+      col,
+      where('isApproved', '==', true),
+      where('isActive', '==', true),
+      where('category', 'in', EVENT_CATEGORIES),
+      limit(lim_),
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map(docToService);
+  } catch (err) {
+    console.error('[firestore] getEventServices error:', err);
+    return [];
+  }
+}
+
+/** All approved active services, any category. */
+export async function getAllServices(lim_: number = 30): Promise<FirestoreService[]> {
+  try {
+    const col = collection(db, 'services');
+    const q = query(
+      col,
+      where('isApproved', '==', true),
+      where('isActive', '==', true),
+      limit(lim_),
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map(docToService);
+  } catch (err) {
+    console.error('[firestore] getAllServices error:', err);
+    return [];
+  }
+}
+
 /* ── WRITE: Products ──────────────────────────────────────────────────────── */
 
 /**

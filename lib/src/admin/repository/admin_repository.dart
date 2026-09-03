@@ -23,16 +23,16 @@ class AdminRepository {
         Filter('hasPendingUpdate', isEqualTo: true),
       ));
 
-  /// Approved, unsold listings — the admin "all listings" management tabs.
-  Query approvedUnsoldProducts() => _db
-      .collection(ApiUrl.productsPath)
-      .where('isApproved', isEqualTo: true)
-      .where('isSold', isEqualTo: false)
-      .orderBy('createdAt', descending: true);
+  /// Approved listings — the admin "all listings" management tabs.
+  ///
+  /// Intentionally a single equality filter (no `isSold` clause, no `orderBy`):
+  /// service documents created through the listing form never get an explicit
+  /// `isSold` field, and `where('isSold', isEqualTo: false)` silently drops
+  /// every document that lacks the field. `ListingsGridView` filters out sold
+  /// items and sorts by `createdAt` client-side (see `showAdminSoldOption`).
+  Query approvedProducts() =>
+      _db.collection(ApiUrl.productsPath).where('isApproved', isEqualTo: true);
 
-  Query approvedUnsoldServices() => _db
-      .collection(ApiUrl.servicePath)
-      .where('isApproved', isEqualTo: true)
-      .where('isSold', isEqualTo: false)
-      .orderBy('createdAt', descending: true);
+  Query approvedServices() =>
+      _db.collection(ApiUrl.servicePath).where('isApproved', isEqualTo: true);
 }

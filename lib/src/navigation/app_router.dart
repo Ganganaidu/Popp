@@ -312,14 +312,18 @@ class _LoadingScreen extends StatelessWidget {
 Future<String?> _redirect(BuildContext context, GoRouterState state) async {
   final String location = state.matchedLocation;
 
-  if (location != '/intro') {
+  final user = FirebaseAuth.instance.currentUser;
+  final bool authenticated = user != null && user.emailVerified;
+
+  // The intro is onboarding for users who aren't signed in yet. Never gate an
+  // authenticated user on `hasSeenIntro`: the authenticated branch below bounces
+  // them off `/intro` to `/home` before IntroScreen can persist the flag, so
+  // gating would ping-pong `/intro` <-> `/home` forever (redirect-loop crash).
+  if (!authenticated && location != '/intro') {
     final prefs = await SharedPreferences.getInstance();
     final hasSeenIntro = prefs.getBool('hasSeenIntro') ?? false;
     if (!hasSeenIntro) return '/intro';
   }
-
-  final user = FirebaseAuth.instance.currentUser;
-  final bool authenticated = user != null && user.emailVerified;
 
   if (!authenticated) {
     _blockingMessageCheckedThisSession = false;

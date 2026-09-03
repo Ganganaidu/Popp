@@ -102,6 +102,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   icon: vm.isFavorite ? Icons.favorite : Icons.favorite_border,
                   onTap: vm.toggleFavorite,
                   iconColor: vm.isFavorite ? Colors.red : null),
+              if (vm.isAdmin) ...[
+                const SizedBox(width: 12),
+                AppBarIconButton(
+                  icon: Icons.delete_outline,
+                  iconColor: Colors.red,
+                  iconSemanticLabel: 'Delete product',
+                  onTap: () => _deleteProduct(vm),
+                ),
+              ],
               const SizedBox(width: 16),
             ],
             flexibleSpace: FlexibleSpaceBar(
@@ -741,6 +750,31 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     final text = controller.text;
     if (confirmed != true) return null;
     return text;
+  }
+
+  Future<void> _deleteProduct(ProductDetailViewModel vm) async {
+    final confirmed = await AppDialogs.confirmDeleteListing(
+      context: context,
+      itemLabel: 'product',
+    );
+    if (!confirmed) return;
+
+    try {
+      await vm.deleteProduct();
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Product deleted.'), backgroundColor: Colors.green),
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Delete failed: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
   }
 
   Future<void> _markAsSold(ProductDetailViewModel vm) async {

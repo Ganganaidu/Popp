@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 import '../../admin/admin_notification_service.dart';
 import '../../api/api_url.dart';
 import '../../api/firebase/firebase_api_service.dart';
+import '../../gallery/pic_image_gallery.dart';
 import '../../models/product.dart';
 
 /// Data access for the products feature.
@@ -91,4 +92,40 @@ class ProductRepository {
   Future<bool> updateProduct(
           String productId, Map<String, dynamic> dataToUpdate) =>
       _api.updateProduct(productId, dataToUpdate);
+
+  /// Admin-only: permanently deletes a product listing — its Firestore document,
+  /// its uploaded images, and any references to it on the owner's user document.
+  /// Image / user-doc cleanup failures are logged but do not block the delete.
+  Future<void> deleteProduct(String productId) async {
+    final ref = productDoc(productId);
+    final snapshot = await ref.get();
+    final data = snapshot.data();
+
+    if (data != null) {
+      final images = <String>{
+        ...((data['thumbImageUrls'] as List<dynamic>?)?.whereType<String>() ??
+            const <String>[]),
+        if (data['imageUrl'] is String &&
+            (data['imageUrl'] as String).isNotEmpty)
+          data['imageUrl'] as String,
+      };
+      if (images.isNotEmpty) {
+        await deleteImagesFromStorage(images.toList());
+      }
+
+      final ownerId = data['userId'] as String?;
+      if (ownerId != null && ownerId.isNotEmpty) {
+        try {
+          await _db.collection(ApiUrl.userPath).doc(ownerId).update({
+            'createdProductIds': FieldValue.arrayRemove([productId]),
+            'savedProductIds': FieldValue.arrayRemove([productId]),
+          });
+        } catch (_) {
+          // Non-fatal: the listing itself is still removed below.
+        }
+      }
+    }
+
+    await ref.delete();
+  }
 }

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:popp/src/api/currency_service.dart';
 import 'package:popp/src/navigation/app_routes.dart';
+import 'package:popp/src/products/repository/product_repository.dart';
+import 'package:popp/src/services/repository/service_repository.dart';
 import 'package:popp/src/utils/product_utils.dart';
 import 'package:popp/src/widgets/app_dialogs.dart';
 
@@ -12,12 +14,16 @@ class ListingsGridView extends StatefulWidget {
   final Query query;
   final bool showOptionsMenu;
   final bool showAdminSoldOption;
+  /// When true, each card gets an admin-only "Delete" option that permanently
+  /// removes the product / service (and its images).
+  final bool isAdmin;
 
   const ListingsGridView({
     super.key,
     required this.query,
     this.showOptionsMenu = false,
     this.showAdminSoldOption = false,
+    this.isAdmin = false,
   });
 
   @override
@@ -25,6 +31,40 @@ class ListingsGridView extends StatefulWidget {
 }
 
 class _ListingsGridViewState extends State<ListingsGridView> {
+  final ProductRepository _productRepo = ProductRepository();
+  final ServiceRepository _serviceRepo = ServiceRepository();
+
+  Future<void> _deleteListing(
+      {required String id, required bool isService}) async {
+    final label = isService ? 'service' : 'product';
+    final confirmed = await AppDialogs.confirmDeleteListing(
+      context: context,
+      itemLabel: label,
+    );
+    if (!confirmed) return;
+
+    try {
+      if (isService) {
+        await _serviceRepo.deleteService(id);
+      } else {
+        await _productRepo.deleteProduct(id);
+      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${label[0].toUpperCase()}${label.substring(1)} deleted.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text('Delete failed: $e'), backgroundColor: Colors.red),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
@@ -40,7 +80,40 @@ class _ListingsGridViewState extends State<ListingsGridView> {
           return _buildEmptyState(context);
         }
 
-        final docs = snapshot.data!.docs;
+        var docs = snapshot.data!.docs;
+
+        // "Mark as Sold" is a product-only concept — services (repair shops,
+        // stores, events…) are never sold. Only the product management tab
+        // excludes sold listings; it's done here rather than in the Firestore
+        // query because that query has no `orderBy` and, for services,
+        // `where('isSold', isEqualTo: false)` would silently drop every
+        // document that lacks the field.
+        if (widget.showAdminSoldOption) {
+          docs = docs.where((d) {
+            final m = d.data() as Map<String, dynamic>;
+            return m['isSold'] != true &&
+                (m['status']?.toString().toLowerCase() != 'sold');
+          }).toList();
+        }
+
+        // Admin management tabs run unordered Firestore queries — sort the
+        // most recently created listings first on the client.
+        if (widget.isAdmin) {
+          docs = docs.toList()
+            ..sort((a, b) {
+              final at = (a.data() as Map<String, dynamic>)['createdAt'];
+              final bt = (b.data() as Map<String, dynamic>)['createdAt'];
+              if (at is Timestamp && bt is Timestamp) return bt.compareTo(at);
+              if (at is Timestamp) return -1;
+              if (bt is Timestamp) return 1;
+              return 0;
+            });
+        }
+
+        if (docs.isEmpty) {
+          return _buildEmptyState(context);
+        }
+
         final countryCode = Localizations.localeOf(context).countryCode ?? 'US';
 
         return GridView.builder(
@@ -124,6 +197,13 @@ class _ListingsGridViewState extends State<ListingsGridView> {
               status: status,
               showOptionsMenu: widget.showOptionsMenu,
               showSoldOptionOnly: widget.showAdminSoldOption,
+              onDelete: widget.isAdmin
+                  ? () => _deleteListing(
+                        id: doc.id,
+                        isService: ProductUtils.listYourServiceCategories
+                            .contains(data['category']),
+                      )
+                  : null,
               onTap: () {
                 final category = data['category'] as String?;
                 if (!ProductUtils.listYourServiceCategories.contains(category)) {

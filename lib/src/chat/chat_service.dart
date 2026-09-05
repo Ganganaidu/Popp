@@ -302,60 +302,118 @@ class ChatService extends ChangeNotifier {
     }
   }
 
-  // For the agent to get a list of all users who have chatted with them
-  // This will now stream from the agent's agentChatMemberships sub collection
+  // For the agent to get a list of all users who have chatted with them.
+  // Merges agentChatMemberships (support chats) and userChatMemberships
+  // (product-listing chats where the agent is the seller) so both appear.
   Stream<List<Map<String, dynamic>>> getAgentChatUserList(String agentId) {
-    try {
-      final currentUid = _firebaseAuth.currentUser?.uid;
-      AppLogger.d("AgentChatUserList - Current UID: $currentUid");
-      AppLogger.d(
-          "AgentChatUserList - Agent UID Match: ${currentUid == Constants.adminUserId}");
+    final currentUid = _firebaseAuth.currentUser?.uid;
+    AppLogger.d("AgentChatUserList - Current UID: $currentUid");
 
-      // Ensure the current user is the agent before querying their specific chat memberships
-      if (currentUid != agentId) {
-        AppLogger.w(
-            "Unauthorized access attempt to getAgentChatUserList for agentId: $agentId by UID: $currentUid");
-        // Return an empty stream if not authorized
-        return Stream.value([]);
-      }
-
-      return _firestore
-          .collection(ApiUrl.userPath) // Start from the users collection
-          .doc(agentId) // Get the specific agent's document
-          .collection(agentChatMemberships)
-          .orderBy('lastMessageTimestamp',
-              descending: true) // Order by last message to show recent chats
-          .snapshots()
-          .map((snapshot) {
-        AppLogger.d(
-            "AgentChatListScreen - Memberships snapshot doc count: ${snapshot.docs.length}");
-
-        List<Map<String, dynamic>> userChats = [];
-        for (var doc in snapshot.docs) {
-          final data = doc.data();
-          // 'otherUserId' is the ID of the user chatting with the agent
-          // 'otherUserName' is the name of that user
-          userChats.add({
-            'id': data['otherUserId'],
-            'name': data['otherUserName'],
-            'email': data['otherUserEmail'],
-            'lastMessage': data['lastMessage'],
-            'productTitle': data['productTitle'],
-            'productId': data['productId'],
-            // Display last message if needed
-            'timestamp': data['lastMessageTimestamp'],
-            'unreadCount': data['unreadCount'] ?? 0,
-            // For sorting or display
-          });
-        }
-        AppLogger.d(
-            "AgentChatListScreen - Final chat users list count: ${userChats.length}");
-        return userChats;
-      });
-    } catch (e, stack) {
-      AppLogger.e("Failed to get agent chat user list: $e", stack);
-      rethrow;
+    if (currentUid != agentId) {
+      AppLogger.w(
+          "Unauthorized access attempt to getAgentChatUserList for agentId: $agentId by UID: $currentUid");
+      return Stream.value([]);
     }
+
+    final agentRef = _firestore
+        .collection(ApiUrl.userPath)
+        .doc(agentId);
+
+    final agentStream = agentRef
+        .collection(agentChatMemberships)
+        .snapshots();
+    final userStream = agentRef
+        .collection(userChatMemberships)
+        .snapshots();
+
+    final controller = StreamController<List<Map<String, dynamic>>>();
+
+    List<Map<String, dynamic>> fromSnapshot(
+        QuerySnapshot snap, String chatType) {
+      return snap.docs
+          .map((doc) {
+            final data = doc.data() as Map<String, dynamic>;
+            final otherId = data['otherUserId'] as String?;
+            if (otherId == null || otherId.isEmpty) return null;
+            return <String, dynamic>{
+              'id': otherId,
+              'name': data['otherUserName'],
+              'email': data['otherUserEmail'],
+              'lastMessage': data['lastMessage'],
+              'productTitle': data['productTitle'],
+              'productId': data['productId'],
+              'timestamp': data['lastMessageTimestamp'],
+              'unreadCount': data['unreadCount'] ?? 0,
+              'chatRoomId': data['chatRoomId'] ?? doc.id,
+              'chatType': chatType,
+            };
+          })
+          .whereType<Map<String, dynamic>>()
+          .toList();
+    }
+
+    List<Map<String, dynamic>> agentChats = [];
+    List<Map<String, dynamic>> userChats = [];
+
+    void emit() {
+      if (controller.isClosed) return;
+      // Merge by chatRoomId, deduplicate, sort by timestamp descending.
+      final Map<String, Map<String, dynamic>> merged = {};
+      for (final c in [...agentChats, ...userChats]) {
+        final key = c['chatRoomId'] as String? ?? '${c['id']}';
+        final existing = merged[key];
+        if (existing == null) {
+          merged[key] = c;
+        } else {
+          // Keep the entry with the more recent timestamp.
+          final ts = c['timestamp'] as Timestamp?;
+          final exTs = existing['timestamp'] as Timestamp?;
+          if (ts != null && (exTs == null || ts.compareTo(exTs) > 0)) {
+            merged[key] = c;
+          }
+        }
+      }
+      final result = merged.values.toList()
+        ..sort((a, b) {
+          final ta = a['timestamp'] as Timestamp?;
+          final tb = b['timestamp'] as Timestamp?;
+          if (ta == null && tb == null) return 0;
+          if (ta == null) return 1;
+          if (tb == null) return -1;
+          return tb.compareTo(ta);
+        });
+      AppLogger.d("AgentChatUserList - merged count: ${result.length}");
+      controller.add(result);
+    }
+
+    final sub1 = agentStream.listen(
+      (snap) {
+        agentChats = fromSnapshot(snap, 'agent_user');
+        emit();
+      },
+      onError: (e, s) {
+        AppLogger.e("AgentChatUserList - agentChatMemberships error: $e", s);
+        if (!controller.isClosed) controller.addError(e, s);
+      },
+    );
+
+    final sub2 = userStream.listen(
+      (snap) {
+        userChats = fromSnapshot(snap, 'user_to_user');
+        emit();
+      },
+      onError: (e, s) {
+        AppLogger.e("AgentChatUserList - userChatMemberships error: $e", s);
+        if (!controller.isClosed) controller.addError(e, s);
+      },
+    );
+
+    controller.onCancel = () {
+      sub1.cancel();
+      sub2.cancel();
+    };
+
+    return controller.stream;
   }
 
   // For the agent to get a list of all users who have chatted with them
